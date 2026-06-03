@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kebijakan Privasi TutorLog</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <a class="back-link" href="./index.html">Kembali</a>
+      <p class="eyebrow">TutorLog</p>
+      <h1>Kebijakan Privasi</h1>
+      <p class="muted">Terakhir diperbarui: 3 Juni 2026</p>
+
+      <section>
+        <h2>Ringkasan</h2>
+        <p>
+          TutorLog membantu tutor privat mencatat sesi les, menyimpan riwayat
+          murid, membuat rekap tagihan, dan export rekap ke PDF/CSV. Kebijakan
+          ini menjelaskan data yang dipakai TutorLog dan alasannya.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data yang Dipakai TutorLog</h2>
+        <ul>
+          <li>Data akun: alamat email dan ID autentikasi.</li>
+          <li>Profil tutor: nama tutor untuk laporan dan export PDF.</li>
+          <li>Data murid: nama, tingkat pendidikan, tipe tagihan, tarif, dan status aktif/tersembunyi.</li>
+          <li>Data lokasi: lokasi belajar murid dan lokasi sesi saat user menyimpan lokasi murid, mulai sesi tatap muka, atau menyelesaikan sesi.</li>
+          <li>Aktivitas sesi: waktu mulai, waktu selesai, mode ajar, durasi, estimasi tagihan, status sinkronisasi, dan riwayat sesi.</li>
+          <li>Data akses premium: voucher, status akses, tanggal aktif, dan counter penggunaan export.</li>
+          <li>File export: PDF atau CSV yang dibuat hanya saat user memilih export/share.</li>
+        </ul>
+        <p>
+          TutorLog tidak mengambil lokasi di background dan tidak melacak
+          pergerakan user secara langsung.
+        </p>
+      </section>
+
+      <section>
+        <h2>Alasan Data Digunakan</h2>
+        <ul>
+          <li>Login dan pengelolaan akun tutor.</li>
+          <li>Mencocokkan sesi tatap muka dengan lokasi murid yang tersimpan.</li>
+          <li>Mencatat riwayat sesi dan durasi mengajar.</li>
+          <li>Menghitung rekap tagihan.</li>
+          <li>Membuat PDF/CSV saat diminta user.</li>
+          <li>Mengelola limit akses, voucher, dan early access.</li>
+          <li>Membantu debugging atau support saat user melaporkan masalah.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Penggunaan Lokasi</h2>
+        <p>
+          TutorLog meminta izin lokasi hanya untuk fungsi yang berkaitan dengan
+          sesi les, yaitu menyimpan lokasi murid, mulai sesi tatap muka di dekat
+          lokasi murid, dan menyimpan titik lokasi saat sesi selesai.
+        </p>
+        <p>
+          TutorLog hanya memakai foreground location. App tidak meminta
+          permission <code>ACCESS_BACKGROUND_LOCATION</code>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Penyimpanan dan Keamanan</h2>
+        <p>
+          TutorLog menyimpan data app di Supabase. Data dikirim melalui koneksi
+          HTTPS terenkripsi. Access rules dikonfigurasi agar user yang login
+          hanya bisa mengakses data TutorLog miliknya sendiri.
+        </p>
+        <p>
+          File PDF dan CSV dibuat dari data rekap yang dipilih user. Setelah
+          export, user mengontrol sendiri tempat file tersebut dibagikan atau
+          disimpan.
+        </p>
+      </section>
+
+      <section>
+        <h2>Retensi dan Penghapusan Data</h2>
+        <p>
+          TutorLog menyimpan data akun, murid, sesi, voucher, dan rekap selama
+          akun aktif agar tutor bisa melihat riwayat dan membuat laporan.
+        </p>
+        <p>
+          Jika user meminta penghapusan akun atau data, TutorLog akan
+          memverifikasi request tersebut lalu menghapus atau menganonimkan data
+          terkait sesuai proses penghapusan akun.
+        </p>
+      </section>
+
+      <section>
+        <h2>Kontak</h2>
+        <p>
+          Untuk pertanyaan privasi atau penghapusan data, kirim email ke
+          <a href="mailto:fatiharahmat257@gmail.com">fatiharahmat257@gmail.com</a>.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
