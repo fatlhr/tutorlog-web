@@ -103,7 +103,7 @@ export default function Home() {
                 </span>
                 <span className="brand-sm">TutorLog</span>
               </Link>
-              <div className="copy">© 2026 · Buat tutor Indonesia dengan ♥</div>
+              <div className="copy">© 2026 · TutorLog untuk tutor Indonesia</div>
             </div>
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function Home() {
                 </span>
                 <span className="brand-sm">TutorLog</span>
               </div>
-              <div className="footer-copy">© 2026 · Buat tutor Indonesia dengan ♥</div>
+              <div className="footer-copy">© 2026 · TutorLog untuk tutor Indonesia</div>
             </div>
           </div>
       </div>

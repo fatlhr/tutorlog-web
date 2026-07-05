@@ -15,7 +15,7 @@ export default function Footer({ variant = "mobile" }: FooterProps) {
               <Image src="/tutorlog-logo.png" alt="" width={32} height={32} />
             </span>
             <span className="brand-sm">TutorLog</span>
-            <span>© 2026 · Buat tutor Indonesia dengan ♥</span>
+            <span>© 2026 · TutorLog untuk tutor Indonesia</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
             <div className="r">
@@ -50,7 +50,7 @@ export default function Footer({ variant = "mobile" }: FooterProps) {
           <Link href="/fitur">Fitur</Link><Link href="/harga">Harga</Link><Link href="/panduan">Panduan</Link>
           <Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/kontak">Kontak</Link>
         </div>
-        <div className="copy">© 2026 · Buat tutor Indonesia dengan ♥</div>
+        <div className="copy">© 2026 · TutorLog untuk tutor Indonesia</div>
       </div>
     </div>
   );
