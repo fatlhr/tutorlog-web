@@ -1,30 +1,34 @@
 # Git Strategy — Trunk-Based Development
 
-> Diadopsi dari TutorPlis. Selalu ikuti rules ini.
-
 ## Branch Model
 
 ```
 main ──────────────────────────────────────────────────────►
-  │                                                          
-  ├── feat/m1-foundation ───┬──► PR ──► merge ──► delete    
-  │                         │                                
-  ├── feat/m2-registration ─┤                                
-  │                         │                                
-  ├── fix/search-bar ───────┘                                
+│  (production — legal web, jangan ganggu sampai v2 ready)   │
+│                                                            │
+└── develop ─────────────────────────────────────────────────►
+    │  (development — Next.js migration)                     │
+    │                                                        │
+    ├── feat/m1-foundation ───┬──► PR ──► merge ──► delete  │
+    │                         │                              │
+    ├── feat/m2-auth ─────────┤                              │
+    │                         │                              │
+    └── fix/login-bug ────────┘                              │
 ```
 
 ## Aturan
 
 | Aturan | Detail |
 |--------|--------|
-| **Satu branch abadi** | `main` — selalu deployable, selalu production-ready |
-| **Feature branch** | `feat/<milestone>` atau `feat/<deskripsi>` — hidup max 2 hari |
-| **Fix branch** | `fix/<deskripsi>` — langsung dari `main`, cepat merge |
-| **Commit ke main langsung** | Hanya untuk docs, config, typo fix — tanpa PR |
+| **`main`** | Production — legal web TutorLog. **Jangan ganggu** sampai Next.js v2 siap deploy. |
+| **`develop`** | Development branch untuk Next.js migration. Semua feature branch start dari sini. |
+| **Feature branch** | `feat/<milestone>` atau `feat/<deskripsi>` — hidup max 2 hari, start dari `develop` |
+| **Fix branch** | `fix/<deskripsi>` — langsung dari `develop`, cepat merge |
+| **Commit ke `develop` langsung** | Hanya untuk docs, config, typo fix — tanpa PR |
 | **PR wajib** | Semua perubahan kode. Self-review dulu sebelum merge |
-| **Squash merge** | Semua PR di-squash ke 1 commit di main |
+| **Squash merge** | Semua PR di-squash ke 1 commit di `develop` |
 | **Delete branch** | Hapus setelah merge |
+| **Merge ke `main`** | Hanya saat Next.js v2 siap deploy. Buat PR `develop` → `main`. |
 
 ## Commit Convention
 
@@ -44,25 +48,26 @@ main ─────────────────────────
 ## Workflow Harian
 
 ```bash
-# Pagi: sync main
-git checkout main && git pull
+# Pagi: sync develop
+git checkout develop && git pull
 
 # Buat branch fitur
-git checkout -b feat/m2-registration
+git checkout -b feat/m2-auth
 
 # Kerja: commit kecil & sering
-git add <files> && git commit -m "feat: add zod validation for step 1"
+git add <files> && git commit -m "feat: add magic link auth"
 
 # Push & buat PR
-git push -u origin feat/m2-registration
+git push -u origin feat/m2-auth
 # Buka PR via GitHub / gh CLI
 
 # Setelah merge: bersihkan
-git checkout main && git pull && git branch -d feat/m2-registration
+git checkout develop && git pull && git branch -d feat/m2-auth
 ```
 
 ## CI/CD
 
-- `main` branch → auto-deploy ke Vercel production
+- `develop` branch → auto-deploy ke Vercel preview
 - PR branch → Vercel preview deployment
+- `main` → **jangan auto-deploy** sampai v2 siap
 - Build gagal = merge di-block
