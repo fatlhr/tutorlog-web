@@ -78,20 +78,20 @@
 > Selalu preview dengan `npm run dev` setiap perubahan.
 > Dual viewport: tetap pakai vp-mobile + vp-desktop via media query.
 
-- [ ] **1.1 Migrate Landing page**
+- [x] **1.1 Migrate Landing page**
   - Convert `index.html` → `app/page.tsx`
   - Dual viewport markup (vp-mobile + vp-desktop) dalam satu component
   - Wire links ke routes baru (`/login`, `/fitur`, `/harga`, dll)
   - _DoD: Landing page identik dengan versi static, route `/` jalan_
 
-- [ ] **1.2 Shared layout components**
+- [x] **1.2 Shared layout components**
   - Buat `components/Navbar.tsx` (desktop topbar + mobile nav)
   - Buat `components/Footer.tsx` (mobile + desktop variants)
   - Buat `components/TabBar.tsx` (mobile bottom tab bar)
   - Buat `components/HamburgerMenu.tsx` (overlay menu)
   - _DoD: Semua navigation components reusable di semua halaman_
 
-- [ ] **1.3 Cleanup static files**
+- [x] **1.3 Cleanup static files**
   - Hapus file HTML static yang sudah ter-convert (index.html, css/main.css, dll)
   - Pertahankan: `design/`, `css/tutorlog-web*.css`, `css/site.css`, `assets/`, docs
   - _DoD: Tidak ada HTML static yang konflik dengan Next.js routes_
