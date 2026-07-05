@@ -34,7 +34,7 @@
 | 5 | `/harga` | ✅ | ✅ | Static |
 | 6 | `/panduan` | ✅ | ✅ | Static |
 | 7 | `/privacy` | ✅ | ✅ | Static |
-| 8 | `/terms` | ⬜ | ⬜ | Static |
+| 8 | `/terms` | ✅ | ✅ | Static |
 | 9 | `/account` | ⬜ | ⬜ | Static |
 | 10 | `/kontak` | ⬜ | ⬜ | Static |
 | 11 | `/app/rekap` | ⬜ | ⬜ | Protected |
@@ -118,7 +118,7 @@
 - [x] **2.2 Harga page** — `app/harga/page.tsx`
 - [x] **2.3 Panduan page** — `app/panduan/page.tsx`
 - [ ] **2.4 Privacy page** — `app/privacy/page.tsx`
-- [ ] **2.5 Terms page** — `app/terms/page.tsx`
+- [x] **2.5 Terms page** — `app/terms/page.tsx`
 - [ ] **2.6 Account Deletion page** — `app/account/page.tsx`
 - [ ] **2.7 Kontak page** — `app/kontak/page.tsx`
   - _DoD setiap page: identik artboard desain, responsive, link resolve_
