@@ -163,8 +163,9 @@ export default function Home() {
       </div>
 
       {/* DESKTOP */}
-      <div className="vp-desktop" style={{ background: "#0d1f18" }}>
-        <div className="web-page tw">
+      <div className="vp-desktop">
+        <div style={{ background: "#0d1f18", width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
+          <div className="web-page tw">
           {/* HERO */}
           <section className="hero-v2">
             <nav className="nav-top-dark">
@@ -352,6 +353,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </>
