@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "tutorlog-web",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8730"],
-      "port": 8730
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "autoPort": true
     }
   ]
 }
