@@ -33,7 +33,7 @@
 | 4 | `/fitur` | ⬜ | ⬜ | Static |
 | 5 | `/harga` | ✅ | ✅ | Static |
 | 6 | `/panduan` | ✅ | ✅ | Static |
-| 7 | `/privacy` | ⬜ | ⬜ | Static |
+| 7 | `/privacy` | ✅ | ✅ | Static |
 | 8 | `/terms` | ⬜ | ⬜ | Static |
 | 9 | `/account` | ⬜ | ⬜ | Static |
 | 10 | `/kontak` | ⬜ | ⬜ | Static |
