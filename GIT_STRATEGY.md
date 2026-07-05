@@ -1,4 +1,4 @@
-# Git Strategy — Trunk-Based Development
+# Git Strategy — Develop + Feature Branches
 
 ## Branch Model
 
@@ -15,8 +15,6 @@ main ─────────────────────────
     │                         │                              │
     └── fix/login-bug ────────┘                              │
 ```
-
-## Aturan
 
 ## ⛔ PERINGATAN: MAIN LOCKED
 
@@ -80,14 +78,11 @@ git checkout develop && git pull && git branch -d feat/m2-auth
 
 ## Git Hooks
 
-Pre-push hook aktif untuk block push ke `main`:
+Pre-push hook aktif untuk block push ke `main`. File: `.git/hooks/pre-push`.
 
+**Hook tidak ter-track oleh git.** Setelah fresh clone, jalankan:
 ```bash
-# File: .git/hooks/pre-push
-# Otomatis block push ke main sampai v2 siap
+bash scripts/setup-hooks.sh
 ```
 
-Kalau hook tidak jalan (misal fresh clone), jalankan:
-```bash
-chmod +x .git/hooks/pre-push
-```
+Script ini akan install pre-push hook secara otomatis.

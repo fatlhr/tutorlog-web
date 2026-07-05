@@ -5,9 +5,13 @@
 > `TutorLog Web Mobile.html` (mobile 390px). File CSS/JSX asli desain ada di [design/](design/)
 > dan sudah disalin verbatim ke `css/tutorlog-web.css` + `css/tutorlog-web-mobile.css`.
 >
-> **Stack aktual repo ini: static HTML + vanilla CSS (custom properties) + vanilla JS.**
-> Tidak ada build system, tidak ada framework. Padanan Tailwind di bawah hanya referensi
-> kalau suatu saat migrasi — JANGAN menambah Tailwind ke repo ini tanpa keputusan eksplisit.
+> **Stack:** Next.js (App Router) + TypeScript + Tailwind CSS v4.
+> Lihat [TASKS.md](TASKS.md) untuk tech stack lengkap.
+>
+> **Strategi CSS:** Design CSS (`tutorlog-web.css`, `tutorlog-web-mobile.css`, `site.css`) tetap
+> dipakai apa adanya via `@import`. Design tokens tetap `var(--tw-*)` (CSS custom properties).
+> Tailwind dipakai untuk layout utility baru (flex, grid, spacing), BUKAN mengganti class
+> `.btn`, `.card`, `.mob-*` dll yang sudah ada di design CSS.
 > Aturan di file ini MUTLAK. Kalau ragu, cek `design/*.jsx` — itu spesifikasi markup final.
 
 Nama tema: **"Kawaii Comfort"** — serif hangat + monospace, hijau teal pekat, aksen mint.
@@ -136,8 +140,10 @@ dialog scrim `15` (dalam shell) · paywall scrim `30` · menu overlay `60`.
 
 ## 2. Component Styling Rules
 
-Class sudah ada di CSS desain — agen TIDAK menulis ulang style, cukup pakai class + struktur
-markup yang benar. Referensi markup: `design/web-mobile-screens.jsx` (mobile),
+Class sudah ada di CSS desain — agen TIDAK menulis ulang style ke Tailwind utilities,
+cukup pakai class + struktur markup yang benar. Di Next.js, class ini tetap berfungsi
+karena CSS di-import via `globals.css`. Tailwind hanya dipakai untuk layout baru yang
+tidak ada di design CSS. Referensi markup: `design/web-mobile-screens.jsx` (mobile),
 `design/web-screens.jsx` (desktop), `design/web-shared.jsx` (ikon/atom).
 
 ### 2.1 Button (`.btn`)

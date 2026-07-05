@@ -6,7 +6,7 @@
 > 2. Sebelum mulai, baca [UI_SPECS.md](UI_SPECS.md) (aturan visual) + [SPEC.md](SPEC.md)
 >    (aturan konversi & keputusan varian). Markup source of truth: `design/*.jsx`.
 > 3. Selesai task → verifikasi DoD → centang `[x]` di file ini → satu commit
->    (`<type>(<scope>): <desc>`, branch `feat/...`). Lihat [GIT_STRATEGY.md](GIT_STRATEGY.md).
+>    (`<type>: <description>`, branch `feat/...`). Lihat [GIT_STRATEGY.md](GIT_STRATEGY.md).
 > 4. DoD "tanpa horizontal scroll" artinya: `document.documentElement.scrollWidth <=
 >    document.documentElement.clientWidth` pada lebar viewport yang disebut.
 > 5. Server verifikasi: `npm run dev` (Next.js dev server) dari repo root.
@@ -27,7 +27,7 @@
 
 | # | Route | Mobile | Desktop | Status |
 |---|---|---|---|---|
-| 1 | `/` (landing) | ✅ | ✅ | Static |
+| 1 | `/` (landing) | ⬜ | ⬜ | HTML done, convert pending |
 | 2 | `/login` | ⬜ | ⬜ | Auth required |
 | 3 | `/login/sent` | ⬜ | ⬜ | Auth required |
 | 4 | `/fitur` | ⬜ | ⬜ | Static |
@@ -47,34 +47,28 @@
 
 - [ ] **0.1 Init Next.js project**
   - `npx create-next-app@latest . --typescript --tailwind --app --eslint`
-  - Setup Tailwind v4 dengan custom design tokens (mirror `--tw-*` dari tutorlog-web.css)
+  - Setup Tailwind v4 dengan `@theme inline` di `globals.css` (mirror `--tw-*` dari tutorlog-web.css)
   - Setup font: Courier Prime + Source Serif 4 via `next/font/google`
   - Setup `.env.local` untuk Supabase (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
-  - Copy `GIT_STRATEGY.md` dari TutorPlis
   - _DoD: `npm run dev` jalan, halaman kosong render dengan font + warna benar_
 
 - [ ] **0.2 Migrate CSS foundation**
-  - Salin `css/tutorlog-web.css` + `css/tutorlog-web-mobile.css` + `css/site.css` ke `app/globals.css`
-  - Convert design tokens ke Tailwind v4 `@theme inline` di `globals.css`
-  - Import Google Fonts via `next/font/google`
-  - _DoD: Semua design tokens tersedia sebagai Tailwind utility classes_
+  - Import `css/tutorlog-web.css` + `css/tutorlog-web-mobile.css` + `css/site.css` via `@import` di `globals.css`
+  - Design tokens tetap sebagai CSS custom properties `var(--tw-*)`, BUKAN convert ke Tailwind utilities
+  - Tailwind hanya dipakai untuk layout utility (flex, grid, padding), bukan mengganti design CSS
+  - _DoD: Landing page HTML bisa render benar di Next.js dengan semua CSS design_
 
 - [ ] **0.3 Setup Supabase client**
   - Install `@supabase/supabase-js` + `@supabase/ssr`
   - Buat `lib/supabase/server.ts` (server client untuk API routes)
   - Buat `lib/supabase/client.ts` (browser client untuk client components)
-  - **Provided by user:** Schema/tables dari Supabase project mobile (tabel apa saja, kolom apa saja)
-  - _DoD: Supabase client bisa query tutorlog DB_
+  - Buat `middleware.ts` (refresh session)
+  - _DoD: Supabase client ter-setup, bisa connect ke project_
 
 - [ ] **0.4 Setup root layout & shared components**
   - Buat `app/layout.tsx` (root layout + fonts + metadata)
   - Buat shared components: `components/Button.tsx`, `components/Input.tsx`, `components/Card.tsx`, `components/Modal.tsx`
   - _DoD: Components bisa dipakai di halaman mana saja_
-
-- [ ] **0.5 Cleanup static files**
-  - Hapus file HTML static yang tidak berguna (index.html, login/, dll)
-  - Pertahankan: `design/`, `css/`, `assets/`, `README.md`, `SPEC.md`, `UI_SPECS.md`, `TASKS.md`
-  - _DoD: Tidak ada HTML static yang konflik dengan Next.js routes_
 
 ---
 
@@ -97,11 +91,18 @@
   - Buat `components/HamburgerMenu.tsx` (overlay menu)
   - _DoD: Semua navigation components reusable di semua halaman_
 
+- [ ] **1.3 Cleanup static files**
+  - Hapus file HTML static yang sudah ter-convert (index.html, css/main.css, dll)
+  - Pertahankan: `design/`, `css/tutorlog-web*.css`, `css/site.css`, `assets/`, docs
+  - _DoD: Tidak ada HTML static yang konflik dengan Next.js routes_
+
 ---
 
 ## Phase 2 — Public Pages (Fitur, Harga, Panduan, Legal)
 
-> Catatan: Convert HTML → Next.js components. Preview `npm run dev`.
+> Catatan: Halaman ini BELUM ada sebagai HTML. Build dari scratch menggunakan
+> `design/web-mobile-screens.jsx` (mobile) + `design/web-screens.jsx` (desktop).
+> Preview `npm run dev` setiap perubahan.
 
 - [ ] **2.1 Fitur page** — `app/fitur/page.tsx`
 - [ ] **2.2 Harga page** — `app/harga/page.tsx`
@@ -127,7 +128,6 @@
   - _DoD: Email badge terisi dari `?email=`_
 
 - [ ] **3.3 Supabase Auth wiring**
-  - Install `@supabase/ssr`
   - Buat `app/auth/callback/route.ts` (handle magic link callback)
   - Server action untuk `signInWithEmail`
   - Email template sudah di-setup di Supabase dashboard (mobile)
@@ -153,6 +153,7 @@
   - _DoD: UI sesuai desain, data masih dummy_
 
 - [ ] **4.3 Rekap data wiring**
+  - **Blocker:** User harus provide schema/tables dari Supabase project mobile
   - Query sessions dari Supabase (shared with mobile app)
   - Month filter, student filter
   - Summary aggregation (total sesi, jam, pendapatan)
