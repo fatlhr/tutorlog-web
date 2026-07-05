@@ -194,7 +194,7 @@ export default function PanduanPage() {
           <div className="mob-footer">
             <div className="links">
               <Link href="/fitur">Fitur</Link><Link href="/harga">Harga</Link><Link href="/panduan">Panduan</Link>
-              <Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/kontak">Kontak</Link>
+              <Link href="/privacy">Privasi</Link><Link href="/terms">Syarat</Link><Link href="/account">Hapus Akun</Link><Link href="/kontak">Kontak</Link>
             </div>
             <div className="bottom">
               <Link className="brand" href="/">
@@ -352,13 +352,12 @@ export default function PanduanPage() {
             <div className="link-group">
               <Link href="/fitur">Fitur</Link>
               <Link href="/harga">Harga</Link>
-              <Link href="/panduan">Panduan</Link>
-              <a href="#">Blog</a>
-            </div>
-            <div className="link-group">
-              <Link href="/privacy">Privacy Policy</Link>
-              <Link href="/terms">Terms</Link>
-              <Link href="/account">Account Deletion</Link>
+                <Link href="/panduan">Panduan</Link>
+              </div>
+              <div className="link-group">
+                <Link href="/privacy">Privasi</Link>
+                <Link href="/terms">Syarat</Link>
+                <Link href="/account">Hapus Akun</Link>
               <Link href="/kontak">Kontak</Link>
             </div>
           </div>
