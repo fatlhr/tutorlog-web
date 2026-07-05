@@ -103,6 +103,7 @@
   - Desktop: glass card flow-relative (hack marginRight dihapus), koordinat stat node diperbaiki, h1 clamp()
   - Tablet <1000px: features-head & footer stack (inline style → class site.css)
   - ScrollReveal (IntersectionObserver, once) + MenuToggle (hamburger hidup, Esc, scroll lock)
+  - Footer restructured: links on top, logo+copyright side by side, centered, responsive
   - _DoD: tsc + eslint clean; SSR: 1 tombol Masuk desktop, Play link di 2 viewport, overlay statis hilang_
 
 ---

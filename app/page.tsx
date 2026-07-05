@@ -92,17 +92,19 @@ export default function Home() {
 
           {/* FOOTER */}
           <div className="mob-footer">
-            <Link className="top" href="/">
-              <span style={{ width: 24, height: 24, borderRadius: "var(--r-sm)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Image src="/tutorlog-logo.png" alt="" width={24} height={24} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-              </span>
-              <span className="brand-sm">TutorLog</span>
-            </Link>
             <div className="links">
               <Link href="/fitur">Fitur</Link><Link href="/harga">Harga</Link><Link href="/panduan">Panduan</Link>
               <Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/kontak">Kontak</Link>
             </div>
-            <div className="copy">© 2026 · Buat tutor Indonesia dengan ♥</div>
+            <div className="bottom">
+              <Link className="brand" href="/">
+                <span style={{ width: 24, height: 24, borderRadius: "var(--r-sm)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Image src="/tutorlog-logo.png" alt="" width={24} height={24} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                </span>
+                <span className="brand-sm">TutorLog</span>
+              </Link>
+              <div className="copy">© 2026 · Buat tutor Indonesia dengan ♥</div>
+            </div>
           </div>
         </div>
 
@@ -272,27 +274,28 @@ export default function Home() {
 
           {/* FOOTER */}
           <div className="landing-footer">
-            <div className="l">
-              <span className="mk" style={{ width: 32, height: 32, borderRadius: "var(--r-sm)", background: "var(--tw-surface-soft)", border: "1px solid var(--tw-border)" }}>
-                <Image src="/tutorlog-logo.png" alt="" width={32} height={32} />
-              </span>
-              <span className="brand-sm">TutorLog</span>
-              <span>© 2026 · Buat tutor Indonesia dengan ♥</span>
-            </div>
-            <div className="nav-groups">
-              <div className="r">
+            <div className="footer-links">
+              <div className="link-group">
                 <Link href="/fitur">Fitur</Link>
                 <Link href="/harga">Harga</Link>
                 <Link href="/panduan">Panduan</Link>
                 <a href="#">Blog</a>
               </div>
-              <div className="divider" aria-hidden="true"></div>
-              <div className="r">
+              <div className="link-group">
                 <Link href="/privacy">Privacy Policy</Link>
                 <Link href="/terms">Terms</Link>
                 <Link href="/account">Account Deletion</Link>
                 <Link href="/kontak">Kontak</Link>
               </div>
+            </div>
+            <div className="footer-bottom">
+              <div className="footer-brand">
+                <span className="mk" style={{ width: 32, height: 32, borderRadius: "var(--r-sm)", background: "var(--tw-surface-soft)", border: "1px solid var(--tw-border)" }}>
+                  <Image src="/tutorlog-logo.png" alt="" width={32} height={32} />
+                </span>
+                <span className="brand-sm">TutorLog</span>
+              </div>
+              <div className="footer-copy">© 2026 · Buat tutor Indonesia dengan ♥</div>
             </div>
           </div>
       </div>

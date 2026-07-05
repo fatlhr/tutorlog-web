@@ -672,23 +672,44 @@
 .landing-footer {
   border-top: 1px solid var(--tw-border);
   padding: 32px 96px;
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
   background: var(--tw-surface);
 }
-.landing-footer .l {
-  display: flex; align-items: center; gap: 16px;
-  font-family: var(--f-body); font-size: 13px; color: var(--tw-text-3);
+.landing-footer .footer-links {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
-.landing-footer .l .brand-sm {
+.landing-footer .footer-links .link-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.landing-footer .footer-links .link-group a {
+  font-family: var(--f-body); font-weight: 700; font-size: 13px;
+  color: var(--tw-text-2); text-decoration: none;
+}
+.landing-footer .footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.landing-footer .footer-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.landing-footer .footer-brand .brand-sm {
   font-family: var(--f-title); font-weight: 700; font-size: 15px;
   color: var(--tw-primary);
 }
-.landing-footer .r {
-  display: flex; gap: 24px;
-}
-.landing-footer .r a {
-  font-family: var(--f-body); font-weight: 700; font-size: 13px;
-  color: var(--tw-text-2); text-decoration: none;
+.landing-footer .footer-copy {
+  font-family: var(--f-body); font-size: 13px; color: var(--tw-text-3);
+  white-space: nowrap;
 }
 
 /* ---------- Login ---------- */

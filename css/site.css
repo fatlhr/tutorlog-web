@@ -45,9 +45,8 @@ html, body {
   bottom: 0;
 }
 
-/* Brand di nav & footer jadi link */
-.mob-nav .brand,
-.mob-footer .top {
+/* Brand di nav jadi link */
+.mob-nav .brand {
   text-decoration: none;
   color: inherit;
 }
@@ -150,7 +149,7 @@ body.menu-open { overflow: hidden; }
 /* Padding horizontal 96/64px → clamp supaya hidup di 768–1100px */
 .hero-v2 { padding: 0 clamp(24px, 6.5vw, 96px) 80px; }
 .nav-top-dark { padding: 20px clamp(24px, 6.5vw, 96px); }
-.features-v2 { padding: 80px clamp(24px, 6.5vw, 96px) 140px; }
+.features-v2 { padding: 10px clamp(24px, 6.5vw, 96px) 0px; }
 .landing-footer { padding: 32px clamp(24px, 6.5vw, 96px); }
 .nav-top { padding: 20px clamp(20px, 4.5vw, 64px); }
 .app-shell-h .app-main { padding: 32px clamp(20px, 4.5vw, 64px) 56px; }
@@ -164,15 +163,19 @@ body.menu-open { overflow: hidden; }
 }
 
 /* ---------- Degradasi 768–1100px (extrapolasi, lihat SPEC.md) ---------- */
+/* 1100–1279 (laptop kecil / iPad landscape): kolom visual menyusut,
+   kolom teks tetap dapat ruang layak */
+@media (max-width: 1279px) {
+  .hero-v2 { grid-template-columns: 1fr 440px; gap: 32px; }
+  .hero-v2 .hero-glass-card { max-width: 300px; }
+  .hero-v2 .hero-rings { width: 360px; height: 360px; }
+}
+
 @media (max-width: 1099px) {
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .invoice-layout { grid-template-columns: 1fr; }
   .rekap-toolbar { flex-wrap: wrap; gap: 14px; }
-}
-
-@media (max-width: 999px) {
-  .hero-v2 { grid-template-columns: 1fr; }
-  .hero-v2 .hero-visual-wrap { display: none; }
+  .features-v2 { padding-top: 48px; min-height: 90svh; }
 }
 
 @media (max-width: 899px) {
@@ -241,6 +244,29 @@ html, body { overflow-x: hidden; }
 /* Headline desktop hidup di 768–1440 */
 .hero-v2 h1 { font-size: clamp(38px, 4.4vw, 62px); }
 
+/* Brand nav dark tidak pernah dapat flex dari design css (.nav-top .brand
+   tidak match .nav-top-dark) — .mk yang display:flex jadi mematahkan wordmark */
+.nav-top-dark .brand,
+.nav-top .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Tombol hero & trust item jangan pernah wrap multi-baris */
+.hero-v2 .btn-hero { white-space: nowrap; }
+.hero-v2 .trust-row span { white-space: nowrap; }
+
+/* Features section: satu layar penuh, ritme sama dengan hero 100svh —
+   tanpa ini section cuma setinggi konten (~600px) dan terasa pendek
+   dibanding hero full-screen */
+.features-v2 {
+  min-height: 90svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* Features head: dari inline style → class, bisa stack di tablet */
 .features-v2 .features-head {
   display: flex;
@@ -265,20 +291,40 @@ html, body { overflow-x: hidden; }
 }
 
 /* Footer link groups: dari inline style → class */
-.landing-footer { flex-wrap: wrap; gap: 16px 24px; }
-.landing-footer .nav-groups {
+.landing-footer {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+.landing-footer .footer-links {
+  display: flex;
   gap: 32px;
   flex-wrap: wrap;
+  justify-content: center;
 }
-.landing-footer .nav-groups .divider {
-  width: 1px;
-  height: 20px;
-  background: var(--tw-border);
+.landing-footer .footer-links .link-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.landing-footer .footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.landing-footer .footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.landing-footer .footer-copy {
+  white-space: nowrap;
 }
 
-/* Tablet 768–1000: stack head, footer rapi */
+/* Tablet 768–1000 */
 @media (max-width: 999px) {
   .features-v2 .features-head {
     flex-direction: column;
@@ -287,8 +333,18 @@ html, body { overflow-x: hidden; }
     margin-bottom: 36px;
   }
   .features-v2 .features-head .lede { max-width: none; }
-  .landing-footer { flex-direction: column; align-items: flex-start; }
-  .landing-footer .nav-groups .divider { display: none; }
+}
+
+/* Mobile <768 */
+@media (max-width: 767px) {
+  .landing-footer { gap: 16px; }
+  .landing-footer .footer-links {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .landing-footer .footer-links .link-group {
+    gap: 16px;
+  }
 }
 
 /* ---------- Reduced motion (UI_SPECS §4.3) ---------- */
