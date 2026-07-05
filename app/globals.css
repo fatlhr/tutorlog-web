@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@import "../css/tutorlog-web.css";
+@import "../css/tutorlog-web-mobile.css";
+@import "../css/site.css";
+
+@theme inline {
+  --color-background: var(--tw-bg);
+  --color-foreground: var(--tw-text);
+  --color-primary: var(--tw-primary);
+  --color-primary-dark: var(--tw-primary-dark);
+  --color-primary-soft: var(--tw-primary-soft);
+  --color-secondary: var(--tw-secondary);
+  --color-secondary-soft: var(--tw-secondary-soft);
+  --color-surface: var(--tw-surface);
+  --color-surface-soft: var(--tw-surface-soft);
+  --color-text: var(--tw-text);
+  --color-text-2: var(--tw-text-2);
+  --color-text-3: var(--tw-text-3);
+  --color-border: var(--tw-border);
+  --color-error: var(--tw-error);
+  --color-warning: var(--tw-warning);
+  --font-title: var(--f-title);
+  --font-body: var(--f-body);
+}
