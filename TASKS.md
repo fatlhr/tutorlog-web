@@ -200,7 +200,8 @@
 
 - [ ] **5.6 Paywall dialog**
   - Dialog component (hidden by default)
-  - "Export PDF" button membuka paywall (Free tier)
+  - "Export PDF" button membuka paywall (Free tier: 1x/bulan, watermark)
+  - Paywall shows: "Upgrade ke PLUS — Rp 149.000 sekali bayar" + "Bulanan Rp 19.000/bulan"
   - "Nanti saja" / Esc menutup
   - _DoD: Paywall berfungsi_
 
@@ -210,13 +211,15 @@
 
 - [ ] **6.1 Langganan UI** — `app/app/langganan/page.tsx`
   - Current plan card (Free)
-  - Plus plan card (dark, Rp 39rb, CTA)
+  - PLUS Beli Putus card (dark, Rp 149.000 sekali bayar, CTA)
+  - PLUS Bulanan card (Rp 19.000/bulan, alternatif)
   - Bank transfer info
+  - Pricing logic: Free (rekap unlimited, PDF 1x/bulan, invoice preview watermark) → PLUS Beli Putus (PDF unlimited, invoice 3 template, no watermark, custom warna)
   - _DoD: UI sesuai desain_
 
 - [ ] **6.2 Subscription state**
   - Check user plan dari Supabase
-  - Gate features: export limit (Free: 1×/bulan), invoice templates
+  - Gate features: Free (PDF export 1×/bulan, invoice preview watermark) vs PLUS (unlimited PDF, 3 invoice templates, no watermark, custom warna)
   - _DoD: Free user terbatas, Plus user unlimited_
 
 ---
