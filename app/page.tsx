@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import ScrollReveal from "@/components/ScrollReveal";
+import MenuToggle from "@/components/MenuToggle";
 
 export default function Home() {
   return (
     <>
+      <ScrollReveal />
       {/* MOBILE */}
       <div className="vp-mobile">
         <div className="mob-page tw">
@@ -14,9 +17,7 @@ export default function Home() {
                 <span className="mk"><Image src="/tutorlog-logo.png" alt="" width={32} height={32} /></span>
                 <span className="wm">TutorLog</span>
               </Link>
-              <button className="hamburger" aria-label="Buka menu" aria-expanded="false">
-                <span></span><span></span><span></span>
-              </button>
+              <MenuToggle />
             </nav>
 
             <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}>
@@ -30,88 +31,56 @@ export default function Home() {
             </div>
 
             <div className="hero-content">
-              <span className="kicker-dark"><span className="dot"></span>Companion Web</span>
-              <h1>Rekap sesi les.<br />Invoice <span className="em">rapi</span>.</h1>
-              <p className="hero-desc">TutorLog di ponsel mencatat — companion web merangkum dan menagih.</p>
+              <span className="kicker-dark"><span className="dot"></span>#1 Pendamping Tutor</span>
+              <h1>Catat sesi les.<br />Rekap &amp; invoice <span className="em">otomatis</span>.</h1>
+              <p className="hero-desc">Aplikasi mobile catat bimbel. Companion web rekap pendapatan &amp; buat invoice — semua otomatis.</p>
               <div className="cta-col">
-                <Link className="btn-hero primary" href="/login">
+                <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
+                  <span>Cek di Play Store</span>
+                </a>
+                <Link className="btn-hero ghost" href="/login">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
                   <span>Masuk dengan Magic Link</span>
                 </Link>
-                <Link className="btn-hero ghost" href="/panduan">
-                  <span>Lihat demo</span>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M5 12h14 M13 6l6 6-6 6" /></svg>
-                </Link>
               </div>
               <div className="trust-row">
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Gratis untuk mulai</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Tanpa kartu kredit</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Sinkron dengan app</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 1000+ Tutor</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg> Gratis</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Data Aman</span>
               </div>
-            </div>
-
-            <div className="stat-float" style={{ top: "58%", right: 20, animation: "fadeSlideUp 0.7s ease-out 0.5s both" }}>
-              <div className="sf-lbl">Bulan ini</div>
-              <div className="sf-val">32 sesi</div>
-            </div>
-
-            <div className="mob-glass-wrap">
-              <div className="mob-orb"></div>
-              <svg className="mob-rings" width="320" height="320" viewBox="0 0 320 320">
-                <circle cx="160" cy="160" r="100" />
-                <circle cx="160" cy="160" r="140" />
-              </svg>
-              <div className="mob-glass-card login-glass-card">
-                <div className="gc-hdr"><span className="gc-title">INV-2026/06-014</span><span className="gc-date">Juni 2026</span></div>
-                <div className="gc-rows">
-                  <div className="gc-r">
-                    <span><div className="nm">Bintang Wijaya</div><div className="meta">Matematika · 4 sesi</div></span>
-                    <span className="amt">Rp 720rb</span>
-                  </div>
-                  <div className="gc-r">
-                    <span><div className="nm">Kirana Putri</div><div className="meta">B. Inggris · 3 sesi</div></span>
-                    <span className="amt">Rp 360rb</span>
-                  </div>
-                </div>
-                <div className="gc-total"><span className="lbl">Total</span><span className="val" style={{ fontSize: 18 }}>Rp 1.08jt</span></div>
-              </div>
-            </div>
-
-            <div className="mob-fi" style={{ bottom: 60, left: 16, animation: "fadeScale 0.5s ease-out 0.7s both" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M3 3v18h18 M7 15V9 M12 15V5 M17 15v-3" /></svg>
-            </div>
-            <div className="mob-fi lav" style={{ bottom: 110, right: 20, animation: "fadeScale 0.5s ease-out 0.8s both" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M8 13h8 M8 17h5" /></svg>
             </div>
           </div>
 
           {/* FEATURES */}
           <div className="mob-features">
-            <h2>Semua yang kamu butuh.</h2>
-            <p className="sub">App mobile mencatat. Web merangkum dan menagih.</p>
+            <div data-reveal>
+              <h2>Semua yang kamu butuh.</h2>
+              <p className="sub">App mobile mencatat. Web merangkum dan menagih.</p>
+            </div>
             <div className="mob-feature-grid">
-              <div className="mob-feature-card">
+              <div className="mob-feature-card" data-reveal>
                 <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M3 3v18h18 M7 15V9 M12 15V5 M17 15v-3" /></svg></div>
                 <div>
                   <h3>Rekap Bulanan</h3>
                   <p>Filter per bulan, per murid. Total sesi, jam, dan pendapatan.</p>
                 </div>
               </div>
-              <div className="mob-feature-card">
+              <div className="mob-feature-card" data-reveal>
                 <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M8 13h8 M8 17h5" /></svg></div>
                 <div>
                   <h3>Export PDF &amp; CSV</h3>
                   <p>Sesi bulan ini jadi dokumen rapi — arsip atau lampiran pajak.</p>
                 </div>
               </div>
-              <div className="mob-feature-card">
+              <div className="mob-feature-card" data-reveal>
                 <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M9 13h6 M9 17h4" /></svg></div>
                 <div>
                   <h3>Invoice Builder</h3>
                   <p>3 template siap pakai. Kustom warna, isi rekening, export PDF.</p>
                 </div>
               </div>
-              <div className="mob-feature-card">
+              <div className="mob-feature-card" data-reveal>
                 <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1" /></svg></div>
                 <div>
                   <h3>Sinkron dengan App</h3>
@@ -137,36 +106,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* MENU OVERLAY */}
-        <div className="mob-menu" id="mobMenu" hidden>
-          <nav className="mob-nav mob-nav-dark">
-            <Link className="brand" href="/">
-              <span className="mk"><Image src="/tutorlog-logo.png" alt="" width={32} height={32} /></span>
-              <span className="wm">TutorLog</span>
-            </Link>
-            <button className="hamburger" aria-label="Tutup menu" aria-expanded="true">
-              <span></span><span></span><span></span>
-            </button>
-          </nav>
-          <div className="menu-links">
-            <Link href="/fitur">Fitur</Link>
-            <Link href="/harga">Harga</Link>
-            <Link href="/panduan">Panduan</Link>
-            <Link href="/kontak">Kontak</Link>
-          </div>
-          <div className="menu-cta">
-            <Link className="btn-hero primary" href="/login" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, height: 52, borderRadius: "var(--r-full)", background: "var(--tw-primary-soft)", color: "var(--tw-primary-dark)", fontFamily: "var(--f-body)", fontWeight: 700, fontSize: 15 }}>
-              <span>Masuk dengan Magic Link</span>
-            </Link>
-          </div>
-        </div>
       </div>
 
       {/* DESKTOP */}
       <div className="vp-desktop">
-        <div style={{ background: "#0d1f18", width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
-          <div className="web-page tw">
-          {/* HERO */}
+          {/* HERO - full width */}
           <section className="hero-v2">
             <nav className="nav-top-dark">
               <Link className="brand" href="/" style={{ textDecoration: "none" }}>
@@ -226,10 +170,10 @@ export default function Home() {
                 TutorLog di ponsel mencatat — companion web ini merangkum, menagih, dan mengarsipkan. Satu flow, dari sesi ke tagihan.
               </p>
               <div className="cta-row anim-up-d3">
-                <Link className="btn-hero primary" href="/login">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
-                  <span>Masuk dengan Magic Link</span>
-                </Link>
+                <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
+                  <span>Cek di Play Store</span>
+                </a>
                 <Link className="btn-hero ghost" href="/panduan">
                   <span>Lihat demo</span>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M5 12h14 M13 6l6 6-6 6" /></svg>
@@ -277,18 +221,18 @@ export default function Home() {
                   <span className="val">Rp 2.72jt</span>
                 </div>
               </div>
-              <div className="hero-stat-node anim-fade-d1" style={{ position: "absolute", top: "14%", right: "-10%", animation: "floatA 6s ease-in-out infinite 0.5s" }}>
+              <div className="hero-stat-node anim-fade-d1" style={{ position: "absolute", top: "16%", right: "2%", animation: "floatA 6s ease-in-out infinite 0.5s" }}>
                 <div className="sn-label">Bulan ini</div>
                 <div className="sn-val">32 sesi</div>
               </div>
-              <div className="hero-stat-node anim-fade-d2" style={{ position: "absolute", bottom: "12%", left: "-6%", animation: "floatB 7s ease-in-out infinite 1s" }}>
+              <div className="hero-stat-node anim-fade-d2" style={{ position: "absolute", bottom: "14%", left: "0%", animation: "floatB 7s ease-in-out infinite 1s" }}>
                 <div className="sn-label">4 murid</div>
                 <div className="sn-val">Rp 5.9jt</div>
               </div>
-              <div className="login-fi-dark df1" style={{ position: "absolute", top: "6%", left: "-12%" }}>
+              <div className="login-fi-dark df1" style={{ position: "absolute", top: "10%", left: "6%" }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
               </div>
-              <div className="login-fi-dark lav df3" style={{ position: "absolute", bottom: "6%", right: "-16%" }}>
+              <div className="login-fi-dark lav df3" style={{ position: "absolute", bottom: "8%", right: "10%" }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M9 13h6 M9 17h4" /></svg>
               </div>
             </div>
@@ -296,11 +240,9 @@ export default function Home() {
 
           {/* FEATURES */}
           <section className="features-v2">
-            <div className="features-head" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 40 }}>
-              <h2 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 34, letterSpacing: "-0.5px", margin: 0, maxWidth: 640 }}>
-                Semua yang kamu butuh setelah sesi berakhir.
-              </h2>
-              <div style={{ fontFamily: "var(--f-body)", fontSize: 15, color: "var(--tw-text-3)", maxWidth: 320 }}>
+            <div className="features-head">
+              <h2>Semua yang kamu butuh setelah sesi berakhir.</h2>
+              <div className="lede">
                 App mobile mencatat. Web ini merangkum, menagih, dan mengarsipkan — jadi kamu tinggal ngajar.
               </div>
             </div>
@@ -337,14 +279,14 @@ export default function Home() {
               <span className="brand-sm">TutorLog</span>
               <span>© 2026 · Buat tutor Indonesia dengan ♥</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+            <div className="nav-groups">
               <div className="r">
                 <Link href="/fitur">Fitur</Link>
                 <Link href="/harga">Harga</Link>
                 <Link href="/panduan">Panduan</Link>
                 <a href="#">Blog</a>
               </div>
-              <div style={{ width: 1, height: 20, background: "var(--tw-border)" }}></div>
+              <div className="divider" aria-hidden="true"></div>
               <div className="r">
                 <Link href="/privacy">Privacy Policy</Link>
                 <Link href="/terms">Terms</Link>
@@ -353,8 +295,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-        </div>
       </div>
     </>
   );

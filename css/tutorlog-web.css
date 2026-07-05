@@ -419,15 +419,14 @@
 /* Hero — full bleed dark */
 .hero-v2 {
   position: relative;
-  overflow: hidden;
   padding: 0 96px 80px;
-  min-height: 680px;
+  min-height: 100svh;
   background:
     radial-gradient(ellipse 60% 50% at 35% 30%, rgba(20,65,50,.9) 0%, transparent 55%),
     radial-gradient(ellipse 50% 50% at 75% 70%, rgba(30,55,80,.4) 0%, transparent 50%),
     radial-gradient(ellipse 80% 70% at 50% 50%, rgba(15,41,32,.6) 0%, transparent 55%),
     linear-gradient(160deg, #0f2920 0%, #143328 35%, #122a22 60%, #0d1f18 100%);
-  display: grid; grid-template-columns: 1fr 480px; gap: 48px;
+  display: grid; grid-template-columns: 1fr 600px; gap: 48px;
   align-items: center;
 }
 
@@ -452,7 +451,8 @@
 .nav-top-dark .brand .mk {
   background: rgba(140,246,210,.08); border: 1px solid rgba(140,246,210,.14);
 }
-.nav-top-dark .links a { color: rgba(245,239,228,.65); }
+.nav-top-dark .links { display: flex; gap: 32px; }
+.nav-top-dark .links a { color: rgba(245,239,228,.65); text-decoration: none; }
 .nav-top-dark .links a:hover { color: var(--tw-primary-soft); }
 .nav-top-dark .btn-primary { background: var(--tw-primary-soft); color: var(--tw-primary-dark); }
 
@@ -520,7 +520,9 @@
 .hero-v2 .hero-visual-wrap {
   position: relative; z-index: 10;
   padding-top: 100px;
+  padding-left: 20px; padding-right: 20px;
   display: flex; justify-content: center; align-items: center;
+  overflow: visible;
 }
 
 /* Particles for hero (reuse login classes) */
@@ -529,15 +531,15 @@
 /* Glass card — hero variant (larger than login) */
 .hero-v2 .hero-glass-card {
   position: relative; z-index: 5;
-  width: 380px;
+  width: 100%;
+  max-width: 340px;
   background: rgba(140,246,210,.06);
   border: 1px solid rgba(140,246,210,.15);
   border-radius: 24px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 28px;
+  padding: 24px;
   box-shadow: 0 30px 70px rgba(0,0,0,.3), 0 0 100px rgba(140,246,210,.06);
-  transform: rotate(-2deg);
 }
 .hero-v2 .hero-glass-card .gc-hdr,
 .hero-v2 .hero-glass-card .gc-rows,
@@ -651,9 +653,9 @@
 .feature-card {
   background: var(--tw-surface);
   border-radius: var(--r-xxl);
-  padding: 28px 24px;
-  display: flex; flex-direction: column; gap: 14px;
-  min-height: 240px;
+  padding: 32px 28px;
+  display: flex; flex-direction: column; gap: 16px;
+  min-height: 280px;
 }
 .feature-card .ic {
   width: 52px; height: 52px; border-radius: var(--r-lg);

@@ -96,6 +96,15 @@
   - Pertahankan: `design/`, `css/tutorlog-web*.css`, `css/site.css`, `assets/`, docs
   - _DoD: Tidak ada HTML static yang konflik dengan Next.js routes_
 
+- [x] **1.4 Landing polish** (goal 2026-07-05)
+  - CTA "Cek di Play Store" (mobile primary + desktop primary, link com.tutorlog.app)
+  - Dedup tombol Masuk desktop: login hanya via nav; hero = Play Store + Lihat demo
+  - Mobile: CTA kolom penuh (.cta-col), hero 100svh center, elemen invoice dihapus
+  - Desktop: glass card flow-relative (hack marginRight dihapus), koordinat stat node diperbaiki, h1 clamp()
+  - Tablet <1000px: features-head & footer stack (inline style → class site.css)
+  - ScrollReveal (IntersectionObserver, once) + MenuToggle (hamburger hidup, Esc, scroll lock)
+  - _DoD: tsc + eslint clean; SSR: 1 tombol Masuk desktop, Play link di 2 viewport, overlay statis hilang_
+
 ---
 
 ## Phase 2 — Public Pages (Fitur, Harga, Panduan, Legal)
