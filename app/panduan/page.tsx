@@ -116,6 +116,12 @@ function SvgExt({ size }: { size: number }) {
 export default function PanduanPage() {
   return (
     <>
+      <style>{`
+        .mob-ts-card { transition: all .25s ease; }
+        .mob-ts-card:hover { transform: translateY(-4px); }
+        .vp-desktop .card { transition: all .25s ease; }
+        .vp-desktop .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+      `}</style>
       {/* MOBILE */}
       <div className="vp-mobile">
         <div className="mob-page tw">

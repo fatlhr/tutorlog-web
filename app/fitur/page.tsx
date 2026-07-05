@@ -12,6 +12,12 @@ export const metadata: Metadata = {
 export default function FiturPage() {
   return (
     <>
+      <style>{`
+        .mob-fitur-showcase, .mob-fitur-hcard { transition: all .25s ease; }
+        .mob-fitur-showcase:hover, .mob-fitur-hcard:hover { transform: translateY(-4px); }
+        .vp-desktop .card { transition: all .25s ease; }
+        .vp-desktop .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+      `}</style>
       <ScrollReveal />
       {/* MOBILE */}
       <div className="vp-mobile">

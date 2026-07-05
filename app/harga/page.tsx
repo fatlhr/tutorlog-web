@@ -12,10 +12,11 @@ export default function HargaPage() {
   return (
     <>
       <style>{`
-        .mob-price-card, .vp-desktop .card { transition: all .25s ease; }
-        .mob-price-card:hover, .vp-desktop .card:hover { transform: translateY(-4px); }
+        .mob-price-card { transition: all .25s ease; }
+        .mob-price-card:hover { transform: translateY(-4px); }
         .mob-price-card--free:hover { border-color: var(--tw-primary-soft); }
-        .vp-desktop .card:hover { box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+        .harga-pricing .card { transition: all .25s ease; }
+        .harga-pricing .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
       `}</style>
       {/* MOBILE */}
       <div className="vp-mobile">
@@ -232,7 +233,7 @@ export default function HargaPage() {
 
         {/* BODY */}
         <div style={{ maxWidth: 920, margin: "0 auto", padding: "48px 32px 64px", fontFamily: "var(--f-body)", fontSize: 15, lineHeight: 1.7, color: "var(--tw-text-2)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, marginBottom: 48 }}>
+          <div className="harga-pricing" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, marginBottom: 48 }}>
             {/* Free plan */}
             <div className="card" style={{ padding: "32px 28px", display: "flex", flexDirection: "column" }}>
               <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 8 }}>Free</div>

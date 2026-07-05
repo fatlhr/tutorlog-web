@@ -55,6 +55,14 @@ const faqs = [
 export default function KontakPage() {
   return (
     <>
+      <style>{`
+        .mob-contact-card { transition: all .25s ease; }
+        .mob-contact-card:hover { transform: translateY(-4px); }
+        .mob-faq-item { transition: background .2s ease; }
+        .mob-faq-item:hover { background: var(--tw-surface-soft); }
+        .vp-desktop .card { transition: all .25s ease; }
+        .vp-desktop .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+      `}</style>
       {/* MOBILE */}
       <div className="vp-mobile">
         <div className="mob-page tw">
