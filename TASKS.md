@@ -114,7 +114,7 @@
 > `design/web-mobile-screens.jsx` (mobile) + `design/web-screens.jsx` (desktop).
 > Preview `npm run dev` setiap perubahan.
 
-- [ ] **2.1 Fitur page** — `app/fitur/page.tsx`
+- [x] **2.1 Fitur page** — `app/fitur/page.tsx`
 - [ ] **2.2 Harga page** — `app/harga/page.tsx`
 - [ ] **2.3 Panduan page** — `app/panduan/page.tsx`
 - [ ] **2.4 Privacy page** — `app/privacy/page.tsx`
