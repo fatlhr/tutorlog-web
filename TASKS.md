@@ -31,7 +31,7 @@
 | 2 | `/login` | ⬜ | ⬜ | Auth required |
 | 3 | `/login/sent` | ⬜ | ⬜ | Auth required |
 | 4 | `/fitur` | ⬜ | ⬜ | Static |
-| 5 | `/harga` | ⬜ | ⬜ | Static |
+| 5 | `/harga` | ✅ | ✅ | Static |
 | 6 | `/panduan` | ⬜ | ⬜ | Static |
 | 7 | `/privacy` | ⬜ | ⬜ | Static |
 | 8 | `/terms` | ⬜ | ⬜ | Static |
@@ -115,7 +115,7 @@
 > Preview `npm run dev` setiap perubahan.
 
 - [x] **2.1 Fitur page** — `app/fitur/page.tsx`
-- [ ] **2.2 Harga page** — `app/harga/page.tsx`
+- [x] **2.2 Harga page** — `app/harga/page.tsx`
 - [ ] **2.3 Panduan page** — `app/panduan/page.tsx`
 - [ ] **2.4 Privacy page** — `app/privacy/page.tsx`
 - [ ] **2.5 Terms page** — `app/terms/page.tsx`
