@@ -163,8 +163,8 @@ export default function Home() {
       </div>
 
       {/* DESKTOP */}
-      <div className="vp-desktop">
-        <div className="web-page tw" style={{ background: "#0d1f18" }}>
+      <div className="vp-desktop" style={{ background: "#0d1f18" }}>
+        <div className="web-page tw">
           {/* HERO */}
           <section className="hero-v2">
             <nav className="nav-top-dark">
