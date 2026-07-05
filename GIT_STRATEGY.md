@@ -18,9 +18,15 @@ main ─────────────────────────
 
 ## Aturan
 
+## ⛔ PERINGATAN: MAIN LOCKED
+
+> **DILARANG KERAS** push, merge, atau buat PR ke `main` sampai Next.js v2 siap deploy.
+> `main` = production legal web yang sedang aktif dipakai. Apapun yang masuk ke `main`
+> = langsung live ke user. Jangan ganggu.
+
 | Aturan | Detail |
 |--------|--------|
-| **`main`** | Production — legal web TutorLog. **Jangan ganggu** sampai Next.js v2 siap deploy. |
+| **⛔ `main` — LOCKED** | Production. **DILARANG** push/merge/PR. Hanya di-unlock saat v2 siap. |
 | **`develop`** | Development branch untuk Next.js migration. Semua feature branch start dari sini. |
 | **Feature branch** | `feat/<milestone>` atau `feat/<deskripsi>` — hidup max 2 hari, start dari `develop` |
 | **Fix branch** | `fix/<deskripsi>` — langsung dari `develop`, cepat merge |
@@ -28,7 +34,7 @@ main ─────────────────────────
 | **PR wajib** | Semua perubahan kode. Self-review dulu sebelum merge |
 | **Squash merge** | Semua PR di-squash ke 1 commit di `develop` |
 | **Delete branch** | Hapus setelah merge |
-| **Merge ke `main`** | Hanya saat Next.js v2 siap deploy. Buat PR `develop` → `main`. |
+| **Merge ke `main`** | **DILARANG** sampai Next.js v2 siap deploy. Akan diinformasikan kapan waktunya. |
 
 ## Commit Convention
 
@@ -71,3 +77,17 @@ git checkout develop && git pull && git branch -d feat/m2-auth
 - PR branch → Vercel preview deployment
 - `main` → **jangan auto-deploy** sampai v2 siap
 - Build gagal = merge di-block
+
+## Git Hooks
+
+Pre-push hook aktif untuk block push ke `main`:
+
+```bash
+# File: .git/hooks/pre-push
+# Otomatis block push ke main sampai v2 siap
+```
+
+Kalau hook tidak jalan (misal fresh clone), jalankan:
+```bash
+chmod +x .git/hooks/pre-push
+```
