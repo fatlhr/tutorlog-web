@@ -227,13 +227,13 @@ export default function LoginSentPage() {
             ))}
 
             {/* Tablet-only floating icons */}
-            <div className="tab-only-particle login-fi-dark" style={{ top: "20%", right: "15%" }}>
+            <div className="tab-only-particle login-fi-dark" style={{ top: "25%", right: "22%" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
             </div>
-            <div className="tab-only-particle login-fi-dark lav" style={{ bottom: "25%", left: "15%" }}>
+            <div className="tab-only-particle login-fi-dark lav" style={{ bottom: "30%", left: "22%" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
             </div>
-            <div className="tab-only-particle login-fi-dark warm" style={{ top: "50%", right: "12%" }}>
+            <div className="tab-only-particle login-fi-dark warm" style={{ top: "55%", right: "20%" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
             </div>
 
