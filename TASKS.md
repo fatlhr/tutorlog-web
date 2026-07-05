@@ -45,27 +45,27 @@
 
 ## Phase 0 — Stack Migration (Next.js)
 
-- [ ] **0.1 Init Next.js project**
+- [x] **0.1 Init Next.js project**
   - `npx create-next-app@latest . --typescript --tailwind --app --eslint`
   - Setup Tailwind v4 dengan `@theme inline` di `globals.css` (mirror `--tw-*` dari tutorlog-web.css)
   - Setup font: Courier Prime + Source Serif 4 via `next/font/google`
   - Setup `.env.local` untuk Supabase (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
   - _DoD: `npm run dev` jalan, halaman kosong render dengan font + warna benar_
 
-- [ ] **0.2 Migrate CSS foundation**
+- [x] **0.2 Migrate CSS foundation**
   - Import `css/tutorlog-web.css` + `css/tutorlog-web-mobile.css` + `css/site.css` via `@import` di `globals.css`
   - Design tokens tetap sebagai CSS custom properties `var(--tw-*)`, BUKAN convert ke Tailwind utilities
   - Tailwind hanya dipakai untuk layout utility (flex, grid, padding), bukan mengganti design CSS
   - _DoD: Landing page HTML bisa render benar di Next.js dengan semua CSS design_
 
-- [ ] **0.3 Setup Supabase client**
+- [x] **0.3 Setup Supabase client**
   - Install `@supabase/supabase-js` + `@supabase/ssr`
   - Buat `lib/supabase/server.ts` (server client untuk API routes)
   - Buat `lib/supabase/client.ts` (browser client untuk client components)
   - Buat `middleware.ts` (refresh session)
   - _DoD: Supabase client ter-setup, bisa connect ke project_
 
-- [ ] **0.4 Setup root layout & shared components**
+- [x] **0.4 Setup root layout & shared components**
   - Buat `app/layout.tsx` (root layout + fonts + metadata)
   - Buat shared components: `components/Button.tsx`, `components/Input.tsx`, `components/Card.tsx`, `components/Modal.tsx`
   - _DoD: Components bisa dipakai di halaman mana saja_
