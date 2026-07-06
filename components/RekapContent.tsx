@@ -58,12 +58,15 @@ interface RekapContentProps {
 }
 
 export default function RekapContent({ rekapData }: RekapContentProps) {
+  const isDev = process.env.NODE_ENV === "development";
   const hasRealData = rekapData !== null && rekapData.sessions.length > 0;
-  const rows = hasRealData ? rekapData!.sessions : DUMMY_ROWS;
+  const rows = useMemo(() => hasRealData ? rekapData!.sessions : (isDev ? DUMMY_ROWS : []), [hasRealData, isDev, rekapData]);
   const summary = hasRealData
     ? rekapData!.summary
-    : { totalSesi: 32, totalJam: 48.5, totalPendapatan: "Rp 5.9jt", totalMurid: 4, students: ["Bintang Wijaya", "Kirana Putri", "Aditya Rahman", "Meilani Sari"] };
-  const monthLabel = hasRealData ? rekapData!.monthLabel : "Juni 2026";
+    : (isDev
+      ? { totalSesi: 32, totalJam: 48.5, totalPendapatan: "Rp 5.9jt", totalMurid: 4, students: ["Bintang Wijaya", "Kirana Putri", "Aditya Rahman", "Meilani Sari"] }
+      : { totalSesi: 0, totalJam: 0, totalPendapatan: "Rp 0", totalMurid: 0, students: [] });
+  const monthLabel = hasRealData ? rekapData!.monthLabel : (isDev ? "Juni 2026" : "—");
 
   const studentColors = useMemo(() => {
     const map = new Map<string, string>();
@@ -160,26 +163,32 @@ export default function RekapContent({ rekapData }: RekapContentProps) {
               </div>
 
               <div className="mob-session-groups">
-                {mobileGroups.map((g, gi) => (
-                  <div key={gi} className="mob-session-group">
-                    <div className="mob-group-date">{g.date}</div>
-                    {g.items.map((r, ri) => (
-                      <div key={ri} className="mob-session-row">
-                        <div className="mob-session-avatar" style={{ background: r.color }}>
-                          <span>{r.initials}</span>
-                        </div>
-                        <div className="mob-session-info">
-                          <div className="mob-session-name">{r.m}</div>
-                          <div className="mob-session-subj">{r.s}</div>
-                        </div>
-                        <div className="mob-session-end">
-                          <div className="mob-session-amt">{r.t}</div>
-                          <div className="mob-session-hrs">{r.h.toFixed(1)} jam</div>
-                        </div>
-                      </div>
-                    ))}
+                {rows.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "32px 16px", fontFamily: "var(--f-body)", fontSize: 14, color: "var(--tw-text-3)" }}>
+                    Belum ada sesi di bulan ini.
                   </div>
-                ))}
+                ) : (
+                  mobileGroups.map((g, gi) => (
+                    <div key={gi} className="mob-session-group">
+                      <div className="mob-group-date">{g.date}</div>
+                      {g.items.map((r, ri) => (
+                        <div key={ri} className="mob-session-row">
+                          <div className="mob-session-avatar" style={{ background: r.color }}>
+                            <span>{r.initials}</span>
+                          </div>
+                          <div className="mob-session-info">
+                            <div className="mob-session-name">{r.m}</div>
+                            <div className="mob-session-subj">{r.s}</div>
+                          </div>
+                          <div className="mob-session-end">
+                            <div className="mob-session-amt">{r.t}</div>
+                            <div className="mob-session-hrs">{r.h.toFixed(1)} jam</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))
+                )}
               </div>
 
               <div style={{ textAlign: "center", padding: "14px 0", fontFamily: "var(--f-body)", fontSize: 12, color: "var(--tw-text-3)" }}>
@@ -270,7 +279,14 @@ export default function RekapContent({ rekapData }: RekapContentProps) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r, i) => (
+                {rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: "32px 24px", textAlign: "center", fontFamily: "var(--f-body)", fontSize: 14, color: "var(--tw-text-3)" }}>
+                      Belum ada sesi di bulan ini.
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((r, i) => (
                   <tr key={i}>
                     <td style={{ paddingLeft: 24 }}>{r.d}</td>
                     <td style={{ fontWeight: 700 }}>{r.m}</td>
@@ -278,7 +294,8 @@ export default function RekapContent({ rekapData }: RekapContentProps) {
                     <td className="right"><span className="mono">{r.h.toFixed(1)}</span></td>
                     <td className="right" style={{ paddingRight: 24 }}><span className="mono" style={{ color: "var(--tw-primary)" }}>{r.t}</span></td>
                   </tr>
-                ))}
+                ))
+                )}
               </tbody>
             </table>
           </div>
