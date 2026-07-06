@@ -57,6 +57,12 @@ const IcDownload = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+const IcEye = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
 const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#8A5A00", "#161D1F"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
 type Template = (typeof TEMPLATES)[number];
@@ -65,6 +71,7 @@ export default function InvoicePage() {
   const [template, setTemplate] = useState<Template>("klasik");
   const [accent, setAccent] = useState("#006C53");
   const [zoom, setZoom] = useState(75);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [invoiceNo, setInvoiceNo] = useState("INV-2026/06-014");
   const [periodStart, setPeriodStart] = useState("2026-06-01");
   const [periodEnd, setPeriodEnd] = useState("2026-06-30");
@@ -124,6 +131,28 @@ export default function InvoicePage() {
       // ignore
     }
   }, []);
+
+  const renderPreview = () => (
+    <div className="inv-preview-wrap" style={{ overflow: "auto" }}>
+      <div className="inv-preview-toolbar">
+        <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
+        <div className="zoom-ctl">
+          <button type="button" onClick={() => setZoom(Math.max(40, zoom - 10))}><IcMinus /></button>
+          <span className="z">{zoom}%</span>
+          <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
+        </div>
+      </div>
+      <div style={{ overflow: "auto", flex: 1 }}>
+        <div className="a4-stage" style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}>
+          <A4Page>
+            {template === "klasik" && <TplKlasik acc={accent} />}
+            {template === "modern" && <TplModern acc={accent} />}
+            {template === "minimal" && <TplMinimal acc={accent} />}
+          </A4Page>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -192,23 +221,11 @@ export default function InvoicePage() {
                 <div className="lbl">Periode</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
-                    <input
-                      type="date"
-                      value={periodStart}
-                      onChange={(e) => setPeriodStart(e.target.value)}
-                      className="input"
-                      style={{ width: "100%", cursor: "pointer" }}
-                    />
+                    <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ width: "100%", cursor: "pointer" }} />
                   </div>
                   <span style={{ color: "var(--tw-text-3)", fontWeight: 700 }}>—</span>
                   <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
-                    <input
-                      type="date"
-                      value={periodEnd}
-                      onChange={(e) => setPeriodEnd(e.target.value)}
-                      className="input"
-                      style={{ width: "100%", cursor: "pointer" }}
-                    />
+                    <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" style={{ width: "100%", cursor: "pointer" }} />
                   </div>
                 </div>
                 <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
@@ -216,130 +233,58 @@ export default function InvoicePage() {
 
               <div className="divide"></div>
 
-              {/* Section: Tutor */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tutor</h4>
+              {/* Section: Tutor & Murid — side by side */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tutor</h4>
 
-              <div className="field">
-                <div className="lbl">Nama Lembaga / Jasa Les (opsional)</div>
-                <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Nama bimbel atau jasa les kamu" />
-              </div>
+                  <div className="field">
+                    <div className="lbl">Nama</div>
+                    <input className="input" value={tutorName} onChange={(e) => setTutorName(e.target.value)} />
+                  </div>
 
-              <div className="field">
-                <div className="lbl">Nama Tutor</div>
-                <input className="input" value={tutorName} onChange={(e) => setTutorName(e.target.value)} />
-              </div>
+                  <div className="field">
+                    <div className="lbl">Lembaga</div>
+                    <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Opsional" />
+                  </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div className="field">
-                  <div className="lbl">Lokasi</div>
-                  <input className="input" value={tutorLocation} onChange={(e) => setTutorLocation(e.target.value)} />
+                  <div className="field">
+                    <div className="lbl">Lokasi</div>
+                    <input className="input" value={tutorLocation} onChange={(e) => setTutorLocation(e.target.value)} />
+                  </div>
+
+                  <div className="field">
+                    <div className="lbl">Kontak</div>
+                    <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
+                  </div>
                 </div>
-                <div className="field">
-                  <div className="lbl">Kontak</div>
-                  <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
-                </div>
-              </div>
 
-              <div className="divide"></div>
+                <div>
+                  <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Murid</h4>
 
-              {/* Section: Murid */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Murid</h4>
-
-              <div className="field">
-                <div className="lbl">Nama Murid</div>
-                <div className="input" style={{ justifyContent: "space-between" }}>
-                  <span>Bintang Wijaya</span>
-                  <IcChevD />
-                </div>
-              </div>
-
-              <div className="field">
-                <div className="lbl">Ditagih Kepada</div>
-                <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div className="field">
-                  <div className="lbl">Tingkat Pendidikan</div>
-                  <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA ..." />
-                  <div className="help">Opsional</div>
-                </div>
-                <div className="field">
-                  <div className="lbl">Alamat</div>
-                  <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. ..." />
-                  <div className="help">Opsional</div>
-                </div>
-              </div>
-
-              <div className="divide"></div>
-
-              {/* Section: Tema */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tema</h4>
-
-              <div className="field">
-                <div className="lbl">Template</div>
-                <div className="template-picker">
-                  {TEMPLATES.map((t) => (
-                    <div key={t} className={"opt" + (template === t ? " on" : "")} onClick={() => setTemplate(t)}>
-                      <div className="preview" style={{
-                        background: t === "klasik" ? `linear-gradient(${accent} 22%, #fff 22%)` : "#fff",
-                      }}>
-                        {t === "modern" && <div style={{ height: 3, background: accent, marginBottom: 4 }}></div>}
-                        {t === "minimal" && <div style={{ borderBottom: `1px solid ${accent}`, paddingBottom: 3, fontFamily: "var(--f-title)", fontSize: 8, fontWeight: 700 }}>INVOICE</div>}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 4 }}>
-                          <div style={{ height: 2, background: "#eee", width: "80%" }}></div>
-                          <div style={{ height: 2, background: "#eee", width: "90%" }}></div>
-                          <div style={{ height: 2, background: "#eee", width: "70%" }}></div>
-                          <div style={{ height: 2, background: "#eee", width: "85%" }}></div>
-                        </div>
-                        <div style={{ marginTop: "auto", height: 4, background: accent, width: "40%", alignSelf: "flex-end" }}></div>
-                      </div>
-                      <span className="nm">{t.charAt(0).toUpperCase() + t.slice(1)}</span>
+                  <div className="field">
+                    <div className="lbl">Nama Murid</div>
+                    <div className="input" style={{ justifyContent: "space-between" }}>
+                      <span>Bintang Wijaya</span>
+                      <IcChevD />
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="field">
+                    <div className="lbl">Ditagih Kepada</div>
+                    <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
+                  </div>
+
+                  <div className="field">
+                    <div className="lbl">Tingkat Pendidikan</div>
+                    <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Opsional" />
+                  </div>
+
+                  <div className="field">
+                    <div className="lbl">Alamat</div>
+                    <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Opsional" />
+                  </div>
                 </div>
-              </div>
-
-              <div className="field">
-                <div className="lbl">Warna Aksen</div>
-                <div className="color-picker">
-                  {COLORS.map((c) => (
-                    <span
-                      key={c}
-                      className={"sw" + (c === accent ? " on" : "")}
-                      style={{ background: c, color: c }}
-                      onClick={() => setAccent(c)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="divide"></div>
-
-              {/* Section: Pengaturan */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Pengaturan</h4>
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleSaveSettings}
-                  style={{ flex: 1 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" /></svg>
-                  <span>Simpan Pengaturan</span>
-                </button>
-                {hasSaved && (
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={handleLoadSettings}
-                    style={{ flex: 1 }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg>
-                    <span>Gunakan Tersimpan</span>
-                  </button>
-                )}
               </div>
 
               <div className="divide"></div>
@@ -366,40 +311,118 @@ export default function InvoicePage() {
                 <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
               </div>
 
-              <div style={{ marginTop: 16 }}>
-                <button type="button" className="btn btn-primary btn-lg" style={{ width: "100%" }}>
+              <div className="divide"></div>
+
+              {/* Section: Tema + Pengaturan */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tema</h4>
+
+              <div className="field">
+                <div className="lbl">Template</div>
+                <div className="template-picker">
+                  {TEMPLATES.map((t) => (
+                    <div key={t} className={"opt" + (template === t ? " on" : "")} onClick={() => setTemplate(t)}>
+                      <div className="preview" style={{ background: t === "klasik" ? `linear-gradient(${accent} 22%, #fff 22%)` : "#fff" }}>
+                        {t === "modern" && <div style={{ height: 3, background: accent, marginBottom: 4 }}></div>}
+                        {t === "minimal" && <div style={{ borderBottom: `1px solid ${accent}`, paddingBottom: 3, fontFamily: "var(--f-title)", fontSize: 8, fontWeight: 700 }}>INVOICE</div>}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 4 }}>
+                          <div style={{ height: 2, background: "#eee", width: "80%" }}></div>
+                          <div style={{ height: 2, background: "#eee", width: "90%" }}></div>
+                          <div style={{ height: 2, background: "#eee", width: "70%" }}></div>
+                          <div style={{ height: 2, background: "#eee", width: "85%" }}></div>
+                        </div>
+                        <div style={{ marginTop: "auto", height: 4, background: accent, width: "40%", alignSelf: "flex-end" }}></div>
+                      </div>
+                      <span className="nm">{t.charAt(0).toUpperCase() + t.slice(1)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="field">
+                <div className="lbl">Warna Aksen</div>
+                <div className="color-picker">
+                  {COLORS.map((c) => (
+                    <span key={c} className={"sw" + (c === accent ? " on" : "")} style={{ background: c, color: c }} onClick={() => setAccent(c)} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="divide"></div>
+
+              {/* Pengaturan */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Pengaturan</h4>
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveSettings} style={{ flex: 1 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" /></svg>
+                  <span>Simpan Pengaturan</span>
+                </button>
+                {hasSaved && (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={handleLoadSettings} style={{ flex: 1 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg>
+                    <span>Gunakan Tersimpan</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="divide"></div>
+
+              {/* Action buttons */}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button type="button" className="btn btn-secondary btn-lg" style={{ flex: 1 }} onClick={() => setPreviewOpen(true)}>
+                  <IcEye />
+                  <span>Lihat Preview</span>
+                </button>
+                <button type="button" className="btn btn-primary btn-lg" style={{ flex: 1 }}>
                   <IcLockSm />
                   <span>Export PDF</span>
                   <IcDownload size={16} />
                 </button>
-                <div className="tw-helper" style={{ textAlign: "center", marginTop: 8 }}>
-                  Fitur premium — perlu langganan aktif.
-                </div>
+              </div>
+              <div className="tw-helper" style={{ textAlign: "center", marginTop: 4 }}>
+                Fitur premium — perlu langganan aktif.
               </div>
             </div>
 
-            <div className="inv-preview-wrap" style={{ overflow: "auto" }}>
-              <div className="inv-preview-toolbar">
-                <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
-                <div className="zoom-ctl">
-                  <button type="button" onClick={() => setZoom(Math.max(40, zoom - 10))}><IcMinus /></button>
-                  <span className="z">{zoom}%</span>
-                  <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
-                </div>
-              </div>
-              <div style={{ overflow: "auto", flex: 1 }}>
-                <div className="a4-stage" style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}>
-                <A4Page>
-                  {template === "klasik" && <TplKlasik acc={accent} />}
-                  {template === "modern" && <TplModern acc={accent} />}
-                  {template === "minimal" && <TplMinimal acc={accent} />}
-                </A4Page>
-                </div>
-              </div>
+            {/* Preview panel — desktop */}
+            <div className="inv-preview-col">
+              {renderPreview()}
             </div>
           </div>
         </main>
       </div>
+
+      {/* Preview Dialog */}
+      {previewOpen && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            background: "rgba(0,0,0,.5)", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            padding: 24,
+          }}
+          onClick={() => setPreviewOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Preview Invoice"
+        >
+          <div
+            style={{
+              background: "var(--tw-bg)", borderRadius: "var(--r-xxl)",
+              maxWidth: 1000, width: "100%", maxHeight: "90vh",
+              overflow: "auto", padding: 24,
+              boxShadow: "0 24px 60px rgba(0,0,0,.18)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div className="tw-title-md">Preview Invoice</div>
+              <button type="button" onClick={() => setPreviewOpen(false)} className="btn btn-ghost btn-sm">Tutup</button>
+            </div>
+            {renderPreview()}
+          </div>
+        </div>
+      )}
     </>
   );
 }

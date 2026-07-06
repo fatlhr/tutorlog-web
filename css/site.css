@@ -186,8 +186,8 @@ body.menu-open { overflow: hidden; }
 @media (max-width: 1099px) {
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .invoice-layout { grid-template-columns: 1fr; }
-  .invoice-layout .inv-form { max-height: 55vh; }
-  .invoice-layout .inv-preview-wrap { min-height: 400px; }
+  .invoice-layout .inv-form { max-height: none; }
+  .invoice-layout .inv-preview-col { display: none; }
   .rekap-toolbar { flex-wrap: wrap; gap: 14px; }
   .features-v2 { padding-top: 48px; min-height: 90svh; }
 }
