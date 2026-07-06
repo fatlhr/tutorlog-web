@@ -163,15 +163,18 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
     });
   }, [month, year, router]);
 
+  const fileSlug = monthLabel.toLowerCase().replace(/\s+/g, "-");
+  const fileSuffix = studentFilter ? `-${studentFilter.split(" ")[0].toLowerCase()}` : "";
+
   const handleExportCSV = useCallback(() => {
     setCsvLoading(true);
     setTimeout(() => {
       const filteredRows = rows.map(({ d, m, s, h, t }) => ({ d, m, s, h, t }));
       const csv = sessionsToCSV(filteredRows);
-      downloadCSV(csv, `rekap-sesi-${monthLabel.toLowerCase().replace(/\s+/g, "-")}.csv`);
+      downloadCSV(csv, `rekap-sesi-${fileSlug}${fileSuffix}.csv`);
       setCsvLoading(false);
     }, 100);
-  }, [rows, monthLabel]);
+  }, [rows, fileSlug, fileSuffix]);
 
   const handleExportPDF = useCallback(async () => {
     setPdfLoading(true);
@@ -210,12 +213,12 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
         heightLeft -= pdf.internal.pageSize.getHeight() - margin * 2;
       }
 
-      pdf.save(`rekap-sesi-${monthLabel.toLowerCase().replace(/\s+/g, "-")}.pdf`);
+      pdf.save(`rekap-sesi-${fileSlug}${fileSuffix}.pdf`);
     } catch {
       // silently fail
     }
     setPdfLoading(false);
-  }, [monthLabel]);
+  }, [fileSlug, fileSuffix]);
 
   const clearDateFilter = useCallback(() => {
     setDateFrom("");
