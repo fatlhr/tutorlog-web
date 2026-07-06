@@ -22,10 +22,10 @@ export default function AppTopBar({ name, initials }: AppTopBarProps) {
     <header className="app-topbar">
       <div className="app-topbar-inner">
         <div className="app-topbar-left">
-          <div className="brand">
+          <Link href="/app/rekap" className="brand">
             <span className="mk"><Image src="/tutorlog-logo.png" alt="" width={34} height={34} /></span>
             <span className="wm">TutorLog</span>
-          </div>
+          </Link>
           <nav className="app-topbar-nav">
             {items.map((it) => (
               <Link
