@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import TplKlasik from "@/components/invoice/TplKlasik";
 import A4Page from "@/components/invoice/A4Page";
@@ -63,6 +63,39 @@ export default function InvoicePage() {
   const [template, setTemplate] = useState<Template>("klasik");
   const [accent, setAccent] = useState("#006C53");
   const [zoom, setZoom] = useState(75);
+  const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
+  const [hasSaved, setHasSaved] = useState(() => {
+    try {
+      return localStorage.getItem("tutorlog-invoice-settings") !== null;
+    } catch {
+      return false;
+    }
+  });
+
+  const handleSaveSettings = useCallback(() => {
+    try {
+      localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
+        accent,
+        bankAccount,
+      }));
+      setHasSaved(true);
+    } catch {
+      // localStorage not available
+    }
+  }, [accent, bankAccount]);
+
+  const handleLoadSettings = useCallback(() => {
+    try {
+      const saved = localStorage.getItem("tutorlog-invoice-settings");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.accent) setAccent(parsed.accent);
+        if (parsed.bankAccount) setBankAccount(parsed.bankAccount);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   return (
     <>
@@ -179,12 +212,35 @@ export default function InvoicePage() {
                 </div>
               </div>
 
+              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleSaveSettings}
+                  style={{ flex: 1 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" /></svg>
+                  <span>Simpan Pengaturan</span>
+                </button>
+                {hasSaved && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={handleLoadSettings}
+                    style={{ flex: 1 }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg>
+                    <span>Gunakan Tersimpan</span>
+                  </button>
+                )}
+              </div>
+
               <div className="divide"></div>
 
               <div className="field">
                 <div className="lbl">Rekening penerima</div>
                 <div className="input" style={{ justifyContent: "space-between" }}>
-                  <span>BCA · 1234 5678 9012</span>
+                  <span>{bankAccount}</span>
                   <IcChevD />
                 </div>
               </div>
