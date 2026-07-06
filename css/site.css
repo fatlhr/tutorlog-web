@@ -230,6 +230,10 @@ body.menu-open { overflow: hidden; }
   .inv-section-row { grid-template-columns: 1fr; }
 }
 
+.inv-export-top {
+  display: flex; justify-content: flex-end; margin-bottom: 12px;
+}
+
 /* Desktop: hide form action buttons (Export PDF is above preview) */
 @media (min-width: 1100px) {
   .inv-form-actions { display: none; }
