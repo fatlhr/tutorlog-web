@@ -224,7 +224,7 @@
   - Upload logo ke Supabase Storage bucket `user-assets` (opsional, fallback localStorage)
   - _DoD: Invoice bisa diisi dari data real, localStorage persistence berfungsi_
 
-- [ ] **5.5 PDF export (client-side)**
+- [x] **5.5 PDF export (client-side)**
   - Render template final dengan html2canvas → jsPDF
   - Preview selalu template Klasik (default); user pilih template di akhir sebelum export
   - Download PDF
