@@ -209,7 +209,7 @@
   - Zoom control
   - _DoD: Builder render sesuai desain, template switching berfungsi_
 
-- [ ] **5.3 Invoice templates**
+- [x] **5.3 Invoice templates**
   - Buat `components/invoice/TplKlasik.tsx` (header besar + tabel + ringkasan bawah)
   - Buat `components/invoice/TplModern.tsx` (logo kiri, info kanan, tabel striped, total badge)
   - Buat `components/invoice/TplMinimal.tsx` (monospace, clean lines)
