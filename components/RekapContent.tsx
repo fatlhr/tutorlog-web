@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { sessionsToCSV, downloadCSV, type SessionRow } from "@/lib/csv";
 import type { RekapData } from "@/lib/data/rekap";
@@ -88,7 +88,6 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
   const [pdfLoading, setPdfLoading] = useState(false);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const tableRef = useRef<HTMLTableElement>(null);
 
   const isDev = process.env.NODE_ENV === "development";
   const hasRealData = rekapData !== null && rekapData.sessions.length > 0;
@@ -119,11 +118,11 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
     return filtered;
   }, [allRows, studentFilter, dateFrom, dateTo, year]);
 
-  const summary = hasRealData
+  const summary = useMemo(() => hasRealData
     ? rekapData!.summary
     : (isDev
       ? { totalSesi: 32, totalJam: 48.5, totalPendapatan: "Rp 5.9jt", totalMurid: 4, students: ["Bintang Wijaya", "Kirana Putri", "Aditya Rahman", "Meilani Sari"] }
-      : { totalSesi: 0, totalJam: 0, totalPendapatan: "Rp 0", totalMurid: 0, students: [] });
+      : { totalSesi: 0, totalJam: 0, totalPendapatan: "Rp 0", totalMurid: 0, students: [] }), [hasRealData, isDev, rekapData]);
   const monthLabel = `${MONTHS[month - 1]} ${year}`;
 
   const studentColors = useMemo(() => {
@@ -182,21 +181,73 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
-      if (!tableRef.current) {
-        setPdfLoading(false);
-        return;
-      }
+      const title = studentFilter
+        ? `Rekap Sesi — ${studentFilter} · ${monthLabel}`
+        : `Rekap Sesi — ${monthLabel}`;
 
-      const canvas = await html2canvas(tableRef.current, {
+      const summaryRows = [
+        ["Total Sesi", String(summary.totalSesi)],
+        ["Total Jam", String(summary.totalJam)],
+        ["Total Pendapatan", summary.totalPendapatan],
+      ];
+
+      const html = `
+        <div style="font-family: 'Courier Prime', monospace; padding: 20px; background: #fff; color: #161D1F; min-width: 700px;">
+          <h1 style="font-family: 'Courier Prime', monospace; font-size: 22px; font-weight: 700; margin: 0 0 4px; color: #006C53;">${title}</h1>
+          <p style="font-family: 'Source Serif 4', serif; font-size: 12px; color: #6D7A74; margin: 0 0 16px;">Dibuat oleh TutorLog</p>
+          <div style="display: flex; gap: 24px; margin-bottom: 20px;">
+            ${summaryRows.map(([l, v]) => `
+              <div style="background: #EDF7F3; border-radius: 16px; padding: 12px 18px; flex: 1;">
+                <div style="font-family: 'Source Serif 4', serif; font-size: 11px; color: #6D7A74; margin-bottom: 2px;">${l}</div>
+                <div style="font-family: 'Courier Prime', monospace; font-size: 18px; font-weight: 700;">${v}</div>
+              </div>
+            `).join("")}
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-family: 'Source Serif 4', serif; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 2px solid #B8CBC4;">
+                <th style="text-align: left; padding: 8px 12px; font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 11px; color: #6D7A74; text-transform: uppercase;">Tanggal</th>
+                <th style="text-align: left; padding: 8px 12px; font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 11px; color: #6D7A74; text-transform: uppercase;">Siswa</th>
+                <th style="text-align: left; padding: 8px 12px; font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 11px; color: #6D7A74; text-transform: uppercase;">Sesi</th>
+                <th style="text-align: right; padding: 8px 12px; font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 11px; color: #6D7A74; text-transform: uppercase;">Durasi</th>
+                <th style="text-align: right; padding: 8px 12px; font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 11px; color: #6D7A74; text-transform: uppercase;">Tagihan</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((r) => `
+                <tr style="border-bottom: 1px solid #E8EFF1;">
+                  <td style="padding: 8px 12px;">${r.d}</td>
+                  <td style="padding: 8px 12px; font-weight: 600;">${r.m}</td>
+                  <td style="padding: 8px 12px; color: #3E4944;">${r.s}</td>
+                  <td style="padding: 8px 12px; text-align: right; font-family: 'Courier Prime', monospace;">${r.h.toFixed(1).replace(".", ",")} jam</td>
+                  <td style="padding: 8px 12px; text-align: right; font-family: 'Courier Prime', monospace; font-weight: 700; color: #006C53;">${r.t}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+          <p style="font-family: 'Source Serif 4', serif; font-size: 10px; color: #B8CBC4; text-align: right; margin-top: 16px; font-style: italic;">Generated by TutorLog</p>
+        </div>
+      `;
+
+      const container = document.createElement("div");
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.style.top = "0";
+      container.innerHTML = html;
+      document.body.appendChild(container);
+
+      const canvas = await html2canvas(container.firstChild as HTMLElement, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
       });
 
+      document.body.removeChild(container);
+
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const margin = 10;
+      const margin = 8;
       const imgWidth = pageWidth - margin * 2;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
@@ -218,7 +269,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
       // silently fail
     }
     setPdfLoading(false);
-  }, [fileSlug, fileSuffix]);
+  }, [fileSlug, fileSuffix, rows, summary, studentFilter, monthLabel]);
 
   const clearDateFilter = useCallback(() => {
     setDateFrom("");
@@ -436,7 +487,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
               <div className="tw-helper">Menampilkan {rows.length} dari {allRows.length} sesi</div>
             </div>
             <div style={{ overflowX: "auto" }}>
-              <table className="table" ref={tableRef}>
+              <table className="table">
                 <thead>
                   <tr>
                     <th style={{ paddingLeft: 24 }}>Tanggal</th>

@@ -15,9 +15,9 @@ function escapeCSV(value: string): string {
 
 export function sessionsToCSV(rows: SessionRow[]): string {
   const BOM = "\uFEFF";
-  const headers = ["Tanggal", "Murid", "Sesi", "Jam", "Tagihan"];
+  const headers = ["Tanggal", "Siswa", "Sesi", "Durasi (jam)", "Tagihan"];
   const csvRows = rows.map((r) =>
-    [r.d, r.m, r.s, r.h.toFixed(1), r.t].map(escapeCSV).join(",")
+    [r.d, r.m, r.s, r.h.toFixed(1).replace(".", ","), r.t].map(escapeCSV).join(",")
   );
   return BOM + headers.join(",") + "\n" + csvRows.join("\n");
 }
