@@ -53,7 +53,7 @@ type Template = (typeof TEMPLATES)[number];
 export default function InvoicePage() {
   const [template, setTemplate] = useState<Template>("klasik");
   const [accent, setAccent] = useState("#006C53");
-  const [zoom, setZoom] = useState(60);
+  const [zoom, setZoom] = useState(75);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showMobileDialog, setShowMobileDialog] = useState(true);
   const [periodStart, setPeriodStart] = useState("2026-06-01");
@@ -346,7 +346,7 @@ export default function InvoicePage() {
           position: "fixed", inset: 0, zIndex: 100,
           background: "rgba(0,0,0,.5)", display: "flex",
           alignItems: "center", justifyContent: "center",
-          padding: 12,
+          padding: 8,
         }}
         onClick={() => setPreviewOpen(false)}
         role="dialog"
@@ -356,7 +356,7 @@ export default function InvoicePage() {
         <div
           style={{
             background: "var(--tw-bg)", borderRadius: "var(--r-xxl)",
-            maxWidth: 480, width: "100%", maxHeight: "90vh",
+            maxWidth: 900, width: "100%", maxHeight: "90vh",
             overflow: "auto", padding: 16,
             boxShadow: "0 24px 60px rgba(0,0,0,.18)",
           }}
