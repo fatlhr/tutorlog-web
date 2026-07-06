@@ -497,8 +497,6 @@ export default function InvoicePage() {
 
       </div>
 
-      <div className="divide"></div>
-
       <div className="inv-section-row">
         <div className="inv-section-col">
           <h4 className="inv-section-title">Tutor</h4>
@@ -580,8 +578,6 @@ export default function InvoicePage() {
         </div>
       </div>
 
-      <div className="divide"></div>
-
       <div className="inv-section">
         <h4 className="inv-section-title">Pembayaran</h4>
 
@@ -598,8 +594,6 @@ export default function InvoicePage() {
         </div>
       </div>
 
-      <div className="divide"></div>
-
       <div className="inv-section">
         <h4 className="inv-section-title">Catatan</h4>
 
@@ -607,8 +601,6 @@ export default function InvoicePage() {
           <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
         </div>
       </div>
-
-      <div className="divide"></div>
 
       <div className="inv-section">
         <h4 className="inv-section-title">Tema</h4>
@@ -645,8 +637,6 @@ export default function InvoicePage() {
         </div>
       </div>
 
-      <div className="divide"></div>
-
       <div className="inv-section">
         <h4 className="inv-section-title">Pengaturan</h4>
 
@@ -665,8 +655,6 @@ export default function InvoicePage() {
           ini dan terisi otomatis saat halaman dibuka lagi.
         </div>
       </div>
-
-      <div className="divide"></div>
 
       <div className="inv-form-actions">
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setInvoiceNo(generateInvoiceNo()); setPreviewOpen(true); }}>
