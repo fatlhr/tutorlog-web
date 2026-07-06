@@ -208,6 +208,15 @@ body.menu-open { overflow: hidden; }
   .hero-v2 .hero-rings { width: 360px; height: 360px; }
 }
 
+.inv-form-actions {
+  display: flex; gap: 10px;
+}
+
+/* Desktop: hide form action buttons (Export PDF is in preview toolbar) */
+@media (min-width: 1100px) {
+  .inv-form-actions { display: none; }
+}
+
 @media (max-width: 1099px) {
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .invoice-layout { grid-template-columns: 1fr; }
