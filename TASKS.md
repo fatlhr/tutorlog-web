@@ -151,12 +151,12 @@
   - Placeholder `app/app/rekap/page.tsx` (UI penuh = Task 4.2)
   - _DoD: redirect unauth ✓ (`/app/rekap` & `/app/invoice` → 307 `/login`); `/app/rekap` accessible setelah login ✓ (verified manual 2026-07-06)_
 
-- [ ] **3.5 Logout**
+- [x] **3.5 Logout**
   - Tombol logout di AppTopBar (desktop) + hamburger menu (mobile)
   - Panggil `supabase.auth.signOut()` → redirect ke `/login`
   - _DoD: User bisa logout dari app shell, session terhapus, redirect ke login_
 
-- [ ] **3.6 Redirect after login**
+- [x] **3.6 Redirect after login**
   - User yang sudah login lalu akses `/login` → redirect ke `/app/rekap`
   - _DoD: Login page tidak bisa diakses oleh user authenticated_
 

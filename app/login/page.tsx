@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { sendMagicLink } from "./actions";
 
 export const metadata: Metadata = {
@@ -55,7 +57,11 @@ const tabParticles = [
   { x: "95%", y: "76%", s: 7, glow: true, pd: "5.5s", po: ".45", pt: "1.1s" },
 ];
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect("/app/rekap");
+
   return (
     <>
       <style>{`
