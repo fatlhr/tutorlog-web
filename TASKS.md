@@ -142,14 +142,14 @@
   - Server action `sendMagicLink` (`app/login/actions.ts`) — dipakai form login (2 viewport) + tombol "Kirim ulang link"
   - Migrasi `lib/supabase/*` ke `@supabase/ssr` (cookie-based session)
   - Email template sudah di-setup di Supabase dashboard (mobile)
-  - _DoD: Magic Link email terkirim ✓ (POST 303 → /login/sent, signInWithOtp tanpa error); callback invalid → /login?error=auth ✓_
-  - _Catatan: verifikasi klik link dari inbox butuh manual; pastikan `http://localhost:3000/auth/callback` (dan domain prod) masuk Redirect URLs allowlist di Supabase dashboard_
+  - _DoD: Magic Link email terkirim ✓; klik link dari inbox → session kebentuk, redirect `/` ✓ (verified manual 2026-07-06); callback invalid → /login?error=auth ✓_
+  - _Catatan: PKCE — link harus diklik di browser yang sama dengan pengirim request. Redirect URLs prod (`https://web.tutorlog.id/auth/callback`) masih perlu ditambah di dashboard saat deploy_
 
 - [x] **3.4 Auth middleware**
   - Buat `proxy.ts` (Next 16 rename dari `middleware.ts` — convention lama deprecated) — cek session untuk `/app/*` routes via `supabase.auth.getUser()`
   - Redirect ke `/login` jika belum auth
   - Placeholder `app/app/rekap/page.tsx` (UI penuh = Task 4.2)
-  - _DoD: redirect unauth ✓ (`/app/rekap` & `/app/invoice` → 307 `/login`); akses setelah login perlu verifikasi manual via klik magic link dari inbox_
+  - _DoD: redirect unauth ✓ (`/app/rekap` & `/app/invoice` → 307 `/login`); `/app/rekap` accessible setelah login ✓ (verified manual 2026-07-06)_
 
 ---
 
