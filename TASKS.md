@@ -230,7 +230,7 @@
   - Download PDF
   - _DoD: Download PDF invoice berfungsi, template yang dipilih user yang di-export_
 
-- [ ] **5.6 Paywall dialog**
+- [x] **5.6 Paywall dialog**
   - Dialog component (hidden by default)
   - "Export PDF" button membuka paywall (Free tier: 1x/bulan, watermark)
   - Paywall shows: "Upgrade ke PLUS — Rp 149.000 sekali bayar" + "Bulanan Rp 19.000/bulan"

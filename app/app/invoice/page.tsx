@@ -9,6 +9,7 @@ import TplKlasik, { type InvoiceData } from "@/components/invoice/TplKlasik";
 import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
+import PaywallDialog from "@/components/PaywallDialog";
 
 const MonitorIcon = () => (
   <svg width={36} height={36} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
@@ -150,6 +151,8 @@ export default function InvoicePage() {
   const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
   const [invoiceNo, setInvoiceNo] = useState(generateInvoiceNo());
   const [exporting, setExporting] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   const periodLabel = (() => {
@@ -245,7 +248,24 @@ export default function InvoicePage() {
     doFetch();
   }, [studentName, periodStart, periodEnd, supabase]);
 
+  useEffect(() => {
+    const doCheck = async () => {
+      try {
+        const { data, error } = await supabase.rpc("get_user_access_status");
+        if (!error && data) {
+          const result = data as Record<string, unknown>;
+          setIsPremium((result.pdf_export_unlimited as boolean) ?? false);
+        }
+      } catch { /* ignore */ }
+    };
+    doCheck();
+  }, [supabase]);
+
   const handleExportPDF = useCallback(async () => {
+    if (!isPremium) {
+      setPaywallOpen(true);
+      return;
+    }
     setExporting(true);
     try {
       const container = exportRef.current;
@@ -285,7 +305,7 @@ export default function InvoicePage() {
     } finally {
       setExporting(false);
     }
-  }, [invoiceNo]);
+  }, [invoiceNo, isPremium]);
 
   const handleStudentChange = (name: string) => {
     setStudentName(name);
@@ -716,6 +736,8 @@ export default function InvoicePage() {
       </div>
 
       {renderPreviewDialog()}
+
+      <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} />
 
       <div
         ref={exportRef}
