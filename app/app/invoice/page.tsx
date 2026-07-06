@@ -295,14 +295,16 @@ export default function InvoicePage() {
               <div className="inv-section">
                 <h4 className="inv-section-title">Pembayaran</h4>
 
-                <div className="field">
-                  <div className="lbl">Bank</div>
-                  <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="BCA · 1234 5678 9012" />
-                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div className="field">
+                    <div className="lbl">Bank</div>
+                    <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="BCA · 1234 5678 9012" />
+                  </div>
 
-                <div className="field">
-                  <div className="lbl">Nama Pemilik Rekening</div>
-                  <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                  <div className="field">
+                    <div className="lbl">Nama Pemilik Rekening</div>
+                    <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                  </div>
                 </div>
               </div>
 
