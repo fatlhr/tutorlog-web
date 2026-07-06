@@ -138,7 +138,6 @@ export default function InvoicePage() {
   const [tutorName, setTutorName] = useState("Rina Novianti");
   const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
   const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
-  const [logoUrl, setLogoUrl] = useState("");
   const [parentName, setParentName] = useState("Bpk. Ahmad Wijaya");
   const [studentName, setStudentName] = useState("Bintang Wijaya");
   const [studentInfo, setStudentInfo] = useState("");
@@ -331,7 +330,6 @@ export default function InvoicePage() {
       if (parsed.tutorName) setTutorName(parsed.tutorName);
       if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
       if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
-      if (parsed.logoUrl) setLogoUrl(parsed.logoUrl);
       setSaveSettings(true);
     } catch { /* ignore */ }
   }, []);
@@ -342,10 +340,10 @@ export default function InvoicePage() {
     try {
       localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
         accent, template, bankAccount, bankName, lembaga,
-        tutorName, tutorLocation, tutorContact, logoUrl,
+        tutorName, tutorLocation, tutorContact,
       }));
     } catch { /* localStorage not available */ }
-  }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact, logoUrl]);
+  }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
 
   const handleToggleSave = (checked: boolean) => {
     setSaveSettings(checked);
@@ -493,11 +491,6 @@ export default function InvoicePage() {
             <div className="lbl">Kontak</div>
             <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
           </div>
-
-          <div className="field">
-            <div className="lbl">Logo URL</div>
-            <input className="input" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
-          </div>
         </div>
 
         <div className="inv-section-col">
@@ -618,7 +611,7 @@ export default function InvoicePage() {
         </label>
 
         <div className="tw-helper" style={{ marginTop: -4 }}>
-          Yang disimpan: profil tutor (nama, lembaga, lokasi, kontak, logo), rekening
+          Yang disimpan: profil tutor (nama, lembaga, lokasi, kontak), rekening
           pembayaran, dan tema (template + warna aksen) — tersimpan di perangkat
           ini dan terisi otomatis saat halaman dibuka lagi.
         </div>
