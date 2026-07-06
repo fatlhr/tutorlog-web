@@ -173,7 +173,7 @@
   - **Catatan:** Data dummy di desain (Rina Novianti, Bintang Wijaya) mungkin bukan data real dari mobile
   - _DoD: Data real muncul, filter berfungsi_
 
-- [ ] **4.4 Export CSV**
+- [x] **4.4 Export CSV**
   - Client-side CSV generation dari Supabase data
   - Download file
   - _DoD: Export CSV berfungsi_
