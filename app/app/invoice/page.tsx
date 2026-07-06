@@ -739,7 +739,12 @@ export default function InvoicePage() {
             <div className="mob-app-shell">
               <div className="mob-app-main" style={{ padding: "68px 16px 100px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                  <Link href="/app" style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 13, color: "var(--tw-text-2)", textDecoration: "none" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5 M11 6l-6 6 6 6" /></svg>
+                    Home
+                  </Link>
                   <h1 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20, margin: 0 }}>Invoice Builder</h1>
+                  <div style={{ width: 50 }} />
                 </div>
                 {renderForm()}
               </div>
@@ -752,6 +757,10 @@ export default function InvoicePage() {
         <main className="app-main" style={{ padding: "96px 40px 40px", position: "relative" }}>
           <div className="app-header">
             <div>
+              <Link href="/app" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 12, color: "var(--tw-text-3)", textDecoration: "none", marginBottom: 4 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5 M11 6l-6 6 6 6" /></svg>
+                Home
+              </Link>
               <h1>Invoice Builder</h1>
               <div className="sub">Pilih murid & rentang tanggal — semua sesi akan otomatis dimasukkan.</div>
             </div>
