@@ -209,7 +209,7 @@
   - Zoom control
   - _DoD: Builder render sesuai desain, template switching berfungsi_
 
-- [ ] **5.3 Invoice templates**
+- [x] **5.3 Invoice templates**
   - Buat `components/invoice/TplKlasik.tsx` (header besar + tabel + ringkasan bawah)
   - Buat `components/invoice/TplModern.tsx` (logo kiri, info kanan, tabel striped, total badge)
   - Buat `components/invoice/TplMinimal.tsx` (monospace, clean lines)
@@ -217,20 +217,20 @@
   - Setiap template support field `lembaga` opsional, warna header + aksen via CSS var
   - _DoD: 3 templates render benar dengan sample data, watermark muncul di semua template_
 
-- [ ] **5.4 Invoice data wiring**
+- [x] **5.4 Invoice data wiring**
   - Load student data dari `student_locations` (hanya yang aktif, `deleted_at IS NULL`)
   - Auto-fill dari rekap session (pilih siswa + rentang tanggal → auto itemize)
   - Simpan logo URL + info rekening ke localStorage
   - Upload logo ke Supabase Storage bucket `user-assets` (opsional, fallback localStorage)
   - _DoD: Invoice bisa diisi dari data real, localStorage persistence berfungsi_
 
-- [ ] **5.5 PDF export (client-side)**
+- [x] **5.5 PDF export (client-side)**
   - Render template final dengan html2canvas → jsPDF
   - Preview selalu template Klasik (default); user pilih template di akhir sebelum export
   - Download PDF
   - _DoD: Download PDF invoice berfungsi, template yang dipilih user yang di-export_
 
-- [ ] **5.6 Paywall dialog**
+- [x] **5.6 Paywall dialog**
   - Dialog component (hidden by default)
   - "Export PDF" button membuka paywall (Free tier: 1x/bulan, watermark)
   - Paywall shows: "Upgrade ke PLUS — Rp 149.000 sekali bayar" + "Bulanan Rp 19.000/bulan"
