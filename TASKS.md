@@ -160,7 +160,7 @@
   - Auth check (`supabase.auth.getUser()`, redirect `/login`) + user avatar (initials dari user_metadata/email)
   - _DoD: App shell render dengan navigation ✓ (390 + 1440, tab bar fixed bottom, topbar brand+nav+avatar; unauth tetap 307 → /login; tsc+eslint clean)_
 
-- [ ] **4.2 Rekap UI** — `app/app/rekap/page.tsx`
+- [x] **4.2 Rekap UI** — `app/app/rekap/page.tsx`
   - Month picker, summary card, filter chips, session list
   - Desktop: tabel. Mobile: card list
   - _DoD: UI sesuai desain, data masih dummy_
