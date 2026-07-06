@@ -50,7 +50,7 @@ const IcEye = ({ size = 16 }: { size?: number }) => (
 
 const Required = () => <span style={{ color: "var(--tw-error)" }}> *</span>;
 
-const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#8A5A00", "#161D1F"];
+const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#8A5A00", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#117A65", "#B7950B", "#2C3E50"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
 type Template = (typeof TEMPLATES)[number];
 
@@ -148,13 +148,16 @@ export default function InvoicePage() {
   const [saveSettings, setSaveSettings] = useState(false);
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
-  const [invoiceNo, setInvoiceNo] = useState(generateInvoiceNo());
+  const [invoiceNo, setInvoiceNo] = useState("");
   const [exporting, setExporting] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [quotaState, setQuotaState] = useState<{ pdfExportUnlimited: boolean; pdfExportCount30d: number }>({ pdfExportUnlimited: false, pdfExportCount30d: 0 });
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
+
+  /* eslint-disable-next-line react-hooks/set-state-in-effect */
+  useEffect(() => { setInvoiceNo(generateInvoiceNo()); }, []);
 
   const periodLabel = (() => {
     const s = new Date(periodStart + "T00:00:00");
@@ -492,11 +495,6 @@ export default function InvoicePage() {
           <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
         </div>
 
-        <div className="field">
-          <div className="lbl">Nomor Invoice</div>
-          <input className="input mono" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} />
-        </div>
-
       </div>
 
       <div className="divide"></div>
@@ -543,13 +541,13 @@ export default function InvoicePage() {
           </div>
 
           <div className="field">
-            <div className="lbl">Ditagih Kepada<Required /></div>
-            <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
+            <div className="lbl">Tingkat Pendidikan</div>
+            <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA Al-Azhar" />
           </div>
 
           <div className="field">
-            <div className="lbl">Tingkat Pendidikan</div>
-            <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA Al-Azhar" />
+            <div className="lbl">Ditagih Kepada<Required /></div>
+            <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
           </div>
 
           <div className="field">
