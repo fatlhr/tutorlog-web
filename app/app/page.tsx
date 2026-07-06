@@ -67,9 +67,15 @@ export default async function HomePage() {
                       <span className="tag" style={{ display: "inline-block", background: "rgba(140,246,210,.2)", color: "#8CF6D2", padding: "4px 12px", borderRadius: 99, fontSize: 11, fontWeight: 700, marginBottom: 12 }}>Direkomendasikan</span>
                       <div className="plan-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 22, marginBottom: 8 }}>TutorLog Plus</div>
                       <div className="p-desc" style={{ fontFamily: "var(--f-body)", fontSize: 13, opacity: .8, lineHeight: 1.5, marginBottom: 16 }}>Export invoice PDF tanpa batas, 3 template, kustom warna.</div>
-                      <div className="price-row" style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 16 }}>
-                        <span className="price" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 28 }}>Rp 149rb</span>
-                        <span className="per" style={{ fontFamily: "var(--f-body)", fontSize: 13, opacity: .7 }}>sekali bayar</span>
+                      <div className="price-row" style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+                        <div style={{ flex: 1, background: "rgba(255,255,255,.08)", borderRadius: "var(--r-md)", padding: "12px 14px", textAlign: "center" }}>
+                          <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20 }}>Rp 149rb</div>
+                          <div style={{ fontFamily: "var(--f-body)", fontSize: 11, opacity: .7, marginTop: 2 }}>Sekali bayar</div>
+                        </div>
+                        <div style={{ flex: 1, background: "rgba(255,255,255,.08)", borderRadius: "var(--r-md)", padding: "12px 14px", textAlign: "center" }}>
+                          <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20 }}>Rp 19rb</div>
+                          <div style={{ fontFamily: "var(--f-body)", fontSize: 11, opacity: .7, marginTop: 2 }}>Per bulan</div>
+                        </div>
                       </div>
                       <a href="https://lynk.id/tutorlog" target="_blank" rel="noopener" className="btn btn-primary btn-sm" style={{ width: "100%", justifyContent: "center", background: "#fff", color: "var(--tw-primary)" }}>
                         Bayar via Lynk.id
@@ -149,9 +155,17 @@ export default async function HomePage() {
                   <span className="tag">Direkomendasikan</span>
                   <div className="plan-title">TutorLog Plus</div>
                   <div className="p-desc">Untuk tutor yang mengelola lebih dari 3 murid dan butuh tagihan rutin.</div>
-                  <div className="price-row">
-                    <span className="price">Rp 149rb</span>
-                    <span className="per">sekali bayar</span>
+                  <div className="price-row" style={{ display: "flex", gap: 12, flexDirection: "column" }}>
+                    <div style={{ display: "flex", gap: 12 }}>
+                      <div style={{ flex: 1, background: "rgba(255,255,255,.08)", borderRadius: "var(--r-md)", padding: "12px 14px", textAlign: "center" }}>
+                        <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20 }}>Rp 149rb</div>
+                        <div style={{ fontFamily: "var(--f-body)", fontSize: 11, opacity: .7, marginTop: 2 }}>Sekali bayar</div>
+                      </div>
+                      <div style={{ flex: 1, background: "rgba(255,255,255,.08)", borderRadius: "var(--r-md)", padding: "12px 14px", textAlign: "center" }}>
+                        <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20 }}>Rp 19rb</div>
+                        <div style={{ fontFamily: "var(--f-body)", fontSize: 11, opacity: .7, marginTop: 2 }}>Per bulan</div>
+                      </div>
+                    </div>
                   </div>
                   <ul className="p-feats">
                     <li><span className="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg></span>Export invoice PDF tanpa batas</li>
