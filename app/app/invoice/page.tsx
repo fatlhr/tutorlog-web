@@ -64,18 +64,16 @@ export default function InvoicePage() {
   const [accent, setAccent] = useState("#006C53");
   const [zoom, setZoom] = useState(75);
   const [invoiceNo, setInvoiceNo] = useState("INV-2026/06-014");
-  const [invoiceDate, setInvoiceDate] = useState("30 Juni 2026");
-  const [invoiceDue, setInvoiceDue] = useState("7 Juli 2026");
-  const [invoicePeriod, setInvoicePeriod] = useState("1 – 30 Juni 2026");
+  const [periodStart, setPeriodStart] = useState("2026-06-01");
+  const [periodEnd, setPeriodEnd] = useState("2026-06-30");
   const [lembaga, setLembaga] = useState("Rina Novianti · Bimbel Privat");
   const [tutorName, setTutorName] = useState("Rina Novianti");
-  const [tutorRole, setTutorRole] = useState("Guru Matematika & Fisika");
   const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
   const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
   const [parentName, setParentName] = useState("Bpk. Ahmad Wijaya");
-  const [parentRole, setParentRole] = useState("Orang tua Bintang Wijaya");
-  const [studentInfo, setStudentInfo] = useState("Kelas 10 – SMA Al-Azhar");
-  const [studentAddress, setStudentAddress] = useState("Jl. Kemang Raya No. 42, Jakarta Selatan");
+  const [parentRole, setParentRole] = useState("Wali murid Bintang Wijaya");
+  const [studentInfo, setStudentInfo] = useState("");
+  const [studentAddress, setStudentAddress] = useState("");
   const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
   const [bankName, setBankName] = useState("Rina Novianti");
   const [notes, setNotes] = useState("Terima kasih atas kepercayaannya. Pembayaran paling lambat 7 Juli 2026.");
@@ -87,17 +85,26 @@ export default function InvoicePage() {
     }
   });
 
+  const periodLabel = (() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const s = new Date(periodStart + "T00:00:00");
+    const e = new Date(periodEnd + "T00:00:00");
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return "1 – 30 Juni 2026";
+    const sy = s.getFullYear() === e.getFullYear() ? "" : ` ${s.getFullYear()}`;
+    return `${s.getDate()} ${months[s.getMonth()]}${sy} – ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
+  })();
+
   const handleSaveSettings = useCallback(() => {
     try {
       localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
         accent, bankAccount, bankName, lembaga,
-        tutorName, tutorRole, tutorLocation, tutorContact,
+        tutorName, tutorLocation, tutorContact,
       }));
       setHasSaved(true);
     } catch {
       // localStorage not available
     }
-  }, [accent, bankAccount, bankName, lembaga, tutorName, tutorRole, tutorLocation, tutorContact]);
+  }, [accent, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
 
   const handleLoadSettings = useCallback(() => {
     try {
@@ -109,7 +116,6 @@ export default function InvoicePage() {
         if (parsed.bankName) setBankName(parsed.bankName);
         if (parsed.lembaga) setLembaga(parsed.lembaga);
         if (parsed.tutorName) setTutorName(parsed.tutorName);
-        if (parsed.tutorRole) setTutorRole(parsed.tutorRole);
         if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
         if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
       }
@@ -171,29 +177,38 @@ export default function InvoicePage() {
           </div>
 
           <div className="invoice-layout">
-            <div className="inv-form">
+            <div className="inv-form" style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)", paddingRight: 8 }}>
               <h3>Data Invoice</h3>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div className="field">
-                  <div className="lbl">Nomor Invoice</div>
-                  <input className="input" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} style={{ fontFamily: "var(--f-title)", fontWeight: 700 }} />
-                </div>
-                <div className="field">
-                  <div className="lbl">Tanggal</div>
-                  <input className="input" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} />
-                </div>
+              <div className="field">
+                <div className="lbl">Nomor Invoice</div>
+                <input className="input" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} style={{ fontFamily: "var(--f-title)", fontWeight: 700 }} />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div className="field">
-                  <div className="lbl">Jatuh Tempo</div>
-                  <input className="input" value={invoiceDue} onChange={(e) => setInvoiceDue(e.target.value)} />
+              <div className="field">
+                <div className="lbl">Periode</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
+                    <input
+                      type="date"
+                      value={periodStart}
+                      onChange={(e) => setPeriodStart(e.target.value)}
+                      className="input"
+                      style={{ width: "100%", cursor: "pointer" }}
+                    />
+                  </div>
+                  <span style={{ color: "var(--tw-text-3)", fontWeight: 700 }}>—</span>
+                  <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
+                    <input
+                      type="date"
+                      value={periodEnd}
+                      onChange={(e) => setPeriodEnd(e.target.value)}
+                      className="input"
+                      style={{ width: "100%", cursor: "pointer" }}
+                    />
+                  </div>
                 </div>
-                <div className="field">
-                  <div className="lbl">Periode</div>
-                  <input className="input" value={invoicePeriod} onChange={(e) => setInvoicePeriod(e.target.value)} />
-                </div>
+                <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
               </div>
 
               <div className="divide"></div>
@@ -206,32 +221,14 @@ export default function InvoicePage() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div className="field">
-                  <div className="lbl">Mulai</div>
-                  <div className="input">01 Jun 2026</div>
-                </div>
-                <div className="field">
-                  <div className="lbl">Sampai</div>
-                  <div className="input">30 Jun 2026</div>
-                </div>
-              </div>
-
-              <div className="divide"></div>
-
               <div className="field">
                 <div className="lbl">Nama Lembaga / Jasa Les (opsional)</div>
-                <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
+                <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Nama bimbel atau jasa les kamu" />
               </div>
 
               <div className="field">
                 <div className="lbl">Nama Tutor</div>
                 <input className="input" value={tutorName} onChange={(e) => setTutorName(e.target.value)} />
-              </div>
-
-              <div className="field">
-                <div className="lbl">Role / Bidang</div>
-                <input className="input" value={tutorRole} onChange={(e) => setTutorRole(e.target.value)} />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -254,17 +251,17 @@ export default function InvoicePage() {
 
               <div className="field">
                 <div className="lbl">Hubungan</div>
-                <input className="input" value={parentRole} onChange={(e) => setParentRole(e.target.value)} />
+                <input className="input" value={parentRole} onChange={(e) => setParentRole(e.target.value)} placeholder="Wali murid ..." />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div className="field">
-                  <div className="lbl">Info Murid</div>
-                  <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} />
+                  <div className="lbl">Tingkat Pendidikan (opsional)</div>
+                  <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA ..." />
                 </div>
                 <div className="field">
-                  <div className="lbl">Alamat</div>
-                  <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} />
+                  <div className="lbl">Alamat (opsional)</div>
+                  <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. ..." />
                 </div>
               </div>
 
@@ -335,7 +332,7 @@ export default function InvoicePage() {
 
               <div className="field">
                 <div className="lbl">Bank</div>
-                <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} />
+                <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="BCA · 1234 5678 9012" />
               </div>
 
               <div className="field">
@@ -348,7 +345,7 @@ export default function InvoicePage() {
                 <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
               </div>
 
-              <div style={{ marginTop: "auto" }}>
+              <div style={{ marginTop: 16 }}>
                 <button type="button" className="btn btn-primary btn-lg" style={{ width: "100%" }}>
                   <IcLockSm />
                   <span>Export PDF</span>
