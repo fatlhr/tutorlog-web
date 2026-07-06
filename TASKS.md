@@ -251,30 +251,30 @@
   - Hapus "← Home" link di halaman invoice mobile (redundan)
   - _DoD: Branding tetap terlihat saat scroll di desktop & mobile_
 
-- [ ] **6.1 Home page** — `app/app/page.tsx`
+- [x] **6.1 Home page** — `app/app/page.tsx`
   - Section 1: Menu cards — 2 card navigasi (Rekap Sesi + Buat Invoice), klik → halaman masing-masing
   - Section 2: Langganan — tampil hanya jika user Free (full konten: plan card, PLUS, bank, cara aktivasi)
   - Section 3: CTA Download — "Download TutorLog di Play Store" (selalu tampil, link Play Store)
   - Dual viewport (mobile + desktop)
   - _DoD: Home render dengan 3 section, conditional langganan, CTA download_
 
-- [ ] **6.2 Remove langganan tab**
+- [x] **6.2 Remove langganan tab**
   - Hapus tab "Langganan" dari `TabBar.tsx` (mobile: Rekap | Invoice | Lainnya)
   - Hapus nav "Langganan" dari `AppTopBar.tsx` (desktop: Rekap Sesi | Invoice Builder)
   - Hapus `app/app/langganan/page.tsx`
   - _DoD: Tab bar 3 item, topbar 2 nav item, route /app/langganan hilang_
 
-- [ ] **6.3 Update redirects**
+- [x] **6.3 Update redirects**
   - Login callback (`app/auth/callback/route.ts`) redirect → `/app`
   - Login page (`app/login/page.tsx`) redirect → `/app`
   - _DoD: Setelah login user masuk ke home dashboard_
 
-- [ ] **6.4 Subscription state wiring**
+- [x] **6.4 Subscription state wiring**
   - Check user plan dari Supabase (`get_user_access_status` RPC)
   - Gate features: Free (PDF 1×/bulan, invoice preview watermark, tampil langganan di home) vs PLUS (unlimited PDF, 3 template, no watermark, home tanpa langganan section)
   - _DoD: Free user lihat langganan di home, Plus user tidak_
 
-- [ ] **6.5 Langganan content in home**
+- [x] **6.5 Langganan content in home**
   - Current plan card (Free)
   - PLUS card (dark, Rp 149.000 sekali bayar / Rp 19.000/bulan)
   - Bank transfer info
