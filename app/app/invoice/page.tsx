@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import TplKlasik from "@/components/invoice/TplKlasik";
 import TplModern from "@/components/invoice/TplModern";
@@ -55,6 +55,29 @@ export default function InvoicePage() {
   const [accent, setAccent] = useState("#006C53");
   const [zoom, setZoom] = useState(75);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [dialogZoom, setDialogZoom] = useState(75);
+  const dialogStageRef = useRef<HTMLDivElement>(null);
+
+  // Saat dialog dibuka (dan saat LEBAR container berubah), fit lebar kertas.
+  // Refit hanya pada perubahan lebar — perubahan tinggi terjadi tiap kali user
+  // zoom manual (konten membesar), dan tidak boleh me-reset zoom-nya.
+  useLayoutEffect(() => {
+    if (!previewOpen) return;
+    const el = dialogStageRef.current;
+    if (!el) return;
+    let lastW = 0;
+    const fit = () => {
+      const w = el.clientWidth;
+      if (w > 0 && Math.abs(w - lastW) > 8) {
+        lastW = w;
+        setDialogZoom(Math.max(40, Math.min(200, Math.floor(((w - 16) / 594) * 100))));
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [previewOpen]);
   const [showMobileDialog, setShowMobileDialog] = useState(true);
   const [periodStart, setPeriodStart] = useState("2026-06-01");
   const [periodEnd, setPeriodEnd] = useState("2026-06-30");
@@ -69,26 +92,7 @@ export default function InvoicePage() {
   const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
   const [bankName, setBankName] = useState("Rina Novianti");
   const [notes, setNotes] = useState("Terima kasih atas kepercayaannya. Pembayaran paling lambat 7 Juli 2026.");
-  const [hasSaved, setHasSaved] = useState(() => {
-    try {
-      return localStorage.getItem("tutorlog-invoice-settings") !== null;
-    } catch {
-      return false;
-    }
-  });
-
-  const invoiceNo = useMemo(() => {
-    const d = new Date(periodStart + "T00:00:00");
-    if (isNaN(d.getTime())) return "INV-20260601-01-BW";
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const parts = studentName.split(/\s+/).filter(Boolean);
-    const initials = parts.length >= 2
-      ? (parts[0][0] + parts[1][0]).toUpperCase()
-      : studentName.slice(0, 2).toUpperCase();
-    return `INV-${y}${m}${dd}-01-${initials}`;
-  }, [periodStart, studentName]);
+  const [saveSettings, setSaveSettings] = useState(false);
 
   const periodLabel = (() => {
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -99,53 +103,76 @@ export default function InvoicePage() {
     return `${s.getDate()} ${months[s.getMonth()]}${sy} – ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
   })();
 
-  const handleSaveSettings = useCallback(() => {
-    try {
-      localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
-        accent, bankAccount, bankName, lembaga,
-        tutorName, tutorLocation, tutorContact,
-      }));
-      setHasSaved(true);
-    } catch { /* localStorage not available */ }
-  }, [accent, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
-
-  const handleLoadSettings = useCallback(() => {
+  // Saat halaman dibuka: kalau ada pengaturan tersimpan, terapkan + nyalakan ceklis
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("tutorlog-invoice-settings");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.accent) setAccent(parsed.accent);
-        if (parsed.bankAccount) setBankAccount(parsed.bankAccount);
-        if (parsed.bankName) setBankName(parsed.bankName);
-        if (parsed.lembaga) setLembaga(parsed.lembaga);
-        if (parsed.tutorName) setTutorName(parsed.tutorName);
-        if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
-        if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
-      }
+      if (!saved) return;
+      const parsed = JSON.parse(saved);
+      if (parsed.accent) setAccent(parsed.accent);
+      if (TEMPLATES.includes(parsed.template)) setTemplate(parsed.template);
+      if (parsed.bankAccount) setBankAccount(parsed.bankAccount);
+      if (parsed.bankName) setBankName(parsed.bankName);
+      if (parsed.lembaga) setLembaga(parsed.lembaga);
+      if (parsed.tutorName) setTutorName(parsed.tutorName);
+      if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
+      if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
+      setSaveSettings(true);
     } catch { /* ignore */ }
   }, []);
 
-  const renderPreview = () => (
-    <div className="inv-preview-wrap" style={{ overflow: "auto" }}>
-      <div className="inv-preview-toolbar">
-        <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
-        <div className="zoom-ctl">
-          <button type="button" onClick={() => setZoom(Math.max(40, zoom - 10))}><IcMinus /></button>
-          <span className="z">{zoom}%</span>
-          <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
+  // Selama ceklis aktif, simpan otomatis tiap ada perubahan
+  useEffect(() => {
+    if (!saveSettings) return;
+    try {
+      localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
+        accent, template, bankAccount, bankName, lembaga,
+        tutorName, tutorLocation, tutorContact,
+      }));
+    } catch { /* localStorage not available */ }
+  }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
+
+  const handleToggleSave = (checked: boolean) => {
+    setSaveSettings(checked);
+    if (!checked) {
+      try { localStorage.removeItem("tutorlog-invoice-settings"); } catch { /* ignore */ }
+    }
+  };
+
+  const renderPreview = (dialog = false) => {
+    const z = dialog ? dialogZoom : zoom;
+    const setZ = dialog ? setDialogZoom : setZoom;
+    return (
+      <div
+        className={"inv-preview-wrap" + (dialog ? " inv-preview-dialog" : "")}
+        style={{ overflow: "auto" }}
+        onClick={dialog ? (e) => e.stopPropagation() : undefined}
+      >
+        {dialog && (
+          <div className="inv-dialog-close">
+            <button type="button" onClick={() => setPreviewOpen(false)} className="btn btn-ghost btn-sm">Tutup</button>
+          </div>
+        )}
+        <div className="inv-preview-toolbar">
+          <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
+          <div className="zoom-ctl">
+            <button type="button" onClick={() => setZ((v) => Math.max(40, v - 10))}><IcMinus /></button>
+            <span className="z">{z}%</span>
+            <button type="button" onClick={() => setZ((v) => Math.min(200, v + 10))}><IcPlus /></button>
+          </div>
+        </div>
+        <div style={{ overflow: "auto", flex: 1 }} className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
+          <div className="a4-stage" style={{ zoom: z / 100 }}>
+            <A4Page>
+              {template === "klasik" && <TplKlasik acc={accent} />}
+              {template === "modern" && <TplModern acc={accent} />}
+              {template === "minimal" && <TplMinimal acc={accent} />}
+            </A4Page>
+          </div>
         </div>
       </div>
-      <div style={{ overflow: "auto", flex: 1 }} className="a4-preview">
-        <div className="a4-stage" style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}>
-          <A4Page>
-            {template === "klasik" && <TplKlasik acc={accent} />}
-            {template === "modern" && <TplModern acc={accent} />}
-            {template === "minimal" && <TplMinimal acc={accent} />}
-          </A4Page>
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderForm = () => (
     <div className="inv-form" style={{ overflowY: "auto", paddingRight: 8 }}>
@@ -164,13 +191,6 @@ export default function InvoicePage() {
           <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
         </div>
 
-        <div className="field inv-no-desktop">
-          <div className="lbl">Nomor Invoice</div>
-          <div className="input" style={{ fontFamily: "var(--f-title)", fontWeight: 700, color: "var(--tw-text-3)" }}>
-            {invoiceNo}
-          </div>
-          <div className="help">Dibuat otomatis</div>
-        </div>
       </div>
 
       <div className="divide"></div>
@@ -305,17 +325,19 @@ export default function InvoicePage() {
       <div className="inv-section">
         <h4 className="inv-section-title">Pengaturan</h4>
 
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveSettings} style={{ flex: 1 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" /></svg>
-            <span>Simpan Pengaturan</span>
-          </button>
-          {hasSaved && (
-            <button type="button" className="btn btn-ghost btn-sm" onClick={handleLoadSettings} style={{ flex: 1 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg>
-              <span>Gunakan Tersimpan</span>
-            </button>
-          )}
+        <label className="inv-save-check">
+          <input
+            type="checkbox"
+            checked={saveSettings}
+            onChange={(e) => handleToggleSave(e.target.checked)}
+          />
+          <span>Simpan pengaturan untuk invoice berikutnya</span>
+        </label>
+
+        <div className="tw-helper" style={{ marginTop: -4 }}>
+          Yang disimpan: profil tutor (nama, lembaga, lokasi, kontak), rekening
+          pembayaran, dan tema (template + warna aksen) — tersimpan di perangkat
+          ini dan terisi otomatis saat halaman dibuka lagi.
         </div>
       </div>
 
@@ -323,17 +345,17 @@ export default function InvoicePage() {
 
       {/* Action buttons */}
       <div className="inv-form-actions">
-        <button type="button" className="btn btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => setPreviewOpen(true)}>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPreviewOpen(true)}>
           <IcEye />
           <span>Lihat Preview</span>
         </button>
-        <button type="button" className="btn btn-primary btn-sm" style={{ flex: 1 }}>
+        <button type="button" className="btn btn-primary btn-sm">
           <IcLockSm />
           <span>Export PDF</span>
           <IcDownload size={16} />
         </button>
       </div>
-      <div className="tw-helper" style={{ textAlign: "center", marginTop: 4 }}>
+      <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
         Fitur premium — perlu langganan aktif.
       </div>
     </div>
@@ -353,21 +375,7 @@ export default function InvoicePage() {
         aria-modal="true"
         aria-label="Preview Invoice"
       >
-        <div
-          style={{
-            background: "var(--tw-bg)", borderRadius: "var(--r-xxl)",
-            maxWidth: 900, width: "100%", maxHeight: "90vh",
-            overflow: "auto", padding: 16,
-            boxShadow: "0 24px 60px rgba(0,0,0,.18)",
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <div className="tw-title-md">Preview Invoice</div>
-            <button type="button" onClick={() => setPreviewOpen(false)} className="btn btn-ghost btn-sm">Tutup</button>
-          </div>
-          {renderPreview()}
-        </div>
+        {renderPreview(true)}
       </div>
     )
   );

@@ -192,6 +192,26 @@ body.menu-open { overflow: hidden; }
   aspect-ratio: auto;
 }
 
+/* Zoom manual > fit: kertas lebih lebar dari container — "safe" supaya
+   tepi kiri tetap terjangkau saat scroll horizontal. flex-shrink 0 supaya
+   kertas tidak dipampatkan balik ke lebar container (zoom jadi tak terlihat). */
+.a4-stage { justify-content: safe center; }
+.a4-stage .a4 { flex-shrink: 0; }
+
+/* Preview dialog: satu card (tanpa nested chrome), kertas dimaksimalkan */
+.inv-preview-dialog {
+  width: min(1040px, 100%);
+  max-height: 96vh;
+  min-height: 0;
+  padding: 12px 12px 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .18);
+}
+.inv-preview-dialog .a4-preview { min-height: 0; }
+.inv-dialog-close {
+  display: flex; justify-content: flex-end;
+  margin-bottom: -6px; /* rapat ke toolbar di bawahnya */
+}
+
 /* Helper: grid 2 kolom konten (pakai class ini, JANGAN inline style,
    supaya bisa collapse — dipakai halaman legal/harga/kontak/fitur) */
 .grid-2 {
@@ -208,17 +228,34 @@ body.menu-open { overflow: hidden; }
   .hero-v2 .hero-rings { width: 360px; height: 360px; }
 }
 
-.inv-form-actions {
-  display: flex; gap: 10px;
+/* Konteks sempit (mobile <768 & kolom form desktop ≥1100):
+   stack vertikal full-width, Export PDF jadi hero CTA ukuran penuh */
+.inv-form-actions { display: flex; flex-direction: column; gap: 10px; }
+.inv-form-actions .btn { width: 100%; white-space: nowrap; }
+.inv-form-actions .btn-primary { height: 48px; font-size: 15px; }
+.inv-premium-note { text-align: center; }
+
+/* Ceklis simpan pengaturan */
+.inv-save-check {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--f-body); font-size: 14px; font-weight: 600;
+  color: var(--tw-text); cursor: pointer;
+}
+.inv-save-check input {
+  width: 18px; height: 18px; margin: 0;
+  accent-color: var(--tw-primary); cursor: pointer; flex-shrink: 0;
+}
+
+/* Tablet (container lebar): kembali sebaris, lebar natural, rata kanan */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .inv-form-actions { flex-direction: row; justify-content: flex-end; }
+  .inv-form-actions .btn { width: auto; min-width: 180px; }
+  .inv-form-actions .btn-primary { height: 40px; font-size: 13px; }
+  .inv-premium-note { text-align: right; }
 }
 
 /* Mobile: stack Tutor/Murid vertically */
 .vp-mobile .inv-section-row { grid-template-columns: 1fr; }
-
-/* Mobile: hide Nomor Invoice */
-@media (max-width: 767px) {
-  .inv-no-desktop { display: none; }
-}
 
 /* Desktop: hide form action buttons (Export PDF is in preview toolbar) */
 @media (min-width: 1100px) {
