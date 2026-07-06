@@ -185,6 +185,10 @@ body.menu-open { overflow: hidden; }
   display: flex; flex-direction: column; gap: 12px;
 }
 
+.inv-section-divide {
+  display: block;
+}
+
 /* A4 preview: allow content to grow beyond page height */
 .a4-preview .a4 {
   overflow: visible;
@@ -265,6 +269,7 @@ body.menu-open { overflow: hidden; }
 /* Mobile: stack Tutor/Murid vertically, compact buttons */
 @media (max-width: 767px) {
   .inv-section-row { grid-template-columns: 1fr; }
+  .inv-section-divide { display: block; }
 }
 
 .inv-export-top {
@@ -287,6 +292,7 @@ body.menu-open { overflow: hidden; }
   .invoice-layout .inv-form { max-height: none; }
   .invoice-layout .inv-preview-col { display: none; }
   .inv-section-row { grid-template-columns: 1fr 1fr; }
+  .inv-section-divide { display: none; }
   .rekap-toolbar { flex-wrap: wrap; gap: 14px; }
   .features-v2 { padding-top: 48px; min-height: 90svh; }
 }

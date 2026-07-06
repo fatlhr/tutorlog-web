@@ -524,6 +524,8 @@ export default function InvoicePage() {
           </div>
         </div>
 
+        <div className="divide inv-section-divide"></div>
+
         <div className="inv-section-col">
           <h4 className="inv-section-title">Murid</h4>
 

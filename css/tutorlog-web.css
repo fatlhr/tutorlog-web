@@ -1150,7 +1150,7 @@ input.input {
 }
 .inv-form .divide {
   height: 1px; background: var(--tw-divider);
-  margin: 4px -4px;
+  margin: 8px 0;
 }
 .template-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .template-picker .opt {
