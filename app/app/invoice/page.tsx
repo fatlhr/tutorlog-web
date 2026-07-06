@@ -3,6 +3,8 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import TplKlasik from "@/components/invoice/TplKlasik";
+import TplModern from "@/components/invoice/TplModern";
+import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
 
 const MonitorIcon = () => (
@@ -357,7 +359,7 @@ export default function InvoicePage() {
               </div>
             </div>
 
-            <div className="inv-preview-wrap">
+            <div className="inv-preview-wrap" style={{ overflow: "auto" }}>
               <div className="inv-preview-toolbar">
                 <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
                 <div className="zoom-ctl">
@@ -366,10 +368,14 @@ export default function InvoicePage() {
                   <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
                 </div>
               </div>
-              <div className="a4-stage" style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}>
+              <div style={{ overflow: "auto", flex: 1 }}>
+                <div className="a4-stage" style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}>
                 <A4Page>
-                  <TplKlasik acc={accent} />
+                  {template === "klasik" && <TplKlasik acc={accent} />}
+                  {template === "modern" && <TplModern acc={accent} />}
+                  {template === "minimal" && <TplMinimal acc={accent} />}
                 </A4Page>
+                </div>
               </div>
             </div>
           </div>
