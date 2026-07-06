@@ -128,14 +128,7 @@ export default function InvoicePage() {
   const renderPreview = () => (
     <div className="inv-preview-wrap" style={{ overflow: "auto" }}>
       <div className="inv-preview-toolbar">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
-          <button type="button" className="btn btn-primary btn-sm">
-            <IcLockSm />
-            <span>Export PDF</span>
-            <IcDownload size={16} />
-          </button>
-        </div>
+        <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
         <div className="zoom-ctl">
           <button type="button" onClick={() => setZoom(Math.max(40, zoom - 10))}><IcMinus /></button>
           <span className="z">{zoom}%</span>
@@ -439,7 +432,14 @@ export default function InvoicePage() {
             </div>
           </div>
 
-          <div className="invoice-layout">
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+              <button type="button" className="btn btn-primary btn-sm">
+                <IcLockSm />
+                <span>Export PDF</span>
+                <IcDownload size={16} />
+              </button>
+            </div>
+            <div className="invoice-layout">
             {renderForm()}
             <div className="inv-preview-col">
               {renderPreview()}
