@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export interface SessionItem {
   id: string;
   d: string;
+  rawDate: string;
   m: string;
   s: string;
   h: number;
@@ -130,6 +131,7 @@ export async function fetchRekapData(
     return {
       id: row.id as string,
       d: formatDate(clockIn),
+      rawDate: clockIn,
       m: studentName,
       s: subject || "—",
       h: hours,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { sessionsToCSV, downloadCSV, type SessionRow } from "@/lib/csv";
 import type { RekapData } from "@/lib/data/rekap";
@@ -23,7 +23,6 @@ const IcSpinner = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-// Fallback dummy data (matches design exactly — dev only)
 const DUMMY_ROWS: SessionRow[] = [
   { d: "03 Jun 2026", m: "Bintang Wijaya", s: "Matematika · Trigonometri", h: 1.5, t: "Rp 180.000" },
   { d: "05 Jun 2026", m: "Kirana Putri", s: "Bahasa Inggris · Speaking", h: 1.0, t: "Rp 120.000" },
@@ -64,6 +63,17 @@ function shortDate(d: string): string {
   return d;
 }
 
+function dateFromDayMonth(dayMonth: string, year: number): Date {
+  const parts = dayMonth.split(" ");
+  const day = parseInt(parts[0], 10);
+  const monthMap: Record<string, number> = {
+    Jan: 0, Feb: 1, Mar: 2, Apr: 3, Mei: 4, Jun: 5,
+    Jul: 6, Agu: 7, Sep: 8, Okt: 9, Nov: 10, Des: 11,
+  };
+  const monthIdx = monthMap[parts[1]] ?? 0;
+  return new Date(year, monthIdx, day);
+}
+
 interface RekapContentProps {
   rekapData: RekapData | null;
   year: number;
@@ -75,15 +85,39 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
   const [isPending, startTransition] = useTransition();
   const [studentFilter, setStudentFilter] = useState<string | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const tableRef = useRef<HTMLTableElement>(null);
 
   const isDev = process.env.NODE_ENV === "development";
   const hasRealData = rekapData !== null && rekapData.sessions.length > 0;
 
   const allRows = useMemo(() => hasRealData ? rekapData!.sessions : (isDev ? DUMMY_ROWS : []), [hasRealData, isDev, rekapData]);
+
   const rows = useMemo(() => {
-    if (!studentFilter) return allRows;
-    return allRows.filter((r) => r.m === studentFilter);
-  }, [allRows, studentFilter]);
+    let filtered = allRows;
+    if (studentFilter) {
+      filtered = filtered.filter((r) => r.m === studentFilter);
+    }
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      from.setHours(0, 0, 0, 0);
+      filtered = filtered.filter((r) => {
+        const d = dateFromDayMonth(r.d, year);
+        return d >= from;
+      });
+    }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((r) => {
+        const d = dateFromDayMonth(r.d, year);
+        return d <= to;
+      });
+    }
+    return filtered;
+  }, [allRows, studentFilter, dateFrom, dateTo, year]);
 
   const summary = hasRealData
     ? rekapData!.summary
@@ -131,13 +165,62 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
 
   const handleExportCSV = useCallback(() => {
     setCsvLoading(true);
-    // Small delay so the loading state is visible even for fast operations
     setTimeout(() => {
-      const csv = sessionsToCSV(rows);
+      const filteredRows = rows.map(({ d, m, s, h, t }) => ({ d, m, s, h, t }));
+      const csv = sessionsToCSV(filteredRows);
       downloadCSV(csv, `rekap-sesi-${monthLabel.toLowerCase().replace(/\s+/g, "-")}.csv`);
       setCsvLoading(false);
     }, 100);
   }, [rows, monthLabel]);
+
+  const handleExportPDF = useCallback(async () => {
+    setPdfLoading(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      if (!tableRef.current) {
+        setPdfLoading(false);
+        return;
+      }
+
+      const canvas = await html2canvas(tableRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 10;
+      const imgWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight() - margin * 2;
+
+      while (heightLeft > 0) {
+        position = margin - (imgHeight - heightLeft);
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+        heightLeft -= pdf.internal.pageSize.getHeight() - margin * 2;
+      }
+
+      pdf.save(`rekap-sesi-${monthLabel.toLowerCase().replace(/\s+/g, "-")}.pdf`);
+    } catch {
+      // silently fail
+    }
+    setPdfLoading(false);
+  }, [monthLabel]);
+
+  const clearDateFilter = useCallback(() => {
+    setDateFrom("");
+    setDateTo("");
+  }, []);
 
   return (
     <>
@@ -189,10 +272,32 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
                   {csvLoading ? <IcSpinner size={14} /> : <IcDownload size={14} />}
                   <span>{csvLoading ? "..." : "CSV"}</span>
                 </button>
-                <button type="button" className="mob-export-btn">
-                  <IcFile size={14} /><span>PDF</span>
+                <button type="button" className="mob-export-btn" onClick={handleExportPDF} disabled={pdfLoading}>
+                  {pdfLoading ? <IcSpinner size={14} /> : <IcFile size={14} />}
+                  <span>{pdfLoading ? "..." : "PDF"}</span>
                   <span style={{ fontSize: 9, fontWeight: 700, background: "var(--tw-warning-soft)", color: "var(--tw-warning)", padding: "1px 6px", borderRadius: 99 }}>1×</span>
                 </button>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="input"
+                  style={{ height: 40, width: 0, flex: 1, fontSize: 12, padding: "0 10px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
+                />
+                <span style={{ color: "var(--tw-text-3)", fontSize: 12, fontWeight: 700 }}>—</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="input"
+                  style={{ height: 40, width: 0, flex: 1, fontSize: 12, padding: "0 10px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
+                />
+                {(dateFrom || dateTo) && (
+                  <button type="button" onClick={clearDateFilter} style={{ background: "none", border: "none", color: "var(--tw-text-3)", cursor: "pointer", fontSize: 12, fontFamily: "var(--f-body)", padding: "4px 8px" }}>×</button>
+                )}
               </div>
 
               <div className="mob-filter-row">
@@ -252,9 +357,9 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
                 {csvLoading ? <IcSpinner size={16} /> : <IcDownload size={16} />}
                 <span>{csvLoading ? "Mengekspor..." : "Export CSV"}</span>
               </button>
-              <button type="button" className="export-btn">
-                <IcFile size={16} />
-                <span>Export PDF</span>
+              <button type="button" className="export-btn" onClick={handleExportPDF} disabled={pdfLoading}>
+                {pdfLoading ? <IcSpinner size={16} /> : <IcFile size={16} />}
+                <span>{pdfLoading ? "Mengekspor..." : "Export PDF"}</span>
                 <span className="quota">1 tersisa</span>
               </button>
             </div>
@@ -268,13 +373,24 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
                 <button type="button" aria-label="Bulan berikutnya" onClick={() => goToMonth(1)} disabled={isPending}><IcChevR size={18} /></button>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div className="input" style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)" }}>
-                  01 Jun 2026
-                </div>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="input"
+                  style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
+                />
                 <span style={{ color: "var(--tw-text-3)", fontSize: 13, fontWeight: 700 }}>—</span>
-                <div className="input" style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)" }}>
-                  30 Jun 2026
-                </div>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="input"
+                  style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
+                />
+                {(dateFrom || dateTo) && (
+                  <button type="button" onClick={clearDateFilter} style={{ background: "none", border: "none", color: "var(--tw-text-3)", cursor: "pointer", fontSize: 13, fontFamily: "var(--f-body)", padding: "4px 8px" }}>×</button>
+                )}
               </div>
             </div>
             <div className="seg">
@@ -308,36 +424,38 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
               <div className="tw-title-md">Detail Sesi</div>
               <div className="tw-helper">Menampilkan {rows.length} dari {allRows.length} sesi</div>
             </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th style={{ paddingLeft: 24 }}>Tanggal</th>
-                  <th>Murid</th>
-                  <th>Sesi</th>
-                  <th className="right">Jam</th>
-                  <th className="right" style={{ paddingRight: 24 }}>Tagihan</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 ? (
+            <div style={{ overflowX: "auto" }}>
+              <table className="table" ref={tableRef}>
+                <thead>
                   <tr>
-                    <td colSpan={5} style={{ padding: "32px 24px", textAlign: "center", fontFamily: "var(--f-body)", fontSize: 14, color: "var(--tw-text-3)" }}>
-                      Belum ada sesi di bulan ini.
-                    </td>
+                    <th style={{ paddingLeft: 24 }}>Tanggal</th>
+                    <th>Murid</th>
+                    <th>Sesi</th>
+                    <th className="right">Jam</th>
+                    <th className="right" style={{ paddingRight: 24 }}>Tagihan</th>
                   </tr>
-                ) : (
-                  rows.map((r, i) => (
-                  <tr key={i}>
-                    <td style={{ paddingLeft: 24 }}>{r.d}</td>
-                    <td style={{ fontWeight: 700 }}>{r.m}</td>
-                    <td style={{ color: "var(--tw-text-2)" }}>{r.s}</td>
-                    <td className="right"><span className="mono">{r.h.toFixed(1)}</span></td>
-                    <td className="right" style={{ paddingRight: 24 }}><span className="mono" style={{ color: "var(--tw-primary)" }}>{r.t}</span></td>
-                  </tr>
-                ))
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ padding: "32px 24px", textAlign: "center", fontFamily: "var(--f-body)", fontSize: 14, color: "var(--tw-text-3)" }}>
+                        Belum ada sesi di bulan ini.
+                      </td>
+                    </tr>
+                  ) : (
+                    rows.map((r, i) => (
+                    <tr key={i}>
+                      <td style={{ paddingLeft: 24 }}>{r.d}</td>
+                      <td style={{ fontWeight: 700 }}>{r.m}</td>
+                      <td style={{ color: "var(--tw-text-2)" }}>{r.s}</td>
+                      <td className="right"><span className="mono">{r.h.toFixed(1)}</span></td>
+                      <td className="right" style={{ paddingRight: 24 }}><span className="mono" style={{ color: "var(--tw-primary)" }}>{r.t}</span></td>
+                    </tr>
+                  ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </main>
       </div>
