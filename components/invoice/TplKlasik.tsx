@@ -8,6 +8,7 @@ export interface InvoiceData {
   date: string;
   due: string;
   period: string;
+  lembaga?: string;
   from: { name: string; lines: string[] };
   to: { name: string; lines: string[] };
   bank: { bank: string; no: string; name: string };
@@ -54,10 +55,12 @@ export default function TplKlasik({ acc = "#006C53", data = sampleData }: TplKla
     <div className="tpl tpl-klasik" style={{ ["--acc" as string]: acc }}>
       <div className="k-header">
         <div>
-          <div className="brand-line">
-            <span className="dot"></span>
-            <span className="nm">Rina Novianti · Bimbel Privat</span>
-          </div>
+          {data.lembaga && (
+            <div className="brand-line">
+              <span className="dot"></span>
+              <span className="nm">{data.from.name} · {data.lembaga}</span>
+            </div>
+          )}
           <h1>INVOICE</h1>
           <div className="subj">Rekap sesi les periode {data.period}</div>
         </div>

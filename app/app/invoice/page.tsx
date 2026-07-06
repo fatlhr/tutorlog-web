@@ -2,7 +2,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import TplKlasik from "@/components/invoice/TplKlasik";
+import { createClient } from "@/lib/supabase/client";
+import TplKlasik, { type InvoiceData } from "@/components/invoice/TplKlasik";
 import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
@@ -50,7 +51,58 @@ const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#8A5A00", "#161D1F"
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
 type Template = (typeof TEMPLATES)[number];
 
+const DUMMY_STUDENTS = [
+  { id: "dummy-1", name: "Bintang Wijaya", hourlyRate: null, billingType: null, educationLevel: "Kelas 10 – SMA Al-Azhar", address: "Jl. Kemang Raya No. 42, Jakarta Selatan", parentName: "Bpk. Ahmad Wijaya" },
+  { id: "dummy-2", name: "Kirana Putri", hourlyRate: null, billingType: null, educationLevel: "Kelas 8 – SMP Labschool", address: null, parentName: null },
+  { id: "dummy-3", name: "Aditya Rahman", hourlyRate: null, billingType: null, educationLevel: null, address: null, parentName: null },
+  { id: "dummy-4", name: "Meilani Sari", hourlyRate: null, billingType: null, educationLevel: null, address: null, parentName: null },
+];
+
+interface StudentOption {
+  id: string;
+  name: string;
+  hourlyRate: number | null;
+  billingType: string | null;
+  educationLevel: string | null;
+  address: string | null;
+  parentName: string | null;
+}
+
+interface InvoiceSessionItem {
+  id: string;
+  clockIn: string;
+  clockOut: string | null;
+  subject: string;
+  hours: number;
+  rate: number;
+  amount: number;
+}
+
+function formatDateLabel(d: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatInvoiceDate(d: Date): string {
+  return formatDateLabel(d);
+}
+
+function formatMonthDay(d: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]}`;
+}
+
+function generateInvoiceNo(): string {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const seq = String(Math.floor(Math.random() * 900) + 100);
+  return `INV-${yy}${mm}-${seq}`;
+}
+
 export default function InvoicePage() {
+  const supabase = createClient();
+
   const [template, setTemplate] = useState<Template>("klasik");
   const [accent, setAccent] = useState("#006C53");
   const [zoom, setZoom] = useState(75);
@@ -58,9 +110,6 @@ export default function InvoicePage() {
   const [dialogZoom, setDialogZoom] = useState(75);
   const dialogStageRef = useRef<HTMLDivElement>(null);
 
-  // Saat dialog dibuka (dan saat LEBAR container berubah), fit lebar kertas.
-  // Refit hanya pada perubahan lebar — perubahan tinggi terjadi tiap kali user
-  // zoom manual (konten membesar), dan tidak boleh me-reset zoom-nya.
   useLayoutEffect(() => {
     if (!previewOpen) return;
     const el = dialogStageRef.current;
@@ -78,13 +127,15 @@ export default function InvoicePage() {
     ro.observe(el);
     return () => ro.disconnect();
   }, [previewOpen]);
+
   const [showMobileDialog, setShowMobileDialog] = useState(true);
   const [periodStart, setPeriodStart] = useState("2026-06-01");
   const [periodEnd, setPeriodEnd] = useState("2026-06-30");
-  const [lembaga, setLembaga] = useState("Rina Novianti · Bimbel Privat");
+  const [lembaga, setLembaga] = useState("");
   const [tutorName, setTutorName] = useState("Rina Novianti");
   const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
   const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
+  const [logoUrl, setLogoUrl] = useState("");
   const [parentName, setParentName] = useState("Bpk. Ahmad Wijaya");
   const [studentName, setStudentName] = useState("Bintang Wijaya");
   const [studentInfo, setStudentInfo] = useState("");
@@ -93,17 +144,114 @@ export default function InvoicePage() {
   const [bankName, setBankName] = useState("Rina Novianti");
   const [notes, setNotes] = useState("Terima kasih atas kepercayaannya. Pembayaran paling lambat 7 Juli 2026.");
   const [saveSettings, setSaveSettings] = useState(false);
+  const [students, setStudents] = useState<StudentOption[]>([]);
+  const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
+  const [invoiceNo, setInvoiceNo] = useState(generateInvoiceNo());
 
   const periodLabel = (() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     const s = new Date(periodStart + "T00:00:00");
     const e = new Date(periodEnd + "T00:00:00");
     if (isNaN(s.getTime()) || isNaN(e.getTime())) return "1 – 30 Juni 2026";
     const sy = s.getFullYear() === e.getFullYear() ? "" : ` ${s.getFullYear()}`;
-    return `${s.getDate()} ${months[s.getMonth()]}${sy} – ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
+    return `${s.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][s.getMonth()]}${sy} – ${e.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][e.getMonth()]} ${e.getFullYear()}`;
   })();
 
-  // Saat halaman dibuka: kalau ada pengaturan tersimpan, terapkan + nyalakan ceklis
+  useEffect(() => {
+    const doFetch = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setStudents(DUMMY_STUDENTS); return; }
+
+        const { data, error } = await supabase
+          .from("student_locations")
+          .select("id, student_name, hourly_rate, billing_type, education_level, address, parent_name")
+          .eq("tutor_id", user.id)
+          .is("deleted_at", null)
+          .order("student_name", { ascending: true });
+
+        if (error || !data) { setStudents(DUMMY_STUDENTS); return; }
+
+        const list: StudentOption[] = (data as Record<string, unknown>[]).map((row) => ({
+          id: row.id as string,
+          name: (row.student_name as string) ?? "Tanpa Nama",
+          hourlyRate: (row.hourly_rate as number) ?? null,
+          billingType: (row.billing_type as string) ?? null,
+          educationLevel: (row.education_level as string) ?? null,
+          address: (row.address as string) ?? null,
+          parentName: (row.parent_name as string) ?? null,
+        }));
+
+        setStudents(list.length > 0 ? list : DUMMY_STUDENTS);
+      } catch {
+        setStudents(DUMMY_STUDENTS);
+      }
+    };
+    doFetch();
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!studentName || !periodStart || !periodEnd) return;
+    const doFetch = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setInvoiceSessions([]); return; }
+
+        const startISO = new Date(periodStart + "T00:00:00").toISOString();
+        const endISO = new Date(periodEnd + "T23:59:59.999").toISOString();
+
+        const { data, error } = await supabase
+          .from("sessions")
+          .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode")
+          .eq("tutor_id", user.id)
+          .eq("status", "completed")
+          .gte("clock_in_at", startISO)
+          .lte("clock_in_at", endISO)
+          .order("clock_in_at", { ascending: true });
+
+        if (error || !data) { setInvoiceSessions([]); return; }
+
+        const filtered = (data as Record<string, unknown>[]).filter((row) =>
+          (row.student_name_snapshot as string) === studentName
+        );
+
+        const items: InvoiceSessionItem[] = filtered.map((row) => {
+          const clockIn = row.clock_in_at as string;
+          const clockOut = (row.clock_out_at as string) ?? null;
+          const startTime = new Date(clockIn).getTime();
+          const endTime = clockOut ? new Date(clockOut).getTime() : 0;
+          const hours = endTime > startTime ? Math.round(((endTime - startTime) / 36e5) * 10) / 10 : 0;
+          const rate = (row.hourly_rate_snapshot as number) ?? 0;
+          const billingType = (row.billing_type_snapshot as string) ?? null;
+          const amount = billingType === "flat" ? (rate || 0) : Math.round(hours * rate);
+          const educationLevel = (row.education_level_snapshot as string) ?? "";
+          const teachingMode = (row.teaching_mode as string) ?? "";
+
+          let subject = educationLevel;
+          if (teachingMode && subject) subject += ` · ${teachingMode}`;
+          else if (teachingMode) subject = teachingMode;
+
+          return { id: clockIn, clockIn, clockOut, subject: subject || "Sesi les", hours, rate, amount };
+        });
+
+        setInvoiceSessions(items);
+      } catch {
+        setInvoiceSessions([]);
+      }
+    };
+    doFetch();
+  }, [studentName, periodStart, periodEnd, supabase]);
+
+  const handleStudentChange = (name: string) => {
+    setStudentName(name);
+    const found = students.find((s) => s.name === name);
+    if (found) {
+      if (found.educationLevel) setStudentInfo(found.educationLevel);
+      if (found.address) setStudentAddress(found.address);
+      if (found.parentName) setParentName(found.parentName);
+    }
+  };
+
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const saved = localStorage.getItem("tutorlog-invoice-settings");
@@ -117,20 +265,21 @@ export default function InvoicePage() {
       if (parsed.tutorName) setTutorName(parsed.tutorName);
       if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
       if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
+      if (parsed.logoUrl) setLogoUrl(parsed.logoUrl);
       setSaveSettings(true);
     } catch { /* ignore */ }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Selama ceklis aktif, simpan otomatis tiap ada perubahan
   useEffect(() => {
     if (!saveSettings) return;
     try {
       localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
         accent, template, bankAccount, bankName, lembaga,
-        tutorName, tutorLocation, tutorContact,
+        tutorName, tutorLocation, tutorContact, logoUrl,
       }));
     } catch { /* localStorage not available */ }
-  }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
+  }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact, logoUrl]);
 
   const handleToggleSave = (checked: boolean) => {
     setSaveSettings(checked);
@@ -139,9 +288,65 @@ export default function InvoicePage() {
     }
   };
 
+  const buildInvoiceData = (): InvoiceData => {
+    const now = new Date();
+    const dueDate = new Date(periodEnd);
+    dueDate.setDate(dueDate.getDate() + 7);
+
+    const bankParts = bankAccount.split(" · ");
+    const bankCode = bankParts[0] || bankAccount;
+    const bankNo = bankParts[1] || bankAccount;
+
+    const items = invoiceSessions.length > 0
+      ? invoiceSessions.map((s) => ({
+          date: formatMonthDay(new Date(s.clockIn)),
+          desc: s.subject || "Sesi les",
+          h: s.hours,
+          rate: s.rate,
+        }))
+      : [
+          { date: "03 Jun", desc: "Matematika · Trigonometri", h: 1.5, rate: 120000 },
+          { date: "05 Jun", desc: "Matematika · Latihan Soal", h: 1.5, rate: 120000 },
+          { date: "10 Jun", desc: "Fisika · Gerak Lurus", h: 2.0, rate: 130000 },
+          { date: "12 Jun", desc: "Matematika · Trigonometri", h: 1.5, rate: 120000 },
+          { date: "17 Jun", desc: "Fisika · Hukum Newton", h: 2.0, rate: 130000 },
+          { date: "19 Jun", desc: "Matematika · Persiapan UH", h: 1.5, rate: 120000 },
+          { date: "24 Jun", desc: "Fisika · Energi & Usaha", h: 2.0, rate: 130000 },
+          { date: "26 Jun", desc: "Matematika · Review UH", h: 1.5, rate: 120000 },
+        ];
+
+    return {
+      no: invoiceNo,
+      date: formatInvoiceDate(now),
+      due: formatInvoiceDate(dueDate),
+      period: periodLabel,
+      lembaga: lembaga || undefined,
+      from: {
+        name: tutorName,
+        lines: [
+          lembaga || "Tutor Privat",
+          tutorLocation,
+          tutorContact,
+        ].filter(Boolean),
+      },
+      to: {
+        name: parentName,
+        lines: [
+          studentInfo ? `Orang tua ${studentName}` : studentName,
+          studentInfo || "",
+          studentAddress || "",
+        ].filter(Boolean),
+      },
+      bank: { bank: bankCode, no: bankNo, name: bankName },
+      items,
+      notes,
+    };
+  };
+
   const renderPreview = (dialog = false) => {
     const z = dialog ? dialogZoom : zoom;
     const setZ = dialog ? setDialogZoom : setZoom;
+    const invoiceData = buildInvoiceData();
     return (
       <div
         className={"inv-preview-wrap" + (dialog ? " inv-preview-dialog" : "")}
@@ -164,9 +369,9 @@ export default function InvoicePage() {
         <div style={{ overflow: "auto", flex: 1 }} className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
           <div className="a4-stage" style={{ zoom: z / 100 }}>
             <A4Page>
-              {template === "klasik" && <TplKlasik acc={accent} />}
-              {template === "modern" && <TplModern acc={accent} />}
-              {template === "minimal" && <TplMinimal acc={accent} />}
+              {template === "klasik" && <TplKlasik acc={accent} data={invoiceData} />}
+              {template === "modern" && <TplModern acc={accent} data={invoiceData} />}
+              {template === "minimal" && <TplMinimal acc={accent} data={invoiceData} />}
             </A4Page>
           </div>
         </div>
@@ -177,7 +382,6 @@ export default function InvoicePage() {
   const renderForm = () => (
     <div className="inv-form" style={{ overflowY: "auto", paddingRight: 8 }}>
 
-      {/* Section: Invoice */}
       <div className="inv-section">
         <h4 className="inv-section-title">Invoice</h4>
 
@@ -191,11 +395,15 @@ export default function InvoicePage() {
           <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
         </div>
 
+        <div className="field">
+          <div className="lbl">Nomor Invoice</div>
+          <input className="input mono" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} />
+        </div>
+
       </div>
 
       <div className="divide"></div>
 
-      {/* Section: Tutor & Murid */}
       <div className="inv-section-row">
         <div className="inv-section-col">
           <h4 className="inv-section-title">Tutor</h4>
@@ -219,6 +427,11 @@ export default function InvoicePage() {
             <div className="lbl">Kontak</div>
             <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
           </div>
+
+          <div className="field">
+            <div className="lbl">Logo URL</div>
+            <input className="input" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
+          </div>
         </div>
 
         <div className="inv-section-col">
@@ -226,11 +439,10 @@ export default function InvoicePage() {
 
           <div className="field">
             <div className="lbl">Nama Murid<Required /></div>
-            <select className="input" value={studentName} onChange={(e) => setStudentName(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }}>
-              <option value="Bintang Wijaya">Bintang Wijaya</option>
-              <option value="Kirana Putri">Kirana Putri</option>
-              <option value="Aditya Rahman">Aditya Rahman</option>
-              <option value="Meilani Sari">Meilani Sari</option>
+            <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }}>
+              {students.map((s) => (
+                <option key={s.id} value={s.name}>{s.name}</option>
+              ))}
             </select>
           </div>
 
@@ -248,12 +460,20 @@ export default function InvoicePage() {
             <div className="lbl">Alamat</div>
             <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. Kemang Raya No. 42" />
           </div>
+
+          {invoiceSessions.length > 0 && (
+            <div className="field">
+              <div className="lbl">Item Invoice</div>
+              <div className="tw-helper" style={{ marginTop: 2 }}>
+                {invoiceSessions.length} sesi otomatis dari {studentName} ({periodLabel})
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="divide"></div>
 
-      {/* Section: Pembayaran */}
       <div className="inv-section">
         <h4 className="inv-section-title">Pembayaran</h4>
 
@@ -272,7 +492,6 @@ export default function InvoicePage() {
 
       <div className="divide"></div>
 
-      {/* Section: Catatan */}
       <div className="inv-section">
         <h4 className="inv-section-title">Catatan</h4>
 
@@ -283,7 +502,6 @@ export default function InvoicePage() {
 
       <div className="divide"></div>
 
-      {/* Section: Tema */}
       <div className="inv-section">
         <h4 className="inv-section-title">Tema</h4>
 
@@ -321,7 +539,6 @@ export default function InvoicePage() {
 
       <div className="divide"></div>
 
-      {/* Pengaturan */}
       <div className="inv-section">
         <h4 className="inv-section-title">Pengaturan</h4>
 
@@ -335,7 +552,7 @@ export default function InvoicePage() {
         </label>
 
         <div className="tw-helper" style={{ marginTop: -4 }}>
-          Yang disimpan: profil tutor (nama, lembaga, lokasi, kontak), rekening
+          Yang disimpan: profil tutor (nama, lembaga, lokasi, kontak, logo), rekening
           pembayaran, dan tema (template + warna aksen) — tersimpan di perangkat
           ini dan terisi otomatis saat halaman dibuka lagi.
         </div>
@@ -343,9 +560,8 @@ export default function InvoicePage() {
 
       <div className="divide"></div>
 
-      {/* Action buttons */}
       <div className="inv-form-actions">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPreviewOpen(true)}>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setInvoiceNo(generateInvoiceNo()); setPreviewOpen(true); }}>
           <IcEye />
           <span>Lihat Preview</span>
         </button>
@@ -382,7 +598,6 @@ export default function InvoicePage() {
 
   return (
     <>
-      {/* MOBILE — Dialog awal */}
       {showMobileDialog && (
         <div className="vp-mobile">
           <div className="mob-page tw">
@@ -413,7 +628,6 @@ export default function InvoicePage() {
         </div>
       )}
 
-      {/* MOBILE — Form (setelah dialog ditutup) */}
       {!showMobileDialog && (
         <div className="vp-mobile">
           <div className="mob-page tw">
@@ -430,7 +644,6 @@ export default function InvoicePage() {
         </div>
       )}
 
-      {/* DESKTOP / TABLET */}
       <div className="vp-desktop">
         <main className="app-main" style={{ padding: "32px 40px 40px", position: "relative" }}>
           <div className="app-header">

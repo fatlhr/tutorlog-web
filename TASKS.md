@@ -217,7 +217,7 @@
   - Setiap template support field `lembaga` opsional, warna header + aksen via CSS var
   - _DoD: 3 templates render benar dengan sample data, watermark muncul di semua template_
 
-- [ ] **5.4 Invoice data wiring**
+- [x] **5.4 Invoice data wiring**
   - Load student data dari `student_locations` (hanya yang aktif, `deleted_at IS NULL`)
   - Auto-fill dari rekap session (pilih siswa + rentang tanggal → auto itemize)
   - Simpan logo URL + info rekening ke localStorage

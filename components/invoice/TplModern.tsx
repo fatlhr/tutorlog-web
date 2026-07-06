@@ -45,7 +45,9 @@ export default function TplModern({ acc = "#006C53", data = defaultData }: TplMo
 
       <div className="m-head">
         <div>
-          <div className="sub">Rina Novianti · Bimbel Privat</div>
+          {data.lembaga && (
+            <div className="sub">{data.from.name} · {data.lembaga}</div>
+          )}
           <h1>Invoice.</h1>
         </div>
         <div className="meta">
