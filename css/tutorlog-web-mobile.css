@@ -1225,16 +1225,15 @@
 }
 .mob-price-card {
   transition: all .25s ease;
+  border-radius: var(--r-xxl);
+  padding: 24px;
+  position: relative; overflow: hidden;
 }
 .mob-price-card:hover {
   transform: translateY(-4px);
 }
 .mob-price-card--free:hover {
   border-color: var(--tw-primary-soft);
-}
-  border-radius: var(--r-xxl);
-  padding: 24px;
-  position: relative; overflow: hidden;
 }
 .mob-price-card--free {
   background: var(--tw-surface);
