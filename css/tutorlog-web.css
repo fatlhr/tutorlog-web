@@ -407,6 +407,8 @@ input.input {
   display: flex;
   flex-direction: column;
   min-height: 900px;
+  height: 100svh;
+  overflow-y: var(--shell-overflow, auto);
 }
 .app-shell-h .app-main {
   flex: 1;

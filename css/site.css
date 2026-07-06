@@ -157,6 +157,10 @@ body.menu-open { overflow: hidden; }
 .app-shell-h {
   min-height: 100svh;
 }
+.app-shell-h {
+  height: 100svh;
+  overflow-y: var(--shell-overflow, auto);
+}
 
 /* Padding horizontal 96/64px → clamp supaya hidup di 768–1100px */
 .hero-v2 { padding: 0 clamp(24px, 6.5vw, 96px) 80px; }

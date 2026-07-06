@@ -132,6 +132,11 @@ export default function InvoicePage() {
   }, [previewOpen]);
 
   const [showMobileDialog, setShowMobileDialog] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--shell-overflow", showMobileDialog ? "hidden" : "auto");
+    return () => { document.documentElement.style.setProperty("--shell-overflow", "auto"); };
+  }, [showMobileDialog]);
   const [periodStart, setPeriodStart] = useState("2026-06-01");
   const [periodEnd, setPeriodEnd] = useState("2026-06-30");
   const [lembaga, setLembaga] = useState("");
