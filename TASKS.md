@@ -28,7 +28,7 @@
 | # | Route | Mobile | Desktop | Status |
 |---|---|---|---|---|
 | 1 | `/` (landing) | ⬜ | ⬜ | HTML done, convert pending |
-| 2 | `/login` | ⬜ | ⬜ | Auth required |
+| 2 | `/login` | ✅ | ✅ | UI done, auth wiring pending |
 | 3 | `/login/sent` | ⬜ | ⬜ | Auth required |
 | 4 | `/fitur` | ✅ | ✅ | Static |
 | 5 | `/harga` | ✅ | ✅ | Static |
@@ -127,10 +127,10 @@
 
 ## Phase 3 — Auth (Login flow)
 
-- [ ] **3.1 Login UI** — `app/login/page.tsx`
+- [x] **3.1 Login UI** — `app/login/page.tsx`
   - Form email input + "Kirim Magic Link" CTA
-  - Mobile + Desktop layout
-  - _DoD: Form render sesuai desain_
+  - Mobile + Desktop layout (+ tablet single-column dengan background constellation)
+  - _DoD: Form render sesuai desain_ ✓ (390/768–1199/1440, tanpa horizontal scroll, tsc+eslint clean)
 
 - [ ] **3.2 Login Sent UI** — `app/login/sent/page.tsx`
   - Email badge dari query param
