@@ -157,10 +157,6 @@ body.menu-open { overflow: hidden; }
 .app-shell-h {
   min-height: 100svh;
 }
-.app-shell-h {
-  height: 100svh;
-  overflow-y: var(--shell-overflow, auto);
-}
 
 /* Padding horizontal 96/64px → clamp supaya hidup di 768–1100px */
 .hero-v2 { padding: 0 clamp(24px, 6.5vw, 96px) 80px; }
@@ -168,7 +164,7 @@ body.menu-open { overflow: hidden; }
 .features-v2 { padding: 10px clamp(24px, 6.5vw, 96px) 0px; }
 .landing-footer { padding: 32px clamp(24px, 6.5vw, 96px); }
 .nav-top { padding: 20px clamp(20px, 4.5vw, 64px); }
-.app-shell-h .app-main { padding: 32px clamp(20px, 4.5vw, 64px) 56px; }
+.app-shell-h .app-main { padding: 96px clamp(20px, 4.5vw, 64px) 56px; }
 .app-topbar { padding: 0 clamp(16px, 3vw, 40px); }
 
 .inv-section-title {
