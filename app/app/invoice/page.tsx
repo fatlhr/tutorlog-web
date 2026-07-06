@@ -151,7 +151,9 @@ export default function InvoicePage() {
   const [invoiceNo, setInvoiceNo] = useState(generateInvoiceNo());
   const [exporting, setExporting] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
+  const [quotaState, setQuotaState] = useState<{ pdfExportUnlimited: boolean; pdfExportCount30d: number }>({ pdfExportUnlimited: false, pdfExportCount30d: 0 });
+  const [studentsLoading, setStudentsLoading] = useState(true);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   const periodLabel = (() => {
@@ -164,6 +166,7 @@ export default function InvoicePage() {
 
   useEffect(() => {
     const doFetch = async () => {
+      setStudentsLoading(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setStudents(DUMMY_STUDENTS); return; }
@@ -190,6 +193,8 @@ export default function InvoicePage() {
         setStudents(list.length > 0 ? list : DUMMY_STUDENTS);
       } catch {
         setStudents(DUMMY_STUDENTS);
+      } finally {
+        setStudentsLoading(false);
       }
     };
     doFetch();
@@ -198,6 +203,7 @@ export default function InvoicePage() {
   useEffect(() => {
     if (!studentName || !periodStart || !periodEnd) return;
     const doFetch = async () => {
+      setSessionsLoading(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setInvoiceSessions([]); return; }
@@ -242,6 +248,8 @@ export default function InvoicePage() {
         setInvoiceSessions(items);
       } catch {
         setInvoiceSessions([]);
+      } finally {
+        setSessionsLoading(false);
       }
     };
     doFetch();
@@ -253,15 +261,31 @@ export default function InvoicePage() {
         const { data, error } = await supabase.rpc("get_user_access_status");
         if (!error && data) {
           const result = data as Record<string, unknown>;
-          setIsPremium((result.pdf_export_unlimited as boolean) ?? false);
+          setQuotaState({
+            pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
+            pdfExportCount30d: (result.pdf_export_count_30d as number) ?? 0,
+          });
         }
       } catch { /* ignore */ }
     };
     doCheck();
   }, [supabase]);
 
+  const refreshQuota = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.rpc("get_user_access_status");
+      if (!error && data) {
+        const result = data as Record<string, unknown>;
+        setQuotaState({
+          pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
+          pdfExportCount30d: (result.pdf_export_count_30d as number) ?? 0,
+        });
+      }
+    } catch { /* ignore */ }
+  }, [supabase]);
+
   const handleExportPDF = useCallback(async () => {
-    if (!isPremium) {
+    if (!quotaState.pdfExportUnlimited && quotaState.pdfExportCount30d >= 1) {
       setPaywallOpen(true);
       return;
     }
@@ -299,12 +323,21 @@ export default function InvoicePage() {
       }
 
       pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
+
+      try {
+        await supabase.rpc("record_feature_usage_event", {
+          p_feature_key: "invoice_export",
+          p_event_type: "success",
+          p_metadata: { format: "pdf" },
+        });
+        refreshQuota();
+      } catch { /* non-blocking */ }
     } catch (err) {
       console.error("PDF export failed:", err);
     } finally {
       setExporting(false);
     }
-  }, [invoiceNo, isPremium]);
+  }, [invoiceNo, quotaState, supabase, refreshQuota]);
 
   const handleStudentChange = (name: string) => {
     setStudentName(name);
@@ -498,10 +531,14 @@ export default function InvoicePage() {
 
           <div className="field">
             <div className="lbl">Nama Murid<Required /></div>
-            <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }}>
-              {students.map((s) => (
-                <option key={s.id} value={s.name}>{s.name}</option>
-              ))}
+            <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }} disabled={studentsLoading}>
+              {studentsLoading ? (
+                <option value="">Memuat...</option>
+              ) : (
+                students.map((s) => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                ))
+              )}
             </select>
           </div>
 
@@ -520,14 +557,26 @@ export default function InvoicePage() {
             <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. Kemang Raya No. 42" />
           </div>
 
-          {invoiceSessions.length > 0 && (
+          {sessionsLoading ? (
+            <div className="field">
+              <div className="lbl">Item Invoice</div>
+              <div className="tw-helper" style={{ marginTop: 2 }}>Memuat sesi...</div>
+            </div>
+          ) : invoiceSessions.length > 0 ? (
             <div className="field">
               <div className="lbl">Item Invoice</div>
               <div className="tw-helper" style={{ marginTop: 2 }}>
                 {invoiceSessions.length} sesi otomatis dari {studentName} ({periodLabel})
               </div>
             </div>
-          )}
+          ) : invoiceSessions.length === 0 && studentName && periodStart && periodEnd ? (
+            <div className="field">
+              <div className="lbl">Item Invoice</div>
+              <div className="tw-helper" style={{ marginTop: 2, color: "var(--tw-text-3)" }}>
+                Tidak ada sesi untuk {studentName} di periode ini
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
