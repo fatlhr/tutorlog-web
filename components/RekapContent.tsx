@@ -280,21 +280,25 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="input"
-                  style={{ height: 40, width: 0, flex: 1, fontSize: 12, padding: "0 10px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
-                />
+                <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="input"
+                    style={{ height: 40, width: "100%", fontSize: 12, padding: "0 10px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)", cursor: "pointer" }}
+                  />
+                </div>
                 <span style={{ color: "var(--tw-text-3)", fontSize: 12, fontWeight: 700 }}>—</span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="input"
-                  style={{ height: 40, width: 0, flex: 1, fontSize: 12, padding: "0 10px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
-                />
+                <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="input"
+                    style={{ height: 40, width: "100%", fontSize: 12, padding: "0 10px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)", cursor: "pointer" }}
+                  />
+                </div>
                 {(dateFrom || dateTo) && (
                   <button type="button" onClick={clearDateFilter} style={{ background: "none", border: "none", color: "var(--tw-text-3)", cursor: "pointer", fontSize: 12, fontFamily: "var(--f-body)", padding: "4px 8px" }}>×</button>
                 )}
@@ -373,21 +377,25 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
                 <button type="button" aria-label="Bulan berikutnya" onClick={() => goToMonth(1)} disabled={isPending}><IcChevR size={18} /></button>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="input"
-                  style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
-                />
+                <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ cursor: "pointer" }}>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="input"
+                    style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)", cursor: "pointer" }}
+                  />
+                </div>
                 <span style={{ color: "var(--tw-text-3)", fontSize: 13, fontWeight: 700 }}>—</span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="input"
-                  style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)" }}
-                />
+                <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ cursor: "pointer" }}>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="input"
+                    style={{ height: 44, width: 150, fontSize: 13, padding: "0 14px", borderRadius: "var(--r-md)", fontFamily: "var(--f-body)", border: "2px solid var(--tw-border)", background: "var(--tw-surface)", cursor: "pointer" }}
+                  />
+                </div>
                 {(dateFrom || dateTo) && (
                   <button type="button" onClick={clearDateFilter} style={{ background: "none", border: "none", color: "var(--tw-text-3)", cursor: "pointer", fontSize: 13, fontFamily: "var(--f-body)", padding: "4px 8px" }}>×</button>
                 )}
