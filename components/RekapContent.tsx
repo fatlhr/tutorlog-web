@@ -365,7 +365,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
                   />
                 </div>
                 {(dateFrom || dateTo) && (
-                  <button type="button" onClick={clearDateFilter} style={{ background: "none", border: "none", color: "var(--tw-text-3)", cursor: "pointer", fontSize: 12, fontFamily: "var(--f-body)", padding: "4px 8px" }}>×</button>
+                  <button type="button" onClick={clearDateFilter} style={{ background: "var(--tw-surface-soft)", border: "1px solid var(--tw-border)", borderRadius: "var(--r-full)", color: "var(--tw-text-2)", cursor: "pointer", fontSize: 12, fontFamily: "var(--f-body)", fontWeight: 700, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}>×</button>
                 )}
               </div>
 
@@ -462,7 +462,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
                   />
                 </div>
                 {(dateFrom || dateTo) && (
-                  <button type="button" onClick={clearDateFilter} style={{ background: "none", border: "none", color: "var(--tw-text-3)", cursor: "pointer", fontSize: 13, fontFamily: "var(--f-body)", padding: "4px 8px" }}>×</button>
+                  <button type="button" onClick={clearDateFilter} style={{ background: "var(--tw-surface-soft)", border: "1px solid var(--tw-border)", borderRadius: "var(--r-full)", color: "var(--tw-text-2)", cursor: "pointer", fontSize: 13, fontFamily: "var(--f-body)", fontWeight: 700, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}>×</button>
                 )}
               </div>
             </div>
