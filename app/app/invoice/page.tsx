@@ -63,7 +63,22 @@ export default function InvoicePage() {
   const [template, setTemplate] = useState<Template>("klasik");
   const [accent, setAccent] = useState("#006C53");
   const [zoom, setZoom] = useState(75);
+  const [invoiceNo, setInvoiceNo] = useState("INV-2026/06-014");
+  const [invoiceDate, setInvoiceDate] = useState("30 Juni 2026");
+  const [invoiceDue, setInvoiceDue] = useState("7 Juli 2026");
+  const [invoicePeriod, setInvoicePeriod] = useState("1 – 30 Juni 2026");
+  const [lembaga, setLembaga] = useState("Rina Novianti · Bimbel Privat");
+  const [tutorName, setTutorName] = useState("Rina Novianti");
+  const [tutorRole, setTutorRole] = useState("Guru Matematika & Fisika");
+  const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
+  const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
+  const [parentName, setParentName] = useState("Bpk. Ahmad Wijaya");
+  const [parentRole, setParentRole] = useState("Orang tua Bintang Wijaya");
+  const [studentInfo, setStudentInfo] = useState("Kelas 10 – SMA Al-Azhar");
+  const [studentAddress, setStudentAddress] = useState("Jl. Kemang Raya No. 42, Jakarta Selatan");
   const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
+  const [bankName, setBankName] = useState("Rina Novianti");
+  const [notes, setNotes] = useState("Terima kasih atas kepercayaannya. Pembayaran paling lambat 7 Juli 2026.");
   const [hasSaved, setHasSaved] = useState(() => {
     try {
       return localStorage.getItem("tutorlog-invoice-settings") !== null;
@@ -75,14 +90,14 @@ export default function InvoicePage() {
   const handleSaveSettings = useCallback(() => {
     try {
       localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
-        accent,
-        bankAccount,
+        accent, bankAccount, bankName, lembaga,
+        tutorName, tutorRole, tutorLocation, tutorContact,
       }));
       setHasSaved(true);
     } catch {
       // localStorage not available
     }
-  }, [accent, bankAccount]);
+  }, [accent, bankAccount, bankName, lembaga, tutorName, tutorRole, tutorLocation, tutorContact]);
 
   const handleLoadSettings = useCallback(() => {
     try {
@@ -91,6 +106,12 @@ export default function InvoicePage() {
         const parsed = JSON.parse(saved);
         if (parsed.accent) setAccent(parsed.accent);
         if (parsed.bankAccount) setBankAccount(parsed.bankAccount);
+        if (parsed.bankName) setBankName(parsed.bankName);
+        if (parsed.lembaga) setLembaga(parsed.lembaga);
+        if (parsed.tutorName) setTutorName(parsed.tutorName);
+        if (parsed.tutorRole) setTutorRole(parsed.tutorRole);
+        if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
+        if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
       }
     } catch {
       // ignore
@@ -153,6 +174,30 @@ export default function InvoicePage() {
             <div className="inv-form">
               <h3>Data Invoice</h3>
 
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="field">
+                  <div className="lbl">Nomor Invoice</div>
+                  <input className="input" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} style={{ fontFamily: "var(--f-title)", fontWeight: 700 }} />
+                </div>
+                <div className="field">
+                  <div className="lbl">Tanggal</div>
+                  <input className="input" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="field">
+                  <div className="lbl">Jatuh Tempo</div>
+                  <input className="input" value={invoiceDue} onChange={(e) => setInvoiceDue(e.target.value)} />
+                </div>
+                <div className="field">
+                  <div className="lbl">Periode</div>
+                  <input className="input" value={invoicePeriod} onChange={(e) => setInvoicePeriod(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="divide"></div>
+
               <div className="field">
                 <div className="lbl">Murid</div>
                 <div className="input" style={{ justifyContent: "space-between" }}>
@@ -169,6 +214,57 @@ export default function InvoicePage() {
                 <div className="field">
                   <div className="lbl">Sampai</div>
                   <div className="input">30 Jun 2026</div>
+                </div>
+              </div>
+
+              <div className="divide"></div>
+
+              <div className="field">
+                <div className="lbl">Nama Lembaga / Jasa Les (opsional)</div>
+                <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} />
+              </div>
+
+              <div className="field">
+                <div className="lbl">Nama Tutor</div>
+                <input className="input" value={tutorName} onChange={(e) => setTutorName(e.target.value)} />
+              </div>
+
+              <div className="field">
+                <div className="lbl">Role / Bidang</div>
+                <input className="input" value={tutorRole} onChange={(e) => setTutorRole(e.target.value)} />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="field">
+                  <div className="lbl">Lokasi</div>
+                  <input className="input" value={tutorLocation} onChange={(e) => setTutorLocation(e.target.value)} />
+                </div>
+                <div className="field">
+                  <div className="lbl">Kontak</div>
+                  <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="divide"></div>
+
+              <div className="field">
+                <div className="lbl">Ditagih Kepada</div>
+                <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
+              </div>
+
+              <div className="field">
+                <div className="lbl">Hubungan</div>
+                <input className="input" value={parentRole} onChange={(e) => setParentRole(e.target.value)} />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="field">
+                  <div className="lbl">Info Murid</div>
+                  <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} />
+                </div>
+                <div className="field">
+                  <div className="lbl">Alamat</div>
+                  <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} />
                 </div>
               </div>
 
@@ -238,18 +334,18 @@ export default function InvoicePage() {
               <div className="divide"></div>
 
               <div className="field">
-                <div className="lbl">Rekening penerima</div>
-                <div className="input" style={{ justifyContent: "space-between" }}>
-                  <span>{bankAccount}</span>
-                  <IcChevD />
-                </div>
+                <div className="lbl">Bank</div>
+                <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} />
               </div>
 
               <div className="field">
-                <div className="lbl">Catatan (opsional)</div>
-                <div className="input" style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5 }}>
-                  Terima kasih atas kepercayaannya. Pembayaran paling lambat 7 Juli 2026.
-                </div>
+                <div className="lbl">Nama Pemilik Rekening</div>
+                <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+              </div>
+
+              <div className="field">
+                <div className="lbl">Catatan</div>
+                <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
               </div>
 
               <div style={{ marginTop: "auto" }}>
