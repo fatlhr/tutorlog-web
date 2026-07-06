@@ -1224,6 +1224,14 @@
   display: flex; flex-direction: column; gap: 16px;
 }
 .mob-price-card {
+  transition: all .25s ease;
+}
+.mob-price-card:hover {
+  transform: translateY(-4px);
+}
+.mob-price-card--free:hover {
+  border-color: var(--tw-primary-soft);
+}
   border-radius: var(--r-xxl);
   padding: 24px;
   position: relative; overflow: hidden;

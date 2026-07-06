@@ -145,6 +145,11 @@ input.input {
   background: var(--tw-surface);
   border-radius: var(--r-xxl);
   padding: 28px;
+  transition: all .25s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
 }
 
 /* Generic brand mark — must constrain img in all contexts */
