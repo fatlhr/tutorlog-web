@@ -14,12 +14,6 @@ const MonitorIcon = () => (
   </svg>
 );
 
-const IcChevD = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 9l6 6 6-6" />
-  </svg>
-);
-
 const IcMinus = ({ size = 14 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h14" />
@@ -59,7 +53,7 @@ type Template = (typeof TEMPLATES)[number];
 export default function InvoicePage() {
   const [template, setTemplate] = useState<Template>("klasik");
   const [accent, setAccent] = useState("#006C53");
-  const [zoom, setZoom] = useState(75);
+  const [zoom, setZoom] = useState(60);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showMobileDialog, setShowMobileDialog] = useState(true);
   const [periodStart, setPeriodStart] = useState("2026-06-01");
@@ -69,7 +63,7 @@ export default function InvoicePage() {
   const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
   const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
   const [parentName, setParentName] = useState("Bpk. Ahmad Wijaya");
-  const [studentName] = useState("Bintang Wijaya");
+  const [studentName, setStudentName] = useState("Bintang Wijaya");
   const [studentInfo, setStudentInfo] = useState("");
   const [studentAddress, setStudentAddress] = useState("");
   const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
@@ -135,17 +129,10 @@ export default function InvoicePage() {
     <div className="inv-preview-wrap" style={{ overflow: "auto" }}>
       <div className="inv-preview-toolbar">
         <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div className="zoom-ctl">
-            <button type="button" onClick={() => setZoom(Math.max(40, zoom - 10))}><IcMinus /></button>
-            <span className="z">{zoom}%</span>
-            <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
-          </div>
-          <button type="button" className="btn btn-primary btn-sm">
-            <IcLockSm />
-            <span>Export PDF</span>
-            <IcDownload size={16} />
-          </button>
+        <div className="zoom-ctl">
+          <button type="button" onClick={() => setZoom(Math.max(40, zoom - 10))}><IcMinus /></button>
+          <span className="z">{zoom}%</span>
+          <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
         </div>
       </div>
       <div style={{ overflow: "auto", flex: 1 }} className="a4-preview">
@@ -177,7 +164,7 @@ export default function InvoicePage() {
           <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
         </div>
 
-        <div className="field">
+        <div className="field inv-no-desktop">
           <div className="lbl">Nomor Invoice</div>
           <div className="input" style={{ fontFamily: "var(--f-title)", fontWeight: 700, color: "var(--tw-text-3)" }}>
             {invoiceNo}
@@ -200,7 +187,7 @@ export default function InvoicePage() {
 
           <div className="field">
             <div className="lbl">Lembaga</div>
-            <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Opsional" />
+            <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Nama bimbel atau jasa les" />
           </div>
 
           <div className="field">
@@ -219,10 +206,12 @@ export default function InvoicePage() {
 
           <div className="field">
             <div className="lbl">Nama Murid<Required /></div>
-            <div className="input" style={{ justifyContent: "space-between" }}>
-              <span>{studentName}</span>
-              <IcChevD />
-            </div>
+            <select className="input" value={studentName} onChange={(e) => setStudentName(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }}>
+              <option value="Bintang Wijaya">Bintang Wijaya</option>
+              <option value="Kirana Putri">Kirana Putri</option>
+              <option value="Aditya Rahman">Aditya Rahman</option>
+              <option value="Meilani Sari">Meilani Sari</option>
+            </select>
           </div>
 
           <div className="field">
@@ -232,12 +221,12 @@ export default function InvoicePage() {
 
           <div className="field">
             <div className="lbl">Tingkat Pendidikan</div>
-            <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Opsional" />
+            <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA Al-Azhar" />
           </div>
 
           <div className="field">
             <div className="lbl">Alamat</div>
-            <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Opsional" />
+            <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. Kemang Raya No. 42" />
           </div>
         </div>
       </div>
@@ -357,7 +346,7 @@ export default function InvoicePage() {
           position: "fixed", inset: 0, zIndex: 100,
           background: "rgba(0,0,0,.5)", display: "flex",
           alignItems: "center", justifyContent: "center",
-          padding: 24,
+          padding: 12,
         }}
         onClick={() => setPreviewOpen(false)}
         role="dialog"
@@ -367,13 +356,13 @@ export default function InvoicePage() {
         <div
           style={{
             background: "var(--tw-bg)", borderRadius: "var(--r-xxl)",
-            maxWidth: 1000, width: "100%", maxHeight: "90vh",
-            overflow: "auto", padding: 24,
+            maxWidth: 480, width: "100%", maxHeight: "90vh",
+            overflow: "auto", padding: 16,
             boxShadow: "0 24px 60px rgba(0,0,0,.18)",
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div className="tw-title-md">Preview Invoice</div>
             <button type="button" onClick={() => setPreviewOpen(false)} className="btn btn-ghost btn-sm">Tutup</button>
           </div>
@@ -446,6 +435,13 @@ export default function InvoicePage() {
           <div className="invoice-layout">
             {renderForm()}
             <div className="inv-preview-col">
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+                <button type="button" className="btn btn-primary btn-sm">
+                  <IcLockSm />
+                  <span>Export PDF</span>
+                  <IcDownload size={16} />
+                </button>
+              </div>
               {renderPreview()}
             </div>
           </div>

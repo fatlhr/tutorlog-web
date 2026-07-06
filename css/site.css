@@ -212,6 +212,19 @@ body.menu-open { overflow: hidden; }
   display: flex; gap: 10px;
 }
 
+/* Mobile: stack Tutor/Murid vertically */
+.vp-mobile .inv-section-row { grid-template-columns: 1fr; }
+
+/* Mobile: hide Nomor Invoice */
+@media (max-width: 767px) {
+  .inv-no-desktop { display: none; }
+}
+
+/* Desktop: hide form action buttons (Export PDF is in preview toolbar) */
+@media (min-width: 1100px) {
+  .inv-form-actions { display: none; }
+}
+
 /* Mobile: stack Tutor/Murid vertically, compact buttons */
 @media (max-width: 767px) {
   .inv-section-row { grid-template-columns: 1fr; }
