@@ -40,6 +40,15 @@ export default function LoginPage() {
     <>
       <style>{`
         .tab-only-nav, .tab-only-particle, .tab-only-quote { display: none; }
+        .tab-bg-dot {
+          position: absolute;
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: rgba(140, 246, 210, 0.3);
+          pointer-events: none;
+          z-index: 1;
+        }
         @media (min-width: 768px) and (max-width: 1199px) {
           .login-wrap-v2 { grid-template-columns: 1fr !important; position: relative; }
           .login-right-v2 { display: none !important; }
@@ -88,6 +97,7 @@ export default function LoginPage() {
           .tab-only-nav { display: flex !important; }
           .tab-only-particle { display: block !important; }
           .tab-only-quote { display: block !important; }
+          .tab-bg-dot { display: block !important; }
         }
         @keyframes orbPulse {
           0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
@@ -228,6 +238,15 @@ export default function LoginPage() {
                 <span className="wm" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 18, color: "var(--tw-primary-soft)" }}>TutorLog</span>
               </Link>
             </nav>
+
+            {/* Tablet-only background dots */}
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div key={`dot-${i}`} className="tab-bg-dot" style={{
+                left: `${(i * 37) % 100}%`,
+                top: `${(i * 53) % 100}%`,
+                opacity: 0.3 + (i % 3) * 0.2,
+              }} />
+            ))}
 
             {/* Tablet-only particles */}
             {mobileParticles.map((p, i) => (
