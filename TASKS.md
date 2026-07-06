@@ -281,6 +281,11 @@
   - Cara aktivasi
   - _DoD: Konten langganan tampil di home untuk user Free, UI sesuai desain_
 
+- [x] **6.6 Back to Home links**
+  - Tombol "← Home" di halaman Rekap (mobile + desktop) → `/app`
+  - Tombol "← Home" di halaman Invoice (mobile + desktop) → `/app`
+  - _DoD: Klik "Home" dari Rekap/Invoice → redirect ke `/app`_
+
 ---
 
 ## Phase 7 — QA & Ship
