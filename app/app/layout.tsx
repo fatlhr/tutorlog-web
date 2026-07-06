@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppTopBar from "@/components/AppTopBar";
 import TabBar from "@/components/TabBar";
@@ -36,6 +38,14 @@ export default async function AppLayout({
     <div className="app-shell-h" style={{ minHeight: "100svh" }}>
       <div className="vp-desktop">
         <AppTopBar name={name} initials={initials} />
+      </div>
+      <div className="vp-mobile">
+        <div className="mob-brand-bar">
+          <Link href="/app" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+            <Image src="/tutorlog-logo.png" alt="" width={24} height={24} />
+            <span style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 16, color: "var(--tw-primary)" }}>TutorLog</span>
+          </Link>
+        </div>
       </div>
       {children}
       <TabBar />

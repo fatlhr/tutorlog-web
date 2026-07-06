@@ -413,7 +413,6 @@ export default function InvoicePage() {
               <div className="mob-app-main" style={{ padding: "20px 16px 100px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                   <h1 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20, margin: 0 }}>Invoice Builder</h1>
-                  <Link href="/app" className="btn btn-ghost btn-sm">← Home</Link>
                 </div>
                 {renderForm()}
               </div>

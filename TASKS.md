@@ -245,6 +245,12 @@
 > Tab "Langganan" dihapus dari TabBar & TopBar. Konten langganan pindah ke home.
 > Lihat `docs/superpowers/specs/` untuk detail desain.
 
+- [x] **6.0 Sticky topbar + mobile branding**
+  - AppTopBar desktop: `position: sticky; top: 0; z-index: 30`
+  - Mobile brand bar: logo + "TutorLog" di kiri, sticky top
+  - Hapus "← Home" link di halaman invoice mobile (redundan)
+  - _DoD: Branding tetap terlihat saat scroll di desktop & mobile_
+
 - [ ] **6.1 Home page** — `app/app/page.tsx`
   - Section 1: Menu cards — 2 card navigasi (Rekap Sesi + Buat Invoice), klik → halaman masing-masing
   - Section 2: Langganan — tampil hanya jika user Free (full konten: plan card, PLUS, bank, cara aktivasi)

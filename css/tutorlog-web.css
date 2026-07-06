@@ -347,6 +347,7 @@ input.input {
     linear-gradient(175deg, #fff 0%, #FAFCFB 40%, #F4FAF8 100%);
   border-bottom: 1px solid var(--tw-border);
   padding: 0 40px;
+  position: sticky; top: 0; z-index: 30;
 }
 .app-topbar-inner {
   display: flex; align-items: center; justify-content: space-between;

@@ -415,6 +415,14 @@
 /* ============================================================
    APP SHELL — Bottom tab bar
    ============================================================ */
+.mob-brand-bar {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center;
+  padding: 12px 16px;
+  background: var(--tw-surface);
+  border-bottom: 1px solid var(--tw-border);
+}
+
 .mob-app-shell {
   display: flex; flex-direction: column;
   min-height: 844px;
