@@ -180,7 +180,9 @@ export default function InvoicePage() {
 
           <div className="invoice-layout">
             <div className="inv-form" style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)", paddingRight: 8 }}>
-              <h3>Data Invoice</h3>
+
+              {/* Section: Invoice */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Invoice</h4>
 
               <div className="field">
                 <div className="lbl">Nomor Invoice</div>
@@ -215,13 +217,8 @@ export default function InvoicePage() {
 
               <div className="divide"></div>
 
-              <div className="field">
-                <div className="lbl">Murid</div>
-                <div className="input" style={{ justifyContent: "space-between" }}>
-                  <span>Bintang Wijaya</span>
-                  <IcChevD />
-                </div>
-              </div>
+              {/* Section: Tutor */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tutor</h4>
 
               <div className="field">
                 <div className="lbl">Nama Lembaga / Jasa Les (opsional)</div>
@@ -246,6 +243,17 @@ export default function InvoicePage() {
 
               <div className="divide"></div>
 
+              {/* Section: Murid */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Murid</h4>
+
+              <div className="field">
+                <div className="lbl">Nama Murid</div>
+                <div className="input" style={{ justifyContent: "space-between" }}>
+                  <span>Bintang Wijaya</span>
+                  <IcChevD />
+                </div>
+              </div>
+
               <div className="field">
                 <div className="lbl">Ditagih Kepada</div>
                 <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
@@ -258,16 +266,21 @@ export default function InvoicePage() {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div className="field">
-                  <div className="lbl">Tingkat Pendidikan (opsional)</div>
+                  <div className="lbl">Tingkat Pendidikan</div>
                   <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA ..." />
+                  <div className="help">Opsional</div>
                 </div>
                 <div className="field">
-                  <div className="lbl">Alamat (opsional)</div>
+                  <div className="lbl">Alamat</div>
                   <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. ..." />
+                  <div className="help">Opsional</div>
                 </div>
               </div>
 
               <div className="divide"></div>
+
+              {/* Section: Tema */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tema</h4>
 
               <div className="field">
                 <div className="lbl">Template</div>
@@ -307,7 +320,12 @@ export default function InvoicePage() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              <div className="divide"></div>
+
+              {/* Section: Pengaturan */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Pengaturan</h4>
+
+              <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
@@ -332,6 +350,9 @@ export default function InvoicePage() {
 
               <div className="divide"></div>
 
+              {/* Section: Pembayaran */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Pembayaran</h4>
+
               <div className="field">
                 <div className="lbl">Bank</div>
                 <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="BCA · 1234 5678 9012" />
@@ -342,8 +363,12 @@ export default function InvoicePage() {
                 <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} />
               </div>
 
+              <div className="divide"></div>
+
+              {/* Section: Catatan */}
+              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Catatan</h4>
+
               <div className="field">
-                <div className="lbl">Catatan</div>
                 <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
               </div>
 
