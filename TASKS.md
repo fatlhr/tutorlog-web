@@ -187,7 +187,7 @@
   - Download file
   - _DoD: Export CSV berfungsi_
 
-- [ ] **4.5 Export quota gating**
+- [x] **4.5 Export quota gating**
   - Cek user plan dari Supabase (`get_user_access_status` RPC)
   - Free plan: 1 PDF + 1 CSV per rolling 30 hari
   - Record export events ke `user_feature_usage_events` via `record_feature_usage_event` RPC
