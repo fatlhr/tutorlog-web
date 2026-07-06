@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { sendMagicLink } from "./actions";
 
 export const metadata: Metadata = {
   title: "TutorLog — Masuk",
@@ -219,7 +220,7 @@ export default function LoginPage() {
                 style={{ left: p.x, top: p.y, width: p.s, height: p.s, ["--pd" as string]: p.pd, ["--po" as string]: p.po, ["--pt" as string]: p.pt, position: "absolute", borderRadius: "50%", background: "var(--tw-primary-soft)", zIndex: 2 }}
               />
             ))}
-            <form>
+            <form action={sendMagicLink}>
               <div className="mob-login-card">
                 <div style={{ marginBottom: 32 }}>
                   <h1 style={{ 
@@ -261,7 +262,9 @@ export default function LoginPage() {
                     </label>
                     <input
                       id="email-mobile"
+                      name="email"
                       type="email"
+                      required
                       className="input"
                       placeholder="nama@email.com"
                       style={{
@@ -440,7 +443,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <form action={sendMagicLink} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div className="login-form" style={{ maxWidth: 420, width: "100%" }}>
                 <div style={{ marginBottom: 48 }}>
                   <h1 style={{ 
@@ -482,7 +485,9 @@ export default function LoginPage() {
                     </label>
                     <input
                       id="email-desktop"
+                      name="email"
                       type="email"
+                      required
                       className="input"
                       placeholder="nama@email.com"
                       style={{

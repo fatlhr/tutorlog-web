@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { sendMagicLink } from "../actions";
 
 export const metadata: Metadata = {
   title: "TutorLog — Cek Email",
@@ -283,20 +284,23 @@ export default async function LoginSentPage({
                 Link berlaku 15 menit.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", marginBottom: 14 }}>
-                <Link 
-                  href="https://mail.google.com" 
-                  className="btn btn-secondary btn-lg" 
+                <Link
+                  href="https://mail.google.com"
+                  className="btn btn-secondary btn-lg"
                   style={{ width: "100%", height: 48, fontSize: 15, fontWeight: 600 }}
                 >
                   Buka Gmail
                 </Link>
-                <button 
-                  type="button" 
-                  className="btn btn-ghost btn-sm" 
-                  style={{ width: "100%", fontSize: 14 }}
-                >
-                  Kirim ulang link
-                </button>
+                <form action={sendMagicLink} style={{ width: "100%" }}>
+                  <input type="hidden" name="email" value={email} />
+                  <button
+                    type="submit"
+                    className="btn btn-ghost btn-sm"
+                    style={{ width: "100%", fontSize: 14 }}
+                  >
+                    Kirim ulang link
+                  </button>
+                </form>
               </div>
               <div style={{ 
                 fontFamily: "var(--f-body)", 
@@ -497,20 +501,23 @@ export default async function LoginSentPage({
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", marginBottom: 24 }}>
-                <Link 
-                  href="https://mail.google.com" 
-                  className="btn btn-secondary btn-lg" 
+                <Link
+                  href="https://mail.google.com"
+                  className="btn btn-secondary btn-lg"
                   style={{ width: "100%", height: 52, fontSize: 16, fontWeight: 600 }}
                 >
                   Buka Gmail
                 </Link>
-                <button 
-                  type="button" 
-                  className="btn btn-ghost btn-sm" 
-                  style={{ width: "100%", fontSize: 15 }}
-                >
-                  Kirim ulang link
-                </button>
+                <form action={sendMagicLink} style={{ width: "100%" }}>
+                  <input type="hidden" name="email" value={email} />
+                  <button
+                    type="submit"
+                    className="btn btn-ghost btn-sm"
+                    style={{ width: "100%", fontSize: 15 }}
+                  >
+                    Kirim ulang link
+                  </button>
+                </form>
               </div>
 
               <div className="terms" style={{ 

@@ -137,11 +137,13 @@
   - "Buka Gmail" + "Kirim ulang" + "Ganti email"
   - _DoD: Email badge terisi dari `?email=`_ ✓ (fallback nama@email.com tanpa param, tsc+eslint clean)
 
-- [ ] **3.3 Supabase Auth wiring**
-  - Buat `app/auth/callback/route.ts` (handle magic link callback)
-  - Server action untuk `signInWithEmail`
+- [x] **3.3 Supabase Auth wiring**
+  - Buat `app/auth/callback/route.ts` (handle magic link callback: PKCE `?code=` + OTP `?token_hash=`)
+  - Server action `sendMagicLink` (`app/login/actions.ts`) — dipakai form login (2 viewport) + tombol "Kirim ulang link"
+  - Migrasi `lib/supabase/*` ke `@supabase/ssr` (cookie-based session)
   - Email template sudah di-setup di Supabase dashboard (mobile)
-  - _DoD: Magic Link email terkirim, user bisa login_
+  - _DoD: Magic Link email terkirim ✓ (POST 303 → /login/sent, signInWithOtp tanpa error); callback invalid → /login?error=auth ✓_
+  - _Catatan: verifikasi klik link dari inbox butuh manual; pastikan `http://localhost:3000/auth/callback` (dan domain prod) masuk Redirect URLs allowlist di Supabase dashboard_
 
 - [ ] **3.4 Auth middleware**
   - Buat `middleware.ts` — cek session untuk `/app/*` routes
