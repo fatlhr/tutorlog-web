@@ -73,7 +73,6 @@ export default function InvoicePage() {
   const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
   const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
   const [parentName, setParentName] = useState("Bpk. Ahmad Wijaya");
-  const [parentRole, setParentRole] = useState("Wali murid Bintang Wijaya");
   const [studentInfo, setStudentInfo] = useState("");
   const [studentAddress, setStudentAddress] = useState("");
   const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
@@ -257,11 +256,6 @@ export default function InvoicePage() {
               <div className="field">
                 <div className="lbl">Ditagih Kepada</div>
                 <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
-              </div>
-
-              <div className="field">
-                <div className="lbl">Hubungan</div>
-                <input className="input" value={parentRole} onChange={(e) => setParentRole(e.target.value)} placeholder="Wali murid ..." />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
