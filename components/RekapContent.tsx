@@ -311,7 +311,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
           <div className="mob-app-shell">
             <div className="mob-app-main">
               <div className="mob-app-hdr">
-                <Link href="/app" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 13, color: "var(--tw-text-2)", textDecoration: "none", marginBottom: 8 }}>
+                <Link href="/app" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 13, color: "var(--tw-primary)", textDecoration: "none", marginBottom: 12 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5 M11 6l-6 6 6 6" /></svg>
                   Home
                 </Link>
@@ -438,7 +438,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
         <main className="app-main">
           <div className="app-header">
             <div>
-              <Link href="/app" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 12, color: "var(--tw-text-3)", textDecoration: "none", marginBottom: 4 }}>
+              <Link href="/app" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 12, color: "var(--tw-primary)", textDecoration: "none", marginBottom: 8 }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5 M11 6l-6 6 6 6" /></svg>
                 Home
               </Link>
