@@ -167,6 +167,31 @@ body.menu-open { overflow: hidden; }
 .app-shell-h .app-main { padding: 32px clamp(20px, 4.5vw, 64px) 56px; }
 .app-topbar { padding: 0 clamp(16px, 3vw, 40px); }
 
+.inv-section-title {
+  font-family: var(--f-title); font-weight: 700; font-size: 13px;
+  color: var(--tw-text-3); text-transform: uppercase; letter-spacing: .5px;
+  margin: 0 0 8px;
+}
+
+.inv-section {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.inv-section-row {
+  display: grid; grid-template-columns: 1fr; gap: 20px;
+}
+
+.inv-section-col {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* A4 preview: allow content to grow beyond page height */
+.a4-preview .a4 {
+  overflow: visible;
+  height: auto;
+  aspect-ratio: auto;
+}
+
 /* Helper: grid 2 kolom konten (pakai class ini, JANGAN inline style,
    supaya bisa collapse — dipakai halaman legal/harga/kontak/fitur) */
 .grid-2 {
@@ -188,6 +213,7 @@ body.menu-open { overflow: hidden; }
   .invoice-layout { grid-template-columns: 1fr; }
   .invoice-layout .inv-form { max-height: none; }
   .invoice-layout .inv-preview-col { display: none; }
+  .inv-section-row { grid-template-columns: 1fr 1fr; }
   .rekap-toolbar { flex-wrap: wrap; gap: 14px; }
   .features-v2 { padding-top: 48px; min-height: 90svh; }
 }

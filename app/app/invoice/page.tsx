@@ -142,7 +142,7 @@ export default function InvoicePage() {
           <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
         </div>
       </div>
-      <div style={{ overflow: "auto", flex: 1 }}>
+      <div style={{ overflow: "auto", flex: 1 }} className="a4-preview">
         <div className="a4-stage" style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}>
           <A4Page>
             {template === "klasik" && <TplKlasik acc={accent} />}
@@ -210,33 +210,35 @@ export default function InvoicePage() {
             <div className="inv-form" style={{ overflowY: "auto", paddingRight: 8 }}>
 
               {/* Section: Invoice */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Invoice</h4>
+              <div className="inv-section">
+                <h4 className="inv-section-title">Invoice</h4>
 
-              <div className="field">
-                <div className="lbl">Nomor Invoice</div>
-                <input className="input" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} style={{ fontFamily: "var(--f-title)", fontWeight: 700 }} />
-              </div>
-
-              <div className="field">
-                <div className="lbl">Periode</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
-                    <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ width: "100%", cursor: "pointer" }} />
-                  </div>
-                  <span style={{ color: "var(--tw-text-3)", fontWeight: 700 }}>—</span>
-                  <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
-                    <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" style={{ width: "100%", cursor: "pointer" }} />
-                  </div>
+                <div className="field">
+                  <div className="lbl">Nomor Invoice</div>
+                  <input className="input" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} style={{ fontFamily: "var(--f-title)", fontWeight: 700 }} />
                 </div>
-                <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
+
+                <div className="field">
+                  <div className="lbl">Periode</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
+                      <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ width: "100%", cursor: "pointer" }} />
+                    </div>
+                    <span style={{ color: "var(--tw-text-3)", fontWeight: 700 }}>—</span>
+                    <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, cursor: "pointer" }}>
+                      <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" style={{ width: "100%", cursor: "pointer" }} />
+                    </div>
+                  </div>
+                  <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
+                </div>
               </div>
 
               <div className="divide"></div>
 
-              {/* Section: Tutor & Murid — side by side */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <div>
-                  <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tutor</h4>
+              {/* Section: Tutor & Murid */}
+              <div className="inv-section-row">
+                <div className="inv-section-col">
+                  <h4 className="inv-section-title">Tutor</h4>
 
                   <div className="field">
                     <div className="lbl">Nama</div>
@@ -259,8 +261,8 @@ export default function InvoicePage() {
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Murid</h4>
+                <div className="inv-section-col">
+                  <h4 className="inv-section-title">Murid</h4>
 
                   <div className="field">
                     <div className="lbl">Nama Murid</div>
@@ -290,79 +292,87 @@ export default function InvoicePage() {
               <div className="divide"></div>
 
               {/* Section: Pembayaran */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Pembayaran</h4>
+              <div className="inv-section">
+                <h4 className="inv-section-title">Pembayaran</h4>
 
-              <div className="field">
-                <div className="lbl">Bank</div>
-                <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="BCA · 1234 5678 9012" />
-              </div>
+                <div className="field">
+                  <div className="lbl">Bank</div>
+                  <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="BCA · 1234 5678 9012" />
+                </div>
 
-              <div className="field">
-                <div className="lbl">Nama Pemilik Rekening</div>
-                <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                <div className="field">
+                  <div className="lbl">Nama Pemilik Rekening</div>
+                  <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+                </div>
               </div>
 
               <div className="divide"></div>
 
               {/* Section: Catatan */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Catatan</h4>
+              <div className="inv-section">
+                <h4 className="inv-section-title">Catatan</h4>
 
-              <div className="field">
-                <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
+                <div className="field">
+                  <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
+                </div>
               </div>
 
               <div className="divide"></div>
 
-              {/* Section: Tema + Pengaturan */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Tema</h4>
+              {/* Section: Tema */}
+              <div className="inv-section">
+                <h4 className="inv-section-title">Tema</h4>
 
-              <div className="field">
-                <div className="lbl">Template</div>
-                <div className="template-picker">
-                  {TEMPLATES.map((t) => (
-                    <div key={t} className={"opt" + (template === t ? " on" : "")} onClick={() => setTemplate(t)}>
-                      <div className="preview" style={{ background: t === "klasik" ? `linear-gradient(${accent} 22%, #fff 22%)` : "#fff" }}>
-                        {t === "modern" && <div style={{ height: 3, background: accent, marginBottom: 4 }}></div>}
-                        {t === "minimal" && <div style={{ borderBottom: `1px solid ${accent}`, paddingBottom: 3, fontFamily: "var(--f-title)", fontSize: 8, fontWeight: 700 }}>INVOICE</div>}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 4 }}>
-                          <div style={{ height: 2, background: "#eee", width: "80%" }}></div>
-                          <div style={{ height: 2, background: "#eee", width: "90%" }}></div>
-                          <div style={{ height: 2, background: "#eee", width: "70%" }}></div>
-                          <div style={{ height: 2, background: "#eee", width: "85%" }}></div>
+                <div className="field">
+                  <div className="lbl">Template</div>
+                  <div className="template-picker">
+                    {TEMPLATES.map((t) => (
+                      <div key={t} className={"opt" + (template === t ? " on" : "")} onClick={() => setTemplate(t)}>
+                        <div className="preview" style={{ background: t === "klasik" ? `linear-gradient(${accent} 22%, #fff 22%)` : "#fff" }}>
+                          {t === "modern" && <div style={{ height: 3, background: accent, marginBottom: 4 }}></div>}
+                          {t === "minimal" && <div style={{ borderBottom: `1px solid ${accent}`, paddingBottom: 3, fontFamily: "var(--f-title)", fontSize: 8, fontWeight: 700 }}>INVOICE</div>}
+                          <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 4 }}>
+                            <div style={{ height: 2, background: "#eee", width: "80%" }}></div>
+                            <div style={{ height: 2, background: "#eee", width: "90%" }}></div>
+                            <div style={{ height: 2, background: "#eee", width: "70%" }}></div>
+                            <div style={{ height: 2, background: "#eee", width: "85%" }}></div>
+                          </div>
+                          <div style={{ marginTop: "auto", height: 4, background: accent, width: "40%", alignSelf: "flex-end" }}></div>
                         </div>
-                        <div style={{ marginTop: "auto", height: 4, background: accent, width: "40%", alignSelf: "flex-end" }}></div>
+                        <span className="nm">{t.charAt(0).toUpperCase() + t.slice(1)}</span>
                       </div>
-                      <span className="nm">{t.charAt(0).toUpperCase() + t.slice(1)}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="field">
-                <div className="lbl">Warna Aksen</div>
-                <div className="color-picker">
-                  {COLORS.map((c) => (
-                    <span key={c} className={"sw" + (c === accent ? " on" : "")} style={{ background: c, color: c }} onClick={() => setAccent(c)} />
-                  ))}
+                <div className="field">
+                  <div className="lbl">Warna Aksen</div>
+                  <div className="color-picker">
+                    {COLORS.map((c) => (
+                      <span key={c} className={"sw" + (c === accent ? " on" : "")} style={{ background: c, color: c }} onClick={() => setAccent(c)} />
+                    ))}
+                  </div>
                 </div>
               </div>
 
               <div className="divide"></div>
 
               {/* Pengaturan */}
-              <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Pengaturan</h4>
+              <div className="inv-section">
+                <h4 className="inv-section-title">Pengaturan</h4>
 
-              <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveSettings} style={{ flex: 1 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" /></svg>
-                  <span>Simpan Pengaturan</span>
-                </button>
-                {hasSaved && (
-                  <button type="button" className="btn btn-ghost btn-sm" onClick={handleLoadSettings} style={{ flex: 1 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg>
-                    <span>Gunakan Tersimpan</span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveSettings} style={{ flex: 1 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" /></svg>
+                    <span>Simpan Pengaturan</span>
                   </button>
-                )}
+                  {hasSaved && (
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={handleLoadSettings} style={{ flex: 1 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg>
+                      <span>Gunakan Tersimpan</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="divide"></div>
