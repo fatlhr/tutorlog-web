@@ -50,7 +50,7 @@ const IcEye = ({ size = 16 }: { size?: number }) => (
 
 const Required = () => <span style={{ color: "var(--tw-error)" }}> *</span>;
 
-const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#8A5A00", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#117A65", "#B7950B", "#2C3E50"];
+const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#B7950B"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
 type Template = (typeof TEMPLATES)[number];
 
