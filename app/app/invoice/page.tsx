@@ -221,13 +221,9 @@ export default function InvoicePage() {
                 <div className="field">
                   <div className="lbl">Periode</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                    <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, minWidth: 0, cursor: "pointer" }}>
-                      <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ width: "100%", minWidth: 0, cursor: "pointer" }} />
-                    </div>
+                    <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ flex: 1, minWidth: 0, cursor: "pointer" }} />
                     <span style={{ color: "var(--tw-text-3)", fontWeight: 700, flexShrink: 0 }}>—</span>
-                    <div onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.showPicker?.()} style={{ flex: 1, minWidth: 0, cursor: "pointer" }}>
-                      <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" style={{ width: "100%", minWidth: 0, cursor: "pointer" }} />
-                    </div>
+                    <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" style={{ flex: 1, minWidth: 0, cursor: "pointer" }} />
                   </div>
                   <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
                 </div>
