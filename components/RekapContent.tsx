@@ -105,7 +105,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
     if (studentFilter) {
       filtered = filtered.filter((r) => r.m === studentFilter);
     }
-    if (dateFrom) {
+    if (hasRealData && dateFrom) {
       const from = new Date(dateFrom);
       from.setHours(0, 0, 0, 0);
       filtered = filtered.filter((r) => {
@@ -113,7 +113,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
         return d >= from;
       });
     }
-    if (dateTo) {
+    if (hasRealData && dateTo) {
       const to = new Date(dateTo);
       to.setHours(23, 59, 59, 999);
       filtered = filtered.filter((r) => {
@@ -122,7 +122,7 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
       });
     }
     return filtered;
-  }, [allRows, studentFilter, dateFrom, dateTo, year]);
+  }, [allRows, studentFilter, dateFrom, dateTo, year, hasRealData]);
 
   const summary = useMemo(() => hasRealData
     ? rekapData!.summary
