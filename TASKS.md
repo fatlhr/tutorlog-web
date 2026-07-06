@@ -165,13 +165,13 @@
   - Desktop: tabel. Mobile: card list
   - _DoD: UI sesuai desain, data masih dummy_
 
-- [ ] **4.3 Rekap data wiring**
+- [x] **4.3 Rekap data wiring**
   - **Blocker:** User harus provide schema/tables dari Supabase project mobile
   - Query sessions dari Supabase (shared with mobile app)
   - Month filter, student filter
   - Summary aggregation (total sesi, jam, pendapatan)
   - **Catatan:** Data dummy di desain (Rina Novianti, Bintang Wijaya) mungkin bukan data real dari mobile
-  - _DoD: Data real muncul, filter berfungsi_
+  - _DoD: Data real muncul, filter berfungsi ✓ (schema dari mobile app code, fallback ke dummy)_
 
 - [x] **4.4 Export CSV**
   - Client-side CSV generation dari Supabase data

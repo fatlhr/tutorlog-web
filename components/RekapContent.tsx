@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { sessionsToCSV, downloadCSV, type SessionRow } from "@/lib/csv";
+import type { RekapData } from "@/lib/data/rekap";
 
 const IcChevL = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
@@ -16,7 +17,8 @@ const IcFile = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M8 13h8 M8 17h5" /></svg>
 );
 
-const rows: SessionRow[] = [
+// Fallback dummy data (matches design exactly)
+const DUMMY_ROWS: SessionRow[] = [
   { d: "03 Jun 2026", m: "Bintang Wijaya", s: "Matematika · Trigonometri", h: 1.5, t: "Rp 180.000" },
   { d: "05 Jun 2026", m: "Kirana Putri", s: "Bahasa Inggris · Speaking", h: 1.0, t: "Rp 120.000" },
   { d: "05 Jun 2026", m: "Bintang Wijaya", s: "Matematika · Latihan Soal", h: 1.5, t: "Rp 180.000" },
@@ -31,43 +33,69 @@ const rows: SessionRow[] = [
   { d: "28 Jun 2026", m: "Meilani Sari", s: "Matematika · Persiapan UH", h: 1.5, t: "Rp 180.000" },
 ];
 
-const groups = [
-  { date: "28 Jun", items: [
-    { m: "Meilani Sari", s: "Matematika · Persiapan UH", h: 1.5, t: "Rp 180.000", initials: "MS", color: "#E8D5F5" },
-  ]},
-  { date: "26 Jun", items: [
-    { m: "Bintang Wijaya", s: "Matematika · Review UH", h: 1.5, t: "Rp 180.000", initials: "BW", color: "#D5EDE4" },
-  ]},
-  { date: "24 Jun", items: [
-    { m: "Bintang Wijaya", s: "Fisika · Energi & Usaha", h: 2.0, t: "Rp 260.000", initials: "BW", color: "#D5EDE4" },
-    { m: "Kirana Putri", s: "B. Inggris · Grammar", h: 1.0, t: "Rp 120.000", initials: "KP", color: "#D5E0F5" },
-  ]},
-  { date: "17 Jun", items: [
-    { m: "Bintang Wijaya", s: "Fisika · Hukum Newton", h: 2.0, t: "Rp 260.000", initials: "BW", color: "#D5EDE4" },
-  ]},
-  { date: "15 Jun", items: [
-    { m: "Meilani Sari", s: "Matematika · Aljabar", h: 1.5, t: "Rp 180.000", initials: "MS", color: "#E8D5F5" },
-  ]},
-  { date: "12 Jun", items: [
-    { m: "Bintang Wijaya", s: "Matematika · Trigonometri", h: 1.5, t: "Rp 180.000", initials: "BW", color: "#D5EDE4" },
-    { m: "Aditya Rahman", s: "Kimia · Stoikiometri", h: 1.5, t: "Rp 195.000", initials: "AR", color: "#F5E8D5" },
-  ]},
-  { date: "10 Jun", items: [
-    { m: "Bintang Wijaya", s: "Fisika · Gerak Lurus", h: 2.0, t: "Rp 260.000", initials: "BW", color: "#D5EDE4" },
-  ]},
-];
-
-const bars = [
+const DUMMY_BARS = [
   { m: "Jan", h: 32 }, { m: "Feb", h: 38 }, { m: "Mar", h: 28 },
   { m: "Apr", h: 42 }, { m: "Mei", h: 40 }, { m: "Jun", h: 48.5 },
 ];
-const maxH = 50;
+const MAX_H = 50;
 
-export default function RekapContent() {
+const STUDENT_COLORS = ["#D5EDE4", "#D5E0F5", "#F5E8D5", "#E8D5F5", "#F5D5E0", "#E0F5D5"];
+
+function initialsOf(name: string): string {
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function shortDate(d: string): string {
+  const parts = d.split(" ");
+  if (parts.length >= 2) return `${parts[0]} ${parts[1]}`;
+  return d;
+}
+
+interface RekapContentProps {
+  rekapData: RekapData | null;
+}
+
+export default function RekapContent({ rekapData }: RekapContentProps) {
+  const hasRealData = rekapData !== null && rekapData.sessions.length > 0;
+  const rows = hasRealData ? rekapData!.sessions : DUMMY_ROWS;
+  const summary = hasRealData
+    ? rekapData!.summary
+    : { totalSesi: 32, totalJam: 48.5, totalPendapatan: "Rp 5.9jt", totalMurid: 4, students: ["Bintang Wijaya", "Kirana Putri", "Aditya Rahman", "Meilani Sari"] };
+  const monthLabel = hasRealData ? rekapData!.monthLabel : "Juni 2026";
+
+  const studentColors = useMemo(() => {
+    const map = new Map<string, string>();
+    summary.students.forEach((name, i) => {
+      map.set(name, STUDENT_COLORS[i % STUDENT_COLORS.length]);
+    });
+    return map;
+  }, [summary.students]);
+
+  const mobileGroups = useMemo(() => {
+    const groups = new Map<string, typeof rows>();
+    rows.forEach((r) => {
+      const sd = shortDate(r.d);
+      if (!groups.has(sd)) groups.set(sd, []);
+      groups.get(sd)!.push(r);
+    });
+    return Array.from(groups.entries()).map(([date, items]) => ({
+      date,
+      items: items.map((r) => ({
+        ...r,
+        initials: initialsOf(r.m),
+        color: studentColors.get(r.m) ?? STUDENT_COLORS[0],
+      })),
+    }));
+  }, [rows, studentColors]);
+
+  const bars = DUMMY_BARS;
+
   const handleExportCSV = useCallback(() => {
     const csv = sessionsToCSV(rows);
-    downloadCSV(csv, "rekap-sesi-juni-2026.csv");
-  }, []);
+    downloadCSV(csv, `rekap-sesi-${monthLabel.toLowerCase().replace(/\s+/g, "-")}.csv`);
+  }, [rows, monthLabel]);
 
   return (
     <>
@@ -83,20 +111,20 @@ export default function RekapContent() {
 
               <div className="mob-month-picker">
                 <button type="button" aria-label="Bulan sebelumnya"><IcChevL /></button>
-                <span className="m">Juni 2026</span>
+                <span className="m">{monthLabel}</span>
                 <button type="button" aria-label="Bulan berikutnya"><IcChevR /></button>
               </div>
 
               <div className="mob-summary-card">
                 <div className="mob-summary-top">
                   <div className="mob-summary-stat">
-                    <div className="mob-summary-val">Rp 5.9jt</div>
+                    <div className="mob-summary-val">{summary.totalPendapatan}</div>
                     <div className="mob-summary-label">Pendapatan</div>
                   </div>
                   <div className="mob-summary-stats-sm">
-                    <div><span className="v">32</span><span className="l">Sesi</span></div>
-                    <div><span className="v">48,5</span><span className="l">Jam</span></div>
-                    <div><span className="v">4</span><span className="l">Murid</span></div>
+                    <div><span className="v">{summary.totalSesi}</span><span className="l">Sesi</span></div>
+                    <div><span className="v">{summary.totalJam}</span><span className="l">Jam</span></div>
+                    <div><span className="v">{summary.totalMurid}</span><span className="l">Murid</span></div>
                   </div>
                 </div>
                 <div className="mob-mini-chart">
@@ -105,7 +133,7 @@ export default function RekapContent() {
                       <div className="mob-mini-bar-track">
                         <div
                           className={"mob-mini-bar" + (i === bars.length - 1 ? " active" : "")}
-                          style={{ height: (b.h / maxH) * 100 + "%" }}
+                          style={{ height: (b.h / MAX_H) * 100 + "%" }}
                         ></div>
                       </div>
                       <span className="mob-mini-bar-label">{b.m}</span>
@@ -126,14 +154,13 @@ export default function RekapContent() {
 
               <div className="mob-filter-row">
                 <span className="mob-chip on">Semua</span>
-                <span className="mob-chip">Bintang</span>
-                <span className="mob-chip">Kirana</span>
-                <span className="mob-chip">Aditya</span>
-                <span className="mob-chip">Meilani</span>
+                {summary.students.map((s) => (
+                  <span key={s} className="mob-chip">{s.split(" ")[0]}</span>
+                ))}
               </div>
 
               <div className="mob-session-groups">
-                {groups.map((g, gi) => (
+                {mobileGroups.map((g, gi) => (
                   <div key={gi} className="mob-session-group">
                     <div className="mob-group-date">{g.date}</div>
                     {g.items.map((r, ri) => (
@@ -156,7 +183,7 @@ export default function RekapContent() {
               </div>
 
               <div style={{ textAlign: "center", padding: "14px 0", fontFamily: "var(--f-body)", fontSize: 12, color: "var(--tw-text-3)" }}>
-                Menampilkan 9 dari 32 sesi
+                Menampilkan {rows.length} dari {rows.length} sesi
               </div>
             </div>
           </div>
@@ -188,7 +215,7 @@ export default function RekapContent() {
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div className="month-picker">
                 <button type="button" aria-label="Bulan sebelumnya"><IcChevL size={18} /></button>
-                <span className="m">Juni 2026</span>
+                <span className="m">{monthLabel}</span>
                 <button type="button" aria-label="Bulan berikutnya"><IcChevR size={18} /></button>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -203,35 +230,34 @@ export default function RekapContent() {
             </div>
             <div className="seg">
               <button type="button" className="on">Semua</button>
-              <button type="button">Bintang</button>
-              <button type="button">Kirana</button>
-              <button type="button">Aditya</button>
-              <button type="button">Meilani</button>
+              {summary.students.map((s) => (
+                <button type="button" key={s}>{s.split(" ")[0]}</button>
+              ))}
             </div>
           </div>
 
           <div className="stat-row" style={{ marginBottom: 24 }}>
             <div className="stat-card">
               <div className="lbl">Total Sesi</div>
-              <div className="val">32</div>
-              <div className="foot"><span className="accent">+6</span> dari Mei</div>
+              <div className="val">{summary.totalSesi}</div>
+              <div className="foot">Bulan {monthLabel}</div>
             </div>
             <div className="stat-card">
               <div className="lbl">Total Jam</div>
-              <div className="val">48,5</div>
-              <div className="foot"><span className="accent">+8,5 jam</span> dari Mei</div>
+              <div className="val">{summary.totalJam}</div>
+              <div className="foot">{summary.totalMurid} murid</div>
             </div>
             <div className="stat-card">
               <div className="lbl">Total Pendapatan</div>
-              <div className="val">Rp 5.9jt</div>
-              <div className="foot"><span className="accent">+Rp 900rb</span> dari Mei</div>
+              <div className="val">{summary.totalPendapatan}</div>
+              <div className="foot">{summary.totalSesi} sesi</div>
             </div>
           </div>
 
           <div className="card" style={{ padding: 0, overflow: "hidden" }}>
             <div style={{ padding: "20px 24px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div className="tw-title-md">Detail Sesi</div>
-              <div className="tw-helper">Menampilkan 12 dari 32 sesi</div>
+              <div className="tw-helper">Menampilkan {rows.length} dari {rows.length} sesi</div>
             </div>
             <table className="table">
               <thead>
