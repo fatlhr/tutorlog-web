@@ -432,7 +432,7 @@ export default function InvoicePage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+          <div className="inv-export-top" style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
               <button type="button" className="btn btn-primary btn-sm">
                 <IcLockSm />
                 <span>Export PDF</span>
