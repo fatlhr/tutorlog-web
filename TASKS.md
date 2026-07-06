@@ -39,7 +39,7 @@
 | 10 | `/kontak` | ✅ | ✅ | Static |
 | 11 | `/app` (home) | ⬜ | ⬜ | Protected |
 | 12 | `/app/rekap` | ✅ | ✅ | Protected |
-| 13 | `/app/invoice` | ⬜ | ⬜ | Protected |
+| 13 | `/app/invoice` | ✅ | ⬜ | Protected |
 
 ---
 
@@ -199,7 +199,7 @@
 
 ## Phase 5 — Invoice Builder
 
-- [ ] **5.1 Invoice UI (mobile)** — `app/app/invoice/page.tsx`
+- [x] **5.1 Invoice UI (mobile)** — `app/app/invoice/page.tsx`
   - Dialog "Buka di Desktop" (mobile only)
   - _DoD: Mobile view sesuai desain_
 
