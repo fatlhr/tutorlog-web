@@ -8,17 +8,32 @@ export const metadata: Metadata = {
 // Placeholder — full Rekap UI dibangun di Task 4.2.
 export default function RekapPage() {
   return (
-    <main
-      style={{
-        minHeight: "100svh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "var(--f-title)",
-        color: "var(--tw-text)",
-      }}
-    >
-      <p>Rekap — segera hadir (Phase 4).</p>
-    </main>
+    <>
+      {/* MOBILE */}
+      <div className="vp-mobile">
+        <div className="mob-page tw">
+          <div className="mob-app-shell">
+            <div className="mob-app-main">
+              <div className="mob-app-hdr">
+                <h1>Rekap Sesi</h1>
+                <div className="sub">Segera hadir (Task 4.2)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP */}
+      <div className="vp-desktop">
+        <main className="app-main">
+          <div className="app-header">
+            <div>
+              <h1>Rekap Sesi</h1>
+              <div className="sub">Segera hadir (Task 4.2)</div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
   );
 }

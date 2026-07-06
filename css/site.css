@@ -35,6 +35,18 @@ html, body {
   max-width: 480px;
 }
 
+/* App shell Next.js: tab bar dirender dari app/app/layout.tsx di luar
+   .mob-app-shell (children tidak bisa dibungkus per-viewport), jadi
+   fixed positioning diterapkan lewat ancestor .app-shell-h juga. */
+.app-shell-h .mob-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+}
+
 .mob-dialog-scrim {
   position: fixed;
   left: 50%;

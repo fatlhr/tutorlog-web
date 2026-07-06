@@ -155,10 +155,10 @@
 
 ## Phase 4 — App Shell & Rekap
 
-- [ ] **4.1 App shell layout** — `app/app/layout.tsx`
-  - Top bar (desktop) + Tab bar (mobile)
-  - Auth check + user avatar
-  - _DoD: App shell render dengan navigation_
+- [x] **4.1 App shell layout** — `app/app/layout.tsx`
+  - Top bar desktop (`components/AppTopBar.tsx`, varian AppShellH per SPEC) + Tab bar mobile (`components/TabBar.tsx`, active via usePathname)
+  - Auth check (`supabase.auth.getUser()`, redirect `/login`) + user avatar (initials dari user_metadata/email)
+  - _DoD: App shell render dengan navigation ✓ (390 + 1440, tab bar fixed bottom, topbar brand+nav+avatar; unauth tetap 307 → /login; tsc+eslint clean)_
 
 - [ ] **4.2 Rekap UI** — `app/app/rekap/page.tsx`
   - Month picker, summary card, filter chips, session list
