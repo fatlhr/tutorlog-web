@@ -203,7 +203,7 @@
   - Dialog "Buka di Desktop" (mobile only)
   - _DoD: Mobile view sesuai desain_
 
-- [ ] **5.2 Invoice Builder UI (desktop)**
+- [x] **5.2 Invoice Builder UI (desktop)**
   - Form panel: student, date, template picker, color picker, bank details, notes
   - Preview panel: A4 render dengan 3 templates (Klasik, Modern, Minimal)
   - Zoom control
