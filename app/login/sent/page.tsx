@@ -33,13 +33,32 @@ const mobileParticles = [
   { x: "85%", y: "75%", s: 4, glow: false, pd: "5s", po: ".2", pt: "1.5s" },
 ];
 
+const tabParticles = [
+  { x: "8%", y: "10%", s: 6, glow: true, pd: "5s", po: ".4", pt: "0s" },
+  { x: "22%", y: "6%", s: 4, glow: false, pd: "4s", po: ".25", pt: ".4s" },
+  { x: "48%", y: "8%", s: 5, glow: true, pd: "6s", po: ".4", pt: "1s" },
+  { x: "72%", y: "5%", s: 4, glow: false, pd: "4.5s", po: ".2", pt: "1.4s" },
+  { x: "92%", y: "12%", s: 7, glow: true, pd: "5s", po: ".45", pt: ".6s" },
+  { x: "5%", y: "22%", s: 5, glow: false, pd: "4s", po: ".3", pt: "1.8s" },
+  { x: "88%", y: "28%", s: 4, glow: false, pd: "5.5s", po: ".25", pt: ".2s" },
+  { x: "16%", y: "42%", s: 5, glow: true, pd: "5s", po: ".35", pt: "2s" },
+  { x: "82%", y: "45%", s: 6, glow: true, pd: "6s", po: ".4", pt: ".8s" },
+  { x: "10%", y: "58%", s: 4, glow: false, pd: "4.5s", po: ".2", pt: "1.2s" },
+  { x: "92%", y: "62%", s: 5, glow: true, pd: "5.5s", po: ".35", pt: "1.6s" },
+  { x: "6%", y: "78%", s: 6, glow: true, pd: "5s", po: ".4", pt: ".3s" },
+  { x: "28%", y: "88%", s: 4, glow: false, pd: "4s", po: ".25", pt: "1.9s" },
+  { x: "58%", y: "92%", s: 5, glow: true, pd: "6s", po: ".35", pt: ".7s" },
+  { x: "82%", y: "84%", s: 4, glow: false, pd: "5s", po: ".2", pt: "2.4s" },
+  { x: "95%", y: "76%", s: 7, glow: true, pd: "5.5s", po: ".45", pt: "1.1s" },
+];
+
 export default function LoginSentPage() {
   const email = "rina@tutorlog.id";
 
   return (
     <>
       <style>{`
-        .tab-only-nav, .tab-only-particle, .tab-only-quote { display: none; }
+        .tab-only-nav, .tab-only-particle, .tab-only-quote, .tab-only-rings, .tab-only-conn, .tab-only-card { display: none; }
         .tab-bg-dot {
           position: absolute;
           width: 3px;
@@ -86,14 +105,32 @@ export default function LoginSentPage() {
             animation: orbPulse 5s ease-in-out infinite;
           }
           .login-form {
-            max-width: 420px !important;
+            max-width: 400px !important;
             background: rgba(255,255,255,.96);
             border-radius: 20px;
             padding: 28px 28px;
-            box-shadow: 0 32px 80px rgba(0,0,0,.3), 0 0 120px rgba(140,246,210,.06);
+            box-shadow: 0 32px 80px rgba(0,0,0,.3), 0 0 80px rgba(140,246,210,.05);
             position: relative;
             z-index: 10;
             flex: none !important;
+          }
+          .login-stat-node {
+            padding: 10px 14px !important;
+          }
+          .login-stat-node .sn-val {
+            font-size: 20px !important;
+          }
+          .login-stat-node .sn-label {
+            font-size: 9px !important;
+          }
+          .login-stat-node .sn-sub {
+            font-size: 10px !important;
+          }
+          .login-fi-dark {
+            width: 44px !important; height: 44px !important;
+          }
+          .login-fi-dark svg {
+            width: 18px !important; height: 18px !important;
           }
           .login-form .icn { margin-bottom: 16px !important; }
           .login-form .icn svg { width: 36px !important; height: 36px !important; }
@@ -105,6 +142,69 @@ export default function LoginSentPage() {
           .tab-only-particle { display: block !important; }
           .tab-only-quote { display: block !important; }
           .tab-bg-dot { display: block !important; }
+          .tab-only-rings { display: block !important; }
+          .tab-only-conn { display: block !important; }
+          .tab-only-card { display: block !important; }
+          .tab-mini-card {
+            position: absolute;
+            width: 220px;
+            background: rgba(140,246,210,.06);
+            border: 1px solid rgba(140,246,210,.15);
+            border-radius: 18px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px 18px;
+            box-shadow: 0 24px 50px rgba(0,0,0,.3), 0 0 60px rgba(140,246,210,.06);
+            z-index: 3;
+            font-family: var(--f-body);
+          }
+          .tab-mini-card .mc-hdr {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+          }
+          .tab-mini-card .mc-title {
+            font-family: var(--f-title); font-weight: 700; font-size: 11px;
+            color: var(--tw-primary-soft); opacity: .9; letter-spacing: .5px;
+          }
+          .tab-mini-card .mc-date {
+            font-size: 9px; color: rgba(140,246,210,.5);
+          }
+          .tab-mini-card .mc-row {
+            display: flex; justify-content: space-between;
+            padding: 6px 8px;
+            background: rgba(140,246,210,.06);
+            border: 1px solid rgba(140,246,210,.08);
+            border-radius: 8px;
+            margin-bottom: 4px;
+          }
+          .tab-mini-card .mc-nm {
+            font-weight: 700; font-size: 10px; color: rgba(245,239,228,.9);
+          }
+          .tab-mini-card .mc-amt {
+            font-family: var(--f-title); font-weight: 700; font-size: 11px;
+            color: var(--tw-primary-soft);
+          }
+          .tab-mini-card .mc-total {
+            display: flex; justify-content: space-between; align-items: baseline;
+            margin-top: 8px; padding-top: 8px;
+            border-top: 1px dashed rgba(140,246,210,.15);
+          }
+          .tab-mini-card .mc-total-lbl {
+            font-size: 9px; color: rgba(140,246,210,.5);
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+          }
+          .tab-mini-card .mc-total-val {
+            font-family: var(--f-title); font-weight: 700; font-size: 15px;
+            color: var(--tw-primary-soft);
+          }
+          .tab-corner-glow {
+            position: absolute;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+            z-index: 0;
+          }
         }
         @keyframes orbPulse {
           0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
@@ -223,49 +323,105 @@ export default function LoginSentPage() {
               </Link>
             </nav>
 
+            {/* Tablet-only corner glows */}
+            <div className="tab-only-particle tab-corner-glow" style={{ top: "-100px", left: "-100px", background: "radial-gradient(circle, rgba(140,246,210,.18) 0%, transparent 70%)" }} />
+            <div className="tab-only-particle tab-corner-glow" style={{ bottom: "-100px", right: "-100px", background: "radial-gradient(circle, rgba(222,208,255,.12) 0%, transparent 70%)" }} />
+            <div className="tab-only-particle tab-corner-glow" style={{ top: "40%", right: "-150px", background: "radial-gradient(circle, rgba(255,219,209,.08) 0%, transparent 70%)" }} />
+
             {/* Tablet-only background dots */}
-            {Array.from({ length: 30 }).map((_, i) => (
+            {Array.from({ length: 60 }).map((_, i) => (
               <div key={`dot-${i}`} className="tab-bg-dot" style={{
                 left: `${(i * 37) % 100}%`,
                 top: `${(i * 53) % 100}%`,
-                opacity: 0.3 + (i % 3) * 0.2,
+                opacity: 0.25 + (i % 3) * 0.15,
               }} />
             ))}
 
+            {/* Tablet-only concentric rings behind form */}
+            <svg className="tab-only-rings login-rings" width="700" height="700" viewBox="0 0 700 700" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", pointerEvents: "none", zIndex: 1 }}>
+              <circle cx="350" cy="350" r="120" fill="none" stroke="rgba(140,246,210,.08)" strokeWidth="1" />
+              <circle cx="350" cy="350" r="200" fill="none" stroke="rgba(140,246,210,.06)" strokeWidth="1" />
+              <circle cx="350" cy="350" r="290" fill="none" stroke="rgba(140,246,210,.045)" strokeWidth="1" />
+              <circle cx="350" cy="350" r="340" fill="none" stroke="rgba(140,246,210,.03)" strokeWidth="1" strokeDasharray="4 6" />
+            </svg>
+
+            {/* Tablet-only constellation lines */}
+            <svg className="tab-only-conn login-connections" preserveAspectRatio="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 2 }}>
+              <line x1="8%" y1="10%" x2="22%" y2="6%" stroke="rgba(140,246,210,.08)" strokeWidth="1" />
+              <line x1="22%" y1="6%" x2="48%" y2="8%" stroke="rgba(140,246,210,.06)" strokeWidth="1" />
+              <line x1="48%" y1="8%" x2="72%" y2="5%" stroke="rgba(140,246,210,.06)" strokeWidth="1" />
+              <line x1="72%" y1="5%" x2="92%" y2="12%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+              <line x1="5%" y1="22%" x2="16%" y2="42%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+              <line x1="16%" y1="42%" x2="10%" y2="58%" stroke="rgba(140,246,210,.06)" strokeWidth="1" />
+              <line x1="10%" y1="58%" x2="6%" y2="78%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+              <line x1="88%" y1="28%" x2="82%" y2="45%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+              <line x1="82%" y1="45%" x2="92%" y2="62%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+              <line x1="92%" y1="62%" x2="95%" y2="76%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+              <line x1="6%" y1="78%" x2="28%" y2="88%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+              <line x1="28%" y1="88%" x2="58%" y2="92%" stroke="rgba(140,246,210,.06)" strokeWidth="1" />
+              <line x1="58%" y1="92%" x2="82%" y2="84%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+            </svg>
+
             {/* Tablet-only particles */}
-            {mobileParticles.map((p, i) => (
+            {tabParticles.map((p, i) => (
               <div key={`tab-p-${i}`} className="tab-only-particle login-particle pulse" style={{
                 position: "absolute",
                 left: p.x, top: p.y,
                 width: p.s, height: p.s,
                 borderRadius: "50%",
                 background: "var(--tw-primary-soft)",
-                zIndex: 2,
+                zIndex: 3,
                 ["--pd" as string]: p.pd, ["--po" as string]: p.po, ["--pt" as string]: p.pt,
               }} />
             ))}
 
-            {/* Tablet-only floating icons */}
-            <div className="tab-only-particle login-fi-dark" style={{ top: "30%", right: "25%" }}>
+            {/* Tablet-only floating icons — kept out of form vertical range */}
+            <div className="tab-only-particle login-fi-dark df1" style={{ top: "18%", left: "6%" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
             </div>
-            <div className="tab-only-particle login-fi-dark lav" style={{ bottom: "35%", left: "25%" }}>
+            <div className="tab-only-particle login-fi-dark lav df2" style={{ top: "18%", right: "6%" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
             </div>
-            <div className="tab-only-particle login-fi-dark warm" style={{ top: "60%", right: "25%" }}>
+            <div className="tab-only-particle login-fi-dark warm df3" style={{ bottom: "8%", right: "8%" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
             </div>
+            <div className="tab-only-particle login-fi-dark df4" style={{ top: "6%", left: "40%" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+            </div>
+            <div className="tab-only-particle login-fi-dark df5" style={{ bottom: "6%", left: "42%" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </div>
 
-            {/* Tablet-only stat nodes */}
-            <div className="tab-only-particle login-stat-node" style={{ top: "18%", left: "22%" }}>
+            {/* Tablet-only stat nodes — top corners */}
+            <div className="tab-only-particle login-stat-node fA" style={{ top: "8%", right: "6%" }}>
               <div className="sn-label">Bulan ini</div>
               <div className="sn-val">32 sesi</div>
               <div className="sn-sub">+6 dari Mei</div>
             </div>
-            <div className="tab-only-particle login-stat-node" style={{ bottom: "22%", right: "22%" }}>
+            <div className="tab-only-particle login-stat-node fB" style={{ top: "8%", left: "6%" }}>
               <div className="sn-label">Pendapatan</div>
               <div className="sn-val">Rp 5.9jt</div>
               <div className="sn-sub">4 murid aktif</div>
+            </div>
+
+            {/* Tablet-only mini invoice card — bottom-left */}
+            <div className="tab-only-particle tab-mini-card" style={{ bottom: "14%", left: "4%" }}>
+              <div className="mc-hdr">
+                <span className="mc-title">INV-2026/06-014</span>
+                <span className="mc-date">Juni</span>
+              </div>
+              <div className="mc-row">
+                <span className="mc-nm">Bintang W.</span>
+                <span className="mc-amt">Rp 720rb</span>
+              </div>
+              <div className="mc-row">
+                <span className="mc-nm">Kirana P.</span>
+                <span className="mc-amt">Rp 360rb</span>
+              </div>
+              <div className="mc-total">
+                <span className="mc-total-lbl">Total</span>
+                <span className="mc-total-val">Rp 2.12jt</span>
+              </div>
             </div>
 
             <div className="login-form login-sent" style={{ 
@@ -441,7 +597,7 @@ export default function LoginSentPage() {
             <div className="login-fi-dark lav df2" style={{ top: "58%", right: "8%" }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
             </div>
-            <div className="login-fi-dark warm df3" style={{ bottom: "16%", left: "16%" }}>
+            <div className="login-fi-dark warm df3" style={{ top: "45%", left: "6%" }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             </div>
             <div className="login-fi-dark df4" style={{ top: "26%", right: "10%" }}>
