@@ -52,8 +52,13 @@ const tabParticles = [
   { x: "95%", y: "76%", s: 7, glow: true, pd: "5.5s", po: ".45", pt: "1.1s" },
 ];
 
-export default function LoginSentPage() {
-  const email = "rina@tutorlog.id";
+export default async function LoginSentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string }>;
+}) {
+  const { email: emailParam } = await searchParams;
+  const email = emailParam || "nama@email.com";
 
   return (
     <>
