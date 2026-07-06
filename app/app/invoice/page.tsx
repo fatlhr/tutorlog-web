@@ -737,7 +737,7 @@ export default function InvoicePage() {
         <div className="vp-mobile">
           <div className="mob-page tw">
             <div className="mob-app-shell">
-              <div className="mob-app-main" style={{ padding: "20px 16px 100px" }}>
+              <div className="mob-app-main" style={{ padding: "68px 16px 100px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                   <h1 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20, margin: 0 }}>Invoice Builder</h1>
                 </div>
@@ -749,7 +749,7 @@ export default function InvoicePage() {
       )}
 
       <div className="vp-desktop">
-        <main className="app-main" style={{ padding: "32px 40px 40px", position: "relative" }}>
+        <main className="app-main" style={{ padding: "96px 40px 40px", position: "relative" }}>
           <div className="app-header">
             <div>
               <h1>Invoice Builder</h1>
