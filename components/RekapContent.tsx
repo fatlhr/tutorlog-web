@@ -86,8 +86,14 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
   const [studentFilter, setStudentFilter] = useState<string | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState(() => {
+    const d = new Date(year, month - 1, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const [dateTo, setDateTo] = useState(() => {
+    const d = new Date(year, month, 0);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
 
   const isDev = process.env.NODE_ENV === "development";
   const hasRealData = rekapData !== null && rekapData.sessions.length > 0;
@@ -230,16 +236,23 @@ export default function RekapContent({ rekapData, year, month }: RekapContentPro
       `;
 
       const container = document.createElement("div");
-      container.style.position = "absolute";
-      container.style.left = "-9999px";
+      container.style.position = "fixed";
       container.style.top = "0";
+      container.style.left = "0";
+      container.style.width = "800px";
+      container.style.zIndex = "-1";
+      container.style.opacity = "0";
+      container.style.pointerEvents = "none";
       container.innerHTML = html;
       document.body.appendChild(container);
+
+      await new Promise((r) => setTimeout(r, 200));
 
       const canvas = await html2canvas(container.firstChild as HTMLElement, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
+        windowWidth: 800,
       });
 
       document.body.removeChild(container);
