@@ -245,7 +245,7 @@
 > Tab "Langganan" dihapus dari TabBar & TopBar. Konten langganan pindah ke home.
 > Lihat `docs/superpowers/specs/` untuk detail desain.
 
-- [ ] **6.0 Sticky topbar + mobile branding**
+- [x] **6.0 Sticky topbar + mobile branding**
   - AppTopBar desktop: `position: sticky; top: 0; z-index: 30`
   - Mobile brand bar: logo + "TutorLog" di kiri, sticky top
   - Hapus "← Home" link di halaman invoice mobile (redundan)
