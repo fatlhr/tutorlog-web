@@ -379,11 +379,11 @@ export default function InvoicePage() {
 
               {/* Action buttons */}
               <div style={{ display: "flex", gap: 10 }}>
-                <button type="button" className="btn btn-secondary btn-lg" style={{ flex: 1 }} onClick={() => setPreviewOpen(true)}>
+                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setPreviewOpen(true)}>
                   <IcEye />
                   <span>Lihat Preview</span>
                 </button>
-                <button type="button" className="btn btn-primary btn-lg" style={{ flex: 1 }}>
+                <button type="button" className="btn btn-primary" style={{ flex: 1 }}>
                   <IcLockSm />
                   <span>Export PDF</span>
                   <IcDownload size={16} />
