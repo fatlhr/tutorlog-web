@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import TplKlasik from "@/components/invoice/TplKlasik";
+import { createClient } from "@/lib/supabase/client";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import TplKlasik, { type InvoiceData } from "@/components/invoice/TplKlasik";
 import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
+import PaywallDialog from "@/components/PaywallDialog";
 
 const MonitorIcon = () => (
   <svg width={36} height={36} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
@@ -46,19 +50,91 @@ const IcEye = ({ size = 16 }: { size?: number }) => (
 
 const Required = () => <span style={{ color: "var(--tw-error)" }}> *</span>;
 
-const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#8A5A00", "#161D1F"];
+const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#B7950B"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
 type Template = (typeof TEMPLATES)[number];
 
+const DUMMY_STUDENTS = [
+  { id: "dummy-1", name: "Bintang Wijaya", hourlyRate: null, billingType: null, educationLevel: "Kelas 10 – SMA Al-Azhar", address: "Jl. Kemang Raya No. 42, Jakarta Selatan", parentName: "Bpk. Ahmad Wijaya" },
+  { id: "dummy-2", name: "Kirana Putri", hourlyRate: null, billingType: null, educationLevel: "Kelas 8 – SMP Labschool", address: null, parentName: null },
+  { id: "dummy-3", name: "Aditya Rahman", hourlyRate: null, billingType: null, educationLevel: null, address: null, parentName: null },
+  { id: "dummy-4", name: "Meilani Sari", hourlyRate: null, billingType: null, educationLevel: null, address: null, parentName: null },
+];
+
+interface StudentOption {
+  id: string;
+  name: string;
+  hourlyRate: number | null;
+  billingType: string | null;
+  educationLevel: string | null;
+  address: string | null;
+  parentName: string | null;
+}
+
+interface InvoiceSessionItem {
+  id: string;
+  clockIn: string;
+  clockOut: string | null;
+  subject: string;
+  hours: number;
+  rate: number;
+  amount: number;
+}
+
+function formatDateLabel(d: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatInvoiceDate(d: Date): string {
+  return formatDateLabel(d);
+}
+
+function formatMonthDay(d: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]}`;
+}
+
+function generateInvoiceNo(): string {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const seq = String(Math.floor(Math.random() * 900) + 100);
+  return `INV-${yy}${mm}-${seq}`;
+}
+
 export default function InvoicePage() {
+  const supabase = createClient();
+
   const [template, setTemplate] = useState<Template>("klasik");
   const [accent, setAccent] = useState("#006C53");
   const [zoom, setZoom] = useState(75);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [dialogZoom, setDialogZoom] = useState(75);
+  const dialogStageRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!previewOpen) return;
+    const el = dialogStageRef.current;
+    if (!el) return;
+    let lastW = 0;
+    const fit = () => {
+      const w = el.clientWidth;
+      if (w > 0 && Math.abs(w - lastW) > 8) {
+        lastW = w;
+        setDialogZoom(Math.max(40, Math.min(200, Math.floor(((w - 16) / 594) * 100))));
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [previewOpen]);
+
   const [showMobileDialog, setShowMobileDialog] = useState(true);
   const [periodStart, setPeriodStart] = useState("2026-06-01");
   const [periodEnd, setPeriodEnd] = useState("2026-06-30");
-  const [lembaga, setLembaga] = useState("Rina Novianti · Bimbel Privat");
+  const [lembaga, setLembaga] = useState("");
   const [tutorName, setTutorName] = useState("Rina Novianti");
   const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
   const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
@@ -69,88 +145,343 @@ export default function InvoicePage() {
   const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
   const [bankName, setBankName] = useState("Rina Novianti");
   const [notes, setNotes] = useState("Terima kasih atas kepercayaannya. Pembayaran paling lambat 7 Juli 2026.");
-  const [hasSaved, setHasSaved] = useState(() => {
-    try {
-      return localStorage.getItem("tutorlog-invoice-settings") !== null;
-    } catch {
-      return false;
-    }
-  });
+  const [saveSettings, setSaveSettings] = useState(false);
+  const [students, setStudents] = useState<StudentOption[]>([]);
+  const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
+  const [invoiceNo, setInvoiceNo] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [quotaState, setQuotaState] = useState<{ pdfExportUnlimited: boolean; pdfExportCount30d: number }>({ pdfExportUnlimited: false, pdfExportCount30d: 0 });
+  const [studentsLoading, setStudentsLoading] = useState(true);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
-  const invoiceNo = useMemo(() => {
-    const d = new Date(periodStart + "T00:00:00");
-    if (isNaN(d.getTime())) return "INV-20260601-01-BW";
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const parts = studentName.split(/\s+/).filter(Boolean);
-    const initials = parts.length >= 2
-      ? (parts[0][0] + parts[1][0]).toUpperCase()
-      : studentName.slice(0, 2).toUpperCase();
-    return `INV-${y}${m}${dd}-01-${initials}`;
-  }, [periodStart, studentName]);
+  /* eslint-disable-next-line react-hooks/set-state-in-effect */
+  useEffect(() => { setInvoiceNo(generateInvoiceNo()); }, []);
 
   const periodLabel = (() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     const s = new Date(periodStart + "T00:00:00");
     const e = new Date(periodEnd + "T00:00:00");
     if (isNaN(s.getTime()) || isNaN(e.getTime())) return "1 – 30 Juni 2026";
     const sy = s.getFullYear() === e.getFullYear() ? "" : ` ${s.getFullYear()}`;
-    return `${s.getDate()} ${months[s.getMonth()]}${sy} – ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
+    return `${s.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][s.getMonth()]}${sy} – ${e.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][e.getMonth()]} ${e.getFullYear()}`;
   })();
 
-  const handleSaveSettings = useCallback(() => {
-    try {
-      localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
-        accent, bankAccount, bankName, lembaga,
-        tutorName, tutorLocation, tutorContact,
-      }));
-      setHasSaved(true);
-    } catch { /* localStorage not available */ }
-  }, [accent, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
+  useEffect(() => {
+    const doFetch = async () => {
+      setStudentsLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setStudents(DUMMY_STUDENTS); return; }
 
-  const handleLoadSettings = useCallback(() => {
+        const { data, error } = await supabase
+          .from("student_locations")
+          .select("id, student_name, hourly_rate, billing_type, education_level, address, parent_name")
+          .eq("tutor_id", user.id)
+          .is("deleted_at", null)
+          .order("student_name", { ascending: true });
+
+        if (error || !data) { setStudents(DUMMY_STUDENTS); return; }
+
+        const list: StudentOption[] = (data as Record<string, unknown>[]).map((row) => ({
+          id: row.id as string,
+          name: (row.student_name as string) ?? "Tanpa Nama",
+          hourlyRate: (row.hourly_rate as number) ?? null,
+          billingType: (row.billing_type as string) ?? null,
+          educationLevel: (row.education_level as string) ?? null,
+          address: (row.address as string) ?? null,
+          parentName: (row.parent_name as string) ?? null,
+        }));
+
+        setStudents(list.length > 0 ? list : DUMMY_STUDENTS);
+      } catch {
+        setStudents(DUMMY_STUDENTS);
+      } finally {
+        setStudentsLoading(false);
+      }
+    };
+    doFetch();
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!studentName || !periodStart || !periodEnd) return;
+    const doFetch = async () => {
+      setSessionsLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setInvoiceSessions([]); return; }
+
+        const startISO = new Date(periodStart + "T00:00:00").toISOString();
+        const endISO = new Date(periodEnd + "T23:59:59.999").toISOString();
+
+        const { data, error } = await supabase
+          .from("sessions")
+          .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode")
+          .eq("tutor_id", user.id)
+          .eq("status", "completed")
+          .gte("clock_in_at", startISO)
+          .lte("clock_in_at", endISO)
+          .order("clock_in_at", { ascending: true });
+
+        if (error || !data) { setInvoiceSessions([]); return; }
+
+        const filtered = (data as Record<string, unknown>[]).filter((row) =>
+          (row.student_name_snapshot as string) === studentName
+        );
+
+        const items: InvoiceSessionItem[] = filtered.map((row) => {
+          const clockIn = row.clock_in_at as string;
+          const clockOut = (row.clock_out_at as string) ?? null;
+          const startTime = new Date(clockIn).getTime();
+          const endTime = clockOut ? new Date(clockOut).getTime() : 0;
+          const hours = endTime > startTime ? Math.round(((endTime - startTime) / 36e5) * 10) / 10 : 0;
+          const rate = (row.hourly_rate_snapshot as number) ?? 0;
+          const billingType = (row.billing_type_snapshot as string) ?? null;
+          const amount = billingType === "flat" ? (rate || 0) : Math.round(hours * rate);
+          const educationLevel = (row.education_level_snapshot as string) ?? "";
+          const teachingMode = (row.teaching_mode as string) ?? "";
+
+          let subject = educationLevel;
+          if (teachingMode && subject) subject += ` · ${teachingMode}`;
+          else if (teachingMode) subject = teachingMode;
+
+          return { id: clockIn, clockIn, clockOut, subject: subject || "Sesi les", hours, rate, amount };
+        });
+
+        setInvoiceSessions(items);
+      } catch {
+        setInvoiceSessions([]);
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+    doFetch();
+  }, [studentName, periodStart, periodEnd, supabase]);
+
+  useEffect(() => {
+    const doCheck = async () => {
+      try {
+        const { data, error } = await supabase.rpc("get_user_access_status");
+        if (!error && data) {
+          const result = data as Record<string, unknown>;
+          setQuotaState({
+            pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
+            pdfExportCount30d: (result.pdf_export_count_30d as number) ?? 0,
+          });
+        }
+      } catch { /* ignore */ }
+    };
+    doCheck();
+  }, [supabase]);
+
+  const refreshQuota = useCallback(async () => {
     try {
-      const saved = localStorage.getItem("tutorlog-invoice-settings");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.accent) setAccent(parsed.accent);
-        if (parsed.bankAccount) setBankAccount(parsed.bankAccount);
-        if (parsed.bankName) setBankName(parsed.bankName);
-        if (parsed.lembaga) setLembaga(parsed.lembaga);
-        if (parsed.tutorName) setTutorName(parsed.tutorName);
-        if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
-        if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
+      const { data, error } = await supabase.rpc("get_user_access_status");
+      if (!error && data) {
+        const result = data as Record<string, unknown>;
+        setQuotaState({
+          pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
+          pdfExportCount30d: (result.pdf_export_count_30d as number) ?? 0,
+        });
       }
     } catch { /* ignore */ }
-  }, []);
+  }, [supabase]);
 
-  const renderPreview = () => (
-    <div className="inv-preview-wrap" style={{ overflow: "auto" }}>
-      <div className="inv-preview-toolbar">
-        <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
-        <div className="zoom-ctl">
-          <button type="button" onClick={() => setZoom(Math.max(40, zoom - 10))}><IcMinus /></button>
-          <span className="z">{zoom}%</span>
-          <button type="button" onClick={() => setZoom(Math.min(200, zoom + 10))}><IcPlus /></button>
+  const handleExportPDF = useCallback(async () => {
+    if (!quotaState.pdfExportUnlimited && quotaState.pdfExportCount30d >= 1) {
+      setPaywallOpen(true);
+      return;
+    }
+    setExporting(true);
+    try {
+      const container = exportRef.current;
+      if (!container) return;
+
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = position - pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
+
+      try {
+        await supabase.rpc("record_feature_usage_event", {
+          p_feature_key: "invoice_export",
+          p_event_type: "success",
+          p_metadata: { format: "pdf" },
+        });
+        refreshQuota();
+      } catch { /* non-blocking */ }
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    } finally {
+      setExporting(false);
+    }
+  }, [invoiceNo, quotaState, supabase, refreshQuota]);
+
+  const handleStudentChange = (name: string) => {
+    setStudentName(name);
+    const found = students.find((s) => s.name === name);
+    if (found) {
+      if (found.educationLevel) setStudentInfo(found.educationLevel);
+      if (found.address) setStudentAddress(found.address);
+      if (found.parentName) setParentName(found.parentName);
+    }
+  };
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("tutorlog-invoice-settings");
+      if (!saved) return;
+      const parsed = JSON.parse(saved);
+      if (parsed.accent) setAccent(parsed.accent);
+      if (TEMPLATES.includes(parsed.template)) setTemplate(parsed.template);
+      if (parsed.bankAccount) setBankAccount(parsed.bankAccount);
+      if (parsed.bankName) setBankName(parsed.bankName);
+      if (parsed.lembaga) setLembaga(parsed.lembaga);
+      if (parsed.tutorName) setTutorName(parsed.tutorName);
+      if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
+      if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
+      setSaveSettings(true);
+    } catch { /* ignore */ }
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!saveSettings) return;
+    try {
+      localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
+        accent, template, bankAccount, bankName, lembaga,
+        tutorName, tutorLocation, tutorContact,
+      }));
+    } catch { /* localStorage not available */ }
+  }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
+
+  const handleToggleSave = (checked: boolean) => {
+    setSaveSettings(checked);
+    if (!checked) {
+      try { localStorage.removeItem("tutorlog-invoice-settings"); } catch { /* ignore */ }
+    }
+  };
+
+  const buildInvoiceData = (): InvoiceData => {
+    const now = new Date();
+    const dueDate = new Date(periodEnd);
+    dueDate.setDate(dueDate.getDate() + 7);
+
+    const bankParts = bankAccount.split(" · ");
+    const bankCode = bankParts[0] || bankAccount;
+    const bankNo = bankParts[1] || bankAccount;
+
+    const items = invoiceSessions.length > 0
+      ? invoiceSessions.map((s) => ({
+          date: formatMonthDay(new Date(s.clockIn)),
+          desc: s.subject || "Sesi les",
+          h: s.hours,
+          rate: s.rate,
+        }))
+      : [
+          { date: "03 Jun", desc: "Matematika · Trigonometri", h: 1.5, rate: 120000 },
+          { date: "05 Jun", desc: "Matematika · Latihan Soal", h: 1.5, rate: 120000 },
+          { date: "10 Jun", desc: "Fisika · Gerak Lurus", h: 2.0, rate: 130000 },
+          { date: "12 Jun", desc: "Matematika · Trigonometri", h: 1.5, rate: 120000 },
+          { date: "17 Jun", desc: "Fisika · Hukum Newton", h: 2.0, rate: 130000 },
+          { date: "19 Jun", desc: "Matematika · Persiapan UH", h: 1.5, rate: 120000 },
+          { date: "24 Jun", desc: "Fisika · Energi & Usaha", h: 2.0, rate: 130000 },
+          { date: "26 Jun", desc: "Matematika · Review UH", h: 1.5, rate: 120000 },
+        ];
+
+    return {
+      no: invoiceNo,
+      date: formatInvoiceDate(now),
+      due: formatInvoiceDate(dueDate),
+      period: periodLabel,
+      lembaga: lembaga || undefined,
+      from: {
+        name: tutorName,
+        lines: [
+          lembaga || "Tutor Privat",
+          tutorLocation,
+          tutorContact,
+        ].filter(Boolean),
+      },
+      to: {
+        name: parentName,
+        lines: [
+          studentInfo ? `Orang tua ${studentName}` : studentName,
+          studentInfo || "",
+          studentAddress || "",
+        ].filter(Boolean),
+      },
+      bank: { bank: bankCode, no: bankNo, name: bankName },
+      items,
+      notes,
+    };
+  };
+
+  const renderPreview = (dialog = false) => {
+    const z = dialog ? dialogZoom : zoom;
+    const setZ = dialog ? setDialogZoom : setZoom;
+    const invoiceData = buildInvoiceData();
+    return (
+      <div
+        className={"inv-preview-wrap" + (dialog ? " inv-preview-dialog" : "")}
+        style={{ overflow: "auto" }}
+        onClick={dialog ? (e) => e.stopPropagation() : undefined}
+      >
+        {dialog && (
+          <div className="inv-dialog-close">
+            <button type="button" onClick={() => setPreviewOpen(false)} className="btn btn-ghost btn-sm">Tutup</button>
+          </div>
+        )}
+        <div className="inv-preview-toolbar">
+          <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
+          <div className="zoom-ctl">
+            <button type="button" onClick={() => setZ((v) => Math.max(40, v - 10))}><IcMinus /></button>
+            <span className="z">{z}%</span>
+            <button type="button" onClick={() => setZ((v) => Math.min(200, v + 10))}><IcPlus /></button>
+          </div>
+        </div>
+        <div style={{ overflow: "auto", flex: 1 }} className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
+          <div className="a4-stage" style={{ zoom: z / 100 }}>
+            <A4Page>
+              {template === "klasik" && <TplKlasik acc={accent} data={invoiceData} />}
+              {template === "modern" && <TplModern acc={accent} data={invoiceData} />}
+              {template === "minimal" && <TplMinimal acc={accent} data={invoiceData} />}
+            </A4Page>
+          </div>
         </div>
       </div>
-      <div style={{ overflow: "auto", flex: 1 }} className="a4-preview">
-        <div className="a4-stage" style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}>
-          <A4Page>
-            {template === "klasik" && <TplKlasik acc={accent} />}
-            {template === "modern" && <TplModern acc={accent} />}
-            {template === "minimal" && <TplMinimal acc={accent} />}
-          </A4Page>
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderForm = () => (
     <div className="inv-form" style={{ overflowY: "auto", paddingRight: 8 }}>
 
-      {/* Section: Invoice */}
       <div className="inv-section">
         <h4 className="inv-section-title">Invoice</h4>
 
@@ -164,18 +495,8 @@ export default function InvoicePage() {
           <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
         </div>
 
-        <div className="field inv-no-desktop">
-          <div className="lbl">Nomor Invoice</div>
-          <div className="input" style={{ fontFamily: "var(--f-title)", fontWeight: 700, color: "var(--tw-text-3)" }}>
-            {invoiceNo}
-          </div>
-          <div className="help">Dibuat otomatis</div>
-        </div>
       </div>
 
-      <div className="divide"></div>
-
-      {/* Section: Tutor & Murid */}
       <div className="inv-section-row">
         <div className="inv-section-col">
           <h4 className="inv-section-title">Tutor</h4>
@@ -201,22 +522,22 @@ export default function InvoicePage() {
           </div>
         </div>
 
+        <div className="divide inv-section-divide"></div>
+
         <div className="inv-section-col">
           <h4 className="inv-section-title">Murid</h4>
 
           <div className="field">
             <div className="lbl">Nama Murid<Required /></div>
-            <select className="input" value={studentName} onChange={(e) => setStudentName(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }}>
-              <option value="Bintang Wijaya">Bintang Wijaya</option>
-              <option value="Kirana Putri">Kirana Putri</option>
-              <option value="Aditya Rahman">Aditya Rahman</option>
-              <option value="Meilani Sari">Meilani Sari</option>
+            <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }} disabled={studentsLoading}>
+              {studentsLoading ? (
+                <option value="">Memuat...</option>
+              ) : (
+                students.map((s) => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                ))
+              )}
             </select>
-          </div>
-
-          <div className="field">
-            <div className="lbl">Ditagih Kepada<Required /></div>
-            <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
           </div>
 
           <div className="field">
@@ -225,15 +546,38 @@ export default function InvoicePage() {
           </div>
 
           <div className="field">
+            <div className="lbl">Ditagih Kepada<Required /></div>
+            <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
+          </div>
+
+          <div className="field">
             <div className="lbl">Alamat</div>
             <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. Kemang Raya No. 42" />
           </div>
+
+          {sessionsLoading ? (
+            <div className="field">
+              <div className="lbl">Item Invoice</div>
+              <div className="tw-helper" style={{ marginTop: 2 }}>Memuat sesi...</div>
+            </div>
+          ) : invoiceSessions.length > 0 ? (
+            <div className="field">
+              <div className="lbl">Item Invoice</div>
+              <div className="tw-helper" style={{ marginTop: 2 }}>
+                {invoiceSessions.length} sesi otomatis dari {studentName} ({periodLabel})
+              </div>
+            </div>
+          ) : invoiceSessions.length === 0 && studentName && periodStart && periodEnd ? (
+            <div className="field">
+              <div className="lbl">Item Invoice</div>
+              <div className="tw-helper" style={{ marginTop: 2, color: "var(--tw-text-3)" }}>
+                Tidak ada sesi untuk {studentName} di periode ini
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <div className="divide"></div>
-
-      {/* Section: Pembayaran */}
       <div className="inv-section">
         <h4 className="inv-section-title">Pembayaran</h4>
 
@@ -250,9 +594,6 @@ export default function InvoicePage() {
         </div>
       </div>
 
-      <div className="divide"></div>
-
-      {/* Section: Catatan */}
       <div className="inv-section">
         <h4 className="inv-section-title">Catatan</h4>
 
@@ -261,9 +602,6 @@ export default function InvoicePage() {
         </div>
       </div>
 
-      <div className="divide"></div>
-
-      {/* Section: Tema */}
       <div className="inv-section">
         <h4 className="inv-section-title">Tema</h4>
 
@@ -299,41 +637,37 @@ export default function InvoicePage() {
         </div>
       </div>
 
-      <div className="divide"></div>
-
-      {/* Pengaturan */}
       <div className="inv-section">
         <h4 className="inv-section-title">Pengaturan</h4>
 
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveSettings} style={{ flex: 1 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" /></svg>
-            <span>Simpan Pengaturan</span>
-          </button>
-          {hasSaved && (
-            <button type="button" className="btn btn-ghost btn-sm" onClick={handleLoadSettings} style={{ flex: 1 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg>
-              <span>Gunakan Tersimpan</span>
-            </button>
-          )}
+        <label className="inv-save-check">
+          <input
+            type="checkbox"
+            checked={saveSettings}
+            onChange={(e) => handleToggleSave(e.target.checked)}
+          />
+          <span>Simpan pengaturan untuk invoice berikutnya</span>
+        </label>
+
+        <div className="tw-helper" style={{ marginTop: -4 }}>
+          Yang disimpan: profil tutor (nama, lembaga, lokasi, kontak), rekening
+          pembayaran, dan tema (template + warna aksen) — tersimpan di perangkat
+          ini dan terisi otomatis saat halaman dibuka lagi.
         </div>
       </div>
 
-      <div className="divide"></div>
-
-      {/* Action buttons */}
       <div className="inv-form-actions">
-        <button type="button" className="btn btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => setPreviewOpen(true)}>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setInvoiceNo(generateInvoiceNo()); setPreviewOpen(true); }}>
           <IcEye />
           <span>Lihat Preview</span>
         </button>
-        <button type="button" className="btn btn-primary btn-sm" style={{ flex: 1 }}>
+        <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting}>
           <IcLockSm />
-          <span>Export PDF</span>
+          <span>{exporting ? "Mengekspor..." : "Export PDF"}</span>
           <IcDownload size={16} />
         </button>
       </div>
-      <div className="tw-helper" style={{ textAlign: "center", marginTop: 4 }}>
+      <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
         Fitur premium — perlu langganan aktif.
       </div>
     </div>
@@ -353,28 +687,13 @@ export default function InvoicePage() {
         aria-modal="true"
         aria-label="Preview Invoice"
       >
-        <div
-          style={{
-            background: "var(--tw-bg)", borderRadius: "var(--r-xxl)",
-            maxWidth: 900, width: "100%", maxHeight: "90vh",
-            overflow: "auto", padding: 16,
-            boxShadow: "0 24px 60px rgba(0,0,0,.18)",
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <div className="tw-title-md">Preview Invoice</div>
-            <button type="button" onClick={() => setPreviewOpen(false)} className="btn btn-ghost btn-sm">Tutup</button>
-          </div>
-          {renderPreview()}
-        </div>
+        {renderPreview(true)}
       </div>
     )
   );
 
   return (
     <>
-      {/* MOBILE — Dialog awal */}
       {showMobileDialog && (
         <div className="vp-mobile">
           <div className="mob-page tw">
@@ -405,7 +724,6 @@ export default function InvoicePage() {
         </div>
       )}
 
-      {/* MOBILE — Form (setelah dialog ditutup) */}
       {!showMobileDialog && (
         <div className="vp-mobile">
           <div className="mob-page tw">
@@ -421,7 +739,6 @@ export default function InvoicePage() {
         </div>
       )}
 
-      {/* DESKTOP / TABLET */}
       <div className="vp-desktop">
         <main className="app-main" style={{ padding: "32px 40px 40px", position: "relative" }}>
           <div className="app-header">
@@ -432,9 +749,9 @@ export default function InvoicePage() {
           </div>
 
           <div className="inv-export-top">
-              <button type="button" className="btn btn-primary btn-sm">
+              <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting}>
                 <IcLockSm />
-                <span>Export PDF</span>
+                <span>{exporting ? "Mengekspor..." : "Export PDF"}</span>
                 <IcDownload size={16} />
               </button>
             </div>
@@ -448,6 +765,26 @@ export default function InvoicePage() {
       </div>
 
       {renderPreviewDialog()}
+
+      <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} />
+
+      <div
+        ref={exportRef}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: "-9999px",
+          width: "794px",
+          zIndex: -1,
+        }}
+      >
+        <div style={{ width: "794px", aspectRatio: "1 / 1.4142", background: "#fff", padding: "42px", position: "relative", overflow: "hidden", fontFamily: "var(--f-body)", fontSize: "11px", color: "var(--tw-text)" }}>
+          {template === "klasik" && <TplKlasik acc={accent} data={buildInvoiceData()} />}
+          {template === "modern" && <TplModern acc={accent} data={buildInvoiceData()} />}
+          {template === "minimal" && <TplMinimal acc={accent} data={buildInvoiceData()} />}
+          <div style={{ position: "absolute", right: "20px", bottom: "16px", fontFamily: "var(--f-body)", fontStyle: "italic", fontSize: "9px", color: "var(--tw-text-3)", opacity: 0.6 }}>Generated by TutorLog</div>
+        </div>
+      </div>
     </>
   );
 }

@@ -79,6 +79,7 @@
 .tpl-klasik .k-total-block .total {
   border-top: 2px solid var(--acc, #006C53);
   padding-top: 8px; margin-top: 4px;
+  display: flex; justify-content: space-between; align-items: baseline;
 }
 .tpl-klasik .k-total-block .total .lbl {
   font-family: var(--f-title); font-weight: 700; font-size: 12px; color: var(--tw-text);

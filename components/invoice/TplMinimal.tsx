@@ -41,6 +41,9 @@ export default function TplMinimal({ acc = "#006C53", data = defaultData }: TplM
 
   return (
     <div className="tpl tpl-minimal" style={{ ["--acc" as string]: acc }}>
+      {data.lembaga && (
+        <div style={{ fontFamily: "var(--f-body)", fontSize: 11, color: "var(--tw-text-3)", marginBottom: 8, letterSpacing: "1px", textTransform: "uppercase" }}>{data.from.name} · {data.lembaga}</div>
+      )}
       <h1 className="mn-title">INVOICE</h1>
       <div className="mn-underline"></div>
 
