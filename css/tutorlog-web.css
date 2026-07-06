@@ -1182,9 +1182,9 @@
   border-radius: var(--r-xxl);
   position: relative;
   overflow: hidden;
-  padding: 32px;
+  padding: 20px;
   min-height: 800px;
-  display: flex; flex-direction: column; gap: 16px;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .inv-preview-wrap .a4-stage::before {
   content: '';
