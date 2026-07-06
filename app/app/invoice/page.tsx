@@ -179,7 +179,7 @@ export default function InvoicePage() {
           </div>
 
           <div className="invoice-layout">
-            <div className="inv-form" style={{ overflowY: "auto", maxHeight: "calc(100vh - 200px)", paddingRight: 8 }}>
+            <div className="inv-form" style={{ overflowY: "auto", paddingRight: 8 }}>
 
               {/* Section: Invoice */}
               <h4 className="inv-section-title" style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", textTransform: "uppercase", letterSpacing: ".5px", margin: "0 0 4px" }}>Invoice</h4>
