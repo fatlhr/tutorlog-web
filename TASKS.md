@@ -37,9 +37,9 @@
 | 8 | `/terms` | ✅ | ✅ | Static |
 | 9 | `/account` | ✅ | ✅ | Static |
 | 10 | `/kontak` | ✅ | ✅ | Static |
-| 11 | `/app/rekap` | ✅ | ✅ | Protected |
-| 12 | `/app/invoice` | ⬜ | ⬜ | Protected |
-| 13 | `/app/langganan` | ⬜ | ⬜ | Protected |
+| 11 | `/app` (home) | ⬜ | ⬜ | Protected |
+| 12 | `/app/rekap` | ✅ | ✅ | Protected |
+| 13 | `/app/invoice` | ⬜ | ⬜ | Protected |
 
 ---
 
@@ -239,20 +239,41 @@
 
 ---
 
-## Phase 6 — Langganan
+## Phase 6 — Home Dashboard & Langganan
 
-- [ ] **6.1 Langganan UI** — `app/app/langganan/page.tsx`
+> Desain: setelah login user masuk ke home (`/app`) dengan 2 card menu + langganan + CTA download.
+> Tab "Langganan" dihapus dari TabBar & TopBar. Konten langganan pindah ke home.
+> Lihat `docs/superpowers/specs/` untuk detail desain.
+
+- [ ] **6.1 Home page** — `app/app/page.tsx`
+  - Section 1: Menu cards — 2 card navigasi (Rekap Sesi + Buat Invoice), klik → halaman masing-masing
+  - Section 2: Langganan — tampil hanya jika user Free (full konten: plan card, PLUS, bank, cara aktivasi)
+  - Section 3: CTA Download — "Download TutorLog di Play Store" (selalu tampil, link Play Store)
+  - Dual viewport (mobile + desktop)
+  - _DoD: Home render dengan 3 section, conditional langganan, CTA download_
+
+- [ ] **6.2 Remove langganan tab**
+  - Hapus tab "Langganan" dari `TabBar.tsx` (mobile: Rekap | Invoice | Lainnya)
+  - Hapus nav "Langganan" dari `AppTopBar.tsx` (desktop: Rekap Sesi | Invoice Builder)
+  - Hapus `app/app/langganan/page.tsx`
+  - _DoD: Tab bar 3 item, topbar 2 nav item, route /app/langganan hilang_
+
+- [ ] **6.3 Update redirects**
+  - Login callback (`app/auth/callback/route.ts`) redirect → `/app`
+  - Login page (`app/login/page.tsx`) redirect → `/app`
+  - _DoD: Setelah login user masuk ke home dashboard_
+
+- [ ] **6.4 Subscription state wiring**
+  - Check user plan dari Supabase (`get_user_access_status` RPC)
+  - Gate features: Free (PDF 1×/bulan, invoice preview watermark, tampil langganan di home) vs PLUS (unlimited PDF, 3 template, no watermark, home tanpa langganan section)
+  - _DoD: Free user lihat langganan di home, Plus user tidak_
+
+- [ ] **6.5 Langganan content in home**
   - Current plan card (Free)
-  - PLUS Beli Putus card (dark, Rp 149.000 sekali bayar, CTA)
-  - PLUS Bulanan card (Rp 19.000/bulan, alternatif)
+  - PLUS card (dark, Rp 149.000 sekali bayar / Rp 19.000/bulan)
   - Bank transfer info
-  - Pricing logic: Free (rekap unlimited, PDF 1x/bulan, invoice preview watermark) → PLUS Beli Putus (PDF unlimited, invoice 3 template, no watermark, custom warna)
-  - _DoD: UI sesuai desain_
-
-- [ ] **6.2 Subscription state**
-  - Check user plan dari Supabase
-  - Gate features: Free (PDF export 1×/bulan, invoice preview watermark) vs PLUS (unlimited PDF, 3 invoice templates, no watermark, custom warna)
-  - _DoD: Free user terbatas, Plus user unlimited_
+  - Cara aktivasi
+  - _DoD: Konten langganan tampil di home untuk user Free, UI sesuai desain_
 
 ---
 
