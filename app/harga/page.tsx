@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import MenuToggle from "@/components/MenuToggle";
+import PricingCards from "@/components/PricingCards";
 
 export const metadata: Metadata = {
   title: "TutorLog — Harga",
@@ -11,13 +12,6 @@ export const metadata: Metadata = {
 export default function HargaPage() {
   return (
     <>
-      <style>{`
-        .mob-price-card { transition: all .25s ease; }
-        .mob-price-card:hover { transform: translateY(-4px); }
-        .mob-price-card--free:hover { border-color: var(--tw-primary-soft); }
-        .harga-pricing .card { transition: all .25s ease; }
-        .harga-pricing .card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
-      `}</style>
       {/* MOBILE */}
       <div className="vp-mobile">
         <div className="mob-page tw">
@@ -40,78 +34,7 @@ export default function HargaPage() {
           </div>
 
           <div className="mob-harga-body">
-            {/* Free tier */}
-            <div className="mob-price-card mob-price-card--free">
-              <div className="mob-price-header">
-                <span className="mob-price-tier">Free</span>
-                <div className="mob-price-amount">
-                  <span className="mob-price-currency">Rp</span>
-                  <span className="mob-price-value">0</span>
-                </div>
-                <span className="mob-price-period">selamanya</span>
-              </div>
-              <div className="mob-price-divider"></div>
-              <ul className="mob-price-features">
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Rekap bulanan lengkap</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Filter per murid</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export PDF rekap (1×/bulan)</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export CSV (1×/bulan)</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Invoice builder (preview only)</li>
-              </ul>
-              <Link className="btn btn-secondary btn-sm" href="/login" style={{ width: "100%" }}>Mulai Gratis</Link>
-            </div>
-
-            {/* PLUS Beli Putus */}
-            <div className="mob-price-card mob-price-card--plus">
-              <div className="mob-price-badge">Rekomendasi</div>
-              <div className="plan-orb"></div>
-              <div className="mob-price-header">
-                <span className="mob-price-tier">PLUS Beli Putus</span>
-                <div style={{ fontSize: 11, color: "#f87171", fontWeight: 600, background: "rgba(248,113,113,.1)", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 47%</div>
-                <div style={{ fontSize: 14, textDecoration: "line-through", color: "#f87171", marginBottom: 2, fontWeight: 500 }}>Rp 149rb</div>
-                <div className="mob-price-amount">
-                  <span className="mob-price-currency">Rp</span>
-                  <span className="mob-price-value">79rb</span>
-                </div>
-                <span className="mob-price-period">sekali bayar · akses seumur hidup</span>
-              </div>
-              <div className="mob-price-divider"></div>
-              <ul className="mob-price-features">
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Semua fitur Free</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export invoice PDF tanpa batas</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export rekap tanpa batas</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>3 template + kustom warna</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Prioritas dukungan WA</li>
-              </ul>
-              <Link className="btn btn-primary btn-sm" href="/app/langganan"
-                style={{ width: "100%", background: "var(--tw-primary-soft)", color: "var(--tw-primary-dark)" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                  Bayar via Lynk.id
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14 21 3" /></svg>
-                </span>
-              </Link>
-            </div>
-
-            {/* PLUS Bulanan */}
-            <div className="mob-price-card mob-price-card--free" style={{ borderColor: "var(--tw-primary-soft)" }}>
-              <div className="mob-price-header">
-                <span className="mob-price-tier">PLUS Bulanan</span>
-                <div style={{ fontSize: 11, color: "#ef4444", fontWeight: 600, background: "rgba(239,68,68,.1)", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
-                <div style={{ fontSize: 14, textDecoration: "line-through", color: "#ef4444", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
-                <div className="mob-price-amount">
-                  <span className="mob-price-currency">Rp</span>
-                  <span className="mob-price-value">9rb</span>
-                </div>
-                <span className="mob-price-period">per bulan</span>
-              </div>
-              <div className="mob-price-divider"></div>
-              <ul className="mob-price-features">
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Semua fitur PLUS</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Bayar per bulan, tanpa komitmen</li>
-                <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Bisa berhenti kapan saja</li>
-              </ul>
-              <Link className="btn btn-secondary btn-sm" href="/app/langganan" style={{ width: "100%" }}>Pilih Bulanan</Link>
-            </div>
+            <PricingCards variant="harga" />
 
             {/* FAQ */}
             <div className="mob-faq-section">
@@ -234,91 +157,7 @@ export default function HargaPage() {
         {/* BODY */}
         <div style={{ maxWidth: 920, margin: "0 auto", padding: "48px 32px 64px", fontFamily: "var(--f-body)", fontSize: 15, lineHeight: 1.7, color: "var(--tw-text-2)" }}>
           <div className="harga-pricing" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, marginBottom: 48 }}>
-            {/* Free plan */}
-            <div className="card" style={{ padding: "32px 28px", display: "flex", flexDirection: "column" }}>
-              <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 8 }}>Free</div>
-              <div style={{ marginBottom: 8 }}>
-                <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36, color: "var(--tw-text)" }}>Rp 0</div>
-                <div style={{ fontSize: 13, color: "var(--tw-text-3)", marginTop: 4 }}>/ selamanya</div>
-              </div>
-              <p style={{ fontSize: 14, color: "var(--tw-text-2)", marginBottom: 24, lineHeight: 1.6 }}>Untuk tutor yang baru mulai atau mengelola sedikit murid.</p>
-              <ul style={{ paddingLeft: 0, margin: "0 0 32px", listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-                {["Rekap bulanan lengkap", "Filter per murid", "Custom date range", "Export PDF rekap (1×/bulan)", "Export CSV rekap (1×/bulan)", "Invoice builder (preview only)"].map((f, i) => (
-                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14 }}>
-                    <span style={{ width: 20, height: 20, borderRadius: "var(--r-full)", background: "var(--tw-secondary-soft)", color: "var(--tw-primary)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "0 0 20px", marginTop: 1 }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div style={{ marginTop: "auto" }}>
-                <Link className="btn btn-secondary btn-lg" href="/login" style={{ width: "100%" }}>Mulai Gratis</Link>
-              </div>
-            </div>
-
-            {/* PLUS Beli Putus */}
-            <div className="card" style={{
-              padding: "32px 28px", display: "flex", flexDirection: "column",
-              background: "linear-gradient(170deg, #0f2920, #143328)", color: "#F5EFE4",
-              border: "1px solid rgba(140,246,210,.15)",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, letterSpacing: ".5px", textTransform: "uppercase", color: "var(--tw-primary-soft)" }}>PLUS Beli Putus</div>
-                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "var(--f-body)", padding: "3px 10px", borderRadius: "var(--r-full)", background: "rgba(140,246,210,.15)", color: "var(--tw-primary-soft)" }}>Rekomendasi</span>
-              </div>
-              <div style={{ marginBottom: 4 }}>
-                <div style={{ fontSize: 12, color: "#f87171", fontWeight: 600, fontFamily: "var(--f-body)", background: "rgba(248,113,113,.1)", padding: "2px 10px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 47%</div>
-                <div style={{ fontSize: 16, textDecoration: "line-through", color: "#f87171", marginBottom: 2, fontWeight: 500 }}>Rp 149rb</div>
-                <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36 }}>Rp 79rb</div>
-                <div style={{ fontSize: 13, color: "rgba(140,246,210,.6)", fontWeight: 400, fontFamily: "var(--f-body)", marginTop: 4 }}>/ sekali</div>
-              </div>
-              <p style={{ fontSize: 13, color: "rgba(245,239,228,.65)", marginBottom: 24, lineHeight: 1.5 }}>Akses seumur hidup. Bayar sekali, pakai selamanya.</p>
-              <ul style={{ paddingLeft: 0, margin: "0 0 32px", listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-                {["Semua fitur Free", "Export invoice PDF tanpa batas", "Export rekap PDF & CSV tanpa batas", "3 template invoice + kustom warna", "Simpan rekening + template favorit", "Prioritas dukungan via WhatsApp"].map((f, i) => (
-                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14 }}>
-                    <span style={{ width: 20, height: 20, borderRadius: "var(--r-full)", background: "rgba(140,246,210,.12)", color: "var(--tw-primary-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "0 0 20px", marginTop: 1 }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div style={{ marginTop: "auto" }}>
-                <Link className="btn btn-primary btn-lg" href="/app/langganan"
-                  style={{ width: "100%", padding: "0 24px", background: "var(--tw-primary-soft)", color: "var(--tw-primary-dark)" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                    Bayar via Lynk.id
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14 21 3" /></svg>
-                  </span>
-                </Link>
-              </div>
-            </div>
-
-            {/* PLUS Bulanan */}
-            <div className="card" style={{ padding: "32px 28px", display: "flex", flexDirection: "column" }}>
-              <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 8 }}>PLUS Bulanan</div>
-              <div style={{ marginBottom: 8 }}>
-                <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, fontFamily: "var(--f-body)", background: "rgba(239,68,68,.1)", padding: "2px 10px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
-                <div style={{ fontSize: 16, textDecoration: "line-through", color: "#ef4444", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
-                <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36, color: "var(--tw-text)" }}>Rp 9rb</div>
-                <div style={{ fontSize: 13, color: "var(--tw-text-3)", marginTop: 4 }}>/ bulan</div>
-              </div>
-              <p style={{ fontSize: 14, color: "var(--tw-text-2)", marginBottom: 24, lineHeight: 1.6 }}>Alternatif fleksibel — bayar bulanan, tanpa komitmen jangka panjang.</p>
-              <ul style={{ paddingLeft: 0, margin: "0 0 32px", listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-                {["Semua fitur PLUS", "Bayar per bulan", "Bisa berhenti kapan saja"].map((f, i) => (
-                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14 }}>
-                    <span style={{ width: 20, height: 20, borderRadius: "var(--r-full)", background: "var(--tw-secondary-soft)", color: "var(--tw-primary)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "0 0 20px", marginTop: 1 }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div style={{ marginTop: "auto" }}>
-                <Link className="btn btn-secondary btn-lg" href="/app/langganan" style={{ width: "100%" }}>Pilih Bulanan</Link>
-              </div>
-            </div>
+            <PricingCards variant="harga" />
           </div>
 
           <h2 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 22, margin: "0 0 16px", color: "var(--tw-text)" }}>Pertanyaan Umum</h2>

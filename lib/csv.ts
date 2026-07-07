@@ -4,6 +4,7 @@ export interface SessionRow {
   s: string;
   h: number;
   t: string;
+  rawAmount?: number;
 }
 
 function escapeCSV(value: string): string {

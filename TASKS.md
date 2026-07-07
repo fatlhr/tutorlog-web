@@ -286,6 +286,13 @@
   - Tombol "← Home" di halaman Invoice (mobile + desktop) → `/app`
   - _DoD: Klik "Home" dari Rekap/Invoice → redirect ke `/app`_
 
+- [x] **6.7 Fixes & shared components**
+  - Date range replaces month picker pada Rekap (fetch by range, URL-based)
+  - Fix PaywallDialog link `/app/langganan` → `/app`
+  - Shared `PricingCards` component untuk `/app` dan `/harga`
+  - Konfirmasi Pembayaran via WhatsApp di home
+  - _DoD: Date range berfungsi, harga page konsisten, konfirmasi link berfungsi_
+
 ---
 
 ## Phase 7 — QA & Ship

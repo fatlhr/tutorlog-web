@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import PricingCards from "@/components/PricingCards";
 
 export const metadata: Metadata = {
   title: "TutorLog — Home",
@@ -64,87 +66,68 @@ export default async function HomePage() {
                   <div style={{ marginBottom: 32 }}>
                     <h2 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 18, margin: "0 0 16px" }}>Langganan</h2>
 
-                    <div className="mob-price-card mob-price-card--free" style={{ marginBottom: 16 }}>
-                      <div className="mob-price-header">
-                        <span className="mob-price-tier">Free</span>
-                        <div className="mob-price-amount">
-                          <span className="mob-price-currency">Rp</span>
-                          <span className="mob-price-value">0</span>
-                        </div>
-                        <span className="mob-price-period">selamanya</span>
-                      </div>
-                      <div className="mob-price-divider"></div>
-                      <ul className="mob-price-features">
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Rekap bulanan lengkap</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Filter per murid</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export PDF rekap (1×/bulan)</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export CSV (1×/bulan)</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Invoice builder (preview only)</li>
-                      </ul>
-                    </div>
+<PricingCards variant="home" />
 
-                    <div className="mob-price-card mob-price-card--plus" style={{ marginBottom: 16 }}>
-                      <div className="mob-price-badge">Rekomendasi</div>
-                      <div className="plan-orb"></div>
-                      <div className="mob-price-header">
-                        <span className="mob-price-tier">PLUS Beli Putus</span>
-                        <div style={{ fontSize: 11, color: "#f87171", fontWeight: 600, background: "rgba(248,113,113,.1)", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 47%</div>
-                        <div style={{ fontSize: 14, textDecoration: "line-through", color: "#f87171", marginBottom: 2, fontWeight: 500 }}>Rp 149rb</div>
-                        <div className="mob-price-amount">
-                          <span className="mob-price-currency">Rp</span>
-                          <span className="mob-price-value">79rb</span>
-                        </div>
-                        <span className="mob-price-period">sekali bayar · akses seumur hidup</span>
-                      </div>
-                      <div className="mob-price-divider"></div>
-                      <ul className="mob-price-features">
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Semua fitur Free</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export invoice PDF tanpa batas</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Export rekap tanpa batas</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>3 template + kustom warna</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Prioritas dukungan WA</li>
-                      </ul>
-                      <a href="https://lynk.id/tutorlog" target="_blank" rel="noopener" className="btn btn-primary btn-sm"
-                        style={{ width: "100%", background: "var(--tw-primary-soft)", color: "var(--tw-primary-dark)", gap: 6 }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          Bayar via Lynk.id
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14 21 3" /></svg>
-                        </span>
-                      </a>
-                    </div>
-
-                    <div className="mob-price-card mob-price-card--free" style={{ borderColor: "var(--tw-primary-soft)", marginBottom: 16 }}>
-                      <div className="mob-price-header">
-                        <span className="mob-price-tier">PLUS Bulanan</span>
-                        <div style={{ fontSize: 11, color: "#ef4444", fontWeight: 600, background: "rgba(239,68,68,.1)", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
-                        <div style={{ fontSize: 14, textDecoration: "line-through", color: "#ef4444", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
-                        <div className="mob-price-amount">
-                          <span className="mob-price-currency">Rp</span>
-                          <span className="mob-price-value">9rb</span>
-                        </div>
-                        <span className="mob-price-period">per bulan</span>
-                      </div>
-                      <div className="mob-price-divider"></div>
-                      <ul className="mob-price-features">
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Semua fitur PLUS</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Bayar per bulan, tanpa komitmen</li>
-                        <li><span className="mob-price-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg></span>Bisa berhenti kapan saja</li>
-                      </ul>
-                      <a href="https://lynk.id/tutorlog" target="_blank" rel="noopener" className="btn btn-secondary btn-sm" style={{ width: "100%" }}>Pilih Bulanan</a>
-                    </div>
+              <div style={{ background: "var(--tw-surface)", borderRadius: "var(--r-lg)", padding: "20px 24px", marginTop: 24 }}>
+                <p style={{ fontFamily: "var(--f-body)", fontSize: 14, color: "var(--tw-text-2)", lineHeight: 1.6, margin: "0 0 14px" }}>
+                  Sudah transfer tapi TutorLog Plus belum aktif? Kirim konfirmasi lewat WhatsApp — tim kami proses dalam 1×24 jam.
+                </p>
+                <a
+                  href="https://wa.me/6281234567890?text=Halo%20TutorLog%2C%20saya%20sudah%20transfer%20untuk%20langganan%20Plus.%20Tolong%20diaktifkan."
+                  target="_blank"
+                  rel="noopener"
+                  className="btn btn-secondary btn-sm"
+                  style={{ width: "100%", gap: 8 }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" /></svg>
+                  Konfirmasi via WhatsApp
+                </a>
+              </div>
                   </div>
                 )}
 
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.tutorlog.app"
-                  target="_blank"
-                  rel="noopener"
-                  className="btn btn-primary btn-sm"
-                  style={{ width: "100%", justifyContent: "center", gap: 8 }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z" /></svg>
-                  <span>Download TutorLog di Play Store</span>
-                </a>
+                <div style={{
+                  position: "relative", overflow: "hidden",
+                  background: "linear-gradient(135deg, #E9FFF7 0%, #CFF8EA 40%, #89D9BE 100%)",
+                  borderRadius: 16,
+                  border: "1px solid rgba(0,108,83,.15)",
+                  padding: 24,
+                  marginTop: 32,
+                }}>
+                  <div style={{ position: "absolute", right: -16, top: -16, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,.45)" }} />
+                  <div style={{ position: "absolute", bottom: 12, left: 12, width: 6, height: 6, borderRadius: "50%", background: "#FFDBD1" }} />
+                  <div style={{ position: "absolute", bottom: 18, left: 24, width: 6, height: 6, borderRadius: "50%", background: "rgba(0,108,83,.2)" }} />
+                  <div style={{ position: "relative", zIndex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,.06)" }}>
+                        <Image src="/tutorlog-logo.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />
+                      </div>
+                      <span style={{ fontFamily: "var(--f-title)", fontWeight: 800, fontSize: 16, color: "var(--tw-primary)" }}>TutorLog</span>
+                      <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--tw-primary)", background: "rgba(255,255,255,.8)", padding: "3px 8px", borderRadius: 99, border: "1px solid rgba(0,108,83,.15)" }}>Gratis</span>
+                    </div>
+                    <h2 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 22, lineHeight: 1.1, color: "#161D1F", margin: "0 0 8px" }}>
+                      Catat les.<br /><span style={{ fontStyle: "italic", color: "var(--tw-primary)" }}>Lebih rapi.</span>
+                    </h2>
+                    <p style={{ fontFamily: "var(--f-body)", fontSize: 13, color: "#3E4944", lineHeight: 1.5, margin: "0 0 16px" }}>
+                      Jadwal, absensi, dan rekap sesi tutor dalam satu app.
+                    </p>
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.tutorlog.app"
+                      target="_blank"
+                      rel="noopener"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 8,
+                        padding: "12px 20px",
+                        background: "var(--tw-primary)", color: "#fff",
+                        borderRadius: 99, fontFamily: "var(--f-body)", fontWeight: 700, fontSize: 14,
+                        textDecoration: "none",
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z" /></svg>
+                      Download di Play Store
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -154,14 +137,14 @@ export default async function HomePage() {
       {/* DESKTOP */}
       <div className="vp-desktop">
         <main className="app-main">
-          <div className="app-header" style={{ marginBottom: 32 }}>
+          <div className="app-header" style={{ marginBottom: 40 }}>
             <div>
               <h1>Halo, {email.split("@")[0]}</h1>
               <div className="sub">Semua tools tutor dalam satu tempat.</div>
             </div>
           </div>
 
-          <div className="home-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 40 }}>
+          <div className="home-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 48 }}>
             <Link href="/app/rekap" className="home-card home-card-lg">
               <div className="home-card-icon" style={{ color: "var(--tw-primary)" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18 M7 15V9 M12 15V5 M17 15v-3" /></svg>
@@ -184,112 +167,60 @@ export default async function HomePage() {
           </div>
 
           {isFree && (
-            <div style={{ marginBottom: 40 }}>
-              <div className="app-header" style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 48 }}>
+              <div className="app-header" style={{ marginBottom: 24, paddingTop: 48, borderTop: "1px solid var(--tw-divider)" }}>
                 <div>
                   <h1>Langganan</h1>
                   <div className="sub">Mulai gratis, upgrade kalau butuh.</div>
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, marginBottom: 32 }}>
-                <div className="card" style={{ padding: "32px 28px", display: "flex", flexDirection: "column" }}>
-                  <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 8 }}>Free</div>
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36, color: "var(--tw-text)" }}>Rp 0</div>
-                    <div style={{ fontSize: 13, color: "var(--tw-text-3)", marginTop: 4 }}>/ selamanya</div>
-                  </div>
-                  <p style={{ fontSize: 14, color: "var(--tw-text-2)", marginBottom: 24, lineHeight: 1.6 }}>Untuk tutor yang baru mulai atau mengelola sedikit murid.</p>
-                  <ul style={{ paddingLeft: 0, margin: "0 0 32px", listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {["Rekap bulanan lengkap", "Filter per murid", "Export PDF rekap (1×/bulan)", "Export CSV rekap (1×/bulan)", "Invoice builder (preview only)"].map((f, i) => (
-                      <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14 }}>
-                        <span style={{ width: 20, height: 20, borderRadius: "var(--r-full)", background: "var(--tw-secondary-soft)", color: "var(--tw-primary)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "0 0 20px", marginTop: 1 }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg>
-                        </span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <div style={{ marginTop: "auto" }}>
-                    <Link className="btn btn-secondary btn-lg" href="/login" style={{ width: "100%" }}>Mulai Gratis</Link>
-                  </div>
-                </div>
-
-                <div className="card" style={{
-                  padding: "32px 28px", display: "flex", flexDirection: "column",
-                  background: "linear-gradient(170deg, #0f2920, #143328)", color: "#F5EFE4",
-                  border: "1px solid rgba(140,246,210,.15)",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, letterSpacing: ".5px", textTransform: "uppercase", color: "var(--tw-primary-soft)" }}>PLUS Beli Putus</div>
-                    <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "var(--f-body)", padding: "3px 10px", borderRadius: "var(--r-full)", background: "rgba(140,246,210,.15)", color: "var(--tw-primary-soft)" }}>Rekomendasi</span>
-                  </div>
-                  <div style={{ marginBottom: 4 }}>
-                    <div style={{ fontSize: 12, color: "#f87171", fontWeight: 600, fontFamily: "var(--f-body)", background: "rgba(248,113,113,.1)", padding: "2px 10px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 47%</div>
-                    <div style={{ fontSize: 16, textDecoration: "line-through", color: "#f87171", marginBottom: 2, fontWeight: 500 }}>Rp 149rb</div>
-                    <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36 }}>Rp 79rb</div>
-                    <div style={{ fontSize: 13, color: "rgba(140,246,210,.6)", fontWeight: 400, fontFamily: "var(--f-body)", marginTop: 4 }}>/ sekali</div>
-                  </div>
-                  <p style={{ fontSize: 13, color: "rgba(245,239,228,.65)", marginBottom: 24, lineHeight: 1.5 }}>Akses seumur hidup. Bayar sekali, pakai selamanya.</p>
-                  <ul style={{ paddingLeft: 0, margin: "0 0 32px", listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {["Semua fitur Free", "Export invoice PDF tanpa batas", "Export rekap PDF & CSV tanpa batas", "3 template invoice + kustom warna", "Simpan rekening + template favorit", "Prioritas dukungan via WhatsApp"].map((f, i) => (
-                      <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14 }}>
-                        <span style={{ width: 20, height: 20, borderRadius: "var(--r-full)", background: "rgba(140,246,210,.12)", color: "var(--tw-primary-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "0 0 20px", marginTop: 1 }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg>
-                        </span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <div style={{ marginTop: "auto" }}>
-                    <a href="https://lynk.id/tutorlog" target="_blank" rel="noopener" className="btn btn-primary btn-lg"
-                      style={{ width: "100%", padding: "0 24px", background: "var(--tw-primary-soft)", color: "var(--tw-primary-dark)", gap: 6 }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                        Bayar via Lynk.id
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6 M15 3h6v6 M10 14 21 3" /></svg>
-                      </span>
-                    </a>
-                  </div>
-                </div>
-
-                <div className="card" style={{ padding: "32px 28px", display: "flex", flexDirection: "column" }}>
-                  <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 8 }}>PLUS Bulanan</div>
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, fontFamily: "var(--f-body)", background: "rgba(239,68,68,.1)", padding: "2px 10px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
-                    <div style={{ fontSize: 16, textDecoration: "line-through", color: "#ef4444", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
-                    <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36, color: "var(--tw-text)" }}>Rp 9rb</div>
-                    <div style={{ fontSize: 13, color: "var(--tw-text-3)", marginTop: 4 }}>/ bulan</div>
-                  </div>
-                  <p style={{ fontSize: 14, color: "var(--tw-text-2)", marginBottom: 24, lineHeight: 1.6 }}>Alternatif fleksibel — bayar bulanan, tanpa komitmen jangka panjang.</p>
-                  <ul style={{ paddingLeft: 0, margin: "0 0 32px", listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {["Semua fitur PLUS", "Bayar per bulan", "Bisa berhenti kapan saja"].map((f, i) => (
-                      <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14 }}>
-                        <span style={{ width: 20, height: 20, borderRadius: "var(--r-full)", background: "var(--tw-secondary-soft)", color: "var(--tw-primary)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "0 0 20px", marginTop: 1 }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M20 6 9 17l-5-5" /></svg>
-                        </span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <div style={{ marginTop: "auto" }}>
-                    <a href="https://lynk.id/tutorlog" target="_blank" rel="noopener" className="btn btn-secondary btn-lg" style={{ width: "100%" }}>Pilih Bulanan</a>
-                  </div>
-                </div>
-              </div>
+              <PricingCards variant="home" />
             </div>
           )}
 
-          <div style={{ textAlign: "center", paddingTop: 20, borderTop: "1px solid var(--tw-divider)" }}>
-            <a
-              href="https://play.google.com/store/apps/details?id=com.tutorlog.app"
-              target="_blank"
-              rel="noopener"
-              className="btn btn-primary btn-sm"
-              style={{ gap: 8 }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z" /></svg>
-              <span>Download TutorLog di Play Store</span>
-            </a>
+          <div style={{ paddingTop: 48, borderTop: "1px solid var(--tw-divider)" }}>
+            <div style={{
+              position: "relative", overflow: "hidden",
+              background: "linear-gradient(135deg, #E9FFF7 0%, #CFF8EA 40%, #89D9BE 100%)",
+              borderRadius: 16,
+              border: "1px solid rgba(0,108,83,.15)",
+              padding: "32px 36px",
+          }}>
+            <div style={{ position: "absolute", right: -24, top: -24, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,.45)" }} />
+            <div style={{ position: "absolute", bottom: 16, left: 16, width: 8, height: 8, borderRadius: "50%", background: "#FFDBD1" }} />
+            <div style={{ position: "absolute", bottom: 24, left: 36, width: 8, height: 8, borderRadius: "50%", background: "rgba(0,108,83,.2)" }} />
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,.06)" }}>
+                  <Image src="/tutorlog-logo.png" alt="" width={34} height={34} style={{ objectFit: "contain" }} />
+                </div>
+                <span style={{ fontFamily: "var(--f-title)", fontWeight: 800, fontSize: 20, color: "var(--tw-primary)" }}>TutorLog</span>
+                <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--tw-primary)", background: "rgba(255,255,255,.8)", padding: "4px 10px", borderRadius: 99, border: "1px solid rgba(0,108,83,.15)" }}>Gratis</span>
+              </div>
+              <h2 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36, lineHeight: 1.05, color: "#161D1F", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
+                Catat les.<br /><span style={{ fontStyle: "italic", color: "var(--tw-primary)" }}>Lebih rapi.</span>
+              </h2>
+              <p style={{ fontFamily: "var(--f-body)", fontSize: 15, color: "#3E4944", lineHeight: 1.6, margin: "0 0 20px" }}>
+                Jadwal, absensi, riwayat sesi, dan rekap mengajar dalam satu app untuk tutor privat.
+              </p>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.tutorlog.app"
+                target="_blank"
+                rel="noopener"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "14px 24px",
+                  background: "var(--tw-primary)", color: "#fff",
+                  borderRadius: 99, fontFamily: "var(--f-body)", fontWeight: 700, fontSize: 15,
+                  textDecoration: "none",
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z" /></svg>
+                Download di Play Store
+              </a>
+            </div>
+          </div>
           </div>
         </main>
       </div>

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { formatCurrency } from "@/lib/format";
 
 export interface SessionItem {
   id: string;
@@ -8,6 +9,7 @@ export interface SessionItem {
   s: string;
   h: number;
   t: string;
+  rawAmount: number;
 }
 
 export interface RekapSummary {
@@ -26,17 +28,6 @@ export interface RekapData {
   monthLabel: string;
 }
 
-function formatCurrency(amount: number): string {
-  if (amount >= 1_000_000) {
-    const jt = amount / 1_000_000;
-    return jt % 1 === 0 ? `Rp ${jt.toFixed(0)}jt` : `Rp ${jt.toFixed(1)}jt`;
-  }
-  if (amount >= 1_000) {
-    return `Rp ${amount.toLocaleString("id-ID")}`;
-  }
-  return `Rp ${amount.toLocaleString("id-ID")}`;
-}
-
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const months = [
@@ -44,14 +35,6 @@ function formatDate(dateStr: string): string {
     "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
   ];
   return `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-function monthLabel(year: number, month: number): string {
-  const months = [
-    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
-  ];
-  return `${months[month - 1]} ${year}`;
 }
 
 function computeDurationHours(clockIn: string, clockOut: string | null): number {
@@ -73,47 +56,57 @@ function computeBilling(
   return Math.round(durationHours * (hourlyRate ?? 0));
 }
 
-export async function fetchRekapData(
-  year: number,
-  month: number,
+export async function fetchRekapDataByRange(
+  from: string,
+  to: string,
 ): Promise<RekapData> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return {
-      sessions: [],
-      summary: { totalSesi: 0, totalJam: 0, totalPendapatan: "Rp 0", totalPendapatanRaw: 0, totalMurid: 0, students: [] },
-      month: `${year}-${String(month).padStart(2, "0")}`,
-      monthLabel: monthLabel(year, month),
-    };
+    return emptyResult("", "");
   }
 
-  const startDate = new Date(Date.UTC(year, month - 1, 1)).toISOString();
-  const endDate = new Date(Date.UTC(year, month, 1)).toISOString();
+  const fromISO = new Date(from + "T00:00:00").toISOString();
+  const toISO = new Date(to + "T23:59:59.999").toISOString();
 
   const { data: rows, error } = await supabase
     .from("sessions")
     .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode")
     .eq("tutor_id", user.id)
     .eq("status", "completed")
-    .gte("clock_in_at", startDate)
-    .lt("clock_in_at", endDate)
+    .gte("clock_in_at", fromISO)
+    .lte("clock_in_at", toISO)
     .order("clock_in_at", { ascending: false });
 
   if (error) {
     console.error("Failed to fetch rekap data:", error);
-    return {
-      sessions: [],
-      summary: { totalSesi: 0, totalJam: 0, totalPendapatan: "Rp 0", totalPendapatanRaw: 0, totalMurid: 0, students: [] },
-      month: `${year}-${String(month).padStart(2, "0")}`,
-      monthLabel: monthLabel(year, month),
-    };
+    return emptyResult(from, to);
   }
 
-  const sessions: SessionItem[] = (rows ?? []).map((row: Record<string, unknown>) => {
+  const sessions = buildSessions(rows ?? []);
+  return buildResult(sessions, rows ?? [], from, to);
+}
+
+function emptyResult(from: string, to: string): RekapData {
+  return {
+    sessions: [],
+    summary: { totalSesi: 0, totalJam: 0, totalPendapatan: "Rp 0", totalPendapatanRaw: 0, totalMurid: 0, students: [] },
+    month: from,
+    monthLabel: rangeLabel(from, to),
+  };
+}
+
+function rangeLabel(from: string, to: string): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  const s = new Date(from + "T00:00:00");
+  const e = new Date(to + "T00:00:00");
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return "";
+  return `${s.getDate()} ${months[s.getMonth()]} ${s.getFullYear()} – ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
+}
+
+function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
+  return rows.map((row) => {
     const clockIn = row.clock_in_at as string;
     const clockOut = (row.clock_out_at as string) ?? null;
     const hours = computeDurationHours(clockIn, clockOut);
@@ -136,14 +129,18 @@ export async function fetchRekapData(
       s: subject || "—",
       h: hours,
       t: formatCurrency(amount),
+      rawAmount: amount,
     };
   });
+}
 
+function buildResult(sessions: SessionItem[], rows: Record<string, unknown>[], from: string, to: string): RekapData {
   const totalSesi = sessions.length;
   const totalJam = sessions.reduce((sum, s) => sum + s.h, 0);
   const totalPendapatanRaw = sessions.reduce((sum, s) => {
-    const rate = (rows?.[sessions.indexOf(s)]?.hourly_rate_snapshot as number) ?? null;
-    const billingType = (rows?.[sessions.indexOf(s)]?.billing_type_snapshot as string) ?? null;
+    const idx = sessions.indexOf(s);
+    const rate = (rows[idx]?.hourly_rate_snapshot as number) ?? null;
+    const billingType = (rows[idx]?.billing_type_snapshot as string) ?? null;
     return sum + computeBilling(s.h, rate, billingType);
   }, 0);
 
@@ -159,7 +156,7 @@ export async function fetchRekapData(
       totalMurid: students.length,
       students,
     },
-    month: `${year}-${String(month).padStart(2, "0")}`,
-    monthLabel: monthLabel(year, month),
+    month: from,
+    monthLabel: rangeLabel(from, to),
   };
 }

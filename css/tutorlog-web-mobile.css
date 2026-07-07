@@ -1227,17 +1227,18 @@
   transition: all .25s ease;
   border-radius: var(--r-xxl);
   padding: 24px;
-  position: relative; overflow: hidden;
+  position: relative;
+  overflow: hidden;
 }
 .mob-price-card:hover {
   transform: translateY(-4px);
 }
-.mob-price-card--free:hover {
-  border-color: var(--tw-primary-soft);
-}
 .mob-price-card--free {
   background: var(--tw-surface);
   border: 1px solid var(--tw-border);
+}
+.mob-price-card--free:hover {
+  border-color: var(--tw-primary-soft);
 }
 .mob-price-card--plus {
   background:

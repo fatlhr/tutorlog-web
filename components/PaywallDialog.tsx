@@ -61,7 +61,7 @@ export default function PaywallDialog({ open, onClose }: PaywallDialogProps) {
           <li><span className="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg></span>3 template invoice + kustomisasi warna</li>
         </ul>
         <div className="actions">
-          <a href="/app/langganan" className="btn btn-primary btn-lg" style={{ gap: 8 }}>
+          <a href="/app" className="btn btn-primary btn-lg" style={{ gap: 8 }}>
             <span>Lihat Langganan</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14 M13 6l6 6-6 6" /></svg>
           </a>
