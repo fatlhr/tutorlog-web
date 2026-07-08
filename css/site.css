@@ -344,7 +344,15 @@ body.menu-open { overflow: hidden; }
   justify-content: center;
 }
 .mob-section + .mob-section {
-  border-top: 1px solid var(--tw-border);
+  position: relative;
+}
+.mob-section + .mob-section::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 0; right: 0;
+  height: 48px;
+  background: linear-gradient(180deg, var(--tw-bg) 0%, transparent 100%);
+  pointer-events: none;
 }
 .mob-section .section-label {
   margin-bottom: 12px;
@@ -517,11 +525,20 @@ body.menu-open { overflow: hidden; }
 .landing-steps {
   padding: 100px clamp(24px, 6.5vw, 96px);
   background: var(--tw-surface);
-  border-top: 1px solid var(--tw-border);
+  border-top: none;
+  position: relative;
   min-height: 80svh;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+.landing-steps::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(180deg, var(--tw-bg) 0%, transparent 100%);
+  pointer-events: none;
 }
 .landing-steps-inner {
   max-width: 960px; margin: 0 auto; width: 100%;
