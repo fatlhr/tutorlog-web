@@ -452,6 +452,17 @@ body.menu-open { overflow: hidden; }
   border-radius: var(--r-xl);
   padding: 44px 24px;
   text-align: center;
+  position: relative;
+  margin-top: 48px;
+}
+.mob-cta-box::before {
+  content: '';
+  position: absolute;
+  top: -48px; left: -24px; right: -24px;
+  height: 48px;
+  background: linear-gradient(180deg, transparent 0%, #0f2920 100%);
+  pointer-events: none;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
 }
 .mob-cta-box h2 {
   font-family: var(--f-title); font-weight: 700;
@@ -465,10 +476,10 @@ body.menu-open { overflow: hidden; }
 }
 .mob-cta-box .btn-hero {
   margin-top: 0;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  height: 52px; padding: 0 28px; width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 48px; padding: 0 24px; width: 100%;
   border-radius: var(--r-full); border: 0;
-  font-family: var(--f-body); font-weight: 700; font-size: 15px;
+  font-family: var(--f-body); font-weight: 700; font-size: 14px;
   cursor: pointer; transition: transform .12s ease;
 }
 .mob-cta-box .btn-hero:active { transform: scale(.97); }
@@ -626,6 +637,15 @@ body.menu-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+}
+.landing-final-cta::before {
+  content: '';
+  position: absolute;
+  top: -80px; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(180deg, transparent 0%, #0f2920 100%);
+  pointer-events: none;
 }
 .landing-final-cta-inner {
   max-width: 640px; margin: 0 auto; width: 100%;
@@ -647,10 +667,10 @@ body.menu-open { overflow: hidden; }
   display: flex; gap: 14px; justify-content: center; align-items: center;
 }
 .landing-final-cta .btn-hero {
-  display: inline-flex; align-items: center; gap: 10px;
-  height: 56px; padding: 0 36px;
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 48px; padding: 0 28px;
   border-radius: var(--r-full); border: 0;
-  font-family: var(--f-body); font-weight: 700; font-size: 16px;
+  font-family: var(--f-body); font-weight: 700; font-size: 14px;
   cursor: pointer; transition: transform .12s ease;
   white-space: nowrap;
 }
