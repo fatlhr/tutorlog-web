@@ -677,8 +677,8 @@ input.input {
   content: '';
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(140,246,210,.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(140,246,210,.02) 1px, transparent 1px);
+    linear-gradient(rgba(140,246,210,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(140,246,210,.04) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
 }
