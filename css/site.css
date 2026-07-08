@@ -373,6 +373,11 @@ body.menu-open { overflow: hidden; }
   border: 1px solid var(--tw-border);
   border-radius: var(--r-xl);
   padding: 24px;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.mob-problem-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.08);
 }
 .mob-problem-icon {
   width: 48px; height: 48px; border-radius: var(--r-md);
@@ -421,6 +426,11 @@ body.menu-open { overflow: hidden; }
   border: 1px solid var(--tw-border);
   border-radius: var(--r-xl);
   padding: 28px 24px;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.mob-testimonial:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.08);
 }
 .mob-testimonial-quote {
   font-family: var(--f-body); font-size: 16px; line-height: 1.6;
@@ -518,6 +528,12 @@ body.menu-open { overflow: hidden; }
   border: 1px solid var(--tw-border);
   border-radius: var(--r-xxl);
   padding: 32px 28px;
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.problem-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.08);
+  border-color: var(--tw-primary);
 }
 .problem-icon {
   width: 52px; height: 52px; border-radius: var(--r-lg);
@@ -571,6 +587,12 @@ body.menu-open { overflow: hidden; }
 }
 .step-card {
   padding: 28px 24px;
+  border-radius: var(--r-xxl);
+  transition: transform .3s ease, background .3s ease;
+}
+.step-card:hover {
+  transform: translateY(-4px);
+  background: var(--tw-surface-soft);
 }
 .step-num {
   width: 52px; height: 52px; border-radius: var(--r-full);
@@ -605,6 +627,11 @@ body.menu-open { overflow: hidden; }
   border: 1px solid var(--tw-border);
   border-radius: var(--r-xxl);
   padding: 44px 40px;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.08);
 }
 .testimonial-quote {
   font-family: var(--f-body); font-size: 19px; line-height: 1.65;
@@ -805,7 +832,14 @@ html, body { overflow-x: hidden; }
 }
 
 /* Override feature card min-height — 280px creates too much whitespace */
-.feature-card { min-height: auto; }
+.feature-card {
+  min-height: auto;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.08);
+}
 
 /* Footer link groups: dari inline style → class */
 .landing-footer {
