@@ -1,0 +1,17 @@
+{
+  "name": "TutorLog",
+  "short_name": "TutorLog",
+  "description": "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8EFF1",
+  "theme_color": "#006C53",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
