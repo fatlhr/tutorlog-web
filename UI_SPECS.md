@@ -225,7 +225,7 @@ Posisi partikel: HARUS salin persis array di JSX (left/top %, size px, `--pd/--p
 
 - Mobile "Buka di Desktop" (`.mob-dialog-scrim` > `.mob-dialog-card`): scrim `rgba(0,0,0,.35)`
   fixed; kartu putih `--r-xxl` pad `32px 24px` max-w 340 center, ikon monitor 56px kotak
-  `--tw-secondary-soft`, url pill `.mob-dialog-url` (ikon lock hijau + `web.tutorlog.id`),
+  `--tw-secondary-soft`, url pill `.mob-dialog-url` (ikon lock hijau + `tutorlog.id`),
   aksi kolom: "Salin Link" primary + "Kembali ke Rekap" ghost. Animasi `fadeScale .35s`.
 - Desktop paywall (`.paywall-scrim` > `.paywall-dialog`): scrim `rgba(13,31,24,.65)` +
   `backdrop-filter blur(4px)` + partikel dots via `::before`; dialog 420px `--r-xxl`,
