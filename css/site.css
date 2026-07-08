@@ -447,13 +447,11 @@ body.menu-open { overflow: hidden; }
 /* ---------- MOBILE final CTA ---------- */
 .mob-cta-box {
   background:
-    linear-gradient(180deg, var(--tw-bg) 0%, transparent 60px),
     radial-gradient(ellipse 80% 60% at 30% 20%, rgba(20,65,50,.9) 0%, transparent 55%),
     linear-gradient(160deg, #0f2920 0%, #143328 35%, #122a22 60%, #0d1f18 100%);
   border-radius: var(--r-xl);
-  padding: 44px 24px;
+  padding: 40px 24px;
   text-align: center;
-  margin-top: 48px;
 }
 .mob-cta-box h2 {
   font-family: var(--f-title); font-weight: 700;
@@ -620,10 +618,7 @@ body.menu-open { overflow: hidden; }
 /* ---------- DESKTOP final CTA ---------- */
 .landing-final-cta {
   padding: 100px clamp(24px, 6.5vw, 96px);
-  background:
-    linear-gradient(180deg, var(--tw-bg) 0%, transparent 120px),
-    radial-gradient(ellipse 80% 60% at 30% 20%, rgba(20,65,50,.9) 0%, transparent 55%),
-    linear-gradient(160deg, #0f2920 0%, #143328 35%, #122a22 60%, #0d1f18 100%);
+  background: var(--tw-bg);
   text-align: center;
   min-height: 60svh;
   display: flex;
@@ -632,6 +627,11 @@ body.menu-open { overflow: hidden; }
 }
 .landing-final-cta-inner {
   max-width: 640px; margin: 0 auto; width: 100%;
+  background:
+    radial-gradient(ellipse 80% 60% at 30% 20%, rgba(20,65,50,.9) 0%, transparent 55%),
+    linear-gradient(160deg, #0f2920 0%, #143328 35%, #122a22 60%, #0d1f18 100%);
+  border-radius: var(--r-xxl);
+  padding: 56px 48px;
 }
 .landing-final-cta h2 {
   font-family: var(--f-title); font-weight: 700;
