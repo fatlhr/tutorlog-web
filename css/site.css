@@ -327,7 +327,8 @@ body.menu-open { overflow: hidden; }
    ============================================================ */
 
 /* ---------- Section labels & titles ---------- */
-.section-label {
+.section-label,
+.mob-section-label {
   display: block;
   font-family: var(--f-body); font-weight: 700; font-size: 13px;
   color: var(--tw-primary); letter-spacing: 1px; text-transform: uppercase;
@@ -338,13 +339,20 @@ body.menu-open { overflow: hidden; }
 .mob-section {
   padding: 56px 24px 52px;
   background: var(--tw-bg);
-  min-height: 60svh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-.mob-section + .mob-section {
   position: relative;
+  overflow: hidden;
+}
+.mob-section::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 20%, rgba(140,246,210,.12) 0%, transparent 55%);
+  pointer-events: none;
+}
+.mob-section:nth-child(odd)::after {
+  background: radial-gradient(ellipse at 30% 80%, rgba(140,246,210,.12) 0%, transparent 55%);
 }
 .mob-section + .mob-section::before {
   content: '';
@@ -514,7 +522,7 @@ body.menu-open { overflow: hidden; }
 .landing-problem::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 85% 15%, rgba(140,246,210,.10) 0%, transparent 60%);
+  background: radial-gradient(ellipse at 85% 15%, rgba(140,246,210,.20) 0%, transparent 60%);
   pointer-events: none;
 }
 .landing-problem-inner {
@@ -580,7 +588,7 @@ body.menu-open { overflow: hidden; }
 .landing-steps::after {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 15% 85%, rgba(140,246,210,.10) 0%, transparent 60%);
+  background: radial-gradient(ellipse at 15% 85%, rgba(140,246,210,.20) 0%, transparent 60%);
   pointer-events: none;
 }
 .landing-steps-inner {
@@ -638,7 +646,7 @@ body.menu-open { overflow: hidden; }
 .landing-testimonial::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, rgba(140,246,210,.08) 0%, transparent 60%);
+  background: radial-gradient(ellipse at 50% 50%, rgba(140,246,210,.18) 0%, transparent 60%);
   pointer-events: none;
 }
 .landing-testimonial-inner {
