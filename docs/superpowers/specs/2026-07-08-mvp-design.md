@@ -241,7 +241,7 @@ User enters email
 
 ---
 
-## 5. Post-MVP Roadfitur
+## 5. Post-MVP Roadmap
 
 Ide untuk iterasi mendatang (v1.1+):
 
