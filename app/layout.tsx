@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Courier_Prime, Source_Serif_4 } from "next/font/google";
+import SkipLink from "@/components/SkipLink";
 import "./globals.css";
 
 const courierPrime = Courier_Prime({
@@ -26,7 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${courierPrime.variable} ${sourceSerif.variable}`}>
-      <body>{children}</body>
+      <body>
+        <SkipLink />
+        <main id="main-content">{children}</main>
+      </body>
     </html>
   );
 }

@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 interface InputProps {
   label?: string;
   type?: string;
@@ -19,18 +21,25 @@ export default function Input({
   disabled,
   className = "",
 }: InputProps) {
+  const generatedId = useId();
+  const inputId = generatedId;
+  const errorId = `${inputId}-error`;
+
   return (
     <div className={`field ${className}`}>
-      {label && <label className="lbl">{label}</label>}
+      {label && <label className="lbl" htmlFor={inputId}>{label}</label>}
       <input
+        id={inputId}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
         className={`input ${error ? "error" : ""}`}
+        aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
       />
-      {error && <p className="helper" style={{ color: "var(--tw-error)" }}>{error}</p>}
+      {error && <p id={errorId} className="helper" style={{ color: "var(--tw-error)" }} role="alert">{error}</p>}
     </div>
   );
 }

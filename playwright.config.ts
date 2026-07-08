@@ -9,5 +9,8 @@ export default defineConfig({
     screenshot: 'off',
     video: 'off',
   },
-  reporter: 'list',
+  reporter: [
+    ['list'],
+    ['json', { outputFile: 'test-results/results.json' }],
+  ],
 });

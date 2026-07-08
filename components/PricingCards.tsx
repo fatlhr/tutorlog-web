@@ -95,8 +95,8 @@ export default function PricingCards({ variant }: PricingCardsProps) {
         <div className="mob-price-card mob-price-card--free" style={{ borderColor: "var(--tw-primary-soft)", marginBottom: 16 }}>
           <div className="mob-price-header">
             <span className="mob-price-tier">PLUS Bulanan</span>
-            <div style={{ fontSize: 11, color: "#ef4444", fontWeight: 600, background: "rgba(239,68,68,.1)", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
-            <div style={{ fontSize: 14, textDecoration: "line-through", color: "#ef4444", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
+            <div style={{ fontSize: 11, color: "#b91c1c", fontWeight: 600, background: "rgba(239,68,68,.1)", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
+            <div style={{ fontSize: 14, textDecoration: "line-through", color: "#b91c1c", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
             <div className="mob-price-amount">
               <span className="mob-price-currency">Rp</span>
               <span className="mob-price-value">9rb</span>
@@ -189,8 +189,8 @@ export default function PricingCards({ variant }: PricingCardsProps) {
           <div className="card" style={{ padding: "32px 28px", display: "flex", flexDirection: "column" }}>
             <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 13, color: "var(--tw-text-3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 8 }}>PLUS Bulanan</div>
             <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, fontFamily: "var(--f-body)", background: "rgba(239,68,68,.1)", padding: "2px 10px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
-              <div style={{ fontSize: 16, textDecoration: "line-through", color: "#ef4444", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
+              <div style={{ fontSize: 12, color: "#b91c1c", fontWeight: 600, fontFamily: "var(--f-body)", background: "rgba(239,68,68,.1)", padding: "2px 10px", borderRadius: 4, display: "inline-block", marginBottom: 4 }}>Hemat 53%</div>
+              <div style={{ fontSize: 16, textDecoration: "line-through", color: "#b91c1c", marginBottom: 2, fontWeight: 500 }}>Rp 19rb</div>
               <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 36, color: "var(--tw-text)" }}>Rp 9rb</div>
               <div style={{ fontSize: 13, color: "var(--tw-text-3)", marginTop: 4 }}>/ bulan</div>
             </div>

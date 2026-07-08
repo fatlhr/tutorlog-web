@@ -297,14 +297,14 @@
 
 ## Phase 7 — QA & Ship
 
-- [ ] **7.1 Responsive sweep** — semua routes di 320/390/768/1024/1440
-  - _DoD: tanpa horizontal scroll, viewport yang benar tampil_
+- [x] **7.1 Responsive sweep** — semua routes di 320/390/768/1024/1440
+  - _DoD: tanpa horizontal scroll, viewport yang benar tampil_ ✓ (65/65 tests passed: 50 public + 15 protected)
 
-- [ ] **7.2 Visual diff vs canvas** — screenshot tiap route, bandingkan dengan artboard
-  - _DoD: Selisih yang disengaja terdokumentasi_
+- [x] **7.2 Visual diff vs canvas** — screenshot tiap route, bandingkan dengan artboard
+  - _DoD: Selisih yang disengaja terdokumentasi_ ✓ (12/12 routes compared, intentional differences documented)
 
-- [ ] **7.3 A11y pass** — focus-visible, aria, alt text, prefers-reduced-motion
-  - _DoD: Keyboard-only bisa navigasi semua halaman_
+- [x] **7.3 A11y pass** — focus-visible, aria, alt text, prefers-reduced-motion
+  - _DoD: Keyboard-only bisa navigasi semua halaman_ ✓ (13/13 axe-core + keyboard tests passed)
 
 - [ ] **7.4 Vercel deployment (Free tier)**
   - Connect GitHub repo ke Vercel
@@ -313,5 +313,5 @@
   - _DoD: Deploy ke Vercel, semua routes jalan_
   - _Catatan: Migrasi ke SumoPod VPS (Rp 60rb/bulan) saat scale up. App code tidak berubah, hanya deployment workflow._
 
-- [ ] **7.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
-  - _DoD: Dokumen up-to-date_
+- [x] **7.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
+  - _DoD: Dokumen up-to-date_ ✓ (SPEC.md rewritten for Next.js, README.md updated, TASKS.md current)

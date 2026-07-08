@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:responsive": "npx playwright test tests/responsive-sweep.spec.ts"
+    "test:responsive": "npx playwright test tests/responsive-sweep.spec.ts",
+    "serve:design": "serve design/ -l 4000 --no-clipboard",
+    "test:visual-diff": "npx playwright test tests/visual-diff.spec.ts",
+    "generate:diff": "npx tsx scripts/generate-diff.ts",
+    "test:a11y": "npx playwright test tests/a11y.spec.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
@@ -19,13 +23,17 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
