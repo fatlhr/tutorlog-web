@@ -124,7 +124,7 @@ TutorLog Web adalah web application untuk manajemen sesi les privat dan pembuata
 └─────────────────────────────────────────────────────┘
 ```
 
-### Components (16 shared)
+### Components (15 shared)
 - `SkipLink.tsx` — Skip navigation for keyboard users
 - `AppTopBar.tsx` — Desktop top navigation
 - `TabBar.tsx` — Mobile bottom tab bar
@@ -198,5 +198,5 @@ TutorLog Web adalah web application untuk manajemen sesi les privat dan pembuata
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxxxxxx
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJxxxxxxx
 ```
