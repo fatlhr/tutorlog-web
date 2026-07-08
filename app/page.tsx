@@ -38,8 +38,8 @@ export default function Home() {
 
             <div className="hero-content">
               <span className="kicker-dark"><span className="dot"></span>Untuk Guru Les Privat</span>
-              <h1>Fokus mengajar.<br />Administrasi biar<br />TutorLog <span className="em">yang urus</span>.</h1>
-              <p className="hero-desc">Catat sesi, rekap pendapatan, buat invoice — semua otomatis dari ponselmu. Coba gratis. Nanti bisa upgrade kalau butuh fitur lengkap.</p>
+              <h1>Ngajar aja.<br />Rekap &amp; invoice biar<br />TutorLog <span className="em">yang urus</span>.</h1>
+              <p className="hero-desc">Catat sesi, rekap, buat invoice — dari ponsel. Gratis.</p>
               <div className="cta-col">
                 <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
@@ -61,7 +61,7 @@ export default function Home() {
           {/* PROBLEM */}
           <div className="mob-section" data-reveal>
             <div className="mob-section-label">Masalahnya</div>
-            <h2 className="mob-section-title">Kamu mengajar berjam-jam.<br /><span className="em">Administrasinya</span> yang bikin capek.</h2>
+            <h2 className="mob-section-title">Ngajar berjam-jam.<br /><span className="em">Administrasinya</span> yang bikin capek.</h2>
             <div className="mob-problem-grid">
               <div className="mob-problem-card" data-reveal>
                 <div className="mob-problem-icon">
@@ -170,8 +170,8 @@ export default function Home() {
           {/* CTA */}
           <div className="mob-section" data-reveal>
             <div className="mob-cta-box">
-              <h2>Mulai catat <span className="em">sesi pertamamu</span> hari ini.</h2>
-              <p>Gratis mulai. Nanti bisa upgrade kapan saja kalau butuh fitur lengkap.</p>
+              <h2>Daftar gratis.</h2>
+              <p>Langsung pakai.</p>
               <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener" style={{ width: "100%", justifyContent: "center" }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
                 <span>Mulai Gratis</span>
@@ -241,9 +241,9 @@ export default function Home() {
                 <span className="dot"></span>
                 Untuk Guru Les Privat Indonesia
               </span>
-              <h1 className="anim-up-d1">Fokus mengajar.<br />Administrasi biar<br />TutorLog <span className="em">yang urus</span>.</h1>
+              <h1 className="anim-up-d1">Ngajar aja.<br />Rekap &amp; invoice biar<br />TutorLog <span className="em">yang urus</span>.</h1>
               <p className="hero-desc anim-up-d2">
-                Catat sesi, rekap pendapatan, buat invoice — semua otomatis dari ponselmu. Coba gratis. Nanti bisa upgrade kalau butuh fitur lengkap.
+                Catat sesi, rekap, buat invoice — dari ponsel. Gratis.
               </p>
               <div className="cta-row anim-up-d3">
                 <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
@@ -318,7 +318,7 @@ export default function Home() {
           <section className="landing-problem">
             <div className="landing-problem-inner">
               <span className="section-label">Masalahnya</span>
-              <h2>Kamu mengajar berjam-jam.<br /><span className="em">Administrasinya</span> yang bikin capek.</h2>
+              <h2>Ngajar berjam-jam.<br /><span className="em">Administrasinya</span> yang bikin capek.</h2>
               <div className="problem-grid">
                 <div className="problem-card" data-reveal>
                   <div className="problem-icon">
@@ -424,8 +424,8 @@ export default function Home() {
           {/* FINAL CTA */}
           <section className="landing-final-cta">
             <div className="landing-final-cta-inner">
-              <h2>Mulai catat <span className="em">sesi pertamamu</span> hari ini.</h2>
-              <p>Gratis mulai. Nanti bisa upgrade kapan saja kalau butuh fitur lengkap.</p>
+              <h2>Daftar gratis.</h2>
+              <p>Langsung pakai.</p>
               <div className="cta-row">
                 <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
