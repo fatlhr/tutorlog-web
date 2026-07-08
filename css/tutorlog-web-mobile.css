@@ -119,10 +119,10 @@
   animation: fadeSlideUp .7s ease-out .3s both;
 }
 .mob-hero .btn-hero {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  height: 52px; padding: 0 24px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 48px; padding: 0 24px;
   border-radius: var(--r-full); border: 0;
-  font-family: var(--f-body); font-weight: 700; font-size: 15px;
+  font-family: var(--f-body); font-weight: 700; font-size: 14px;
   cursor: pointer; width: 100%;
   transition: transform .12s ease;
 }
