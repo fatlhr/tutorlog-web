@@ -70,7 +70,7 @@ export default defineConfig({
 TEST_EMAIL=fatiharahmat257@gmail.com
 TEST_PASSWORD=<password>
 NEXT_PUBLIC_SUPABASE_URL=<supabase-url>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<supabase-anon-key>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<supabase-anon-key>
 ```
 
 - [ ] **Step 5: Commit**

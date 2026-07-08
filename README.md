@@ -57,4 +57,4 @@ tests/                  # Playwright test suites
 
 ## Deployment
 
-Deployed on Vercel (Free tier). Custom domain: `web.tutorlog.id`.
+Deployed on Vercel (Free tier). Custom domain: `tutorlog.id`.

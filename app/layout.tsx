@@ -16,7 +16,7 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://web.tutorlog.id"),
+  metadataBase: new URL("https://tutorlog.id"),
   title: {
     default: "TutorLog — Kelola Les Lebih Mudah",
     template: "%s | TutorLog",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TutorLog — Kelola Les Lebih Mudah",
     description: "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
-    url: "https://web.tutorlog.id",
+    url: "https://tutorlog.id",
     siteName: "TutorLog",
     locale: "id_ID",
     type: "website",

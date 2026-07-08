@@ -394,7 +394,7 @@ function MobScreenInvoiceBuilder() {
             <p className="mob-dialog-desc">Invoice Builder dirancang untuk layar lebar. Buka di laptop atau PC untuk pengalaman terbaik.</p>
             <div className="mob-dialog-url">
               <Icons.lock size={14} />
-              <span>web.tutorlog.id</span>
+              <span>tutorlog.id</span>
             </div>
             <div className="mob-dialog-actions">
               <Btn variant="primary" size="sm" style={{ width: '100%' }}>Salin Link</Btn>

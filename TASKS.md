@@ -143,7 +143,7 @@
   - Migrasi `lib/supabase/*` ke `@supabase/ssr` (cookie-based session)
   - Email template sudah di-setup di Supabase dashboard (mobile)
   - _DoD: Magic Link email terkirim ✓; klik link dari inbox → session kebentuk, redirect `/` ✓ (verified manual 2026-07-06); callback invalid → /login?error=auth ✓_
-  - _Catatan: PKCE — link harus diklik di browser yang sama dengan pengirim request. Redirect URLs prod (`https://web.tutorlog.id/auth/callback`) masih perlu ditambah di dashboard saat deploy_
+  - _Catatan: PKCE — link harus diklik di browser yang sama dengan pengirim request. Redirect URLs prod (`https://tutorlog.id/auth/callback`) masih perlu ditambah di dashboard saat deploy_
 
 - [x] **3.4 Auth middleware**
   - Buat `proxy.ts` (Next 16 rename dari `middleware.ts` — convention lama deprecated) — cek session untuk `/app/*` routes via `supabase.auth.getUser()`
@@ -309,7 +309,7 @@
 - [ ] **7.4 Vercel deployment (Free tier)**
   - Connect GitHub repo ke Vercel
   - Setup environment variables
-  - Custom domain (web.tutorlog.id)
+  - Custom domain (tutorlog.id)
   - _DoD: Deploy ke Vercel, semua routes jalan_
   - _Catatan: Migrasi ke SumoPod VPS (Rp 60rb/bulan) saat scale up. App code tidak berubah, hanya deployment workflow._
 
