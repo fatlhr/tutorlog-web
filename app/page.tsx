@@ -1,9 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import ScrollReveal from "@/components/ScrollReveal";
 import MenuToggle from "@/components/MenuToggle";
+import Modal from "@/components/Modal";
 
 export default function Home() {
+  const [showVideo, setShowVideo] = useState(false);
+
   return (
     <>
       <ScrollReveal />
@@ -39,6 +43,10 @@ export default function Home() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
                   <span>Mulai Gratis</span>
                 </a>
+                <button className="btn-hero ghost" type="button" onClick={() => setShowVideo(true)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M8 5v14l11-7z"/></svg>
+                  <span>Lihat Demo</span>
+                </button>
               </div>
               <div className="trust-row">
                 <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Gratis mulai</span>
@@ -240,6 +248,10 @@ export default function Home() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
                   <span>Mulai Gratis</span>
                 </a>
+                <button className="btn-hero ghost" type="button" onClick={() => setShowVideo(true)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M8 5v14l11-7z"/></svg>
+                  <span>Lihat Demo</span>
+                </button>
               </div>
               <div className="trust-row anim-up-d4">
                 <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Gratis mulai</span>
@@ -447,6 +459,11 @@ export default function Home() {
             </div>
           </div>
       </div>
+      <Modal open={showVideo} onClose={() => setShowVideo(false)} title="Demo TutorLog">
+        <div style={{ width: "100%", aspectRatio: "16/9", background: "#000", borderRadius: "var(--r-md)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(245,239,228,.4)", fontFamily: "var(--f-body)", fontSize: 15 }}>
+          Video demo segera hadir
+        </div>
+      </Modal>
     </>
   );
 }

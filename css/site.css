@@ -508,6 +508,14 @@ body.menu-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.landing-problem::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 15%, rgba(140,246,210,.04) 0%, transparent 50%);
+  pointer-events: none;
 }
 .landing-problem-inner {
   max-width: 960px; margin: 0 auto; width: 100%;
@@ -569,6 +577,12 @@ body.menu-open { overflow: hidden; }
   background: linear-gradient(180deg, var(--tw-bg) 0%, transparent 100%);
   pointer-events: none;
 }
+.landing-steps::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 15% 85%, rgba(140,246,210,.04) 0%, transparent 50%);
+  pointer-events: none;
+}
 .landing-steps-inner {
   max-width: 960px; margin: 0 auto; width: 100%;
 }
@@ -618,6 +632,14 @@ body.menu-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.landing-testimonial::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(140,246,210,.03) 0%, transparent 50%);
+  pointer-events: none;
 }
 .landing-testimonial-inner {
   max-width: 720px; margin: 0 auto; width: 100%;
