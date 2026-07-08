@@ -38,7 +38,7 @@ export default function Home() {
 
             <div className="hero-content">
               <span className="kicker-dark"><span className="dot"></span>Untuk Guru Les Privat</span>
-              <h1>Ngajar aja.<br />Rekap &amp; invoice biar<br />TutorLog <span className="em">yang urus</span>.</h1>
+              <h1>Kamu Ngajar,<br />Rekap &amp; invoice biar<br />TutorLog <span className="em">yang urus</span>.</h1>
               <p className="hero-desc">Catat sesi, rekap, buat invoice — dari ponsel. Gratis.</p>
               <div className="cta-col">
                 <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
@@ -46,7 +46,7 @@ export default function Home() {
                   <span>Mulai Gratis</span>
                 </a>
                 <button className="btn-hero ghost" type="button" onClick={() => setShowVideo(true)}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M8 5v14l11-7z"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14v-4z"/><rect x="3" y="6" width="12" height="12" rx="2" ry="2"/></svg>
                   <span>Lihat Demo</span>
                 </button>
               </div>
@@ -170,8 +170,8 @@ export default function Home() {
           {/* CTA */}
           <div className="mob-section" data-reveal>
             <div className="mob-cta-box">
-              <h2>Daftar gratis.</h2>
-              <p>Langsung pakai.</p>
+              <h2>Mulai catat <span className="em">sesi pertamamu</span> hari ini.</h2>
+              <p>Gratis mulai. Nanti bisa upgrade kapan saja kalau butuh fitur lengkap.</p>
               <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener" style={{ width: "100%", justifyContent: "center" }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
                 <span>Mulai Gratis</span>
@@ -241,7 +241,7 @@ export default function Home() {
                 <span className="dot"></span>
                 Untuk Guru Les Privat Indonesia
               </span>
-              <h1 className="anim-up-d1">Ngajar aja.<br />Rekap &amp; invoice biar<br />TutorLog <span className="em">yang urus</span>.</h1>
+              <h1 className="anim-up-d1">Kamu Ngajar,<br />Rekap &amp; invoice biar<br />TutorLog <span className="em">yang urus</span>.</h1>
               <p className="hero-desc anim-up-d2">
                 Catat sesi, rekap, buat invoice — dari ponsel. Gratis.
               </p>
@@ -251,7 +251,7 @@ export default function Home() {
                   <span>Mulai Gratis</span>
                 </a>
                 <button className="btn-hero ghost" type="button" onClick={() => setShowVideo(true)}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M8 5v14l11-7z"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14v-4z"/><rect x="3" y="6" width="12" height="12" rx="2" ry="2"/></svg>
                   <span>Lihat Demo</span>
                 </button>
               </div>
@@ -424,8 +424,8 @@ export default function Home() {
           {/* FINAL CTA */}
           <section className="landing-final-cta">
             <div className="landing-final-cta-inner">
-              <h2>Daftar gratis.</h2>
-              <p>Langsung pakai.</p>
+              <h2>Mulai catat <span className="em">sesi pertamamu</span> hari ini.</h2>
+              <p>Gratis mulai. Nanti bisa upgrade kapan saja kalau butuh fitur lengkap.</p>
               <div className="cta-row">
                 <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
