@@ -31,145 +31,62 @@ export default function Home() {
             </div>
 
             <div className="hero-content">
-              <span className="kicker-dark"><span className="dot"></span>Untuk Guru Les Privat</span>
-              <h1>Fokus mengajar.<br />Administrasi biar<br />TutorLog <span className="em">yang urus</span>.</h1>
-              <p className="hero-desc">Catat sesi, rekap pendapatan, buat invoice — semua otomatis dari ponselmu. Coba gratis. Nanti bisa upgrade kalau butuh fitur lengkap.</p>
+              <span className="kicker-dark"><span className="dot"></span>#1 Pendamping Tutor</span>
+              <h1>Catat sesi les.<br />Rekap &amp; invoice <span className="em">otomatis</span>.</h1>
+              <p className="hero-desc">Aplikasi mobile catat bimbel. Companion web rekap pendapatan &amp; buat invoice — semua otomatis.</p>
               <div className="cta-col">
                 <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
-                  <span>Mulai Gratis</span>
+                  <span>Cek di Play Store</span>
                 </a>
                 <Link className="btn-hero ghost" href="/login">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
-                  <span>Masuk</span>
+                  <span>Masuk dengan Magic Link</span>
                 </Link>
               </div>
               <div className="trust-row">
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Gratis mulai</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Fitur lengkap</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Upgrade kapan saja</span>
-              </div>
-            </div>
-          </div>
-
-          {/* PROBLEM */}
-          <div className="mob-section" data-reveal>
-            <div className="mob-section-label">Masalahnya</div>
-            <h2 className="mob-section-title">Kamu mengajar berjam-jam.<br /><span className="em">Administrasinya</span> yang bikin capek.</h2>
-            <div className="mob-problem-grid">
-              <div className="mob-problem-card" data-reveal>
-                <div className="mob-problem-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
-                </div>
-                <h3>Catatan berserakan</h3>
-                <p>Murid di buku tulis, jadwal di kepala, tagihan sering kelewat. Pas dibutuhin, susah dicari.</p>
-              </div>
-              <div className="mob-problem-card" data-reveal>
-                <div className="mob-problem-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                </div>
-                <h3>Waktu habis untuk admin</h3>
-                <p>Jam yang harusnya buat mengajar malah habis ngurus catatan, nagih bayaran, bikin invoice.</p>
-              </div>
-              <div className="mob-problem-card" data-reveal>
-                <div className="mob-problem-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                </div>
-                <h3>Reputasi nggak kelihatan</h3>
-                <p>Bertahun-tahun ngajar, tapi calon murid baru cuma lihat &quot;salah satu guru les&quot; biasa.</p>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 1000+ Tutor</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg> Gratis</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Data Aman</span>
               </div>
             </div>
           </div>
 
           {/* FEATURES */}
-          <div className="mob-section" data-reveal>
-            <div className="mob-section-label">Solusinya</div>
-            <h2 className="mob-section-title">Satu aplikasi untuk <span className="em">seluruh</span> kegiatan mengajarmu.</h2>
+          <div className="mob-features">
+            <div data-reveal>
+              <h2>Semua yang kamu butuh.</h2>
+              <p className="sub">App mobile mencatat. Web merangkum dan menagih.</p>
+            </div>
             <div className="mob-feature-grid">
               <div className="mob-feature-card" data-reveal>
                 <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M3 3v18h18 M7 15V9 M12 15V5 M17 15v-3" /></svg></div>
                 <div>
-                  <h3>Rekap Otomatis</h3>
-                  <p>Total sesi, jam, dan pendapatan terhitung otomatis. Filter per bulan, per murid.</p>
+                  <h3>Rekap Bulanan</h3>
+                  <p>Filter per bulan, per murid. Total sesi, jam, dan pendapatan.</p>
                 </div>
               </div>
               <div className="mob-feature-card" data-reveal>
                 <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M8 13h8 M8 17h5" /></svg></div>
                 <div>
-                  <h3>Invoice Sekali Klik</h3>
-                  <p>3 template profesional. Pilih warna, isi rekening, export PDF, kirim ke orangtua.</p>
+                  <h3>Export PDF &amp; CSV</h3>
+                  <p>Sesi bulan ini jadi dokumen rapi — arsip atau lampiran pajak.</p>
+                </div>
+              </div>
+              <div className="mob-feature-card" data-reveal>
+                <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M9 13h6 M9 17h4" /></svg></div>
+                <div>
+                  <h3>Invoice Builder</h3>
+                  <p>3 template siap pakai. Kustom warna, isi rekening, export PDF.</p>
                 </div>
               </div>
               <div className="mob-feature-card" data-reveal>
                 <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1" /></svg></div>
                 <div>
                   <h3>Sinkron dengan App</h3>
-                  <p>Data sesi otomatis dari TutorLog di ponsel. Login sekali, langsung pakai.</p>
+                  <p>Data sesi otomatis dari TutorLog di ponsel.</p>
                 </div>
               </div>
-              <div className="mob-feature-card" data-reveal>
-                <div className="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M9 13h6 M9 17h4" /></svg></div>
-                <div>
-                  <h3>Export CSV &amp; PDF</h3>
-                  <p>Arsip pribadi atau lampiran pajak. Data rapi, siap download kapan saja.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* HOW IT WORKS */}
-          <div className="mob-section" data-reveal>
-            <div className="mob-section-label">Cara Kerja</div>
-            <h2 className="mob-section-title">Mulai dalam <span className="em">tiga langkah</span> simpel.</h2>
-            <div className="mob-steps">
-              <div className="mob-step" data-reveal>
-                <div className="mob-step-num">1</div>
-                <div>
-                  <h3>Download &amp; daftar</h3>
-                  <p>Buat akun dalam semenit. Langsung dapat masa coba gratis.</p>
-                </div>
-              </div>
-              <div className="mob-step" data-reveal>
-                <div className="mob-step-num">2</div>
-                <div>
-                  <h3>Catat tiap selesai les</h3>
-                  <p>Selesai ngajar, tinggal tap. Kehadiran, durasi, dan materi langsung tercatat.</p>
-                </div>
-              </div>
-              <div className="mob-step" data-reveal>
-                <div className="mob-step-num">3</div>
-                <div>
-                  <h3>Rekap &amp; invoice otomatis</h3>
-                  <p>Total sesi, pendapatan, dan invoice terhitung sendiri. Tinggal download.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* TESTIMONIAL */}
-          <div className="mob-section" data-reveal>
-            <div className="mob-section-label">Kata Guru</div>
-            <div className="mob-testimonial">
-              <div className="mob-testimonial-quote">&quot;Data murid, jadwal, catatan, sampai pembayaran — semua yang saya kerjakan manual selama ini akhirnya jadi satu.&quot;</div>
-              <div className="mob-testimonial-author">
-                <div className="mob-testimonial-avatar">B</div>
-                <div>
-                  <div className="mob-testimonial-name">Bu Binar</div>
-                  <div className="mob-testimonial-role">Guru Les Privat</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="mob-section" data-reveal>
-            <div className="mob-cta-box">
-              <h2>Mulai catat <span className="em">sesi pertamamu</span> hari ini.</h2>
-              <p>Gratis mulai. Nanti bisa upgrade kapan saja kalau butuh fitur lengkap.</p>
-              <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener" style={{ width: "100%", justifyContent: "center" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
-                <span>Mulai Gratis</span>
-              </a>
             </div>
           </div>
 
@@ -195,7 +112,7 @@ export default function Home() {
 
       {/* DESKTOP */}
       <div className="vp-desktop">
-          {/* HERO */}
+          {/* HERO - full width */}
           <section className="hero-v2">
             <nav className="nav-top-dark">
               <Link className="brand" href="/" style={{ textDecoration: "none" }}>
@@ -220,6 +137,15 @@ export default function Home() {
               <div className="login-particle pulse glow" style={{ left: "68%", top: "20%", width: 8, height: 8, ["--pd" as string]: "5s", ["--po" as string]: 0.4, ["--pt" as string]: "1.5s" }}></div>
               <div className="login-particle pulse" style={{ left: "82%", top: "10%", width: 5, height: 5, ["--pd" as string]: "4s", ["--po" as string]: 0.3, ["--pt" as string]: "2s" }}></div>
               <div className="login-particle pulse glow" style={{ left: "90%", top: "25%", width: 6, height: 6, ["--pd" as string]: "5.5s", ["--po" as string]: 0.45, ["--pt" as string]: "0.8s" }}></div>
+              <div className="login-particle pulse" style={{ left: "8%", top: "55%", width: 4, height: 4, ["--pd" as string]: "5s", ["--po" as string]: 0.2, ["--pt" as string]: "1.2s" }}></div>
+              <div className="login-particle pulse glow" style={{ left: "25%", top: "75%", width: 6, height: 6, ["--pd" as string]: "6s", ["--po" as string]: 0.4, ["--pt" as string]: "0s" }}></div>
+              <div className="login-particle pulse" style={{ left: "48%", top: "85%", width: 5, height: 5, ["--pd" as string]: "4s", ["--po" as string]: 0.35, ["--pt" as string]: "1.8s" }}></div>
+              <div className="login-particle pulse glow" style={{ left: "72%", top: "70%", width: 7, height: 7, ["--pd" as string]: "6s", ["--po" as string]: 0.45, ["--pt" as string]: "0.5s" }}></div>
+              <div className="login-particle pulse" style={{ left: "88%", top: "80%", width: 4, height: 4, ["--pd" as string]: "5s", ["--po" as string]: 0.25, ["--pt" as string]: "2.2s" }}></div>
+              <div className="login-particle pulse glow" style={{ left: "95%", top: "60%", width: 5, height: 5, ["--pd" as string]: "4.5s", ["--po" as string]: 0.4, ["--pt" as string]: "1s" }}></div>
+              <div className="login-particle pulse" style={{ left: "15%", top: "40%", width: 3, height: 3, ["--pd" as string]: "4s", ["--po" as string]: 0.2, ["--pt" as string]: "1.6s" }}></div>
+              <div className="login-particle pulse" style={{ left: "60%", top: "50%", width: 4, height: 4, ["--pd" as string]: "5.5s", ["--po" as string]: 0.25, ["--pt" as string]: "2s" }}></div>
+              <div className="login-particle pulse glow" style={{ left: "78%", top: "45%", width: 5, height: 5, ["--pd" as string]: "5s", ["--po" as string]: 0.35, ["--pt" as string]: "0.4s" }}></div>
               <svg className="hero-connections" preserveAspectRatio="none">
                 <line x1="5%" y1="12%" x2="18%" y2="6%" stroke="rgba(140,246,210,.06)" strokeWidth="1" />
                 <line x1="18%" y1="6%" x2="35%" y2="15%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
@@ -227,32 +153,38 @@ export default function Home() {
                 <line x1="52%" y1="8%" x2="68%" y2="20%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
                 <line x1="68%" y1="20%" x2="82%" y2="10%" stroke="rgba(140,246,210,.04)" strokeWidth="1" />
                 <line x1="82%" y1="10%" x2="90%" y2="25%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+                <line x1="8%" y1="55%" x2="25%" y2="75%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+                <line x1="25%" y1="75%" x2="48%" y2="85%" stroke="rgba(140,246,210,.04)" strokeWidth="1" />
+                <line x1="72%" y1="70%" x2="88%" y2="80%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+                <line x1="60%" y1="50%" x2="78%" y2="45%" stroke="rgba(140,246,210,.04)" strokeWidth="1" />
+                <line x1="78%" y1="45%" x2="95%" y2="60%" stroke="rgba(140,246,210,.05)" strokeWidth="1" />
+                <line x1="15%" y1="40%" x2="8%" y2="55%" stroke="rgba(140,246,210,.04)" strokeWidth="1" />
               </svg>
             </div>
 
             <div className="hero-text">
               <span className="kicker-dark anim-up">
                 <span className="dot"></span>
-                Untuk Guru Les Privat Indonesia
+                Companion Web · Untuk Tutor
               </span>
-              <h1 className="anim-up-d1">Fokus mengajar.<br />Administrasi biar<br />TutorLog <span className="em">yang urus</span>.</h1>
+              <h1 className="anim-up-d1">Rekap sesi les.<br />Invoice <span className="em">rapi</span> tiap bulan.</h1>
               <p className="hero-desc anim-up-d2">
-                Catat sesi, rekap pendapatan, buat invoice — semua otomatis dari ponselmu. Coba gratis. Nanti bisa upgrade kalau butuh fitur lengkap.
+                TutorLog di ponsel mencatat — companion web ini merangkum, menagih, dan mengarsipkan. Satu flow, dari sesi ke tagihan.
               </p>
               <div className="cta-row anim-up-d3">
                 <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
-                  <span>Mulai Gratis</span>
+                  <span>Cek di Play Store</span>
                 </a>
-                <Link className="btn-hero ghost" href="/login">
-                  <span>Masuk</span>
+                <Link className="btn-hero ghost" href="/panduan">
+                  <span>Lihat demo</span>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M5 12h14 M13 6l6 6-6 6" /></svg>
                 </Link>
               </div>
               <div className="trust-row anim-up-d4">
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Gratis mulai</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Fitur lengkap</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Upgrade kapan saja</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Gratis untuk mulai</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Tanpa kartu kredit</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><circle cx="12" cy="12" r="10" /><path d="m8 12 3 3 5-6" /></svg> Sinkron dengan app</span>
               </div>
             </div>
 
@@ -308,127 +240,34 @@ export default function Home() {
             </div>
           </section>
 
-          {/* PROBLEM SECTION */}
-          <section className="landing-problem">
-            <div className="landing-problem-inner">
-              <span className="section-label">Masalahnya</span>
-              <h2>Kamu mengajar berjam-jam.<br /><span className="em">Administrasinya</span> yang bikin capek.</h2>
-              <div className="problem-grid">
-                <div className="problem-card" data-reveal>
-                  <div className="problem-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
-                  </div>
-                  <h3>Catatan berserakan</h3>
-                  <p>Murid di buku tulis, jadwal di kepala, tagihan sering kelewat. Pas dibutuhin, susah dicari.</p>
-                </div>
-                <div className="problem-card" data-reveal>
-                  <div className="problem-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                  </div>
-                  <h3>Waktu habis untuk admin</h3>
-                  <p>Jam yang harusnya buat mengajar malah habis ngurus catatan, nagih bayaran, bikin invoice.</p>
-                </div>
-                <div className="problem-card" data-reveal>
-                  <div className="problem-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                  </div>
-                  <h3>Reputasi nggak kelihatan</h3>
-                  <p>Bertahun-tahun ngajar, tapi calon murid baru cuma lihat &quot;salah satu guru les&quot; biasa.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
           {/* FEATURES */}
           <section className="features-v2">
             <div className="features-head">
-              <span className="section-label">Solusinya</span>
-              <h2>Satu aplikasi untuk <span className="em">seluruh</span> kegiatan mengajarmu.</h2>
+              <h2>Semua yang kamu butuh setelah sesi berakhir.</h2>
               <div className="lede">
-                Dibuat khusus untuk guru les privat di Indonesia. Ringan, jelas, langsung kepakai tiap hari.
+                App mobile mencatat. Web ini merangkum, menagih, dan mengarsipkan — jadi kamu tinggal ngajar.
               </div>
             </div>
             <div className="feature-grid">
               <div className="feature-card anim-card-0">
                 <div className="ic" style={{ color: "var(--tw-primary)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M3 3v18h18 M7 15V9 M12 15V5 M17 15v-3" /></svg></div>
-                <h3>Rekap Otomatis</h3>
-                <p>Total sesi, jam, dan pendapatan terhitung otomatis. Filter per bulan, per murid — langsung terlihat.</p>
+                <h3>Rekap Bulanan</h3>
+                <p>Filter per bulan, per murid. Total sesi, jam, dan pendapatan langsung terlihat.</p>
               </div>
               <div className="feature-card anim-card-1">
                 <div className="ic" style={{ color: "var(--tw-primary)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M8 13h8 M8 17h5" /></svg></div>
-                <h3>Invoice Sekali Klik</h3>
-                <p>3 template profesional. Pilih warna, isi rekening, export PDF, kirim ke orangtua.</p>
+                <h3>Export PDF &amp; CSV</h3>
+                <p>Sesi bulan ini jadi dokumen rapi — arsip pribadi atau lampiran pajak.</p>
               </div>
               <div className="feature-card anim-card-2">
-                <div className="ic" style={{ color: "var(--tw-primary)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1" /></svg></div>
-                <h3>Sinkron dengan App</h3>
-                <p>Data sesi otomatis dari TutorLog di ponsel. Login sekali via Magic Link, langsung pakai.</p>
+                <div className="ic" style={{ color: "var(--tw-primary)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M9 13h6 M9 17h4" /></svg></div>
+                <h3>Invoice Builder</h3>
+                <p>3 template siap pakai. Pilih warna, isi rekening, ekspor PDF, kirim ke orangtua.</p>
               </div>
               <div className="feature-card anim-card-3">
-                <div className="ic" style={{ color: "var(--tw-primary)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M9 13h6 M9 17h4" /></svg></div>
-                <h3>Export CSV &amp; PDF</h3>
-                <p>Arsip pribadi atau lampiran pajak. Data rapi, siap download kapan saja.</p>
-              </div>
-            </div>
-          </section>
-
-          {/* HOW IT WORKS */}
-          <section className="landing-steps">
-            <div className="landing-steps-inner">
-              <span className="section-label">Cara Kerja</span>
-              <h2>Mulai dalam <span className="em">tiga langkah</span> simpel.</h2>
-              <p className="lede">Nggak perlu pelatihan. Kalau kamu bisa chat WhatsApp, kamu bisa pakai TutorLog.</p>
-              <div className="steps-grid">
-                <div className="step-card" data-reveal>
-                  <div className="step-num">1</div>
-                  <h3>Download &amp; daftar</h3>
-                  <p>Buat akun dalam semenit. Langsung dapat masa coba gratis. Tanpa kartu kredit.</p>
-                </div>
-                <div className="step-card" data-reveal>
-                  <div className="step-num">2</div>
-                  <h3>Catat tiap selesai les</h3>
-                  <p>Selesai ngajar, tinggal tap. Kehadiran, durasi, materi, dan nilai langsung tercatat.</p>
-                </div>
-                <div className="step-card" data-reveal>
-                  <div className="step-num">3</div>
-                  <h3>Rekap &amp; invoice otomatis</h3>
-                  <p>Total sesi, pendapatan, dan invoice terhitung sendiri. Tinggal download dan kirim.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* TESTIMONIAL */}
-          <section className="landing-testimonial">
-            <div className="landing-testimonial-inner">
-              <span className="section-label">Kata Guru</span>
-              <div className="testimonial-card" data-reveal>
-                <div className="testimonial-quote">&quot;Profil guru, data murid, jadwal, catatan, sampai pembayaran — memang sedang saya butuhkan. Semua yang saya kerjakan manual selama ini akhirnya jadi satu.&quot;</div>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar">B</div>
-                  <div>
-                    <div className="testimonial-name">Bu Binar</div>
-                    <div className="testimonial-role">Guru Les Privat</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* FINAL CTA */}
-          <section className="landing-final-cta">
-            <div className="landing-final-cta-inner">
-              <h2>Mulai catat <span className="em">sesi pertamamu</span> hari ini.</h2>
-              <p>Gratis mulai. Nanti bisa upgrade kapan saja kalau butuh fitur lengkap.</p>
-              <div className="cta-row">
-                <a className="btn-hero primary" href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" rel="noopener">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}><path d="M3.609 1.814a.75.75 0 0 1 .396.112l16.5 9.75a.75.75 0 0 1 0 1.256l-16.5 9.75A.75.75 0 0 1 3 22.25V1.75a.75.75 0 0 1 .609-.936z"/></svg>
-                  <span>Mulai Gratis</span>
-                </a>
-                <Link className="btn-hero ghost" href="/login">
-                  <span>Masuk</span>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M5 12h14 M13 6l6 6-6 6" /></svg>
-                </Link>
+                <div className="ic" style={{ color: "var(--tw-primary)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}><path d="M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M5.6 18.4l2.1-2.1 M16.3 7.7l2.1-2.1" /></svg></div>
+                <h3>Sinkron dengan App</h3>
+                <p>Data sesi otomatis dari TutorLog di ponsel. Login sekali via Magic Link.</p>
               </div>
             </div>
           </section>
@@ -440,6 +279,7 @@ export default function Home() {
                 <Link href="/fitur">Fitur</Link>
                 <Link href="/harga">Harga</Link>
                 <Link href="/panduan">Panduan</Link>
+                <a href="#">Blog</a>
               </div>
               <div className="link-group">
                 <Link href="/privacy">Privacy Policy</Link>
