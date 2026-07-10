@@ -4757,6 +4757,37 @@ html, body { overflow-x: hidden; }
 .tls-final-action .tl-button { margin-top: 28px; }
 .tls-mobile-proof { display: none; }
 
+.tls-guide-step-list {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tls-guide-step {
+  padding: 22px 0;
+  border-top: 1px solid var(--tl-line);
+}
+
+.tls-guide-step:last-child { border-bottom: 1px solid var(--tl-line); }
+
+.tls-guide-step h3 {
+  margin: 0;
+  color: #12211f;
+  font-family: var(--f-title), monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.tls-guide-step p {
+  max-width: 500px;
+  margin: 9px 0 0;
+  color: #50645e;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
 @media (min-width: 768px) and (max-width: 1199px) {
   .tls-story-grid {
     width: calc(100% - 64px);
@@ -4770,6 +4801,7 @@ html, body { overflow-x: hidden; }
   .tls-story-hero > p:not(.tl-kicker) { font-size: 18px; }
   .tls-story-section { padding: 64px 0; }
   .tls-story-section h2 { font-size: 34px; }
+  .tls-guide-step h3 { font-size: 21px; }
 }
 
 @media (max-width: 767px) {
@@ -4794,4 +4826,8 @@ html, body { overflow-x: hidden; }
   .tls-mobile-proof .tls-rail-proof > figcaption { margin-bottom: 10px; }
   .tls-price-ledger > div { min-height: 56px; }
   .tls-hover-quote blockquote > p { font-size: 24px; }
+  .tls-guide-step-list { margin-top: 24px; }
+  .tls-guide-step { padding: 20px 0; }
+  .tls-guide-step h3 { font-size: 21px; }
+  .tls-guide-step p { font-size: 16px; }
 }

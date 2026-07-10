@@ -1,132 +1,69 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowDown,
-  ArrowRight,
-  ChartBar,
-  Desktop,
-  DownloadSimple,
-  EnvelopeSimple,
-  FileText,
-  Timer,
-  UserPlus,
-} from "@phosphor-icons/react/dist/ssr";
-import { PublicShell } from "@/components/PublicShell";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { PublicProductProof } from "@/components/PublicProductRail";
+import { PublicStoryLayout } from "@/components/PublicStoryLayout";
 
 export const metadata: Metadata = {
   title: "TutorLog - Panduan",
-  description: "Dari download aplikasi sampai invoice pertama, panduan singkat pakai TutorLog.",
+  description: "Panduan singkat mencatat sesi di mobile, melihat rekap, dan membuat invoice di TutorLog.",
 };
 
-const steps = [
-  {
-    verb: "Download",
-    title: "Pasang aplikasi mobile.",
-    body: "Daftar dengan email yang sama untuk mobile dan web.",
-    phase: "Mobile",
-    icon: <DownloadSimple size={20} />,
-  },
-  {
-    verb: "Tambah",
-    title: "Isi murid dan tarif.",
-    body: "Nama, kelas, tipe tagihan, dan tarif jadi dasar rekap berikutnya.",
-    phase: "Mobile",
-    icon: <UserPlus size={20} />,
-  },
-  {
-    verb: "Catat",
-    title: "Mulai sesi les.",
-    body: "Pilih murid, mulai timer, lalu simpan saat kelas selesai.",
-    phase: "Mobile",
-    icon: <Timer size={20} />,
-  },
-  {
-    verb: "Masuk",
-    title: "Buka web dengan email yang sama.",
-    body: "Magic link menghubungkan akun web dengan catatan dari mobile.",
-    phase: "Web",
-    icon: <EnvelopeSimple size={20} />,
-  },
-  {
-    verb: "Rekap",
-    title: "Lihat bulanannya.",
-    body: "Sesi, jam, dan murid sudah terkumpul untuk dicek ulang.",
-    phase: "Web",
-    icon: <ChartBar size={20} />,
-  },
-  {
-    verb: "Kirim",
-    title: "Buat invoice.",
-    body: "Pilih murid, cek detail sesi, export PDF, lalu kirim.",
-    phase: "Web",
-    icon: <FileText size={20} />,
-  },
-];
+const mobileSteps = [
+  ["Pasang aplikasi mobile.", "Daftar dengan email yang sama untuk mobile dan web."],
+  ["Isi murid dan tarif.", "Nama, kelas, tipe tagihan, dan tarif menjadi dasar rekap berikutnya."],
+  ["Simpan sesi les.", "Pilih murid, mulai timer, lalu simpan saat kelas selesai."],
+] as const;
 
-function GuideRail() {
+const webSteps = [
+  ["Buka web dengan email yang sama.", "Magic link menghubungkan akun web dengan catatan dari mobile."],
+  ["Lihat rekap bulanannya.", "Sesi, jam, dan murid sudah terkumpul untuk dicek ulang."],
+  ["Buat invoice.", "Pilih murid, cek detail sesi, export PDF, lalu kirim."],
+] as const;
+
+function GuideSteps({ steps }: { steps: readonly (readonly [string, string])[] }) {
   return (
-    <div className="tl-guide-rail">
-      <div className="tl-rail-path tl-guide-path" aria-hidden="true">
-        <span>Langkah</span>
-        <ol>
-          {steps.map((step, index) => (
-            <li key={step.title}>
-              <b>{String(index + 1).padStart(2, "0")}</b>
-              <small>{step.verb}</small>
-              {index < steps.length - 1 ? <ArrowDown size={16} weight="bold" /> : null}
-            </li>
-          ))}
-        </ol>
-      </div>
-      <figure className="tl-guide-phone tl-public-product">
-        <Image src="/images/tutorlog-clean-home.png" alt="Mulai sesi di TutorLog mobile" width={1080} height={2400} priority />
-      </figure>
-      <figure className="tl-guide-web-slot tl-public-product">
-        <Desktop size={34} weight="duotone" aria-hidden="true" />
-        <figcaption><strong>Screenshot web companion</strong><span>Slot untuk layar rekap atau invoice.</span></figcaption>
-      </figure>
-    </div>
+    <ol className="tls-guide-step-list">
+      {steps.map(([title, body]) => (
+        <li className="tls-guide-step" key={title}>
+          <h3>{title}</h3>
+          <p>{body}</p>
+        </li>
+      ))}
+    </ol>
   );
 }
 
 export default function PanduanPage() {
   return (
-    <PublicShell
+    <PublicStoryLayout
+      className="tls-guide"
       eyebrow="Panduan TutorLog"
       title="Catat di HP, buat invoice di web."
-      subtitle="Ikuti alur pendek ini kalau ingin melihat bagaimana mobile app dan web companion saling nyambung."
-      icon={null}
-      className="tl-public-guide"
+      subtitle="Ikuti alur singkat ini untuk melihat bagaimana mobile app dan web companion memakai data yang sama."
+      railLabel="Alur penggunaan TutorLog"
     >
-      <section className="tl-guide-story" aria-label="Langkah menggunakan TutorLog">
-        <aside className="tl-guide-pin">
-          <GuideRail />
-          <div className="tl-guide-intro tl-public-motion">
-            <h2>Dua tempat, satu email.</h2>
-            <p>
-              Mobile dekat dengan sesi mengajar. Web dekat dengan pekerjaan setelahnya: rekap, export, dan invoice.
-            </p>
-            <Link className="tl-public-button" href="/kontak">Butuh bantuan?</Link>
-          </div>
-        </aside>
-        <div className="tl-guide-steps">
-          {steps.map((step, index) => (
-            <article className="tl-guide-step tl-public-motion" key={step.title}>
-              <div className="tl-guide-step-meta">
-                <span className="tl-guide-step-route">{String(index + 1).padStart(2, "0")} <ArrowRight size={18} weight="bold" /></span>
-                <span>{step.verb}</span>
-                <small>{step.phase}</small>
-              </div>
-              <span className="tl-guide-step-icon" aria-hidden="true">{step.icon}</span>
-              <div>
-                <h2>{step.title}</h2>
-                <p>{step.body}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+      <section className="tls-story-section tls-guide-phase" aria-labelledby="guide-mobile">
+        <h2 id="guide-mobile">Di HP.</h2>
+        <p>Mobile dipakai saat kamu dekat dengan sesi mengajar.</p>
+        <GuideSteps steps={mobileSteps} />
+        <div className="tls-mobile-proof"><PublicProductProof id="mobile" /></div>
       </section>
-    </PublicShell>
+
+      <section className="tls-story-section tls-guide-phase" aria-labelledby="guide-web">
+        <h2 id="guide-web">Di web.</h2>
+        <p>Web dipakai saat data yang sudah terkumpul perlu dibaca, dicek, atau dikirim.</p>
+        <GuideSteps steps={webSteps} />
+        <div className="tls-mobile-proof"><PublicProductProof id="recap" /></div>
+        <div className="tls-mobile-proof"><PublicProductProof id="invoice" /></div>
+      </section>
+
+      <section className="tls-story-section tls-final-action" aria-labelledby="guide-action">
+        <span>Butuh bantuan?</span>
+        <h2 id="guide-action">Kami bisa bantu mulai dari alurnya.</h2>
+        <p>Hubungi TutorLog kalau ada pertanyaan saat memasang aplikasi atau membuat invoice pertama.</p>
+        <Link className="tls-inline-link" href="/kontak">Hubungi TutorLog <ArrowRight size={16} aria-hidden="true" /></Link>
+      </section>
+    </PublicStoryLayout>
   );
 }

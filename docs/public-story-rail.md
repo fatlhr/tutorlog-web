@@ -7,7 +7,7 @@
 - [x] M2: real product proof
 - [x] M3: landing rebuild
 - [x] M4: fitur rebuild
-- [ ] M5: panduan rebuild
+- [x] M5: panduan rebuild
 - [ ] M6: regression and PR review
 
 ## Visual Contract
