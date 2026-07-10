@@ -14,8 +14,9 @@
 
 ### Shared composition
 
-- Desktop and tablet use a single narrative column on the left and a sticky product rail on the right, separated by one vertical rule.
-- The rail starts beside the hero and stays visible while related narrative sections scroll.
+- `/fitur` and `/panduan` use a single narrative column on the left and a sticky product rail on the right, separated by one vertical rule.
+- Their rail starts beside the related product stories and stays visible while that copy scrolls.
+- Landing is a standalone public landing composition. Its hero, testimonial, and final action use the full content width. Product proof appears as three ordinary feature rows, never as a rail.
 - Arrows are limited to outcome annotations beside a matching product proof. They never number, sequence, separate rows, or animate.
 - Mobile is one column. It has no sticky rail, vertical rule, absolute screenshot overlay, small path label, or duplicated desktop markup.
 - Product proof is a real image or a real TutorLog component. Do not create product preview UI with decorative divs.
@@ -58,11 +59,12 @@
 
 ### Landing
 
-1. Hero: `Rekap dan invoice untuk tutor privat.` with current subcopy and two CTAs.
-2. Problem: `Yang biasanya tercecer, kini terkumpul.`
-3. Pricing cue: plain `Free` and `Plus` ledger rows with link to `/harga`.
-4. Hover Quote: Miss Binar, text only, quote body at most three lines.
-5. Final action: one CTA with action-focused hierarchy.
+1. Full-width editorial split hero: `Rekap dan invoice untuk tutor privat.` with one Play Store CTA and an uncropped mobile proof.
+2. Intro: `Catat sekali. Pakai lagi saat waktunya rekap.`
+3. Three ordinary feature rows: mobile logging, web recap, invoice and export. They are not cards and do not use a sticky rail.
+4. Pricing cue: plain `Free` and `Plus` ledger rows with link to `/harga`.
+5. Hover Quote: Miss Binar, text only, quote body at most three lines.
+6. Final action: full-width accent band with one compact CTA on mobile.
 
 ### Fitur
 

@@ -44,7 +44,7 @@ test.describe('Homepage hero guardrails', () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      const heading = page.locator('.tls-story-page .tls-story-hero h1');
+      const heading = page.locator('.tl-landing-standard .tl-landing-hero h1');
       await expect(heading).toBeVisible();
       const metrics = await heading.evaluate((element) => {
         const style = window.getComputedStyle(element);
@@ -57,7 +57,7 @@ test.describe('Homepage hero guardrails', () => {
 
       expect(Math.ceil(metrics.height / metrics.lineHeight)).toBeLessThanOrEqual(2);
 
-      const primaryCta = page.locator('.tls-story-page .tls-story-hero .tl-button-primary');
+      const primaryCta = page.locator('.tl-landing-standard .tl-landing-hero .tl-button-primary');
       await expect(primaryCta).toBeVisible();
       const ctaBox = await primaryCta.evaluate((element) => {
         const rect = element.getBoundingClientRect();
@@ -66,20 +66,44 @@ test.describe('Homepage hero guardrails', () => {
 
       expect(ctaBox.bottom).toBeLessThanOrEqual(ctaBox.viewport);
 
-      await expect(page.locator('.tls-story-rail')).toBeVisible();
+      await expect(page.locator('.tl-landing-hero')).toBeVisible();
     });
   }
 });
 
 test.describe('Homepage story structure', () => {
-  test('uses one responsive tree and moves proof into the narrative on mobile', async ({ page }) => {
+  test('uses a dedicated landing composition without a story rail', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('.vp-desktop, .vp-mobile')).toHaveCount(0);
-    await expect(page.locator('.tls-story-rail')).toBeHidden();
-    await expect(page.locator('.tls-mobile-proof')).toHaveCount(3);
+    await expect(page.locator('.tls-story-rail, .tls-story-grid')).toHaveCount(0);
+    await expect(page.locator('.tl-landing-mobile-proof')).toHaveCount(1);
+  });
+
+  test('keeps the hero and landing closing sections outside the product proof rows', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tl-landing-hero')).toHaveCount(1);
+    await expect(page.locator('.tl-landing-closing .tls-hover-quote')).toHaveCount(1);
+    await expect(page.locator('.tl-landing-closing .tls-final-action')).toHaveCount(1);
+
+    const metrics = await page.evaluate(() => {
+      const hero = document.querySelector<HTMLElement>('.tl-landing-hero');
+      const featureRows = document.querySelector<HTMLElement>('.tl-landing-feature-rows');
+      if (!hero || !featureRows) return null;
+
+      const heroRect = hero.getBoundingClientRect();
+      const rowsRect = featureRows.getBoundingClientRect();
+      return { heroWidth: heroRect.width, heroBottom: heroRect.bottom, rowsTop: rowsRect.top };
+    });
+
+    expect(metrics).not.toBeNull();
+    expect(metrics?.heroWidth).toBeGreaterThan(1000);
+    expect(metrics?.rowsTop).toBeGreaterThanOrEqual(metrics?.heroBottom ?? 0);
   });
 });
 
@@ -131,6 +155,35 @@ test.describe('Public navigation guardrails', () => {
 
     expect(metrics.height).toBeLessThanOrEqual(84);
   });
+
+  test('mobile menu trigger sits at the right edge of the navigation', async ({ page }) => {
+    await page.setViewportSize({ width: 516, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const metrics = await page.evaluate(() => {
+      const nav = document.querySelector<HTMLElement>('.tl-public-nav');
+      const trigger = document.querySelector<HTMLElement>('.tl-public-menu .hamburger');
+      if (!nav || !trigger) return null;
+
+      const navRect = nav.getBoundingClientRect();
+      const triggerRect = trigger.getBoundingClientRect();
+      return { navRight: navRect.right, triggerRight: triggerRect.right, triggerLeft: triggerRect.left, navCenter: navRect.left + navRect.width / 2 };
+    });
+
+    expect(metrics).not.toBeNull();
+    expect(metrics?.triggerRight).toBeGreaterThanOrEqual((metrics?.navRight ?? 0) - 1);
+    expect(metrics?.triggerLeft).toBeGreaterThan(metrics?.navCenter ?? 0);
+  });
+
+  test('active desktop route has a visible border indicator', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const border = await page.locator('.tl-public-nav a[href="/fitur"]').evaluate((element) => window.getComputedStyle(element).borderBottomWidth);
+    expect(border).toBe('2px');
+  });
 });
 
 test.describe('Feature story rail', () => {
@@ -170,7 +223,7 @@ test.describe('Public story rail motion guardrails', () => {
   test('keeps product proof fully visible when reduced motion is requested', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
+    await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
     const surfaces = page.locator('.tls-story-rail .tls-rail-surface');
@@ -213,9 +266,9 @@ test.describe('Landing mobile story guardrails', () => {
     await page.waitForLoadState('networkidle');
 
     const metrics = await page.evaluate(() => {
-      const hero = document.querySelector<HTMLElement>('.tls-story-hero');
-      const action = document.querySelector<HTMLElement>('.tls-story-actions .tl-button-primary');
-      const proof = document.querySelector<HTMLElement>('.tls-mobile-proof');
+      const hero = document.querySelector<HTMLElement>('.tl-landing-hero');
+      const action = document.querySelector<HTMLElement>('.tl-landing-hero .tl-button-primary');
+      const proof = document.querySelector<HTMLElement>('.tl-landing-mobile-proof');
       if (!hero || !action || !proof) return null;
 
       const heroRect = hero.getBoundingClientRect();
@@ -225,12 +278,53 @@ test.describe('Landing mobile story guardrails', () => {
       return {
         actionWidth: actionRect.width,
         proofTop: proofRect.top,
+        actionBottom: actionRect.bottom,
         heroBottom: heroRect.bottom,
       };
     });
 
     expect(metrics).not.toBeNull();
     expect(metrics?.actionWidth).toBeLessThanOrEqual(342);
-    expect(metrics?.proofTop).toBeGreaterThanOrEqual(metrics?.heroBottom ?? 0);
+    expect(metrics?.proofTop).toBeGreaterThanOrEqual(metrics?.actionBottom ?? 0);
+    expect(metrics?.proofTop).toBeLessThanOrEqual(metrics?.heroBottom ?? 0);
+  });
+
+  test('keeps hero actions and mobile proof compact at 516px', async ({ page }) => {
+    await page.setViewportSize({ width: 516, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const metrics = await page.evaluate(() => {
+      const cta = document.querySelector<HTMLElement>('.tl-landing-hero .tl-button-primary');
+      const proof = document.querySelector<HTMLElement>('.tl-landing-mobile-proof');
+      if (!cta || !proof) return null;
+
+      return {
+        ctaWidth: cta.getBoundingClientRect().width,
+        proofWidth: proof.getBoundingClientRect().width,
+      };
+    });
+
+    expect(metrics).not.toBeNull();
+    expect(metrics?.ctaWidth).toBeLessThan(260);
+    expect(metrics?.proofWidth).toBeLessThanOrEqual(200);
+  });
+
+  test('uses a distinct full-width band for the final mobile action', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const background = await page.locator('.tls-final-action').evaluate((element) => window.getComputedStyle(element).backgroundColor);
+    expect(background).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  test('keeps product navigation out of the mobile footer', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tl-footer a[href="/fitur"]')).toBeHidden();
+    await expect(page.locator('.tl-footer a[href="/privacy"]')).toBeVisible();
   });
 });
