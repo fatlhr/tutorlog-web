@@ -2338,11 +2338,16 @@ html, body { overflow-x: hidden; }
 
 .tl-cta-row-mobile {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 344px);
+  gap: 8px;
 }
 
 .tl-cta-row-mobile .tl-button {
   width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  font-size: 13px;
 }
 
 .tl-mobile-hero .tl-button-primary {
@@ -2357,9 +2362,13 @@ html, body { overflow-x: hidden; }
 }
 
 .tl-mobile-hero .tl-preview-stack {
-  width: 100%;
-  min-height: 210px;
-  margin-top: 28px;
+  width: min(100%, 220px);
+  min-height: 196px;
+  margin: 24px auto 0;
+}
+
+.tl-mobile-hero .tl-stack-glow {
+  display: none;
 }
 
 .tl-mobile-hero .tl-product-shot {
@@ -2370,8 +2379,8 @@ html, body { overflow-x: hidden; }
 .tl-mobile-hero .tl-shot-home {
   top: 0;
   left: 50%;
-  width: 118px;
-  height: 264px;
+  width: 92px;
+  height: 196px;
   transform: translateX(-50%);
   --shot-crop-top: 14px;
 }
@@ -2381,19 +2390,11 @@ html, body { overflow-x: hidden; }
 }
 
 .tl-mobile-hero .tl-shot-recap {
-  top: 34px;
-  right: 6px;
-  width: 104px;
-  height: 224px;
-  --shot-crop-top: 14px;
+  display: none;
 }
 
 .tl-mobile-hero .tl-shot-history {
-  top: 34px;
-  left: 6px;
-  width: 104px;
-  height: 224px;
-  --shot-crop-top: 14px;
+  display: none;
 }
 
 .tl-mobile-hero .tl-recap {
@@ -2454,6 +2455,52 @@ html, body { overflow-x: hidden; }
 .tl-landing-mobile .tl-final-cta {
   width: 100%;
   padding: 68px 24px;
+}
+
+.tl-final-cta-kicker {
+  display: none;
+}
+
+.tl-landing-mobile .tl-final-cta {
+  display: grid;
+  justify-items: start;
+  margin: 0;
+  padding: 52px 24px;
+  background: var(--tl-dark);
+  text-align: left;
+}
+
+.tl-landing-mobile .tl-final-cta-kicker {
+  display: block;
+  color: var(--tl-mint);
+  font-family: var(--f-title), monospace;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.tl-landing-mobile .tl-final-cta h2 {
+  max-width: 310px;
+  margin-top: 14px;
+  color: #f2fff9;
+  font-family: var(--f-body), Georgia, serif;
+  font-size: 30px;
+  line-height: 1.12;
+}
+
+.tl-landing-mobile .tl-final-cta p {
+  max-width: 330px;
+  margin: 14px 0 28px;
+  color: rgba(242, 255, 249, .74);
+}
+
+.tl-landing-mobile .tl-final-cta .tl-button-primary {
+  min-height: 48px;
+  background: var(--tl-mint);
+  border-color: var(--tl-mint);
+  box-shadow: none;
+  color: var(--tw-primary-dark);
 }
 
 .tl-landing-mobile .tl-section-head {
@@ -2597,7 +2644,7 @@ html, body { overflow-x: hidden; }
   }
 
   .tl-mobile-hero .tl-preview-stack {
-    min-height: 318px;
+    min-height: 196px;
   }
 }
 

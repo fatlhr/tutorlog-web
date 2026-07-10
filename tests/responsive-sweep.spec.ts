@@ -167,3 +167,32 @@ test.describe('Guide mobile hierarchy guardrails', () => {
     expect(spacing).toBeLessThanOrEqual(84);
   });
 });
+
+test.describe('Landing mobile hero guardrails', () => {
+  test('hero actions and product preview stay compact at wide mobile widths', async ({ page }) => {
+    await page.setViewportSize({ width: 683, height: 883 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const metrics = await page.evaluate(() => {
+      const hero = document.querySelector<HTMLElement>('.vp-mobile .tl-mobile-hero');
+      const actions = document.querySelector<HTMLElement>('.vp-mobile .tl-cta-row-mobile');
+      const screenshots = [...document.querySelectorAll<HTMLElement>('.vp-mobile .tl-mobile-hero .tl-product-shot')];
+      if (!hero || !actions || screenshots.length === 0) return null;
+
+      const heroRect = hero.getBoundingClientRect();
+      const actionRect = actions.getBoundingClientRect();
+      const visualBottom = Math.max(...screenshots.map((screenshot) => screenshot.getBoundingClientRect().bottom));
+
+      return {
+        actionWidth: actionRect.width,
+        visualBottom,
+        heroBottom: heroRect.bottom,
+      };
+    });
+
+    expect(metrics).not.toBeNull();
+    expect(metrics?.actionWidth).toBeLessThanOrEqual(360);
+    expect(metrics?.visualBottom).toBeLessThanOrEqual(metrics?.heroBottom ?? 0);
+  });
+});

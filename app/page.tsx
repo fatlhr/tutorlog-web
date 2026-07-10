@@ -361,6 +361,7 @@ function TestimonialSection() {
 function FinalCta() {
   return (
     <section className="tl-final-cta" aria-labelledby="final-cta-title">
+      <span className="tl-final-cta-kicker">Mulai gratis</span>
       <h2 id="final-cta-title">Coba dari satu sesi dulu.</h2>
       <p>Kalau alurnya cocok, rekap dan invoice berikutnya tinggal mengikuti data yang kamu catat.</p>
       <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
