@@ -4,7 +4,7 @@
 
 - [x] M0: baseline and handoff contract
 - [x] M1: shared public foundation
-- [ ] M2: real product proof
+- [x] M2: real product proof
 - [ ] M3: landing rebuild
 - [ ] M4: fitur rebuild
 - [ ] M5: panduan rebuild

@@ -14,18 +14,22 @@ export default function PublicMotion() {
       return;
     }
 
-    gsap.utils.toArray<HTMLElement>(".tl-public-product").forEach((element) => {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      return;
+    }
+
+    gsap.utils.toArray<HTMLElement>(".tls-rail-proof").forEach((element) => {
       gsap.fromTo(
         element,
-        { scale: 0.94, opacity: 0.78 },
+        { scale: 0.96, opacity: 0.35 },
         {
           scale: 1,
           opacity: 1,
           ease: "none",
           scrollTrigger: {
             trigger: element,
-            start: "top bottom",
-            end: "bottom top",
+            start: "top 80%",
+            end: "bottom 28%",
             scrub: true,
           },
         },
