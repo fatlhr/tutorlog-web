@@ -2107,40 +2107,63 @@ html, body { overflow-x: hidden; }
 }
 
 .tl-proof-section {
-  padding-top: 84px;
+  padding-top: 104px;
+  padding-bottom: 32px;
 }
 
-.tl-proof-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 32px;
-  align-items: end;
-  padding: clamp(32px, 5vw, 64px);
-  border: 2px solid var(--tl-line);
-  border-radius: 32px;
-  background:
-    linear-gradient(135deg, rgba(222, 208, 255, .44), transparent 30%),
-    linear-gradient(215deg, rgba(140, 246, 210, .28), transparent 34%),
-    rgba(255, 255, 255, .88);
-  box-shadow: 8px 8px 24px rgba(22, 29, 31, .05), -8px -8px 24px rgba(255, 255, 255, .78);
-  transition: transform .28s ease, box-shadow .28s ease;
+.tl-proof-kicker {
+  margin: 0;
+  color: var(--tl-green);
+  font-family: var(--f-title), monospace;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
-.tl-proof-card p {
-  max-width: 650px;
-  margin-top: 24px;
+.tl-proof-quote {
+  max-width: 920px;
+  margin: 26px auto 0;
+}
+
+.tl-proof-quote h2,
+.tl-proof-quote p {
+  margin: 0;
   color: var(--tl-ink);
   font-family: var(--f-title), monospace;
-  font-size: clamp(24px, 2.4vw, 34px);
-  font-weight: 700;
-  line-height: 1.24;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.tl-proof-quote h2 {
+  font-size: clamp(38px, 5.3vw, 68px);
+}
+
+.tl-proof-quote p {
+  margin-top: 24px;
+  font-size: clamp(24px, 2.8vw, 38px);
+  line-height: 1.16;
+}
+
+.tl-proof-quote p span {
+  padding: 0 .08em;
+  background: transparent;
+  box-shadow: inset 0 -0.18em 0 rgba(140, 246, 210, .42);
+  transition: background-color .28s ease, box-shadow .28s ease;
+}
+
+.tl-proof-section:hover .tl-proof-quote p span {
+  background: var(--tl-mint);
+  box-shadow: inset 0 -0.18em 0 rgba(0, 108, 83, .3);
 }
 
 .tl-proof-person {
   display: flex;
   align-items: center;
   gap: 14px;
-  min-width: 190px;
+  width: fit-content;
+  margin: 28px 0 0 auto;
+  min-width: 0;
 }
 
 .tl-proof-person > span {
@@ -2183,21 +2206,23 @@ html, body { overflow-x: hidden; }
 
 .tl-footer {
   display: grid;
-  gap: 22px;
-  justify-items: center;
-  padding: 34px 24px 46px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px 48px;
+  align-items: center;
+  padding: 28px max(24px, calc((100% - 1180px) / 2)) 32px;
   border-top: 2px solid var(--tl-line);
-  background: rgba(255, 255, 255, .45);
-  text-align: center;
+  background: rgba(255, 255, 255, .26);
 }
 
 .tl-footer-links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 14px 22px;
+  grid-column: 2;
+  grid-row: 1;
+  justify-content: flex-end;
+  gap: 10px 18px;
   color: var(--tl-muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -2209,10 +2234,11 @@ html, body { overflow-x: hidden; }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 14px;
+  grid-column: 1;
+  grid-row: 1;
+  gap: 12px;
   color: var(--tl-muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .tl-footer-bottom .tl-brand {
@@ -4246,6 +4272,49 @@ html, body { overflow-x: hidden; }
 
   .tl-flow-slot figcaption {
     font-size: 10px;
+  }
+
+  .tl-proof-section {
+    padding-top: 72px;
+  }
+
+  .tl-proof-quote {
+    margin-top: 20px;
+  }
+
+  .tl-proof-quote h2 {
+    font-size: clamp(34px, 10vw, 44px);
+  }
+
+  .tl-proof-quote p {
+    font-size: clamp(22px, 7vw, 30px);
+  }
+
+  .tl-proof-person {
+    margin-top: 24px;
+  }
+
+  .tl-footer {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    justify-items: center;
+    padding: 28px 24px 34px;
+    text-align: center;
+  }
+
+  .tl-footer-links,
+  .tl-footer-bottom {
+    grid-column: 1;
+    grid-row: auto;
+    justify-content: center;
+  }
+
+  .tl-footer-links {
+    order: 1;
+  }
+
+  .tl-footer-bottom {
+    order: 2;
   }
 }
 

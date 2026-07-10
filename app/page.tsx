@@ -340,19 +340,18 @@ function FlowSection() {
 function TestimonialSection() {
   return (
     <section className="tl-section tl-proof-section" aria-labelledby="proof-title">
-      <div className="tl-proof-card tl-motion-card">
+      <p className="tl-proof-kicker">Dari tutor yang mengajar tiap minggu</p>
+      <blockquote className="tl-proof-quote">
+        <h2 id="proof-title">Bukan aplikasi admin yang terasa jauh dari kelas.</h2>
+        <p>
+          “Data murid, jadwal, catatan, sampai pembayaran akhirnya <span>ada di satu tempat.</span>”
+        </p>
+      </blockquote>
+      <div className="tl-proof-person">
+        <span>B</span>
         <div>
-          <h2 id="proof-title">Bukan aplikasi admin yang terasa jauh dari kelas.</h2>
-          <p>
-            “Data murid, jadwal, catatan, sampai pembayaran akhirnya ada di satu tempat.”
-          </p>
-        </div>
-        <div className="tl-proof-person">
-          <span>B</span>
-          <div>
-            <strong>Miss Binar</strong>
-            <small>Guru les privat</small>
-          </div>
+          <strong>Miss Binar</strong>
+          <small>Guru les privat</small>
         </div>
       </div>
     </section>
