@@ -98,8 +98,6 @@ function ProductRail() {
       <figure className="tl-rail-shot tl-rail-shot-main tl-public-product">
         <Image src="/images/tutorlog-clean-history-list.png" alt="Daftar sesi TutorLog mobile" width={1080} height={2400} priority />
       </figure>
-      <div className="tl-rail-note tl-rail-note-top">Mobile mencatat sesi</div>
-      <div className="tl-rail-note tl-rail-note-bottom">Web merapikan rekap</div>
     </div>
   );
 }

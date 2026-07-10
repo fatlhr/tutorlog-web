@@ -109,3 +109,33 @@ test.describe('Public navigation guardrails', () => {
     expect(metrics.height).toBeLessThanOrEqual(84);
   });
 });
+
+test.describe('Feature rail guardrails', () => {
+  for (const viewport of [390, 1052]) {
+    test(`feature rail labels do not overlap at ${viewport}px`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport, height: 844 });
+      await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
+
+      const railItems = await page.locator('.tl-product-rail .tl-rail-path li').evaluateAll((elements) =>
+        elements.map((element) => {
+          const rect = element.getBoundingClientRect();
+          return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+        }),
+      );
+      const notes = await page.locator('.tl-product-rail .tl-rail-note').evaluateAll((elements) =>
+        elements.map((element) => {
+          const rect = element.getBoundingClientRect();
+          return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+        }),
+      );
+
+      for (const item of railItems) {
+        for (const note of notes) {
+          const overlaps = item.left < note.right && item.right > note.left && item.top < note.bottom && item.bottom > note.top;
+          expect(overlaps).toBe(false);
+        }
+      }
+    });
+  }
+});
