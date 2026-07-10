@@ -69,6 +69,40 @@ test.describe('Homepage hero guardrails', () => {
       await expect(page.locator('.tl-landing-hero')).toBeVisible();
     });
   }
+
+  test('mobile hero keeps its title within three lines', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const metrics = await page.locator('.tl-landing-standard .tl-landing-hero h1').evaluate((element) => {
+      const style = window.getComputedStyle(element);
+      return {
+        height: element.getBoundingClientRect().height,
+        lineHeight: Number.parseFloat(style.lineHeight),
+      };
+    });
+
+    expect(Math.ceil(metrics.height / metrics.lineHeight)).toBeLessThanOrEqual(3);
+  });
+
+  test('opens and closes the temporary demo video dialog', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const demoTrigger = page.getByRole('button', { name: 'Lihat demo' });
+    await expect(demoTrigger).toBeVisible();
+    await demoTrigger.click();
+
+    const dialog = page.getByRole('dialog', { name: 'Demo TutorLog' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('iframe[title="Video demo TutorLog"]')).toHaveAttribute('src', /youtube-nocookie/);
+    await expect(dialog.getByRole('button', { name: 'Tutup demo' })).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
 });
 
 test.describe('Homepage story structure', () => {
@@ -80,6 +114,7 @@ test.describe('Homepage story structure', () => {
     await expect(page.locator('.vp-desktop, .vp-mobile')).toHaveCount(0);
     await expect(page.locator('.tls-story-rail, .tls-story-grid')).toHaveCount(0);
     await expect(page.locator('.tl-landing-mobile-proof')).toHaveCount(1);
+    await expect(page.locator('.tl-landing-proof-story')).toHaveCount(3);
   });
 
   test('keeps the hero and landing closing sections outside the product proof rows', async ({ page }) => {
@@ -104,6 +139,35 @@ test.describe('Homepage story structure', () => {
     expect(metrics).not.toBeNull();
     expect(metrics?.heroWidth).toBeGreaterThan(1000);
     expect(metrics?.rowsTop).toBeGreaterThanOrEqual(metrics?.heroBottom ?? 0);
+  });
+
+  test('offers softer links to features, pricing, and the guide', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const explore = page.locator('.tl-landing-explore');
+    await expect(explore).toBeVisible();
+    await expect(explore.locator('a[href="/fitur"]')).toBeVisible();
+    await expect(explore.locator('a[href="/harga"]')).toBeVisible();
+    await expect(explore.locator('a[href="/panduan"]')).toBeVisible();
+  });
+
+  test('stacks the three proof stories on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const positions = await page.locator('.tl-landing-proof-story').evaluateAll((elements) =>
+      elements.map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom };
+      }),
+    );
+
+    expect(positions).toHaveLength(3);
+    expect(positions[1].top).toBeGreaterThanOrEqual(positions[0].bottom);
+    expect(positions[2].top).toBeGreaterThanOrEqual(positions[1].bottom);
   });
 });
 
@@ -268,7 +332,7 @@ test.describe('Landing mobile story guardrails', () => {
     const metrics = await page.evaluate(() => {
       const hero = document.querySelector<HTMLElement>('.tl-landing-hero');
       const action = document.querySelector<HTMLElement>('.tl-landing-hero .tl-button-primary');
-      const proof = document.querySelector<HTMLElement>('.tl-landing-mobile-proof');
+      const proof = document.querySelector<HTMLElement>('.tl-landing-mobile-proof .tls-rail-proof');
       if (!hero || !action || !proof) return null;
 
       const heroRect = hero.getBoundingClientRect();
@@ -296,7 +360,7 @@ test.describe('Landing mobile story guardrails', () => {
 
     const metrics = await page.evaluate(() => {
       const cta = document.querySelector<HTMLElement>('.tl-landing-hero .tl-button-primary');
-      const proof = document.querySelector<HTMLElement>('.tl-landing-mobile-proof');
+      const proof = document.querySelector<HTMLElement>('.tl-landing-mobile-proof .tls-rail-proof');
       if (!cta || !proof) return null;
 
       return {

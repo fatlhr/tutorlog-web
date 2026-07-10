@@ -59,12 +59,18 @@
 
 ### Landing
 
-1. Full-width editorial split hero: `Rekap dan invoice untuk tutor privat.` with one Play Store CTA and an uncropped mobile proof.
+1. Full-width editorial split hero: `Rekap dan invoice untuk tutor privat.` with Play Store and demo CTAs, an uncropped mobile proof, and flat mint/lilac geometric fields.
 2. Intro: `Catat sekali. Pakai lagi saat waktunya rekap.`
-3. Three ordinary feature rows: mobile logging, web recap, invoice and export. They are not cards and do not use a sticky rail.
-4. Pricing cue: plain `Free` and `Plus` ledger rows with link to `/harga`.
-5. Hover Quote: Miss Binar, text only, quote body at most three lines.
-6. Final action: full-width accent band with one compact CTA on mobile.
+3. Compact three-column product storyboard: mobile logging, web recap, invoice and export. It collapses into a linear mobile sequence and never uses a sticky rail.
+4. Soft exploration strip links to `/fitur`, `/harga`, and `/panduan`.
+5. Pricing cue: plain `Free` and `Plus` ledger rows with link to `/harga`.
+6. Hover Quote: Miss Binar, text only, quote body at most three lines.
+7. Final action: full-width accent band with one compact CTA on mobile.
+
+### Landing demo placeholder
+
+- `Lihat demo` opens an accessible dialog containing `https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?rel=0&modestbranding=1`.
+- The iframe is unmounted when the dialog closes. Replace the URL with the TutorLog recording when it is available.
 
 ### Fitur
 

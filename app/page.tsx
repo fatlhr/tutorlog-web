@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
+import LandingDemoDialog from "@/components/LandingDemoDialog";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicShell";
@@ -36,10 +37,13 @@ export default function Home() {
           <p className="tl-kicker">Untuk tutor privat Indonesia</p>
           <h1 id="landing-title">Rekap dan invoice untuk tutor privat.</h1>
           <p>Catat sesi di HP, rapikan rekap dan invoice di web dengan akun yang sama.</p>
-          <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
-            <Play size={18} weight="fill" />
-            <span>Mulai Gratis</span>
-          </a>
+          <div className="tl-landing-hero-actions">
+            <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
+              <Play size={18} weight="fill" />
+              <span>Mulai Gratis</span>
+            </a>
+            <LandingDemoDialog />
+          </div>
         </div>
         <div className="tl-landing-hero-proof tl-landing-mobile-proof">
           <PublicProductProof id="mobile" />
@@ -61,6 +65,15 @@ export default function Home() {
             <PublicProductProof id={story.id} annotation />
           </article>
         ))}
+      </section>
+
+      <section className="tl-landing-explore" aria-labelledby="landing-explore-title">
+        <p id="landing-explore-title">Lanjutkan dari bagian yang paling kamu butuhkan.</p>
+        <nav aria-label="Jelajahi TutorLog">
+          <Link href="/fitur">Lihat fitur <ArrowRight size={16} aria-hidden="true" /></Link>
+          <Link href="/harga">Bandingkan paket <ArrowRight size={16} aria-hidden="true" /></Link>
+          <Link href="/panduan">Ikuti panduan <ArrowRight size={16} aria-hidden="true" /></Link>
+        </nav>
       </section>
 
       <section className="tl-landing-pricing" aria-labelledby="landing-price">

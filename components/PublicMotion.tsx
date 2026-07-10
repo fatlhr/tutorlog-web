@@ -18,7 +18,7 @@ export default function PublicMotion() {
       return;
     }
 
-    gsap.utils.toArray<HTMLElement>(".tls-rail-surface").forEach((element) => {
+    gsap.utils.toArray<HTMLElement>(".tls-story-rail .tls-rail-surface, .tl-landing-hero-proof .tls-rail-surface, .tl-landing-feature-rows .tls-rail-surface").forEach((element) => {
       gsap.fromTo(
         element,
         { scale: 0.96, opacity: 0.35 },
