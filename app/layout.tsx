@@ -18,7 +18,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   metadataBase: new URL("https://tutorlog.id"),
   title: {
-    default: "TutorLog — Kelola Les Lebih Mudah",
+    default: "TutorLog - Kelola Les Lebih Mudah",
     template: "%s | TutorLog",
   },
   description: "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "TutorLog — Kelola Les Lebih Mudah",
+    title: "TutorLog - Kelola Les Lebih Mudah",
     description: "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
     url: "https://tutorlog.id",
     siteName: "TutorLog",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TutorLog — Kelola Les Lebih Mudah",
+    title: "TutorLog - Kelola Les Lebih Mudah",
     description: "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
     images: ["/icon.png"],
   },

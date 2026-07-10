@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 
 interface HamburgerMenuProps {
   open: boolean;
@@ -9,16 +10,48 @@ interface HamburgerMenuProps {
 }
 
 export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    closeButtonRef.current?.focus();
+
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+
+      const focusable = menuRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", trapFocus);
+    return () => document.removeEventListener("keydown", trapFocus);
+  }, [open]);
+
   if (!open) return null;
 
   return (
-    <div className="mob-menu" onClick={onClose}>
-      <nav className="mob-nav mob-nav-dark">
+    <div ref={menuRef} className="mob-menu" role="dialog" aria-modal="true" aria-label="Menu navigasi" onClick={onClose}>
+      <nav className="mob-nav mob-nav-dark" onClick={(event) => event.stopPropagation()}>
         <Link className="brand" href="/" onClick={(e) => e.stopPropagation()}>
           <span className="mk"><Image src="/tutorlog-logo.png" alt="" width={32} height={32} /></span>
           <span className="wm">TutorLog</span>
         </Link>
-        <button className="hamburger" aria-label="Tutup menu" aria-expanded="true" onClick={onClose}>
+        <button ref={closeButtonRef} className="hamburger" aria-label="Tutup menu" aria-expanded="true" onClick={onClose}>
           <span></span><span></span><span></span>
         </button>
       </nav>

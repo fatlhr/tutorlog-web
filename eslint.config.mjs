@@ -5,9 +5,10 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
-globalIgnores([
+  // Keep lint scoped to this checkout instead of linked worktrees and build output.
+  globalIgnores([
     ".next/**",
+    ".worktrees/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
