@@ -4530,6 +4530,7 @@ html, body { overflow-x: hidden; }
 .tls-rail-proof {
   position: relative;
   margin: 0;
+  width: 326px;
 }
 
 .tls-rail-proof > figcaption {
@@ -4546,7 +4547,7 @@ html, body { overflow-x: hidden; }
   display: block;
   width: 326px;
   height: auto;
-  margin: 0 auto;
+  margin: 0;
   border: 1px solid var(--tl-line);
   border-radius: 16px;
   background: #fff;
@@ -4557,7 +4558,7 @@ html, body { overflow-x: hidden; }
   position: relative;
   width: 326px;
   height: 318px;
-  margin: 0 auto;
+  margin: 0;
   overflow: hidden;
   border: 1px solid var(--tl-line);
   border-radius: 16px;
@@ -4578,7 +4579,7 @@ html, body { overflow-x: hidden; }
   position: absolute;
   top: 50%;
   left: calc(100% + 14px);
-  width: 132px;
+  width: 94px;
   margin: 0;
   display: grid;
   gap: 6px;
@@ -4594,6 +4595,7 @@ html, body { overflow-x: hidden; }
 @media (min-width: 768px) and (max-width: 1199px) {
   .tls-product-rail { gap: 36px; }
   .tls-rail-proof-image img { width: 248px; }
+  .tls-rail-proof { width: 248px; }
   .tls-invoice-proof { width: 248px; height: 242px; }
   .tls-invoice-proof .tpl-modern { transform: scale(.325); }
   .tls-rail-annotation { display: none; }
@@ -4602,7 +4604,194 @@ html, body { overflow-x: hidden; }
 @media (max-width: 767px) {
   .tls-product-rail { gap: 40px; }
   .tls-rail-proof-image img { width: min(232px, 100%); }
+  .tls-rail-proof { width: min(232px, 100%); }
   .tls-invoice-proof { width: min(232px, 100%); height: 228px; }
   .tls-invoice-proof .tpl-modern { transform: scale(.303); }
   .tls-rail-annotation { display: none; }
+}
+
+/* Shared editorial story layout for the landing, feature, and guide pages. */
+.tls-story-page {
+  min-height: 100svh;
+  background: #f4faf8;
+}
+
+.tls-story-grid {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 748px) 1px minmax(0, 435px);
+  column-gap: 48px;
+  align-items: start;
+}
+
+.tls-story-narrative { min-width: 0; }
+.tls-story-divider { align-self: stretch; background: var(--tl-line); }
+.tls-story-rail { min-width: 0; }
+.tls-story-rail > .tls-product-rail { position: sticky; top: 96px; }
+
+.tls-story-hero {
+  padding: 88px 0 72px;
+}
+
+.tls-story-hero h1 {
+  max-width: none;
+  margin: 18px 0 0;
+  color: #12211f;
+  font-family: var(--f-title), monospace;
+  font-size: 60px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.05;
+}
+
+.tls-story-hero > p:not(.tl-kicker) {
+  max-width: 510px;
+  margin: 24px 0 0;
+  color: #50645e;
+  font-size: 19px;
+  line-height: 1.55;
+}
+
+.tls-story-actions {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+.tls-secondary-link,
+.tls-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #12211f;
+  font-family: var(--f-title), monospace;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tls-story-section {
+  max-width: 640px;
+  padding: 72px 0;
+  border-top: 1px solid var(--tl-line);
+}
+
+.tls-story-section h2 {
+  max-width: 560px;
+  margin: 0;
+  color: #12211f;
+  font-family: var(--f-title), monospace;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+
+.tls-story-section > p,
+.tls-final-action > p {
+  max-width: 510px;
+  margin: 18px 0 0;
+  color: #50645e;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.tls-price-ledger {
+  width: min(100%, 540px);
+  margin-top: 28px;
+  border-top: 1px solid var(--tl-line);
+}
+
+.tls-price-ledger > div {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--tl-line);
+}
+
+.tls-price-ledger strong { color: var(--tl-green); font-family: var(--f-title), monospace; }
+.tls-price-ledger span { color: #12211f; font-size: 16px; font-weight: 700; text-align: right; }
+.tls-price-cue .tls-inline-link { margin-top: 20px; color: var(--tl-green); }
+
+.tls-hover-quote blockquote { margin: 0; }
+.tls-hover-quote blockquote > p {
+  max-width: 610px;
+  margin: 0;
+  color: #12211f;
+  font-family: var(--f-title), monospace;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.tls-hover-quote blockquote > p span {
+  background: linear-gradient(transparent 72%, #d8f1e7 0);
+  transition: background-size .24s ease;
+}
+
+.tls-hover-quote:hover blockquote > p span { background-size: 100% 100%; }
+
+.tls-hover-quote footer {
+  margin-top: 24px;
+  display: grid;
+  gap: 3px;
+  color: #50645e;
+  font-size: 15px;
+}
+
+.tls-hover-quote footer strong { color: #12211f; font-family: var(--f-title), monospace; }
+
+.tls-final-action > span {
+  color: var(--tl-green);
+  font-family: var(--f-title), monospace;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tls-final-action .tl-button { margin-top: 28px; }
+.tls-mobile-proof { display: none; }
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .tls-story-grid {
+    width: calc(100% - 64px);
+    grid-template-columns: minmax(0, 1fr) 1px 288px;
+    column-gap: 28px;
+  }
+
+  .tls-story-rail > .tls-product-rail { top: 88px; }
+  .tls-story-hero { padding: 72px 0 56px; }
+  .tls-story-hero h1 { max-width: 590px; font-size: 48px; line-height: 1.08; }
+  .tls-story-hero > p:not(.tl-kicker) { font-size: 18px; }
+  .tls-story-section { padding: 64px 0; }
+  .tls-story-section h2 { font-size: 34px; }
+}
+
+@media (max-width: 767px) {
+  .tls-story-grid {
+    width: calc(100% - 48px);
+    display: block;
+  }
+
+  .tls-story-divider,
+  .tls-story-rail { display: none; }
+  .tls-story-hero { padding: 48px 0 56px; }
+  .tls-story-hero h1 { max-width: none; font-size: 43px; line-height: 1.06; }
+  .tls-story-hero > p:not(.tl-kicker) { margin-top: 22px; font-size: 17px; }
+  .tls-story-actions { margin-top: 26px; display: grid; gap: 16px; }
+  .tls-story-actions .tl-button { width: 100%; min-height: 52px; }
+  .tls-secondary-link { justify-self: start; color: var(--tl-green); }
+  .tls-story-section { max-width: none; padding: 56px 0; }
+  .tls-story-section h2 { font-size: 31px; line-height: 1.12; }
+  .tls-story-section > p,
+  .tls-final-action > p { font-size: 17px; }
+  .tls-mobile-proof { display: block; margin-top: 32px; }
+  .tls-mobile-proof .tls-rail-proof > figcaption { margin-bottom: 10px; }
+  .tls-price-ledger > div { min-height: 56px; }
+  .tls-hover-quote blockquote > p { font-size: 24px; }
 }

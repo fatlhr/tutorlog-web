@@ -5,7 +5,7 @@
 - [x] M0: baseline and handoff contract
 - [x] M1: shared public foundation
 - [x] M2: real product proof
-- [ ] M3: landing rebuild
+- [x] M3: landing rebuild
 - [ ] M4: fitur rebuild
 - [ ] M5: panduan rebuild
 - [ ] M6: regression and PR review
@@ -36,8 +36,8 @@
 
 | Mode | Contract |
 | --- | --- |
-| Desktop `>=1200px` | `1280px` max container, `80px` outer gutter at `1440px`, `72px` nav, story columns `748px / 1px / 435px`, `48px` side gaps, `64px` H1, rail top `96px`, rail proof `326px` wide. |
-| Tablet `768-1199px` | `32px` gutter, story columns `minmax(0, 1fr) / 1px / 288px`, `28px` side gaps, `52px` H1, rail top `88px`, rail proof `248px` wide. |
+| Desktop `>=1200px` | `1280px` max container, `80px` outer gutter at `1440px`, `72px` nav, story columns `748px / 1px / 435px`, `48px` side gaps, `60px` H1 using the narrative column width, rail top `96px`, rail proof `326px` wide. |
+| Tablet `768-1199px` | `32px` gutter, story columns `minmax(0, 1fr) / 1px / 288px`, `28px` side gaps, `48px` H1, rail top `88px`, rail proof `248px` wide. |
 | Mobile `<768px` | `24px` gutter, `64px` nav, `43px` H1, primary CTA `52px` high and full width, secondary CTA as text link, proof `208-232px` wide, `56px` section gaps. |
 
 ### Product proof manifest

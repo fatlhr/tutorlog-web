@@ -25,46 +25,66 @@ const invoiceData: InvoiceData = {
   notes: "Terima kasih atas kepercayaannya. Pembayaran dapat ditransfer paling lambat 7 Juli 2026.",
 };
 
-const proofs = [
-  {
-    id: "mobile",
+export type ProductProofId = "mobile" | "recap" | "invoice";
+
+const proofs = {
+  mobile: {
     label: "Mobile",
     src: "/images/tutorlog-clean-home.png",
     alt: "Tampilan TutorLog mobile untuk memulai sesi les",
     note: "Sesi dicatat langsung setelah mengajar.",
   },
-  {
-    id: "recap",
+  recap: {
     label: "Rekap",
     src: "/images/tutorlog-clean-recap.png",
     alt: "Tampilan rekap sesi TutorLog dengan daftar murid",
     note: "Rekap sudah siap dicek saat kamu membuka web.",
   },
-] as const;
+  invoice: {
+    label: "Invoice preview",
+    note: "Invoice siap diperiksa sebelum dikirim.",
+  },
+} as const;
+
+export function PublicProductProof({ id, annotation = false }: { id: ProductProofId; annotation?: boolean }) {
+  const proof = proofs[id];
+
+  if (id === "invoice") {
+    return (
+      <figure className="tls-rail-proof tls-rail-proof-invoice" data-rail-proof={id}>
+        <figcaption>{proof.label}</figcaption>
+        <div className="tls-invoice-proof" aria-label="Preview invoice TutorLog">
+          <TplModern data={invoiceData} />
+        </div>
+        {annotation ? <Annotation note={proof.note} /> : null}
+      </figure>
+    );
+  }
+
+  return (
+    <figure className="tls-rail-proof tls-rail-proof-image" data-rail-proof={id}>
+      <figcaption>{proof.label}</figcaption>
+      <Image src={proof.src} alt={proof.alt} width={1080} height={2400} sizes="(max-width: 1199px) 248px, 326px" />
+      {annotation ? <Annotation note={proof.note} /> : null}
+    </figure>
+  );
+}
+
+function Annotation({ note }: { note: string }) {
+  return (
+    <p className="tls-rail-annotation">
+      <ArrowBendDownRight size={22} weight="regular" aria-hidden="true" />
+      <span>{note}</span>
+    </p>
+  );
+}
 
 export function PublicProductRail({ label = "Bukti produk TutorLog" }: { label?: string }) {
   return (
     <aside className="tls-product-rail" aria-label={label}>
-      {proofs.map((proof) => (
-        <figure className="tls-rail-proof tls-rail-proof-image" data-rail-proof={proof.id} key={proof.id}>
-          <figcaption>{proof.label}</figcaption>
-          <Image src={proof.src} alt={proof.alt} width={1080} height={2400} sizes="(max-width: 1199px) 248px, 326px" />
-          <p className="tls-rail-annotation">
-            <ArrowBendDownRight size={22} weight="regular" aria-hidden="true" />
-            <span>{proof.note}</span>
-          </p>
-        </figure>
-      ))}
-      <figure className="tls-rail-proof tls-rail-proof-invoice" data-rail-proof="invoice">
-        <figcaption>Invoice preview</figcaption>
-        <div className="tls-invoice-proof" aria-label="Preview invoice TutorLog">
-          <TplModern data={invoiceData} />
-        </div>
-        <p className="tls-rail-annotation">
-          <ArrowBendDownRight size={22} weight="regular" aria-hidden="true" />
-          <span>Invoice siap diperiksa sebelum dikirim.</span>
-        </p>
-      </figure>
+      <PublicProductProof id="mobile" annotation />
+      <PublicProductProof id="recap" annotation />
+      <PublicProductProof id="invoice" annotation />
     </aside>
   );
 }
