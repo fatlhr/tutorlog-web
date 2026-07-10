@@ -63,23 +63,11 @@ export function PublicFooter() {
         <p>Teman kerja untuk catatan les, rekap, dan invoice tutor privat.</p>
         <Link href="/kontak">Butuh bantuan?</Link>
       </div>
-      <div className="tl-footer-navigation">
-        <div className="tl-footer-link-group tl-footer-product-links">
-          <span>Produk</span>
-          <div className="tl-footer-links">
-            <Link href="/fitur">Fitur</Link>
-            <Link href="/harga">Harga</Link>
-            <Link href="/panduan">Panduan</Link>
-          </div>
-        </div>
-        <div className="tl-footer-link-group tl-footer-legal-links">
-          <span>Informasi</span>
-          <div className="tl-footer-links">
-            <Link href="/privacy">Privasi</Link>
-            <Link href="/terms">Syarat</Link>
-            <Link href="/account">Hapus Akun</Link>
-            <Link href="/kontak">Kontak</Link>
-          </div>
+      <div className="tl-footer-meta">
+        <div className="tl-footer-links" aria-label="Tautan legal">
+          <Link href="/privacy">Privasi</Link>
+          <Link href="/terms">Syarat</Link>
+          <Link href="/account">Hapus Akun</Link>
         </div>
         <span className="tl-footer-copyright">© 2026 TutorLog untuk tutor Indonesia</span>
       </div>

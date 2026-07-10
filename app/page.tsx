@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
 import LandingDemoDialog from "@/components/LandingDemoDialog";
@@ -46,6 +47,15 @@ export default function Home() {
           </div>
         </div>
         <div className="tl-landing-hero-proof tl-landing-mobile-proof">
+          <figure className="tl-landing-hero-side-shot" aria-hidden="true">
+            <Image
+              src="/images/tutorlog-clean-history.png"
+              alt=""
+              width={1080}
+              height={2337}
+              sizes="(max-width: 1199px) 132px, 164px"
+            />
+          </figure>
           <PublicProductProof id="mobile" />
         </div>
       </section>

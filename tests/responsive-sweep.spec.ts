@@ -56,6 +56,8 @@ test.describe('Homepage hero guardrails', () => {
       });
 
       expect(Math.ceil(metrics.height / metrics.lineHeight)).toBeLessThanOrEqual(2);
+      const fontSize = Number.parseFloat(await heading.evaluate((element) => window.getComputedStyle(element).fontSize));
+      expect(fontSize).toBeGreaterThanOrEqual(viewport === 1440 ? 60 : 52);
 
       const primaryCta = page.locator('.tl-landing-standard .tl-landing-hero .tl-button-primary');
       await expect(primaryCta).toBeVisible();
@@ -67,6 +69,7 @@ test.describe('Homepage hero guardrails', () => {
       expect(ctaBox.bottom).toBeLessThanOrEqual(ctaBox.viewport);
 
       await expect(page.locator('.tl-landing-hero')).toBeVisible();
+      await expect(page.locator('.tl-landing-hero-side-shot')).toBeVisible();
     });
   }
 
@@ -390,5 +393,17 @@ test.describe('Landing mobile story guardrails', () => {
 
     await expect(page.locator('.tl-footer a[href="/fitur"]')).toBeHidden();
     await expect(page.locator('.tl-footer a[href="/privacy"]')).toBeVisible();
+  });
+
+  test('keeps duplicated product navigation out of the desktop footer', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const footer = page.locator('.tl-footer');
+    await expect(footer.locator('a[href="/fitur"]')).toHaveCount(0);
+    await expect(footer.locator('a[href="/harga"]')).toHaveCount(0);
+    await expect(footer.locator('a[href="/panduan"]')).toHaveCount(0);
+    await expect(footer.locator('a[href="/kontak"]')).toBeVisible();
   });
 });
