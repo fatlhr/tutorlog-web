@@ -70,6 +70,7 @@ test.describe('Homepage hero guardrails', () => {
 
       await expect(page.locator('.tl-landing-hero')).toBeVisible();
       await expect(page.locator('.tl-landing-hero-side-shot')).toBeVisible();
+      await expect(page.locator('.tl-landing-hero-mascot')).toBeVisible();
     });
   }
 
@@ -87,6 +88,19 @@ test.describe('Homepage hero guardrails', () => {
     });
 
     expect(Math.ceil(metrics.height / metrics.lineHeight)).toBeLessThanOrEqual(3);
+    await expect(page.locator('.tl-landing-hero-mascot')).toBeHidden();
+  });
+
+  test('keeps storyboard proof media readable during its entrance', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const proof = page.locator('.tl-landing-feature-rows .tls-rail-surface').first();
+    await proof.scrollIntoViewIfNeeded();
+    const opacity = Number.parseFloat(await proof.evaluate((element) => window.getComputedStyle(element).opacity));
+
+    expect(opacity).toBe(1);
   });
 
   test('opens and closes the temporary demo video dialog', async ({ page }) => {

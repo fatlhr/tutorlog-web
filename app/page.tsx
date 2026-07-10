@@ -45,6 +45,9 @@ export default function Home() {
             </a>
             <LandingDemoDialog />
           </div>
+          <figure className="tl-landing-hero-mascot" aria-hidden="true">
+            <Image src="/tutorlog-logo.png" alt="" width={1024} height={1024} sizes="112px" />
+          </figure>
         </div>
         <div className="tl-landing-hero-proof tl-landing-mobile-proof">
           <figure className="tl-landing-hero-side-shot" aria-hidden="true">
