@@ -4215,6 +4215,10 @@ html, body { overflow-x: hidden; }
     position: static;
   }
 
+  .tl-public-guide .tl-guide-pin {
+    min-height: 0;
+  }
+
   .tl-feature-pin .tl-product-rail,
   .tl-guide-pin .tl-guide-rail {
     max-width: 420px;
@@ -4225,7 +4229,12 @@ html, body { overflow-x: hidden; }
   }
 
   .tl-guide-rail {
+    min-height: 400px;
     padding-left: 70px;
+  }
+
+  .tl-guide-rail .tl-guide-path {
+    display: none;
   }
 
   .tl-rail-path {
@@ -4241,8 +4250,8 @@ html, body { overflow-x: hidden; }
   }
 
   .tl-guide-phone {
-    left: 72px;
-    width: min(170px, 48%);
+    left: 4%;
+    width: min(184px, 52%);
   }
 
   .tl-flow-row {

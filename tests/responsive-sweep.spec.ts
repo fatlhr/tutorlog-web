@@ -139,3 +139,31 @@ test.describe('Feature rail guardrails', () => {
     });
   }
 });
+
+test.describe('Guide mobile hierarchy guardrails', () => {
+  test('guide intro leads directly into the step list', async ({ page }) => {
+    await page.setViewportSize({ width: 670, height: 883 });
+    await page.goto('/panduan');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tl-guide-path')).toBeHidden();
+
+    const visualBottom = await page.locator('.tl-guide-phone, .tl-guide-web-slot').evaluateAll((elements) =>
+      Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
+    );
+    const introTop = await page.locator('.tl-guide-intro').evaluate((element) => element.getBoundingClientRect().top);
+
+    expect(visualBottom).toBeLessThanOrEqual(introTop);
+
+    const spacing = await page.evaluate(() => {
+      const intro = document.querySelector<HTMLElement>('.tl-guide-intro');
+      const steps = document.querySelector<HTMLElement>('.tl-guide-steps');
+      if (!intro || !steps) return null;
+
+      return steps.getBoundingClientRect().top - intro.getBoundingClientRect().bottom;
+    });
+
+    expect(spacing).not.toBeNull();
+    expect(spacing).toBeLessThanOrEqual(84);
+  });
+});
