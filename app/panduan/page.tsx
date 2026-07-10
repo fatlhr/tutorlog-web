@@ -80,7 +80,7 @@ export default function PanduanPage() {
   return (
     <PublicShell
       eyebrow="Panduan TutorLog"
-      title="Catat di HP, lanjutkan di web."
+      title="Catat di HP, buat invoice di web."
       subtitle="Ikuti alur pendek ini kalau ingin melihat bagaimana mobile app dan web companion saling nyambung."
       icon={null}
     >
