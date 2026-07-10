@@ -1,138 +1,53 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import {
-  ArrowDown,
-  ArrowRight,
-  ChartBar,
-  CloudArrowDown,
-  Desktop,
-  DeviceMobile,
-  FileText,
-} from "@phosphor-icons/react/dist/ssr";
-import { PublicShell } from "@/components/PublicShell";
+import Link from "next/link";
+import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
+import { PublicProductProof } from "@/components/PublicProductRail";
+import { PublicStoryLayout } from "@/components/PublicStoryLayout";
 
 export const metadata: Metadata = {
   title: "TutorLog - Fitur",
-  description: "Rekap bulanan, export PDF dan CSV, invoice builder, dan sinkronisasi app untuk tutor privat.",
+  description: "Catat sesi dari mobile, baca rekap, lalu siapkan invoice dari data TutorLog yang sama.",
 };
 
-const features = [
-  {
-    icon: <DeviceMobile size={22} />,
-    title: "Catat sesi tetap dari HP.",
-    body: "Sesi selesai, tutor cukup simpan dari mobile. Materi, durasi, murid, dan nominal ikut terbawa.",
-    visual: "phone",
-  },
-  {
-    icon: <ChartBar size={22} />,
-    title: "Web membaca bulanannya.",
-    body: "Saat butuh melihat pola, buka companion web. Data yang sama berubah jadi rekap murid dan pendapatan.",
-    visual: "web",
-  },
-  {
-    icon: <FileText size={22} />,
-    title: "Invoice tidak mulai dari nol.",
-    body: "Pilih murid, cek sesi yang masuk, lalu export. Detailnya sudah datang dari catatan mengajar.",
-    visual: "invoice",
-  },
-  {
-    icon: <CloudArrowDown size={22} />,
-    title: "Export disiapkan sebagai arsip.",
-    body: "PDF dan CSV tetap ada untuk laporan atau bukti pembayaran. Screenshot export final bisa kamu pasang nanti.",
-    visual: "export",
-  },
-];
-
-const railSteps = ["Catat", "Rekap", "Invoice", "Export"];
-
-function FeatureVisual({ type }: { type: string }) {
-  if (type === "phone") {
-    return (
-      <figure className="tl-strip-phone tl-public-product">
-        <Image src="/images/tutorlog-clean-home.png" alt="Tampilan mulai sesi TutorLog mobile" width={1080} height={2400} />
-      </figure>
-    );
-  }
-
-  if (type === "web") {
-    return (
-      <figure className="tl-strip-slot tl-public-product" aria-label="Slot screenshot rekap TutorLog web">
-        <Desktop size={42} weight="duotone" aria-hidden="true" />
-        <figcaption><strong>Screenshot rekap web</strong><span>Siap diganti dengan layar rekap unggulan.</span></figcaption>
-      </figure>
-    );
-  }
-
-  if (type === "invoice") {
-    return (
-      <figure className="tl-strip-slot tl-public-product" aria-label="Slot screenshot invoice TutorLog">
-        <FileText size={42} weight="duotone" aria-hidden="true" />
-        <figcaption><strong>Screenshot invoice</strong><span>Pasang preview invoice A4 setelah asset tersedia.</span></figcaption>
-      </figure>
-    );
-  }
-
-  return (
-    <figure className="tl-strip-slot tl-public-product" aria-label="Slot screenshot export PDF dan CSV">
-      <CloudArrowDown size={42} weight="duotone" aria-hidden="true" />
-      <figcaption><strong>Screenshot export PDF dan CSV</strong><span>Slot dummy untuk diganti manual.</span></figcaption>
-    </figure>
-  );
-}
-
-function ProductRail() {
-  return (
-    <div className="tl-product-rail" aria-label="Visual alur TutorLog">
-      <div className="tl-rail-path" aria-hidden="true">
-        <span>Alur data</span>
-        <ol>
-          {railSteps.map((step, index) => (
-            <li key={step}>
-              <b>{String(index + 1).padStart(2, "0")}</b>
-              <small>{step}</small>
-              {index < railSteps.length - 1 ? <ArrowDown size={16} weight="bold" /> : null}
-            </li>
-          ))}
-        </ol>
-      </div>
-      <figure className="tl-rail-shot tl-rail-shot-main tl-public-product">
-        <Image src="/images/tutorlog-clean-history-list.png" alt="Daftar sesi TutorLog mobile" width={1080} height={2400} priority />
-      </figure>
-    </div>
-  );
-}
+const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog.app";
 
 export default function FiturPage() {
   return (
-    <PublicShell
+    <PublicStoryLayout
+      className="tls-features"
       eyebrow="Fitur TutorLog"
       title="Data les bergerak dari HP ke rekap."
       subtitle="Mobile dipakai saat mengajar. Web dipakai saat data itu perlu dibaca, diarsipkan, atau dikirim."
-      icon={null}
-      className="tl-public-features"
+      railLabel="Bukti fitur TutorLog"
     >
-      <section className="tl-feature-story" aria-label="Daftar fitur TutorLog">
-        <aside className="tl-feature-pin">
-          <ProductRail />
-          <p>Catatan yang dibuat dekat kelas akan tetap siap dibaca saat pekerjaan administrasi dimulai.</p>
-        </aside>
-        <div className="tl-feature-strips">
-          {features.map((feature, index) => (
-            <article className="tl-feature-strip tl-public-motion" key={feature.title}>
-              <div className="tl-strip-copy">
-                <div className="tl-strip-route" aria-hidden="true">
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <ArrowRight size={20} weight="bold" />
-                </div>
-                <span aria-hidden="true">{feature.icon}</span>
-                <h2>{feature.title}</h2>
-                <p>{feature.body}</p>
-              </div>
-              <FeatureVisual type={feature.visual} />
-            </article>
-          ))}
-        </div>
+      <section className="tls-story-section tls-feature-chapter" aria-labelledby="feature-catat">
+        <h2 id="feature-catat">Catat sesi di HP.</h2>
+        <p>Selesai mengajar, tutor cukup menyimpan materi, durasi, murid, dan nominal dari mobile.</p>
+        <div className="tls-mobile-proof"><PublicProductProof id="mobile" /></div>
       </section>
-    </PublicShell>
+
+      <section className="tls-story-section tls-feature-chapter" aria-labelledby="feature-rekap">
+        <h2 id="feature-rekap">Baca rekap di web.</h2>
+        <p>Saat butuh melihat pola bulanan, sesi, jam mengajar, dan murid sudah terkumpul dalam rekap yang sama.</p>
+        <div className="tls-mobile-proof"><PublicProductProof id="recap" /></div>
+      </section>
+
+      <section className="tls-story-section tls-feature-chapter" aria-labelledby="feature-invoice">
+        <h2 id="feature-invoice">Siapkan invoice dan export.</h2>
+        <p>Pilih murid, cek sesi yang masuk, lalu buat invoice dan arsip PDF dari catatan yang sudah tersedia.</p>
+        <div className="tls-mobile-proof"><PublicProductProof id="invoice" /></div>
+      </section>
+
+      <section className="tls-story-section tls-final-action" aria-labelledby="feature-action">
+        <span>Mulai gratis</span>
+        <h2 id="feature-action">Lihat alurnya dari satu sesi.</h2>
+        <p>Mulai dari mobile, lalu pakai web saat rekap atau invoice dibutuhkan.</p>
+        <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
+          <Play size={18} weight="fill" />
+          <span>Mulai Gratis</span>
+        </a>
+        <Link className="tls-inline-link" href="/panduan">Baca panduan <ArrowRight size={16} aria-hidden="true" /></Link>
+      </section>
+    </PublicStoryLayout>
   );
 }

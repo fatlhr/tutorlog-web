@@ -6,7 +6,7 @@
 - [x] M1: shared public foundation
 - [x] M2: real product proof
 - [x] M3: landing rebuild
-- [ ] M4: fitur rebuild
+- [x] M4: fitur rebuild
 - [ ] M5: panduan rebuild
 - [ ] M6: regression and PR review
 
