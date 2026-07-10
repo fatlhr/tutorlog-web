@@ -29,7 +29,7 @@ test.describe('Responsive Sweep - Public Routes', () => {
         expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 
         await page.screenshot({
-          path: `live-screenshots/${route.name}-${viewport}.png`,
+          path: test.info().outputPath(`${route.name}-${viewport}.png`),
           fullPage: true,
         });
       });
@@ -39,12 +39,12 @@ test.describe('Responsive Sweep - Public Routes', () => {
 
 test.describe('Homepage hero guardrails', () => {
   for (const viewport of [1024, 1440]) {
-    test(`desktop hero remains compact at ${viewport}px`, async ({ page }) => {
+    test(`story hero remains compact at ${viewport}px`, async ({ page }) => {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      const heading = page.locator('.vp-desktop .tl-hero h1');
+      const heading = page.locator('.tls-story-page .tls-story-hero h1');
       await expect(heading).toBeVisible();
       const metrics = await heading.evaluate((element) => {
         const style = window.getComputedStyle(element);
@@ -57,7 +57,7 @@ test.describe('Homepage hero guardrails', () => {
 
       expect(Math.ceil(metrics.height / metrics.lineHeight)).toBeLessThanOrEqual(2);
 
-      const primaryCta = page.locator('.vp-desktop .tl-hero .tl-button-primary');
+      const primaryCta = page.locator('.tls-story-page .tls-story-hero .tl-button-primary');
       await expect(primaryCta).toBeVisible();
       const ctaBox = await primaryCta.evaluate((element) => {
         const rect = element.getBoundingClientRect();
@@ -65,11 +65,34 @@ test.describe('Homepage hero guardrails', () => {
       });
 
       expect(ctaBox.bottom).toBeLessThanOrEqual(ctaBox.viewport);
+
+      await expect(page.locator('.tls-story-rail')).toBeVisible();
     });
   }
 });
 
+test.describe('Homepage story structure', () => {
+  test('uses one responsive tree and moves proof into the narrative on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.vp-desktop, .vp-mobile')).toHaveCount(0);
+    await expect(page.locator('.tls-story-rail')).toBeHidden();
+    await expect(page.locator('.tls-mobile-proof')).toHaveCount(3);
+  });
+});
+
 test.describe('Public navigation guardrails', () => {
+  test('marks the current public route in the desktop navigation', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tl-public-nav a[href="/fitur"]')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.tl-public-nav a[href="/harga"]')).not.toHaveAttribute('aria-current', 'page');
+  });
+
   test('mobile menu keeps keyboard focus inside the open dialog', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/fitur');
@@ -110,89 +133,104 @@ test.describe('Public navigation guardrails', () => {
   });
 });
 
-test.describe('Feature rail guardrails', () => {
-  for (const viewport of [390, 1052]) {
-    test(`feature rail labels do not overlap at ${viewport}px`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport, height: 844 });
-      await page.goto('/fitur');
+test.describe('Feature story rail', () => {
+  test('uses three narrative chapters and a desktop-only rail', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tls-feature-chapter')).toHaveCount(3);
+    await expect(page.locator('.tls-story-rail')).toBeVisible();
+  });
+
+  test('keeps product proof inside the feature narrative on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tls-story-rail')).toBeHidden();
+    await expect(page.locator('.tls-feature-chapter .tls-mobile-proof')).toHaveCount(3);
+  });
+});
+
+test.describe('Public story rail contract', () => {
+  for (const route of ['/', '/fitur', '/panduan']) {
+    test(`${route} removes the legacy step and placeholder surfaces`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(route);
       await page.waitForLoadState('networkidle');
 
-      const railItems = await page.locator('.tl-product-rail .tl-rail-path li').evaluateAll((elements) =>
-        elements.map((element) => {
-          const rect = element.getBoundingClientRect();
-          return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
-        }),
-      );
-      const notes = await page.locator('.tl-product-rail .tl-rail-note').evaluateAll((elements) =>
-        elements.map((element) => {
-          const rect = element.getBoundingClientRect();
-          return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
-        }),
-      );
-
-      for (const item of railItems) {
-        for (const note of notes) {
-          const overlaps = item.left < note.right && item.right > note.left && item.top < note.bottom && item.bottom > note.top;
-          expect(overlaps).toBe(false);
-        }
-      }
+      await expect(page.locator('.tl-rail-path, .tl-strip-route, .tl-guide-step-route')).toHaveCount(0);
+      await expect(page.locator('.tl-mini-invoice, .tl-export-placeholder, .tl-strip-slot, .tl-flow-slot, .tl-guide-web-slot')).toHaveCount(0);
     });
   }
 });
 
-test.describe('Guide mobile hierarchy guardrails', () => {
-  test('guide intro leads directly into the step list', async ({ page }) => {
-    await page.setViewportSize({ width: 670, height: 883 });
-    await page.goto('/panduan');
+test.describe('Public story rail motion guardrails', () => {
+  test('keeps product proof fully visible when reduced motion is requested', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.tl-guide-path')).toBeHidden();
+    const surfaces = page.locator('.tls-story-rail .tls-rail-surface');
+    await expect(surfaces).toHaveCount(3);
 
-    const visualBottom = await page.locator('.tl-guide-phone, .tl-guide-web-slot').evaluateAll((elements) =>
-      Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
+    const opacities = await surfaces.evaluateAll((elements) =>
+      elements.map((element) => window.getComputedStyle(element).opacity),
     );
-    const introTop = await page.locator('.tl-guide-intro').evaluate((element) => element.getBoundingClientRect().top);
 
-    expect(visualBottom).toBeLessThanOrEqual(introTop);
-
-    const spacing = await page.evaluate(() => {
-      const intro = document.querySelector<HTMLElement>('.tl-guide-intro');
-      const steps = document.querySelector<HTMLElement>('.tl-guide-steps');
-      if (!intro || !steps) return null;
-
-      return steps.getBoundingClientRect().top - intro.getBoundingClientRect().bottom;
-    });
-
-    expect(spacing).not.toBeNull();
-    expect(spacing).toBeLessThanOrEqual(84);
+    expect(opacities).toEqual(['1', '1', '1']);
   });
 });
 
-test.describe('Landing mobile hero guardrails', () => {
-  test('hero actions and product preview stay compact at wide mobile widths', async ({ page }) => {
-    await page.setViewportSize({ width: 683, height: 883 });
+test.describe('Guide story hierarchy', () => {
+  test('groups the guide into two phases with a desktop rail', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/panduan');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tls-guide-phase')).toHaveCount(2);
+    await expect(page.locator('.tls-guide-step')).toHaveCount(6);
+    await expect(page.locator('.tls-story-rail')).toBeVisible();
+  });
+
+  test('keeps guide steps and proof readable on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/panduan');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tls-story-rail')).toBeHidden();
+    await expect(page.locator('.tls-guide-phase')).toHaveCount(2);
+    await expect(page.locator('.tls-guide-phase .tls-mobile-proof')).toHaveCount(3);
+  });
+});
+
+test.describe('Landing mobile story guardrails', () => {
+  test('hero action and first product proof remain in a linear mobile story', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
     const metrics = await page.evaluate(() => {
-      const hero = document.querySelector<HTMLElement>('.vp-mobile .tl-mobile-hero');
-      const actions = document.querySelector<HTMLElement>('.vp-mobile .tl-cta-row-mobile');
-      const screenshots = [...document.querySelectorAll<HTMLElement>('.vp-mobile .tl-mobile-hero .tl-product-shot')];
-      if (!hero || !actions || screenshots.length === 0) return null;
+      const hero = document.querySelector<HTMLElement>('.tls-story-hero');
+      const action = document.querySelector<HTMLElement>('.tls-story-actions .tl-button-primary');
+      const proof = document.querySelector<HTMLElement>('.tls-mobile-proof');
+      if (!hero || !action || !proof) return null;
 
       const heroRect = hero.getBoundingClientRect();
-      const actionRect = actions.getBoundingClientRect();
-      const visualBottom = Math.max(...screenshots.map((screenshot) => screenshot.getBoundingClientRect().bottom));
+      const actionRect = action.getBoundingClientRect();
+      const proofRect = proof.getBoundingClientRect();
 
       return {
         actionWidth: actionRect.width,
-        visualBottom,
+        proofTop: proofRect.top,
         heroBottom: heroRect.bottom,
       };
     });
 
     expect(metrics).not.toBeNull();
-    expect(metrics?.actionWidth).toBeLessThanOrEqual(360);
-    expect(metrics?.visualBottom).toBeLessThanOrEqual(metrics?.heroBottom ?? 0);
+    expect(metrics?.actionWidth).toBeLessThanOrEqual(342);
+    expect(metrics?.proofTop).toBeGreaterThanOrEqual(metrics?.heroBottom ?? 0);
   });
 });

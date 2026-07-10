@@ -36,8 +36,10 @@ const proofs = {
   },
   recap: {
     label: "Rekap",
-    src: "/images/tutorlog-clean-recap.png",
-    alt: "Tampilan rekap sesi TutorLog dengan daftar murid",
+    src: "/images/tutorlog-web-recap.png",
+    alt: "Tampilan web TutorLog untuk rekap sesi dengan daftar murid dan pendapatan",
+    width: 1024,
+    height: 900,
     note: "Rekap sudah siap dicek saat kamu membuka web.",
   },
   invoice: {
@@ -47,24 +49,31 @@ const proofs = {
 } as const;
 
 export function PublicProductProof({ id, annotation = false }: { id: ProductProofId; annotation?: boolean }) {
-  const proof = proofs[id];
-
   if (id === "invoice") {
+    const proof = proofs.invoice;
     return (
       <figure className="tls-rail-proof tls-rail-proof-invoice" data-rail-proof={id}>
         <figcaption>{proof.label}</figcaption>
-        <div className="tls-invoice-proof" aria-label="Preview invoice TutorLog">
-          <TplModern data={invoiceData} />
+        <div className="tls-rail-surface">
+          <div className="tls-invoice-proof" aria-label="Preview invoice TutorLog">
+            <TplModern data={invoiceData} />
+          </div>
         </div>
         {annotation ? <Annotation note={proof.note} /> : null}
       </figure>
     );
   }
 
+  const proof = id === "mobile"
+    ? { ...proofs.mobile, width: 1080, height: 2400 }
+    : proofs.recap;
+
   return (
     <figure className="tls-rail-proof tls-rail-proof-image" data-rail-proof={id}>
       <figcaption>{proof.label}</figcaption>
-      <Image src={proof.src} alt={proof.alt} width={1080} height={2400} sizes="(max-width: 1199px) 248px, 326px" />
+      <div className="tls-rail-surface">
+        <Image src={proof.src} alt={proof.alt} width={proof.width} height={proof.height} sizes="(max-width: 1199px) 248px, 326px" />
+      </div>
       {annotation ? <Annotation note={proof.note} /> : null}
     </figure>
   );

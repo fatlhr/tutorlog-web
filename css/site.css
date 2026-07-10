@@ -4533,6 +4533,8 @@ html, body { overflow-x: hidden; }
   width: 326px;
 }
 
+.tls-rail-surface { display: block; }
+
 .tls-rail-proof > figcaption {
   margin-bottom: 12px;
   color: var(--tl-green);
@@ -4564,6 +4566,12 @@ html, body { overflow-x: hidden; }
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 18px 36px rgba(18, 33, 31, .09);
+}
+
+.tls-story-page .tl-button-primary,
+.tls-story-page .tl-button-primary span,
+.tls-story-page .tl-button-primary svg {
+  color: #f4faf8;
 }
 
 .tls-invoice-proof .tpl-modern {

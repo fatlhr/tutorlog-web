@@ -8,7 +8,7 @@
 - [x] M3: landing rebuild
 - [x] M4: fitur rebuild
 - [x] M5: panduan rebuild
-- [ ] M6: regression and PR review
+- [x] M6: regression and PR review
 
 ## Visual Contract
 
@@ -45,7 +45,7 @@
 | State | Source | Used by |
 | --- | --- | --- |
 | Mobile | `/images/tutorlog-clean-home.png` | Landing, Fitur, Panduan |
-| Rekap | Real web rekap screenshot or `/images/web-recap-placeholder.png` bitmap only | Landing, Fitur, Panduan |
+| Rekap | `/images/tutorlog-web-recap.png`, captured from `RekapContent` with deterministic local data | Landing, Fitur, Panduan |
 | Invoice | `TplModern` with deterministic `InvoiceData` | Landing, Fitur, Panduan |
 
 ### Forbidden selectors and patterns
@@ -89,3 +89,10 @@
 ## Handoff
 
 The next agent must read this file, check `git status --short`, run the listed test for the first unchecked milestone, then continue from that milestone only.
+
+## Verification Evidence
+
+- M0 contract commit: `45a2c9a`.
+- Responsive screenshots are written by Playwright to `test-results/**` through `testInfo.outputPath`; they are intentionally ignored and never update `live-screenshots/`.
+- Final matrix completed for `/`, `/fitur`, and `/panduan` at `1440x900`, `1024x768`, `390x844`, plus the rail review at `1052x883`.
+- Final command evidence: `npm run lint`, `npm run build`, `npm run test:responsive` (`65 passed`), and `npm run test:a11y` (`13 passed`).
