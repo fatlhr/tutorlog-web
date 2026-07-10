@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import MenuToggle from "@/components/MenuToggle";
 import PublicMotion from "@/components/PublicMotion";
+import PublicNav from "@/components/PublicNav";
 
 type PublicShellProps = {
   eyebrow: string;
@@ -28,25 +28,7 @@ export function PublicShell({
   return (
     <main className={`tl-public ${compact ? "tl-public-compact" : ""} ${className}`}>
       <PublicMotion />
-      <nav className="tl-public-nav" aria-label="Navigasi utama">
-        <Link className="tl-brand" href="/" aria-label="TutorLog">
-          <span className="tl-brand-mark">
-            <Image src="/tutorlog-logo.png" alt="" width={40} height={40} priority />
-          </span>
-          <span>TutorLog</span>
-        </Link>
-        <div className="tl-nav-links">
-          <Link href="/fitur">Fitur</Link>
-          <Link href="/harga">Harga</Link>
-          <Link href="/panduan">Panduan</Link>
-        </div>
-        <Link className="tl-nav-login" href="/login">
-          Masuk
-        </Link>
-        <div className="tl-public-menu">
-          <MenuToggle />
-        </div>
-      </nav>
+      <PublicNav />
 
       <header className={`tl-public-hero ${aside ? "" : "tl-public-hero-solo"}`}>
         <div className="tl-public-hero-copy">
@@ -71,23 +53,27 @@ export function PublicShell({
 export function PublicFooter() {
   return (
     <footer className="tl-footer">
-      <div className="tl-footer-links">
-        <Link href="/fitur">Fitur</Link>
-        <Link href="/harga">Harga</Link>
-        <Link href="/panduan">Panduan</Link>
-        <Link href="/privacy">Privasi</Link>
-        <Link href="/terms">Syarat</Link>
-        <Link href="/account">Hapus Akun</Link>
-        <Link href="/kontak">Kontak</Link>
-      </div>
-      <div className="tl-footer-bottom">
-        <Link className="tl-brand" href="/" aria-label="TutorLog">
+      <div className="tl-footer-identity">
+        <Link className="tl-brand" href="/" aria-label="Kembali ke beranda TutorLog">
           <span className="tl-brand-mark">
             <Image src="/tutorlog-logo.png" alt="" width={28} height={28} />
           </span>
           <span>TutorLog</span>
         </Link>
-        <span>© 2026 TutorLog untuk tutor Indonesia</span>
+        <p>Teman kerja untuk catatan les, rekap, dan invoice tutor privat.</p>
+        <Link href="/kontak">Butuh bantuan?</Link>
+      </div>
+      <div className="tl-footer-navigation">
+        <div className="tl-footer-links">
+          <Link href="/fitur">Fitur</Link>
+          <Link href="/harga">Harga</Link>
+          <Link href="/panduan">Panduan</Link>
+          <Link href="/privacy">Privasi</Link>
+          <Link href="/terms">Syarat</Link>
+          <Link href="/account">Hapus Akun</Link>
+          <Link href="/kontak">Kontak</Link>
+        </div>
+        <span className="tl-footer-copyright">© 2026 TutorLog untuk tutor Indonesia</span>
       </div>
     </footer>
   );

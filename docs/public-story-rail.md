@@ -3,7 +3,7 @@
 ## Status
 
 - [x] M0: baseline and handoff contract
-- [ ] M1: shared public foundation
+- [x] M1: shared public foundation
 - [ ] M2: real product proof
 - [ ] M3: landing rebuild
 - [ ] M4: fitur rebuild
