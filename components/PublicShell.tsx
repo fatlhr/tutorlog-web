@@ -12,6 +12,7 @@ type PublicShellProps = {
   children: ReactNode;
   aside?: ReactNode;
   compact?: boolean;
+  className?: string;
 };
 
 export function PublicShell({
@@ -22,9 +23,10 @@ export function PublicShell({
   children,
   aside,
   compact = false,
+  className = "",
 }: PublicShellProps) {
   return (
-    <main className={`tl-public ${compact ? "tl-public-compact" : ""}`}>
+    <main className={`tl-public ${compact ? "tl-public-compact" : ""} ${className}`}>
       <PublicMotion />
       <nav className="tl-public-nav" aria-label="Navigasi utama">
         <Link className="tl-brand" href="/" aria-label="TutorLog">

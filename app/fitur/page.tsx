@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import {
+  ArrowDown,
+  ArrowRight,
   ChartBar,
   CloudArrowDown,
   Desktop,
@@ -41,6 +43,8 @@ const features = [
   },
 ];
 
+const railSteps = ["Catat", "Rekap", "Invoice", "Export"];
+
 function FeatureVisual({ type }: { type: string }) {
   if (type === "phone") {
     return (
@@ -79,6 +83,18 @@ function FeatureVisual({ type }: { type: string }) {
 function ProductRail() {
   return (
     <div className="tl-product-rail" aria-label="Visual alur TutorLog">
+      <div className="tl-rail-path" aria-hidden="true">
+        <span>Alur data</span>
+        <ol>
+          {railSteps.map((step, index) => (
+            <li key={step}>
+              <b>{String(index + 1).padStart(2, "0")}</b>
+              <small>{step}</small>
+              {index < railSteps.length - 1 ? <ArrowDown size={16} weight="bold" /> : null}
+            </li>
+          ))}
+        </ol>
+      </div>
       <figure className="tl-rail-shot tl-rail-shot-main tl-public-product">
         <Image src="/images/tutorlog-clean-history-list.png" alt="Daftar sesi TutorLog mobile" width={1080} height={2400} priority />
       </figure>
@@ -95,6 +111,7 @@ export default function FiturPage() {
       title="Data les bergerak dari HP ke rekap."
       subtitle="Mobile dipakai saat mengajar. Web dipakai saat data itu perlu dibaca, diarsipkan, atau dikirim."
       icon={null}
+      className="tl-public-features"
     >
       <section className="tl-feature-story" aria-label="Daftar fitur TutorLog">
         <aside className="tl-feature-pin">
@@ -102,9 +119,13 @@ export default function FiturPage() {
           <p>Catatan yang dibuat dekat kelas akan tetap siap dibaca saat pekerjaan administrasi dimulai.</p>
         </aside>
         <div className="tl-feature-strips">
-          {features.map((feature) => (
+          {features.map((feature, index) => (
             <article className="tl-feature-strip tl-public-motion" key={feature.title}>
               <div className="tl-strip-copy">
+                <div className="tl-strip-route" aria-hidden="true">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <ArrowRight size={20} weight="bold" />
+                </div>
                 <span aria-hidden="true">{feature.icon}</span>
                 <h2>{feature.title}</h2>
                 <p>{feature.body}</p>
