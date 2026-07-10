@@ -3385,12 +3385,29 @@ html, body { overflow-x: hidden; }
 
 .tl-guide-rail {
   min-height: 420px;
+  padding-left: 86px;
+}
+
+.tl-guide-path {
+  bottom: 20px;
+}
+
+.tl-guide-path ol {
+  height: calc(100% - 28px);
+}
+
+.tl-guide-path li::before {
+  bottom: -30px;
+}
+
+.tl-guide-path svg {
+  top: 26px;
 }
 
 .tl-guide-phone {
   top: 0;
-  left: clamp(8px, 3vw, 36px);
-  width: min(208px, 52%);
+  left: clamp(76px, 8vw, 104px);
+  width: min(198px, 50%);
   transform: rotate(-3deg);
 }
 
@@ -3438,6 +3455,21 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-weight: 800;
+}
+
+.tl-guide-step-route {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 3px;
+}
+
+.tl-guide-step:hover .tl-guide-step-route svg {
+  transform: translateX(8px);
+}
+
+.tl-guide-step-route svg {
+  transition: transform .28s ease;
 }
 
 .tl-guide-step-meta small {
@@ -3972,6 +4004,16 @@ html, body { overflow-x: hidden; }
   font-size: clamp(44px, 5.4vw, 72px);
 }
 
+.tl-public-guide .tl-public-hero {
+  max-width: 1180px;
+  padding-bottom: clamp(38px, 5vw, 64px);
+}
+
+.tl-public-guide .tl-public-hero h1 {
+  max-width: 960px;
+  font-size: clamp(44px, 5.4vw, 72px);
+}
+
 .tl-feature-story {
   display: grid;
   grid-template-columns: minmax(260px, .72fr) minmax(0, 1.28fr);
@@ -3994,6 +4036,10 @@ html, body { overflow-x: hidden; }
 }
 
 .tl-public-features .tl-feature-pin {
+  min-height: min(680px, calc(100svh - 72px));
+}
+
+.tl-public-guide .tl-guide-pin {
   min-height: min(680px, calc(100svh - 72px));
 }
 
@@ -4110,6 +4156,10 @@ html, body { overflow-x: hidden; }
     max-width: 680px;
   }
 
+  .tl-public-guide .tl-public-hero h1 {
+    max-width: 680px;
+  }
+
   .tl-flow-shot {
     width: 116px;
     height: 158px;
@@ -4148,6 +4198,10 @@ html, body { overflow-x: hidden; }
     padding-left: 70px;
   }
 
+  .tl-guide-rail {
+    padding-left: 70px;
+  }
+
   .tl-rail-path {
     width: 54px;
   }
@@ -4158,6 +4212,11 @@ html, body { overflow-x: hidden; }
 
   .tl-rail-path small {
     font-size: 10px;
+  }
+
+  .tl-guide-phone {
+    left: 72px;
+    width: min(170px, 48%);
   }
 
   .tl-flow-row {

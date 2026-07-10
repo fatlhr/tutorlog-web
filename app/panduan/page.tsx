@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowDown,
+  ArrowRight,
   ChartBar,
   Desktop,
   DownloadSimple,
@@ -65,6 +67,18 @@ const steps = [
 function GuideRail() {
   return (
     <div className="tl-guide-rail">
+      <div className="tl-rail-path tl-guide-path" aria-hidden="true">
+        <span>Langkah</span>
+        <ol>
+          {steps.map((step, index) => (
+            <li key={step.title}>
+              <b>{String(index + 1).padStart(2, "0")}</b>
+              <small>{step.verb}</small>
+              {index < steps.length - 1 ? <ArrowDown size={16} weight="bold" /> : null}
+            </li>
+          ))}
+        </ol>
+      </div>
       <figure className="tl-guide-phone tl-public-product">
         <Image src="/images/tutorlog-clean-home.png" alt="Mulai sesi di TutorLog mobile" width={1080} height={2400} priority />
       </figure>
@@ -83,6 +97,7 @@ export default function PanduanPage() {
       title="Catat di HP, buat invoice di web."
       subtitle="Ikuti alur pendek ini kalau ingin melihat bagaimana mobile app dan web companion saling nyambung."
       icon={null}
+      className="tl-public-guide"
     >
       <section className="tl-guide-story" aria-label="Langkah menggunakan TutorLog">
         <aside className="tl-guide-pin">
@@ -96,9 +111,10 @@ export default function PanduanPage() {
           </div>
         </aside>
         <div className="tl-guide-steps">
-          {steps.map((step) => (
+          {steps.map((step, index) => (
             <article className="tl-guide-step tl-public-motion" key={step.title}>
               <div className="tl-guide-step-meta">
+                <span className="tl-guide-step-route">{String(index + 1).padStart(2, "0")} <ArrowRight size={18} weight="bold" /></span>
                 <span>{step.verb}</span>
                 <small>{step.phase}</small>
               </div>
