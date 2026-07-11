@@ -393,6 +393,42 @@ test.describe('Feature story rail', () => {
     await expect(page.locator('.tls-story-rail')).toBeHidden();
     await expect(page.locator('.tls-feature-chapter .tls-mobile-proof')).toHaveCount(3);
   });
+
+  test('pins one matching product proof beside the active feature chapter', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const rail = page.locator('.tls-features .tls-product-rail');
+    await expect(rail).toHaveAttribute('data-rail-active', 'mobile');
+
+    const firstAlignment = await page.evaluate(() => {
+      const heading = document.querySelector<HTMLElement>('#feature-catat');
+      const label = document.querySelector<HTMLElement>('.tls-features .tls-story-rail [data-rail-proof="mobile"] figcaption');
+      if (!heading || !label) return null;
+      return Math.abs(heading.getBoundingClientRect().top - label.getBoundingClientRect().top);
+    });
+
+    expect(firstAlignment).not.toBeNull();
+    expect(firstAlignment).toBeLessThanOrEqual(2);
+
+    await page.locator('#feature-rekap').evaluate((element) => {
+      window.scrollTo({ top: element.getBoundingClientRect().top + window.scrollY - window.innerHeight * .45 });
+    });
+    await page.waitForTimeout(350);
+
+    await expect(rail).toHaveAttribute('data-rail-active', 'recap');
+
+    const recapAlignment = await page.evaluate(() => {
+      const heading = document.querySelector<HTMLElement>('#feature-rekap');
+      const label = document.querySelector<HTMLElement>('.tls-features .tls-story-rail [data-rail-proof="recap"] figcaption');
+      if (!heading || !label) return null;
+      return Math.abs(heading.getBoundingClientRect().top - label.getBoundingClientRect().top);
+    });
+
+    expect(recapAlignment).not.toBeNull();
+    expect(recapAlignment).toBeLessThanOrEqual(2);
+  });
 });
 
 test.describe('Public story rail contract', () => {

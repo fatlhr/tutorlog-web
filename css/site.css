@@ -4533,6 +4533,34 @@ html, body { overflow-x: hidden; }
   width: 326px;
 }
 
+.tls-features .tls-product-rail {
+  --tls-rail-align: 72px;
+  position: relative;
+  display: block;
+  min-height: 940px;
+}
+
+.tls-features .tls-story-rail > .tls-product-rail { position: relative; top: auto; }
+
+.tls-features .tls-product-rail .tls-rail-proof {
+  position: absolute;
+  top: var(--tls-rail-align);
+  left: 0;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(.96);
+  transform-origin: top left;
+}
+
+.tls-features .tls-product-rail[data-rail-active="mobile"] [data-rail-proof="mobile"],
+.tls-features .tls-product-rail[data-rail-active="recap"] [data-rail-proof="recap"],
+.tls-features .tls-product-rail[data-rail-active="invoice"] [data-rail-proof="invoice"] {
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+}
+
 .tls-rail-surface { display: block; }
 
 .tls-rail-proof > figcaption {
@@ -4602,6 +4630,7 @@ html, body { overflow-x: hidden; }
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .tls-product-rail { gap: 36px; }
+  .tls-features .tls-product-rail { --tls-rail-align: 64px; min-height: 860px; }
   .tls-rail-proof-image img { width: 248px; }
   .tls-rail-proof { width: 248px; }
   .tls-invoice-proof { width: 248px; height: 242px; }
@@ -4610,12 +4639,28 @@ html, body { overflow-x: hidden; }
 }
 
 @media (max-width: 767px) {
-  .tls-product-rail { gap: 40px; }
   .tls-rail-proof-image img { width: min(232px, 100%); }
   .tls-rail-proof { width: min(232px, 100%); }
   .tls-invoice-proof { width: min(232px, 100%); height: 228px; }
   .tls-invoice-proof .tpl-modern { transform: scale(.303); }
   .tls-rail-annotation { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) and (min-width: 768px) {
+  .tls-features .tls-product-rail {
+    min-height: 0;
+    display: grid;
+    gap: 48px;
+  }
+
+  .tls-features .tls-product-rail .tls-rail-proof {
+    position: relative;
+    top: auto;
+    left: auto;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* Shared editorial story layout for the landing, feature, and guide pages. */

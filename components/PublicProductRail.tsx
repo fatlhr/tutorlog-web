@@ -90,7 +90,7 @@ function Annotation({ note }: { note: string }) {
 
 export function PublicProductRail({ label = "Bukti produk TutorLog" }: { label?: string }) {
   return (
-    <aside className="tls-product-rail" aria-label={label}>
+    <aside className="tls-product-rail" aria-label={label} data-rail-active="mobile">
       <PublicProductProof id="mobile" annotation />
       <PublicProductProof id="recap" annotation />
       <PublicProductProof id="invoice" annotation />
