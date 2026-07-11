@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicShell";
@@ -14,6 +16,7 @@ type PublicStoryLayoutProps = {
   className?: string;
   railLabel?: string;
   withRail?: boolean;
+  showBackLink?: boolean;
 };
 
 export function PublicStoryLayout({
@@ -26,12 +29,19 @@ export function PublicStoryLayout({
   className = "",
   railLabel,
   withRail = true,
+  showBackLink = false,
 }: PublicStoryLayoutProps) {
   return (
     <main className={`tl-public tls-story-page ${className}`}>
       <PublicMotion />
       <PublicNav />
       <header className="tls-story-hero">
+        {showBackLink ? (
+          <Link className="tls-story-back-link" href="/">
+            <ArrowLeft size={15} weight="bold" aria-hidden="true" />
+            <span>Beranda</span>
+          </Link>
+        ) : null}
         <p className="tl-kicker">{eyebrow}</p>
         <h1>{title}</h1>
         <p>{subtitle}</p>

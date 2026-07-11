@@ -19,6 +19,7 @@ export default function FiturPage() {
       title="Data les bergerak dari HP ke rekap."
       subtitle="Mobile dipakai saat mengajar. Web dipakai saat data itu perlu dibaca, diarsipkan, atau dikirim."
       withRail={false}
+      showBackLink
       closing={(
         <section className="tls-story-section tls-final-action" aria-labelledby="feature-action">
           <span>Mulai gratis</span>
@@ -34,8 +35,9 @@ export default function FiturPage() {
     >
       <section className="tls-feature-row" data-feature-row="mobile" aria-labelledby="feature-catat">
         <div className="tls-feature-copy">
+          <p className="tls-feature-platform">Mobile</p>
           <h2 id="feature-catat">Catat sesi di HP.</h2>
-          <p>Selesai mengajar, tutor cukup menyimpan materi, durasi, murid, dan nominal dari mobile.</p>
+          <p>Simpan materi, durasi, murid, tarif, dan lokasi segera setelah kelas selesai.<span className="tls-feature-detail"> Data itu langsung siap dipakai lagi saat rekap.</span></p>
         </div>
         <div className="tls-feature-row-divider" aria-hidden="true" />
         <PublicProductProof id="mobile" annotation />
@@ -43,8 +45,9 @@ export default function FiturPage() {
 
       <section className="tls-feature-row" data-feature-row="history" aria-labelledby="feature-riwayat">
         <div className="tls-feature-copy">
+          <p className="tls-feature-platform">Mobile</p>
           <h2 id="feature-riwayat">Buka riwayat dan revisi catatan.</h2>
-          <p>Riwayat menyimpan sesi yang sudah selesai. Dari HP, buka detailnya untuk membaca atau memperbarui catatan bila ada yang perlu dikoreksi.</p>
+          <p>Riwayat menyimpan sesi selesai beserta catatan pengajaran dan detail pembayarannya.<span className="tls-feature-detail"> Buka dari HP untuk meninjau atau memperbarui informasi saat ada revisi.</span></p>
         </div>
         <div className="tls-feature-row-divider" aria-hidden="true" />
         <PublicProductProof id="history" annotation />
@@ -52,8 +55,9 @@ export default function FiturPage() {
 
       <section className="tls-feature-row" data-feature-row="recap" aria-labelledby="feature-rekap">
         <div className="tls-feature-copy">
+          <p className="tls-feature-platform">Mobile dan web</p>
           <h2 id="feature-rekap">Rekap dan export dari perangkat yang kamu pakai.</h2>
-          <p>Pilih rentang dan murid, lalu cek sesi yang terkumpul. Rekap serta export PDF atau CSV tersedia di mobile dan web.</p>
+          <p>Rekap memperlihatkan sesi, jam, pendapatan, dan murid dalam satu tampilan.<span className="tls-feature-detail"> PDF atau CSV dapat diekspor dari mobile maupun web saat perlu dibagikan atau diarsipkan.</span></p>
         </div>
         <div className="tls-feature-row-divider" aria-hidden="true" />
         <PublicProductProof id="recap" annotation />
@@ -61,8 +65,9 @@ export default function FiturPage() {
 
       <section className="tls-feature-row" data-feature-row="invoice" aria-labelledby="feature-invoice">
         <div className="tls-feature-copy">
+          <p className="tls-feature-platform">Web</p>
           <h2 id="feature-invoice">Buat invoice di web.</h2>
-          <p>Pilih sesi yang akan ditagihkan, atur template dan warna, lalu export PDF yang siap dikirim ke wali murid.</p>
+          <p>Pilih sesi yang akan ditagihkan, atur template dan warna, lalu cek preview sebelum dikirim.<span className="tls-feature-detail"> Invoice dibuat di web agar detailnya nyaman diperiksa.</span></p>
         </div>
         <div className="tls-feature-row-divider" aria-hidden="true" />
         <PublicProductProof id="invoice" annotation />

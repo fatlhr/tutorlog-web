@@ -16,12 +16,14 @@ export default function PublicNav() {
 
   return (
     <nav className="tl-public-nav" aria-label="Navigasi utama">
-      <Link className="tl-brand" href="/" aria-label="Kembali ke beranda TutorLog">
-        <span className="tl-brand-mark">
-          <Image src="/tutorlog-logo.png" alt="" width={40} height={40} priority />
-        </span>
-        <span>TutorLog</span>
-      </Link>
+      <div className="tl-public-brand-cluster">
+        <Link className="tl-brand" href="/" aria-label="Kembali ke beranda TutorLog">
+          <span className="tl-brand-mark">
+            <Image src="/tutorlog-logo.png" alt="" width={40} height={40} priority />
+          </span>
+          <span>TutorLog</span>
+        </Link>
+      </div>
       <div className="tl-nav-links">
         {links.map((link) => (
           <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
