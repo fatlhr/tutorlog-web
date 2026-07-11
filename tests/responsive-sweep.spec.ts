@@ -70,7 +70,10 @@ test.describe('Homepage hero guardrails', () => {
 
       await expect(page.locator('.tl-landing-hero')).toBeVisible();
       await expect(page.locator('.tl-landing-hero-side-shot')).toBeVisible();
-      await expect(page.locator('.tl-landing-hero-mascot')).toBeVisible();
+      await expect(page.locator('.tl-hero-schedule')).toBeVisible();
+      await expect(page.locator('.tl-hero-schedule-day')).toHaveCount(6);
+      await expect(page.locator('.tl-hero-schedule-hour')).toHaveCount(7);
+      await expect(page.locator('[data-schedule-session]')).toHaveCount(3);
     });
   }
 
@@ -88,7 +91,11 @@ test.describe('Homepage hero guardrails', () => {
     });
 
     expect(Math.ceil(metrics.height / metrics.lineHeight)).toBeLessThanOrEqual(3);
-    await expect(page.locator('.tl-landing-hero-mascot')).toBeHidden();
+    await expect(page.locator('.tl-hero-schedule')).toBeVisible();
+    const hidden = await page.locator('.tl-hero-schedule-day, .tl-hero-schedule-hour, [data-schedule-session]').evaluateAll((elements) =>
+      elements.every((element) => element.getClientRects().length === 0),
+    );
+    expect(hidden).toBe(true);
   });
 
   test('keeps storyboard proof media readable during its entrance', async ({ page }) => {
@@ -101,6 +108,41 @@ test.describe('Homepage hero guardrails', () => {
     const opacity = Number.parseFloat(await proof.evaluate((element) => window.getComputedStyle(element).opacity));
 
     expect(opacity).toBe(1);
+  });
+
+  test('keeps the timetable canvas inside the hero at every landing breakpoint', async ({ page }) => {
+    for (const [width, height] of [[1440, 900], [1024, 768], [390, 844]]) {
+      await page.setViewportSize({ width, height });
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      const metrics = await page.evaluate(() => {
+        const hero = document.querySelector<HTMLElement>('.tl-landing-hero');
+        const canvas = document.querySelector<HTMLElement>('.tl-hero-schedule');
+        const proof = document.querySelector<HTMLElement>('.tl-landing-mobile-proof .tls-rail-proof');
+        if (!hero || !canvas || !proof) return null;
+
+        const heroRect = hero.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        const proofRect = proof.getBoundingClientRect();
+        return { heroRect, canvasRect, proofRect };
+      });
+
+      expect(metrics).not.toBeNull();
+      expect(metrics?.canvasRect.left).toBeGreaterThanOrEqual(metrics?.heroRect.left ?? 0);
+      expect(metrics?.canvasRect.right).toBeLessThanOrEqual(metrics?.heroRect.right ?? 0);
+
+      if (width === 1024) {
+        const labelsVisible = await page.locator('.tl-hero-schedule-day, .tl-hero-schedule-hour').evaluateAll((elements) =>
+          elements.some((element) => element.getClientRects().length > 0),
+        );
+        expect(labelsVisible).toBe(false);
+      }
+
+      if (width === 390) {
+        expect(metrics?.canvasRect.height).toBeLessThanOrEqual(metrics?.proofRect.height ?? 0);
+      }
+    }
   });
 
   test('opens and closes the temporary demo video dialog', async ({ page }) => {
@@ -132,6 +174,16 @@ test.describe('Homepage story structure', () => {
     await expect(page.locator('.tls-story-rail, .tls-story-grid')).toHaveCount(0);
     await expect(page.locator('.tl-landing-mobile-proof')).toHaveCount(1);
     await expect(page.locator('.tl-landing-proof-story')).toHaveCount(3);
+    await expect(page.locator('.tl-landing-hero-mascot')).toHaveCount(0);
+  });
+
+  test('keeps the timetable canvas exclusive to the landing hero', async ({ page }) => {
+    for (const path of ['/fitur', '/panduan']) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(path);
+      await page.waitForLoadState('networkidle');
+      await expect(page.locator('.tl-hero-schedule')).toHaveCount(0);
+    }
   });
 
   test('states how one recorded session feeds the product storyboard', async ({ page }) => {

@@ -16,7 +16,7 @@
 
 - `/fitur` and `/panduan` use a single narrative column on the left and a sticky product rail on the right, separated by one vertical rule.
 - Their rail starts beside the related product stories and stays visible while that copy scrolls.
-- Landing is a standalone public landing composition. Its hero, testimonial, and final action use the full content width. Product proof appears as three ordinary feature rows, never as a rail.
+- Landing is a standalone public landing composition. Its hero, testimonial, and final action use the full content width. Product proof appears as three ordinary feature rows, never as a rail. The hero may include the decorative Timetable Canvas, confined to that hero only; it is never product proof and never appears on `/fitur` or `/panduan`.
 - Arrows are limited to outcome annotations beside a matching product proof. They never number, sequence, separate rows, or animate.
 - Mobile is one column. It has no sticky rail, vertical rule, absolute screenshot overlay, small path label, or duplicated desktop markup.
 - Product proof is a real image or a real TutorLog component. Do not create product preview UI with decorative divs.
@@ -59,8 +59,8 @@
 
 ### Landing
 
-1. Full-width editorial split hero: `Rekap dan invoice untuk tutor privat.` with Play Store and demo CTAs, an uncropped mobile proof, and flat mint/lilac geometric fields.
-2. Intro: `Catat sekali. Pakai lagi saat waktunya rekap.`
+1. Full-width editorial split hero: `Rekap dan invoice untuk tutor privat.` with Play Store and demo CTAs, an uncropped mobile proof, flat mint/lilac geometric fields, and an `aria-hidden` timetable canvas on desktop/tablet. Mobile retains only its textless grid field behind the proof.
+2. Intro: `Satu sesi yang tersimpan langsung jadi rekap dan invoice.`
 3. Compact three-column product storyboard: mobile logging, web recap, invoice and export. It collapses into a linear mobile sequence and never uses a sticky rail.
 4. Soft exploration strip links to `/fitur`, `/harga`, and `/panduan`.
 5. Pricing cue: plain `Free` and `Plus` ledger rows with link to `/harga`.

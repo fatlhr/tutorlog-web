@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
 import LandingDemoDialog from "@/components/LandingDemoDialog";
+import LandingTimetableCanvas from "@/components/LandingTimetableCanvas";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
 import { PublicFooter } from "@/components/PublicShell";
@@ -34,6 +35,7 @@ export default function Home() {
       <PublicNav />
 
       <section className="tl-landing-hero" aria-labelledby="landing-title">
+        <LandingTimetableCanvas />
         <div className="tl-landing-hero-copy">
           <p className="tl-kicker">Untuk tutor privat Indonesia</p>
           <h1 id="landing-title">Rekap dan invoice untuk tutor privat.</h1>
@@ -45,9 +47,6 @@ export default function Home() {
             </a>
             <LandingDemoDialog />
           </div>
-          <figure className="tl-landing-hero-mascot" aria-hidden="true">
-            <Image src="/tutorlog-logo.png" alt="" width={1024} height={1024} sizes="112px" />
-          </figure>
         </div>
         <div className="tl-landing-hero-proof tl-landing-mobile-proof">
           <figure className="tl-landing-hero-side-shot" aria-hidden="true">

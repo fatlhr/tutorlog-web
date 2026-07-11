@@ -18,6 +18,12 @@ export default function PublicMotion() {
       return;
     }
 
+    gsap.fromTo(
+      ".tl-hero-schedule-block",
+      { opacity: 0, y: 12 },
+      { opacity: 0.78, y: 0, duration: 0.65, stagger: 0.08, ease: "power3.out" },
+    );
+
     gsap.utils.toArray<HTMLElement>(".tls-story-rail .tls-rail-surface, .tl-landing-hero-proof .tls-rail-surface").forEach((element) => {
       gsap.fromTo(
         element,
