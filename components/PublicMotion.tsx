@@ -27,10 +27,9 @@ export default function PublicMotion() {
     gsap.utils.toArray<HTMLElement>(".tl-landing-hero-proof .tls-rail-surface").forEach((element) => {
       gsap.fromTo(
         element,
-        { scale: 0.96, opacity: 0.35 },
+        { scale: 0.96 },
         {
           scale: 1,
-          opacity: 1,
           ease: "none",
           scrollTrigger: {
             trigger: element,

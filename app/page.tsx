@@ -13,18 +13,18 @@ const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog
 const proofStories = [
   {
     id: "mobile" as const,
-    title: "Catat sesi saat selesai mengajar.",
-    body: "Materi, durasi, murid, dan tarif tersimpan dari HP saat detailnya masih dekat.",
+    title: "Catat sesi setelah mengajar.",
+    body: "Simpan materi, durasi, murid, tarif, dan lokasi dari HP selagi detailnya masih dekat.",
   },
   {
     id: "recap" as const,
-    title: "Baca rekap tanpa merapikan ulang.",
-    body: "Saat waktunya melihat bulanan, sesi dan pendapatan sudah ada dalam satu tampilan web.",
+    title: "Buka rekap saat dibutuhkan.",
+    body: "Sesi, jam, pendapatan, dan murid sudah tersusun untuk dibaca atau diekspor dari mobile maupun web.",
   },
   {
     id: "invoice" as const,
-    title: "Siapkan invoice dari sesi yang sama.",
-    body: "Pilih sesi, cek detailnya, lalu kirim invoice atau simpan arsip saat dibutuhkan.",
+    title: "Buat invoice dari sesi yang sama.",
+    body: "Pilih sesi dan periksa invoice di web sebelum disimpan atau dikirim.",
   },
 ];
 
@@ -62,9 +62,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="tl-landing-intro" aria-labelledby="landing-intro-title">
-        <h2 id="landing-intro-title">Satu sesi yang tersimpan langsung jadi rekap dan invoice.</h2>
-        <p>Simpan sesi saat kelas selesai. Rekap dan invoice memakai data yang sama, jadi tidak perlu dicatat ulang.</p>
+      <section className="tl-landing-transition" aria-labelledby="landing-transition-title">
+        <h2 id="landing-transition-title">Catatan sesi tersebar. Rekap harus dihitung ulang.</h2>
+        <p>Catat sekali di HP. Data yang sama langsung siap dipakai untuk rekap dan membuat invoice di web.</p>
       </section>
 
       <section className="tl-landing-feature-rows" aria-label="Alur produk TutorLog">
@@ -79,25 +79,13 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="tl-landing-explore" aria-labelledby="landing-explore-title">
-        <p id="landing-explore-title">Lanjutkan dari bagian yang paling kamu butuhkan.</p>
+      <section className="tl-landing-next" aria-labelledby="landing-next-title">
+        <p id="landing-next-title">Mulai gratis. Upgrade saat kamu membutuhkan export dan invoice tanpa batas.</p>
         <nav aria-label="Jelajahi TutorLog">
           <Link href="/fitur">Lihat fitur <ArrowRight size={16} aria-hidden="true" /></Link>
           <Link href="/harga">Bandingkan paket <ArrowRight size={16} aria-hidden="true" /></Link>
           <Link href="/panduan">Ikuti panduan <ArrowRight size={16} aria-hidden="true" /></Link>
         </nav>
-      </section>
-
-      <section className="tl-landing-pricing" aria-labelledby="landing-price">
-        <div>
-          <h2 id="landing-price">Mulai gratis, upgrade kalau cocok.</h2>
-          <p>Paket mengikuti kebutuhan setelah alur catat dan rekap mulai terasa membantu.</p>
-        </div>
-        <div className="tls-price-ledger">
-          <div><strong>Free</strong><span>Catat sesi</span></div>
-          <div><strong>Plus</strong><span>Rekap, invoice, dan export</span></div>
-        </div>
-        <Link className="tls-inline-link" href="/harga">Lihat detail harga <ArrowRight size={16} aria-hidden="true" /></Link>
       </section>
 
       <div className="tl-landing-closing">

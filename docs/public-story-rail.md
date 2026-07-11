@@ -61,12 +61,11 @@
 ### Landing
 
 1. Full-width editorial split hero: `Rekap dan invoice untuk tutor privat.` with Play Store and demo CTAs, an uncropped mobile proof, flat mint/lilac geometric fields, and an `aria-hidden` timetable canvas on desktop/tablet. Mobile retains only its textless grid field behind the proof.
-2. Intro: `Satu sesi yang tersimpan langsung jadi rekap dan invoice.`
-3. Compact three-column product storyboard: mobile logging, web recap, invoice and export. It collapses into a linear mobile sequence and never uses a sticky rail.
-4. Soft exploration strip links to `/fitur`, `/harga`, and `/panduan`.
-5. Pricing cue: plain `Free` and `Plus` ledger rows with link to `/harga`.
-6. Hover Quote: Miss Binar, text only, quote body at most three lines.
-7. Final action: full-width accent band with one compact CTA on mobile.
+2. Compact problem-to-solution transition: `Catatan sesi tersebar. Rekap harus dihitung ulang.` followed by the shared-data explanation.
+3. Three-column product workflow: mobile logging, mobile and web recap, then web invoice. It collapses into a linear mobile sequence and never uses a sticky rail.
+4. Soft exploration strip combines the free-to-upgrade cue with links to `/fitur`, `/harga`, and `/panduan`.
+5. Hover Quote: Miss Binar, text only, quote body at most three lines.
+6. Final action: full-width accent band with one compact CTA on mobile.
 
 ### Landing demo placeholder
 

@@ -174,7 +174,10 @@ test.describe('Homepage story structure', () => {
     await expect(page.locator('.vp-desktop, .vp-mobile')).toHaveCount(0);
     await expect(page.locator('.tls-story-rail, .tls-story-grid')).toHaveCount(0);
     await expect(page.locator('.tl-landing-mobile-proof')).toHaveCount(1);
+    await expect(page.locator('.tl-landing-transition')).toHaveCount(1);
     await expect(page.locator('.tl-landing-proof-story')).toHaveCount(3);
+    await expect(page.locator('.tl-landing-next')).toHaveCount(1);
+    await expect(page.locator('.tl-landing-intro, .tl-landing-pricing, .tl-landing-explore')).toHaveCount(0);
     await expect(page.locator('.tl-landing-hero-mascot')).toHaveCount(0);
   });
 
@@ -187,12 +190,13 @@ test.describe('Homepage story structure', () => {
     }
   });
 
-  test('states how one recorded session feeds the product storyboard', async ({ page }) => {
+  test('explains the problem before showing the product workflow', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByRole('heading', { name: 'Satu sesi yang tersimpan langsung jadi rekap dan invoice.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Catatan sesi tersebar. Rekap harus dihitung ulang.' })).toBeVisible();
+    await expect(page.locator('.tl-landing-transition')).toContainText('Data yang sama langsung siap dipakai');
   });
 
   test('keeps the hero and landing closing sections outside the product proof rows', async ({ page }) => {
@@ -224,7 +228,7 @@ test.describe('Homepage story structure', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const explore = page.locator('.tl-landing-explore');
+    const explore = page.locator('.tl-landing-next');
     await expect(explore).toBeVisible();
     await expect(explore.locator('a[href="/fitur"]')).toBeVisible();
     await expect(explore.locator('a[href="/harga"]')).toBeVisible();
