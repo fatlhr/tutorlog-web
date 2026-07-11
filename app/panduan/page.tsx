@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, EnvelopeSimple } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
-import ScrollReveal from "@/components/ScrollReveal";
+import { PublicProductProof } from "@/components/PublicProductRail";
 
 export const metadata: Metadata = {
   title: "TutorLog - Panduan",
@@ -26,28 +26,33 @@ function PhaseSection({
   description,
   steps,
   stepOffset = 0,
+  proofId,
 }: {
   title: string;
   description: string;
   steps: readonly (readonly [string, string])[];
   stepOffset?: number;
+  proofId: "mobile" | "invoice";
 }) {
   return (
-    <section className="tl-guide-phase" data-reveal>
+    <section className="tl-guide-phase">
       <div className="tl-guide-phase-header">
         <h2>{title}</h2>
         <p>{description}</p>
       </div>
-      <div className="tl-guide-steps">
+      <ol className="tl-guide-steps">
         {steps.map(([stepTitle, stepBody], idx) => (
-          <div className="tl-guide-step" key={stepTitle}>
+          <li className="tl-guide-step" key={stepTitle}>
             <span className="tl-guide-step-badge" aria-hidden="true">{String(idx + stepOffset + 1).padStart(2, "0")}</span>
             <div className="tl-guide-step-body">
               <h3>{stepTitle}</h3>
               <p>{stepBody}</p>
             </div>
-          </div>
+          </li>
         ))}
+      </ol>
+      <div className="tl-guide-inline-proof">
+        <PublicProductProof id={proofId} />
       </div>
     </section>
   );
@@ -63,32 +68,32 @@ export default function PanduanPage() {
       icon={null}
       showBackLink
     >
-      <ScrollReveal />
       <div className="tl-guide-phases">
         <PhaseSection
           title="Di HP."
           description="Mobile dipakai saat kamu dekat dengan sesi mengajar."
           steps={mobileSteps}
           stepOffset={0}
+          proofId="mobile"
         />
         <PhaseSection
           title="Di web."
           description="Web dipakai saat data yang sudah terkumpul perlu dibaca, dicek, atau dikirim."
           steps={webSteps}
           stepOffset={3}
+          proofId="invoice"
         />
       </div>
 
-      <section className="tl-guide-closing" data-reveal aria-labelledby="guide-action">
+      <section className="tl-guide-closing" aria-labelledby="guide-action">
         <span>Butuh bantuan?</span>
         <h2 id="guide-action">Kami bisa bantu mulai dari alurnya.</h2>
         <p>Hubungi TutorLog kalau ada pertanyaan saat memasang aplikasi atau membuat invoice pertama.</p>
         <div className="tl-guide-closing-actions">
-          <a className="tl-button tl-button-primary" href="mailto:tutorlog.admin@gmail.com">
-            <EnvelopeSimple size={18} weight="fill" />
-            <span>Kirim Email</span>
-          </a>
-          <Link className="tls-inline-link" href="/kontak">Lihat halaman kontak <ArrowRight size={16} aria-hidden="true" /></Link>
+          <Link className="tl-button tl-button-primary" href="/kontak">
+            <span>Buka pusat bantuan</span>
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         </div>
       </section>
     </PublicShell>

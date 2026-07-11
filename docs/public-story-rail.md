@@ -15,7 +15,7 @@
 ### Shared composition
 
 - `/fitur` uses four paired product-story rows. Each row has one narrative column on the left, one vertical rule, and its matching proof on the right. The rows are `mobile`, `history`, `recap`, and `invoice`; a proof never switches or moves between stories. Feature proofs are compact on desktop/tablet, have bottom breathing room before the following rule, and open in an accessible enlarged dialog when clicked.
-- `/panduan` uses `PublicShell` with numbered phases (`01`, `02`). Each phase contains steps in cards with accent left border, followed by inline product proof. No sidebar, no sticky rail.
+- `/panduan` uses `PublicShell` with two plain phases, `Di HP` and `Di web`. Each phase contains a semantic ordered list with divider rows, followed by one compact inline product proof. No sidebar, card, or sticky rail.
 - Landing is a standalone public landing composition. Its hero, testimonial, and final action use the full content width. Product proof appears as three ordinary feature rows, never as a rail. The hero may include the decorative Timetable Canvas, confined to that hero only; it is never product proof and never appears on `/fitur` or `/panduan`.
 - Arrows are limited to outcome annotations beside a matching product proof. They never number, sequence, separate rows, or animate.
 - Mobile is one column. It has no sticky rail, vertical rule, absolute screenshot overlay, small path label, or duplicated desktop markup.
@@ -54,7 +54,7 @@
 
 - `.tl-rail-path`, `.tl-strip-route`, `.tl-guide-step-route`
 - `.tl-mini-invoice`, `.tl-export-placeholder`, `.tl-strip-slot`, `.tl-flow-slot`, `.tl-guide-web-slot`
-- numbered feature or guide steps, vertical rail paths, dashed product placeholders, card grids, large diagonal backgrounds
+- numbered feature paths, decorative phase numbers, vertical rail paths, dashed product placeholders, card grids
 
 ## Page Copy and Structure
 

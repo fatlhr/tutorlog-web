@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, X } from "@phosphor-icons/react";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 interface HamburgerMenuProps {
@@ -9,7 +11,15 @@ interface HamburgerMenuProps {
   onClose: () => void;
 }
 
+const links = [
+  { href: "/fitur", label: "Fitur" },
+  { href: "/harga", label: "Harga" },
+  { href: "/panduan", label: "Panduan" },
+  { href: "/kontak", label: "Kontak" },
+];
+
 export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
+  const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -45,25 +55,30 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
   if (!open) return null;
 
   return (
-    <div ref={menuRef} className="mob-menu" role="dialog" aria-modal="true" aria-label="Menu navigasi" onClick={onClose}>
-      <nav className="mob-nav mob-nav-dark" onClick={(event) => event.stopPropagation()}>
-        <Link className="brand" href="/" onClick={(e) => e.stopPropagation()}>
-          <span className="mk"><Image src="/tutorlog-logo.png" alt="" width={32} height={32} /></span>
-          <span className="wm">TutorLog</span>
-        </Link>
-        <button ref={closeButtonRef} className="hamburger" aria-label="Tutup menu" aria-expanded="true" onClick={onClose}>
-          <span></span><span></span><span></span>
-        </button>
-      </nav>
-      <div className="menu-links" onClick={(e) => e.stopPropagation()}>
-        <Link href="/fitur" onClick={onClose}>Fitur</Link>
-        <Link href="/harga" onClick={onClose}>Harga</Link>
-        <Link href="/panduan" onClick={onClose}>Panduan</Link>
-        <Link href="/kontak" onClick={onClose}>Kontak</Link>
-      </div>
-      <div className="menu-cta" onClick={(e) => e.stopPropagation()}>
-        <Link className="btn-hero primary" href="/login" onClick={onClose} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, height: 52, borderRadius: "var(--r-full)", background: "var(--tw-primary-soft)", color: "var(--tw-primary-dark)", fontFamily: "var(--f-body)", fontWeight: 700, fontSize: 15 }}>
+    <div ref={menuRef} className="tl-mobile-menu" role="dialog" aria-modal="true" aria-label="Menu navigasi" onClick={onClose}>
+      <div className="tl-mobile-menu-panel" onClick={(event) => event.stopPropagation()}>
+        <header className="tl-mobile-menu-header">
+          <Link className="tl-brand" href="/" aria-label="Kembali ke beranda TutorLog" onClick={onClose}>
+            <span className="tl-brand-mark"><Image src="/tutorlog-logo.png" alt="" width={40} height={40} /></span>
+            <span>TutorLog</span>
+          </Link>
+          <button ref={closeButtonRef} className="tl-mobile-menu-close" aria-label="Tutup menu" onClick={onClose}>
+            <X size={24} weight="bold" aria-hidden="true" />
+          </button>
+        </header>
+
+        <nav className="tl-mobile-menu-links" aria-label="Halaman publik">
+          {links.map((link) => (
+            <Link className="tl-mobile-menu-link" key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined} onClick={onClose}>
+              <span>{link.label}</span>
+              <ArrowRight size={22} aria-hidden="true" />
+            </Link>
+          ))}
+        </nav>
+
+        <Link className="tl-mobile-menu-login" href="/login" onClick={onClose}>
           <span>Masuk dengan Magic Link</span>
+          <ArrowRight size={18} aria-hidden="true" />
         </Link>
       </div>
     </div>
