@@ -64,8 +64,8 @@ export default function Home() {
       </section>
 
       <section className="tl-landing-intro" aria-labelledby="landing-intro-title">
-        <h2 id="landing-intro-title">Catat sekali. Pakai lagi saat waktunya rekap.</h2>
-        <p>TutorLog menyimpan jejak sesi yang biasanya tercecer agar pekerjaan setelah kelas tidak dimulai dari nol.</p>
+        <h2 id="landing-intro-title">Satu sesi yang tersimpan langsung jadi rekap dan invoice.</h2>
+        <p>Simpan sesi saat kelas selesai. Rekap dan invoice memakai data yang sama, jadi tidak perlu dicatat ulang.</p>
       </section>
 
       <section className="tl-landing-feature-rows" aria-label="Alur produk TutorLog">

@@ -134,6 +134,14 @@ test.describe('Homepage story structure', () => {
     await expect(page.locator('.tl-landing-proof-story')).toHaveCount(3);
   });
 
+  test('states how one recorded session feeds the product storyboard', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.getByRole('heading', { name: 'Satu sesi yang tersimpan langsung jadi rekap dan invoice.' })).toBeVisible();
+  });
+
   test('keeps the hero and landing closing sections outside the product proof rows', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
