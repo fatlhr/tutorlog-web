@@ -4629,7 +4629,7 @@ html, body { overflow-x: hidden; }
 
 .tl-proof-dialog-media { display: grid; width: 100%; place-items: center; }
 .tl-proof-dialog-media > .tls-rail-surface { width: 100%; display: flex; justify-content: center; }
-.tl-proof-dialog-media .tls-proof-image {
+.tl-proof-dialog .tl-proof-dialog-media .tls-proof-image {
   display: block;
   width: min(324px, 100%);
   height: auto;
@@ -4638,21 +4638,21 @@ html, body { overflow-x: hidden; }
   background: #fff;
 }
 
-.tl-proof-dialog-media[data-proof-dialog-media="recap-web"] .tls-proof-image {
+.tl-proof-dialog .tl-proof-dialog-media[data-proof-dialog-media="recap-web"] .tls-proof-image {
   width: min(480px, 100%);
 }
 
-.tl-proof-dialog-media[data-proof-dialog-media="recap-mobile"] .tls-proof-image {
+.tl-proof-dialog .tl-proof-dialog-media[data-proof-dialog-media="recap-mobile"] .tls-proof-image {
   width: min(240px, 100%);
 }
 
-.tl-proof-dialog-media .tls-invoice-proof {
+.tl-proof-dialog[data-proof-dialog] .tl-proof-dialog-media .tls-invoice-proof {
   width: min(620px, 100%);
   height: 590px;
   border-radius: 16px;
 }
 
-.tl-proof-dialog-media .tls-invoice-proof .tpl-modern { transform: scale(.82); }
+.tl-proof-dialog[data-proof-dialog] .tl-proof-dialog-media .tls-invoice-proof .tpl-modern { transform: scale(.82); }
 
 .tls-rail-proof > figcaption {
   margin-bottom: 12px;
@@ -5153,11 +5153,11 @@ html, body { overflow-x: hidden; }
   .tl-proof-trigger-icon { opacity: 1; transform: none; }
   .tl-proof-dialog-backdrop { padding: 16px; }
   .tl-proof-dialog { max-height: calc(100svh - 32px); padding: 16px; }
-  .tl-proof-dialog-media .tls-proof-image { width: min(248px, 100%); }
-  .tl-proof-dialog-media[data-proof-dialog-media="recap-web"] .tls-proof-image { width: min(320px, 100%); }
-  .tl-proof-dialog-media[data-proof-dialog-media="recap-mobile"] .tls-proof-image { width: min(180px, 100%); }
-  .tl-proof-dialog-media .tls-invoice-proof { width: min(336px, 100%); height: 326px; }
-  .tl-proof-dialog-media .tls-invoice-proof .tpl-modern { transform: scale(.45); }
+  .tl-proof-dialog .tl-proof-dialog-media .tls-proof-image { width: min(248px, 100%); }
+  .tl-proof-dialog .tl-proof-dialog-media[data-proof-dialog-media="recap-web"] .tls-proof-image { width: min(320px, 100%); }
+  .tl-proof-dialog .tl-proof-dialog-media[data-proof-dialog-media="recap-mobile"] .tls-proof-image { width: min(180px, 100%); }
+  .tl-proof-dialog[data-proof-dialog] .tl-proof-dialog-media .tls-invoice-proof { width: min(336px, 100%); height: 326px; }
+  .tl-proof-dialog[data-proof-dialog] .tl-proof-dialog-media .tls-invoice-proof .tpl-modern { transform: scale(.45); }
   .tls-features .tl-proof-dialog-media[data-proof-dialog-media] .tls-proof-image { width: min(248px, 100%); }
   .tls-features .tl-proof-dialog-media[data-proof-dialog-media="recap-web"] .tls-proof-image { width: min(320px, 100%); }
   .tls-features .tl-proof-dialog-media[data-proof-dialog-media="recap-mobile"] .tls-proof-image { width: min(180px, 100%); }
@@ -5409,7 +5409,7 @@ html, body { overflow-x: hidden; }
 }
 
 /* Landing refresh: a denser product storyboard and a flat editorial hero surface. */
-.tl-landing-standard { position: relative; overflow: clip; }
+.tl-landing-standard { position: relative; overflow: hidden; }
 
 .tl-landing-hero { position: relative; isolation: isolate; }
 
