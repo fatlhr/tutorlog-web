@@ -4639,11 +4639,13 @@ html, body { overflow-x: hidden; }
 .tls-story-rail > .tls-product-rail { position: sticky; top: 96px; }
 
 .tls-story-hero {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
   padding: 88px 0 72px;
 }
 
 .tls-story-hero h1 {
-  max-width: none;
+  max-width: 640px;
   margin: 18px 0 0;
   color: #12211f;
   font-family: var(--f-title), monospace;
@@ -4797,6 +4799,8 @@ html, body { overflow-x: hidden; }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
+  .tls-story-hero { width: calc(100% - 64px); }
+
   .tls-story-grid {
     width: calc(100% - 64px);
     grid-template-columns: minmax(0, 1fr) 1px 288px;
@@ -4805,7 +4809,7 @@ html, body { overflow-x: hidden; }
 
   .tls-story-rail > .tls-product-rail { top: 88px; }
   .tls-story-hero { padding: 72px 0 56px; }
-  .tls-story-hero h1 { max-width: 590px; font-size: 48px; line-height: 1.08; }
+  .tls-story-hero h1 { max-width: 640px; font-size: 50px; line-height: 1.08; }
   .tls-story-hero > p:not(.tl-kicker) { font-size: 18px; }
   .tls-story-section { padding: 64px 0; }
   .tls-story-section h2 { font-size: 34px; }
@@ -4813,6 +4817,8 @@ html, body { overflow-x: hidden; }
 }
 
 @media (max-width: 767px) {
+  .tls-story-hero { width: calc(100% - 48px); }
+
   .tls-story-grid {
     width: calc(100% - 48px);
     display: block;

@@ -27,14 +27,14 @@ export function PublicStoryLayout({
     <main className={`tl-public tls-story-page ${className}`}>
       <PublicMotion />
       <PublicNav />
+      <header className="tls-story-hero">
+        <p className="tl-kicker">{eyebrow}</p>
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+        {actions ? <div className="tls-story-actions">{actions}</div> : null}
+      </header>
       <div className="tls-story-grid">
         <div className="tls-story-narrative">
-          <header className="tls-story-hero">
-            <p className="tl-kicker">{eyebrow}</p>
-            <h1>{title}</h1>
-            <p>{subtitle}</p>
-            {actions ? <div className="tls-story-actions">{actions}</div> : null}
-          </header>
           {children}
         </div>
         <div className="tls-story-divider" aria-hidden="true" />

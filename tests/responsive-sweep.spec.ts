@@ -327,6 +327,35 @@ test.describe('Public navigation guardrails', () => {
   });
 });
 
+test.describe('Public story layout guardrails', () => {
+  test('keeps the feature hero full width and aligns the first rail proof with its first chapter', async ({ page }) => {
+    await page.setViewportSize({ width: 881, height: 939 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const hero = page.locator('.tls-features > .tls-story-hero');
+    const storyGrid = page.locator('.tls-features > .tls-story-grid');
+    await expect(hero).toBeVisible();
+    await expect(storyGrid).toBeVisible();
+
+    const layout = await page.evaluate(() => {
+      const heroElement = document.querySelector<HTMLElement>('.tls-features > .tls-story-hero');
+      const firstChapter = document.querySelector<HTMLElement>('.tls-features .tls-feature-chapter');
+      const firstProof = document.querySelector<HTMLElement>('.tls-features .tls-story-rail [data-rail-proof="mobile"]');
+      if (!heroElement || !firstChapter || !firstProof) return null;
+
+      const heroRect = heroElement.getBoundingClientRect();
+      const chapterRect = firstChapter.getBoundingClientRect();
+      const proofRect = firstProof.getBoundingClientRect();
+      return { heroWidth: heroRect.width, chapterWidth: chapterRect.width, chapterTop: chapterRect.top, proofTop: proofRect.top };
+    });
+
+    expect(layout).not.toBeNull();
+    expect(layout?.heroWidth).toBeGreaterThan((layout?.chapterWidth ?? 0) + 100);
+    expect(Math.abs((layout?.chapterTop ?? 0) - (layout?.proofTop ?? 0))).toBeLessThanOrEqual(2);
+  });
+});
+
 test.describe('Feature story rail', () => {
   test('uses three narrative chapters and a desktop-only rail', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
