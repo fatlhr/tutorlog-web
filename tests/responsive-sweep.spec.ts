@@ -645,24 +645,23 @@ test.describe('Feature paired narrative reduced-motion guardrails', () => {
 });
 
 test.describe('Guide story hierarchy', () => {
-  test('groups the guide into two phases with a desktop rail', async ({ page }) => {
+  test('groups the guide into two phases', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/panduan');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.tls-guide-phase')).toHaveCount(2);
-    await expect(page.locator('.tls-guide-step')).toHaveCount(6);
-    await expect(page.locator('.tls-story-rail')).toBeVisible();
+    await expect(page.locator('.tl-guide-phase')).toHaveCount(2);
+    await expect(page.locator('.tl-guide-step')).toHaveCount(6);
+    await expect(page.locator('.tl-guide-step-badge')).toHaveCount(6);
   });
 
-  test('keeps guide steps and proof readable on mobile', async ({ page }) => {
+  test('keeps guide steps readable on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/panduan');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.tls-story-rail')).toBeHidden();
-    await expect(page.locator('.tls-guide-phase')).toHaveCount(2);
-    await expect(page.locator('.tls-guide-phase .tls-mobile-proof')).toHaveCount(3);
+    await expect(page.locator('.tl-guide-phase')).toHaveCount(2);
+    await expect(page.locator('.tl-guide-step')).toHaveCount(6);
   });
 });
 

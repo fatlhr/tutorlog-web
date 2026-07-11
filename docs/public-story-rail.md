@@ -15,7 +15,7 @@
 ### Shared composition
 
 - `/fitur` uses four paired product-story rows. Each row has one narrative column on the left, one vertical rule, and its matching proof on the right. The rows are `mobile`, `history`, `recap`, and `invoice`; a proof never switches or moves between stories. Feature proofs are compact on desktop/tablet, have bottom breathing room before the following rule, and open in an accessible enlarged dialog when clicked.
-- `/panduan` uses a single narrative column on the left and a sticky product rail on the right, separated by one vertical rule. Its rail starts beside the related guide stories and stays visible while that copy scrolls.
+- `/panduan` uses `PublicShell` with numbered phases (`01`, `02`). Each phase contains steps in cards with accent left border, followed by inline product proof. No sidebar, no sticky rail.
 - Landing is a standalone public landing composition. Its hero, testimonial, and final action use the full content width. Product proof appears as three ordinary feature rows, never as a rail. The hero may include the decorative Timetable Canvas, confined to that hero only; it is never product proof and never appears on `/fitur` or `/panduan`.
 - Arrows are limited to outcome annotations beside a matching product proof. They never number, sequence, separate rows, or animate.
 - Mobile is one column. It has no sticky rail, vertical rule, absolute screenshot overlay, small path label, or duplicated desktop markup.
@@ -85,9 +85,10 @@
 
 ### Panduan
 
-1. Hero: `Catat di HP, buat invoice di web.`
-2. Phase `Di HP`: install, add student and rate, save session.
-3. Phase `Di web`: sign in, review recap, create invoice.
+1. Hero: `Catat di HP, buat invoice di web.` (via `PublicShell`)
+2. Phase `01 Di HP`: install, add student and rate, save session. Steps in border-left cards, mobile proof inline below.
+3. Phase `02 Di web`: sign in, review recap, create invoice. Steps in border-left cards, recap and invoice proofs inline below.
+4. Closing: CTA to `/kontak` with `Butuh bantuan?` eyebrow.
 
 ### Public navigation
 
