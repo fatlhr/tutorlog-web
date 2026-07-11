@@ -5362,6 +5362,7 @@ html, body { overflow-x: hidden; }
   .tl-landing-hero-copy > p:not(.tl-kicker) { margin-top: 22px; font-size: 17px; }
   .tl-landing-hero-copy .tl-button { width: auto; min-height: 48px; margin-top: 26px; padding-inline: 24px; }
   .tl-landing-mobile-proof { display: flex; width: fit-content; margin: 30px auto 0; }
+.tl-landing-mobile-proof .tls-rail-surface { opacity: 1; }
   .tl-landing-standard .tl-landing-mobile-proof .tls-rail-proof { width: 184px; }
   .tl-landing-standard .tl-landing-mobile-proof .tls-rail-proof > figcaption,
   .tl-landing-standard .tl-landing-feature-rows .tls-rail-proof > figcaption { display: none; }
@@ -5713,7 +5714,7 @@ html, body { overflow-x: hidden; }
   .tl-hero-schedule-cell:nth-child(4n) { border-right: 1px solid rgba(0, 108, 83, .06); }
   .tl-hero-schedule-cell:nth-child(n + 17) { border-bottom: 1px solid rgba(0, 108, 83, .06); }
   .tl-landing-hero-proof { width: fit-content; min-height: 0; padding: 18px 0 0; display: block; }
-  .tl-landing-hero-side-shot { display: none; }
+  .tl-landing-mobile-proof { display: none; }
   .tl-landing-hero-actions { margin-top: 26px; display: grid; justify-items: start; gap: 10px; }
   .tl-landing-hero-actions .tl-button { width: auto; min-height: 48px; }
   .tl-button-demo { min-height: 46px; padding-inline: 18px; }
