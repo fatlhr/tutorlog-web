@@ -19,6 +19,18 @@ export default function FiturPage() {
       title="Data les bergerak dari HP ke rekap."
       subtitle="Mobile dipakai saat mengajar. Web dipakai saat data itu perlu dibaca, diarsipkan, atau dikirim."
       railLabel="Bukti fitur TutorLog"
+      closing={(
+        <section className="tls-story-section tls-final-action" aria-labelledby="feature-action">
+          <span>Mulai gratis</span>
+          <h2 id="feature-action">Lihat alurnya dari satu sesi.</h2>
+          <p>Mulai dari mobile, lalu pakai web saat rekap atau invoice dibutuhkan.</p>
+          <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
+            <Play size={18} weight="fill" />
+            <span>Mulai Gratis</span>
+          </a>
+          <Link className="tls-inline-link" href="/panduan">Baca panduan <ArrowRight size={16} aria-hidden="true" /></Link>
+        </section>
+      )}
     >
       <section className="tls-story-section tls-feature-chapter" aria-labelledby="feature-catat">
         <h2 id="feature-catat">Catat sesi di HP.</h2>
@@ -36,17 +48,6 @@ export default function FiturPage() {
         <h2 id="feature-invoice">Siapkan invoice dan export.</h2>
         <p>Pilih murid, cek sesi yang masuk, lalu buat invoice dan arsip PDF dari catatan yang sudah tersedia.</p>
         <div className="tls-mobile-proof"><PublicProductProof id="invoice" /></div>
-      </section>
-
-      <section className="tls-story-section tls-final-action" aria-labelledby="feature-action">
-        <span>Mulai gratis</span>
-        <h2 id="feature-action">Lihat alurnya dari satu sesi.</h2>
-        <p>Mulai dari mobile, lalu pakai web saat rekap atau invoice dibutuhkan.</p>
-        <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
-          <Play size={18} weight="fill" />
-          <span>Mulai Gratis</span>
-        </a>
-        <Link className="tls-inline-link" href="/panduan">Baca panduan <ArrowRight size={16} aria-hidden="true" /></Link>
       </section>
     </PublicStoryLayout>
   );

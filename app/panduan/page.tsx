@@ -42,6 +42,14 @@ export default function PanduanPage() {
       title="Catat di HP, buat invoice di web."
       subtitle="Ikuti alur singkat ini untuk melihat bagaimana mobile app dan web companion memakai data yang sama."
       railLabel="Alur penggunaan TutorLog"
+      closing={(
+        <section className="tls-story-section tls-final-action" aria-labelledby="guide-action">
+          <span>Butuh bantuan?</span>
+          <h2 id="guide-action">Kami bisa bantu mulai dari alurnya.</h2>
+          <p>Hubungi TutorLog kalau ada pertanyaan saat memasang aplikasi atau membuat invoice pertama.</p>
+          <Link className="tls-inline-link" href="/kontak">Hubungi TutorLog <ArrowRight size={16} aria-hidden="true" /></Link>
+        </section>
+      )}
     >
       <section className="tls-story-section tls-guide-phase" aria-labelledby="guide-mobile">
         <h2 id="guide-mobile">Di HP.</h2>
@@ -56,13 +64,6 @@ export default function PanduanPage() {
         <GuideSteps steps={webSteps} />
         <div className="tls-mobile-proof"><PublicProductProof id="recap" /></div>
         <div className="tls-mobile-proof"><PublicProductProof id="invoice" /></div>
-      </section>
-
-      <section className="tls-story-section tls-final-action" aria-labelledby="guide-action">
-        <span>Butuh bantuan?</span>
-        <h2 id="guide-action">Kami bisa bantu mulai dari alurnya.</h2>
-        <p>Hubungi TutorLog kalau ada pertanyaan saat memasang aplikasi atau membuat invoice pertama.</p>
-        <Link className="tls-inline-link" href="/kontak">Hubungi TutorLog <ArrowRight size={16} aria-hidden="true" /></Link>
       </section>
     </PublicStoryLayout>
   );

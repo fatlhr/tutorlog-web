@@ -354,6 +354,25 @@ test.describe('Public story layout guardrails', () => {
     expect(layout?.heroWidth).toBeGreaterThan((layout?.chapterWidth ?? 0) + 100);
     expect(Math.abs((layout?.chapterTop ?? 0) - (layout?.proofTop ?? 0))).toBeLessThanOrEqual(2);
   });
+
+  test('keeps the feature closing action outside the product rail', async ({ page }) => {
+    await page.setViewportSize({ width: 1188, height: 939 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tls-features .tls-story-grid .tls-final-action')).toHaveCount(0);
+
+    const closing = page.locator('.tls-features > .tls-story-closing');
+    await expect(closing).toBeVisible();
+
+    const dimensions = await closing.evaluate((element) => {
+      const closingRect = element.getBoundingClientRect();
+      const gridRect = document.querySelector<HTMLElement>('.tls-features > .tls-story-grid')?.getBoundingClientRect();
+      return { closingWidth: closingRect.width, gridWidth: gridRect?.width ?? 0 };
+    });
+
+    expect(dimensions.closingWidth).toBe(dimensions.gridWidth);
+  });
 });
 
 test.describe('Feature story rail', () => {

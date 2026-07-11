@@ -10,6 +10,7 @@ type PublicStoryLayoutProps = {
   subtitle: string;
   actions?: ReactNode;
   children: ReactNode;
+  closing?: ReactNode;
   className?: string;
   railLabel?: string;
 };
@@ -20,6 +21,7 @@ export function PublicStoryLayout({
   subtitle,
   actions,
   children,
+  closing,
   className = "",
   railLabel,
 }: PublicStoryLayoutProps) {
@@ -42,6 +44,7 @@ export function PublicStoryLayout({
           <PublicProductRail label={railLabel} />
         </aside>
       </div>
+      {closing ? <div className="tls-story-closing">{closing}</div> : null}
       <PublicFooter />
     </main>
   );

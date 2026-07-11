@@ -4638,6 +4638,13 @@ html, body { overflow-x: hidden; }
 .tls-story-rail { min-width: 0; }
 .tls-story-rail > .tls-product-rail { position: sticky; top: 96px; }
 
+.tls-story-closing {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.tls-story-closing .tls-final-action { max-width: 640px; }
+
 .tls-story-hero {
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
@@ -4800,6 +4807,7 @@ html, body { overflow-x: hidden; }
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .tls-story-hero { width: calc(100% - 64px); }
+  .tls-story-closing { width: calc(100% - 64px); }
 
   .tls-story-grid {
     width: calc(100% - 64px);
@@ -4818,6 +4826,7 @@ html, body { overflow-x: hidden; }
 
 @media (max-width: 767px) {
   .tls-story-hero { width: calc(100% - 48px); }
+  .tls-story-closing { width: calc(100% - 48px); }
 
   .tls-story-grid {
     width: calc(100% - 48px);
