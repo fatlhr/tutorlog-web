@@ -431,6 +431,27 @@ test.describe('Feature story rail', () => {
   });
 });
 
+test.describe('Feature closing action', () => {
+  test('keeps a clear gap between the closing CTA and guide link', async ({ page }) => {
+    await page.setViewportSize({ width: 1602, height: 1104 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const closing = page.locator('.tls-features .tls-final-action');
+    await closing.scrollIntoViewIfNeeded();
+
+    const gap = await closing.evaluate((element) => {
+      const button = element.querySelector<HTMLElement>('.tl-button-primary');
+      const link = element.querySelector<HTMLElement>('.tls-inline-link');
+      if (!button || !link) return null;
+      return link.getBoundingClientRect().left - button.getBoundingClientRect().right;
+    });
+
+    expect(gap).not.toBeNull();
+    expect(gap).toBeGreaterThanOrEqual(20);
+  });
+});
+
 test.describe('Public story rail contract', () => {
   for (const route of ['/', '/fitur', '/panduan']) {
     test(`${route} removes the legacy step and placeholder surfaces`, async ({ page }) => {
