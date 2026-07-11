@@ -327,107 +327,95 @@ test.describe('Public navigation guardrails', () => {
   });
 });
 
-test.describe('Public story layout guardrails', () => {
-  test('keeps the feature hero full width and aligns the first rail proof with its first chapter', async ({ page }) => {
-    await page.setViewportSize({ width: 881, height: 939 });
+test.describe('Feature paired narrative rows', () => {
+  const featureProofs = ['mobile', 'history', 'recap', 'invoice'];
+
+  for (const viewport of [1440, 1024]) {
+    test(`pairs each desktop feature row with its proof at ${viewport}px`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
+
+      const rows = page.locator('[data-feature-row]');
+      await expect(rows).toHaveCount(featureProofs.length);
+      await expect(page.locator('.tls-story-rail, [data-rail-active]')).toHaveCount(0);
+
+      const rowIds = await rows.evaluateAll((elements) => elements.map((element) => element.dataset.featureRow));
+      expect(rowIds).toEqual(featureProofs);
+
+      for (const row of await rows.all()) {
+        const proof = row.locator('[data-rail-proof]');
+        const featureId = await row.getAttribute('data-feature-row');
+        await expect(proof).toHaveCount(1);
+        expect(featureId).not.toBeNull();
+        await expect(proof).toHaveAttribute('data-rail-proof', featureId!);
+
+        const alignment = await row.evaluate((element) => {
+          const heading = element.querySelector<HTMLElement>('h2');
+          const figcaption = element.querySelector<HTMLElement>('[data-rail-proof] figcaption');
+          if (!heading || !figcaption) return null;
+
+          return Math.abs(heading.getBoundingClientRect().top - figcaption.getBoundingClientRect().top);
+        });
+
+        expect(alignment).not.toBeNull();
+        expect(alignment).toBeLessThanOrEqual(2);
+      }
+    });
+  }
+
+  for (const viewport of [390, 516]) {
+    test(`keeps all feature proofs after their copy without overflow at ${viewport}px`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport, height: 844 });
+      await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
+
+      const rows = page.locator('[data-feature-row]');
+      const proofs = page.locator('[data-rail-proof]');
+      await expect(rows).toHaveCount(featureProofs.length);
+      await expect(proofs).toHaveCount(featureProofs.length);
+
+      for (const row of await rows.all()) {
+        const proof = row.locator('[data-rail-proof]');
+        await expect(proof).toHaveCount(1);
+        await expect(proof).toBeVisible();
+
+        const placement = await row.evaluate((element) => {
+          const proof = element.querySelector<HTMLElement>('[data-rail-proof]');
+          const copy = Array.from(element.querySelectorAll<HTMLElement>('h2, p'))
+            .filter((copyElement) => !proof?.contains(copyElement));
+          if (!proof || !copy.length) return null;
+
+          return {
+            copyBottom: Math.max(...copy.map((copyElement) => copyElement.getBoundingClientRect().bottom)),
+            proofTop: proof.getBoundingClientRect().top,
+          };
+        });
+
+        expect(placement).not.toBeNull();
+        expect(placement?.proofTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
+      }
+
+      const dimensions = await page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+      }));
+
+      expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+    });
+  }
+
+  test('keeps each feature proof legible when it enters the tablet viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const hero = page.locator('.tls-features > .tls-story-hero');
-    const storyGrid = page.locator('.tls-features > .tls-story-grid');
-    await expect(hero).toBeVisible();
-    await expect(storyGrid).toBeVisible();
+    const opacities = await page.locator('[data-feature-row] .tls-rail-surface').evaluateAll((elements) =>
+      elements.map((element) => Number.parseFloat(window.getComputedStyle(element).opacity)),
+    );
 
-    const layout = await page.evaluate(() => {
-      const heroElement = document.querySelector<HTMLElement>('.tls-features > .tls-story-hero');
-      const firstChapter = document.querySelector<HTMLElement>('.tls-features .tls-feature-chapter');
-      const firstProof = document.querySelector<HTMLElement>('.tls-features .tls-story-rail [data-rail-proof="mobile"]');
-      if (!heroElement || !firstChapter || !firstProof) return null;
-
-      const heroRect = heroElement.getBoundingClientRect();
-      const chapterRect = firstChapter.getBoundingClientRect();
-      const proofRect = firstProof.getBoundingClientRect();
-      return { heroWidth: heroRect.width, chapterWidth: chapterRect.width, chapterTop: chapterRect.top, proofTop: proofRect.top };
-    });
-
-    expect(layout).not.toBeNull();
-    expect(layout?.heroWidth).toBeGreaterThan((layout?.chapterWidth ?? 0) + 100);
-    expect(Math.abs((layout?.chapterTop ?? 0) - (layout?.proofTop ?? 0))).toBeLessThanOrEqual(2);
-  });
-
-  test('keeps the feature closing action outside the product rail', async ({ page }) => {
-    await page.setViewportSize({ width: 1188, height: 939 });
-    await page.goto('/fitur');
-    await page.waitForLoadState('networkidle');
-
-    await expect(page.locator('.tls-features .tls-story-grid .tls-final-action')).toHaveCount(0);
-
-    const closing = page.locator('.tls-features > .tls-story-closing');
-    await expect(closing).toBeVisible();
-
-    const dimensions = await closing.evaluate((element) => {
-      const closingRect = element.getBoundingClientRect();
-      const gridRect = document.querySelector<HTMLElement>('.tls-features > .tls-story-grid')?.getBoundingClientRect();
-      return { closingWidth: closingRect.width, gridWidth: gridRect?.width ?? 0 };
-    });
-
-    expect(dimensions.closingWidth).toBe(dimensions.gridWidth);
-  });
-});
-
-test.describe('Feature story rail', () => {
-  test('uses three narrative chapters and a desktop-only rail', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/fitur');
-    await page.waitForLoadState('networkidle');
-
-    await expect(page.locator('.tls-feature-chapter')).toHaveCount(3);
-    await expect(page.locator('.tls-story-rail')).toBeVisible();
-  });
-
-  test('keeps product proof inside the feature narrative on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/fitur');
-    await page.waitForLoadState('networkidle');
-
-    await expect(page.locator('.tls-story-rail')).toBeHidden();
-    await expect(page.locator('.tls-feature-chapter .tls-mobile-proof')).toHaveCount(3);
-  });
-
-  test('pins one matching product proof beside the active feature chapter', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/fitur');
-    await page.waitForLoadState('networkidle');
-
-    const rail = page.locator('.tls-features .tls-product-rail');
-    await expect(rail).toHaveAttribute('data-rail-active', 'mobile');
-
-    const firstAlignment = await page.evaluate(() => {
-      const heading = document.querySelector<HTMLElement>('#feature-catat');
-      const label = document.querySelector<HTMLElement>('.tls-features .tls-story-rail [data-rail-proof="mobile"] figcaption');
-      if (!heading || !label) return null;
-      return Math.abs(heading.getBoundingClientRect().top - label.getBoundingClientRect().top);
-    });
-
-    expect(firstAlignment).not.toBeNull();
-    expect(firstAlignment).toBeLessThanOrEqual(2);
-
-    await page.locator('#feature-rekap').evaluate((element) => {
-      window.scrollTo({ top: element.getBoundingClientRect().top + window.scrollY - window.innerHeight * .45 });
-    });
-    await page.waitForTimeout(350);
-
-    await expect(rail).toHaveAttribute('data-rail-active', 'recap');
-
-    const recapAlignment = await page.evaluate(() => {
-      const heading = document.querySelector<HTMLElement>('#feature-rekap');
-      const label = document.querySelector<HTMLElement>('.tls-features .tls-story-rail [data-rail-proof="recap"] figcaption');
-      if (!heading || !label) return null;
-      return Math.abs(heading.getBoundingClientRect().top - label.getBoundingClientRect().top);
-    });
-
-    expect(recapAlignment).not.toBeNull();
-    expect(recapAlignment).toBeLessThanOrEqual(2);
+    expect(opacities).toHaveLength(4);
+    expect(Math.min(...opacities)).toBeGreaterThanOrEqual(.7);
   });
 });
 
@@ -443,12 +431,18 @@ test.describe('Feature closing action', () => {
     const gap = await closing.evaluate((element) => {
       const button = element.querySelector<HTMLElement>('.tl-button-primary');
       const link = element.querySelector<HTMLElement>('.tls-inline-link');
-      if (!button || !link) return null;
-      return link.getBoundingClientRect().left - button.getBoundingClientRect().right;
+      const closingContainer = element.parentElement;
+      if (!button || !link || !closingContainer) return null;
+      return {
+        buttonLinkGap: link.getBoundingClientRect().left - button.getBoundingClientRect().right,
+        actionWidth: element.getBoundingClientRect().width,
+        closingWidth: closingContainer.getBoundingClientRect().width,
+      };
     });
 
     expect(gap).not.toBeNull();
-    expect(gap).toBeGreaterThanOrEqual(20);
+    expect(gap?.buttonLinkGap).toBeGreaterThanOrEqual(20);
+    expect(Math.abs((gap?.actionWidth ?? 0) - (gap?.closingWidth ?? 0))).toBeLessThanOrEqual(1);
   });
 });
 
@@ -465,21 +459,21 @@ test.describe('Public story rail contract', () => {
   }
 });
 
-test.describe('Public story rail motion guardrails', () => {
-  test('keeps product proof fully visible when reduced motion is requested', async ({ page }) => {
+test.describe('Feature paired narrative reduced-motion guardrails', () => {
+  test('keeps local product proofs fully visible when reduced motion is requested', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const surfaces = page.locator('.tls-story-rail .tls-rail-surface');
-    await expect(surfaces).toHaveCount(3);
+    const surfaces = page.locator('[data-feature-row] [data-rail-proof] .tls-rail-surface');
+    await expect(surfaces).toHaveCount(4);
 
     const opacities = await surfaces.evaluateAll((elements) =>
       elements.map((element) => window.getComputedStyle(element).opacity),
     );
 
-    expect(opacities).toEqual(['1', '1', '1']);
+    expect(opacities).toEqual(['1', '1', '1', '1']);
   });
 });
 

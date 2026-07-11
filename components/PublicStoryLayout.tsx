@@ -13,6 +13,7 @@ type PublicStoryLayoutProps = {
   closing?: ReactNode;
   className?: string;
   railLabel?: string;
+  withRail?: boolean;
 };
 
 export function PublicStoryLayout({
@@ -24,6 +25,7 @@ export function PublicStoryLayout({
   closing,
   className = "",
   railLabel,
+  withRail = true,
 }: PublicStoryLayoutProps) {
   return (
     <main className={`tl-public tls-story-page ${className}`}>
@@ -35,15 +37,19 @@ export function PublicStoryLayout({
         <p>{subtitle}</p>
         {actions ? <div className="tls-story-actions">{actions}</div> : null}
       </header>
-      <div className="tls-story-grid">
-        <div className="tls-story-narrative">
-          {children}
+      {withRail ? (
+        <div className="tls-story-grid">
+          <div className="tls-story-narrative">
+            {children}
+          </div>
+          <div className="tls-story-divider" aria-hidden="true" />
+          <aside className="tls-story-rail">
+            <PublicProductRail label={railLabel} />
+          </aside>
         </div>
-        <div className="tls-story-divider" aria-hidden="true" />
-        <aside className="tls-story-rail">
-          <PublicProductRail label={railLabel} />
-        </aside>
-      </div>
+      ) : (
+        <div className="tls-story-row-list">{children}</div>
+      )}
       {closing ? <div className="tls-story-closing">{closing}</div> : null}
       <PublicFooter />
     </main>

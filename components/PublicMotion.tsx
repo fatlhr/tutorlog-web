@@ -42,45 +42,22 @@ export default function PublicMotion() {
       );
     });
 
-    gsap.utils.toArray<HTMLElement>(".tls-features .tls-product-rail").forEach((rail) => {
-      const storyPage = rail.closest<HTMLElement>(".tls-story-page");
-      if (!storyPage) return;
-
-      const proofs = gsap.utils.toArray<HTMLElement>("[data-rail-proof]", rail);
-      const chapters = gsap.utils.toArray<HTMLElement>(".tls-story-narrative > .tls-story-section:not(.tls-final-action)", storyPage);
-      if (!proofs.length || !chapters.length) return;
-
-      const showProof = (index: number) => {
-        const activeProof = proofs[index];
-        const activeChapter = chapters[index];
-        if (!activeProof || !activeChapter) return;
-        const chapterOffset = activeChapter.getBoundingClientRect().top - rail.getBoundingClientRect().top;
-
-        rail.dataset.railActive = activeProof.dataset.railProof ?? "mobile";
-        proofs.forEach((proof, proofIndex) => {
-          gsap.to(proof, {
-            autoAlpha: proofIndex === index ? 1 : 0,
-            scale: proofIndex === index ? 1 : 0.96,
-            y: proofIndex === index ? chapterOffset : 0,
-            duration: 0.28,
-            ease: "power2.out",
-            overwrite: true,
-          });
-        });
-      };
-
-      gsap.set(proofs, { autoAlpha: 0, scale: 0.96, y: 0 });
-      showProof(0);
-
-      chapters.forEach((chapter, index) => {
-        ScrollTrigger.create({
-          trigger: chapter,
-          start: "top 60%",
-          end: "bottom 40%",
-          onEnter: () => showProof(index),
-          onEnterBack: () => showProof(index),
-        });
-      });
+    gsap.utils.toArray<HTMLElement>(".tls-feature-row .tls-rail-surface").forEach((element) => {
+      gsap.fromTo(
+        element,
+        { scale: 0.96, opacity: 0.72 },
+        {
+          scale: 1,
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: element,
+            start: "top 82%",
+            end: "bottom 32%",
+            scrub: true,
+          },
+        },
+      );
     });
 
     gsap.utils.toArray<HTMLElement>(".tl-landing-feature-rows .tls-rail-surface").forEach((element) => {

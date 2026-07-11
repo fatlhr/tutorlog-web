@@ -14,8 +14,8 @@
 
 ### Shared composition
 
-- `/fitur` and `/panduan` use a single narrative column on the left and a sticky product rail on the right, separated by one vertical rule.
-- Their rail starts beside the related product stories and stays visible while that copy scrolls.
+- `/fitur` uses four paired product-story rows. Each row has one narrative column on the left, one vertical rule, and its matching proof on the right. The rows are `mobile`, `history`, `recap`, and `invoice`; a proof never switches or moves between stories.
+- `/panduan` uses a single narrative column on the left and a sticky product rail on the right, separated by one vertical rule. Its rail starts beside the related guide stories and stays visible while that copy scrolls.
 - Landing is a standalone public landing composition. Its hero, testimonial, and final action use the full content width. Product proof appears as three ordinary feature rows, never as a rail. The hero may include the decorative Timetable Canvas, confined to that hero only; it is never product proof and never appears on `/fitur` or `/panduan`.
 - Arrows are limited to outcome annotations beside a matching product proof. They never number, sequence, separate rows, or animate.
 - Mobile is one column. It has no sticky rail, vertical rule, absolute screenshot overlay, small path label, or duplicated desktop markup.
@@ -46,7 +46,8 @@
 | State | Source | Used by |
 | --- | --- | --- |
 | Mobile | `/images/tutorlog-clean-home.png` | Landing, Fitur, Panduan |
-| Rekap | `/images/tutorlog-web-recap.png`, captured from `RekapContent` with deterministic local data | Landing, Fitur, Panduan |
+| Riwayat | `/images/tutorlog-clean-history.png` | Fitur |
+| Rekap | `/images/tutorlog-clean-recap.png` and `/images/tutorlog-web-recap.png`, captured from `RekapContent` with deterministic local data | Landing, Fitur, Panduan |
 | Invoice | `TplModern` with deterministic `InvoiceData` | Landing, Fitur, Panduan |
 
 ### Forbidden selectors and patterns
@@ -75,9 +76,11 @@
 ### Fitur
 
 1. Hero: `Data les bergerak dari HP ke rekap.`
-2. `Catat sesi di HP.`
-3. `Baca rekap di web.`
-4. `Siapkan invoice dan export.`
+2. Paired `mobile` row: `Catat sesi di HP.` beside the mobile proof. It is mobile only.
+3. Paired `history` row: `Buka riwayat dan revisi catatan.` beside the mobile history proof. It is mobile only.
+4. Paired `recap` row: `Rekap dan export dari perangkat yang kamu pakai.` beside the combined mobile and web rekap proof. Rekap and PDF or CSV export are available on both platforms.
+5. Paired `invoice` row: `Buat invoice di web.` beside the invoice preview. Invoice creation is web only.
+6. The final action is full-width below all four rows and never shares their proof column.
 
 ### Panduan
 

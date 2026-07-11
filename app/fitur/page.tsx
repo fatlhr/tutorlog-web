@@ -6,7 +6,7 @@ import { PublicStoryLayout } from "@/components/PublicStoryLayout";
 
 export const metadata: Metadata = {
   title: "TutorLog - Fitur",
-  description: "Catat sesi dari mobile, baca rekap, lalu siapkan invoice dari data TutorLog yang sama.",
+  description: "Catat sesi dan revisi riwayat di mobile, lalu cek rekap, export, dan invoice dari data TutorLog yang sama.",
 };
 
 const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog.app";
@@ -18,7 +18,7 @@ export default function FiturPage() {
       eyebrow="Fitur TutorLog"
       title="Data les bergerak dari HP ke rekap."
       subtitle="Mobile dipakai saat mengajar. Web dipakai saat data itu perlu dibaca, diarsipkan, atau dikirim."
-      railLabel="Bukti fitur TutorLog"
+      withRail={false}
       closing={(
         <section className="tls-story-section tls-final-action" aria-labelledby="feature-action">
           <span>Mulai gratis</span>
@@ -32,22 +32,40 @@ export default function FiturPage() {
         </section>
       )}
     >
-      <section className="tls-story-section tls-feature-chapter" aria-labelledby="feature-catat">
-        <h2 id="feature-catat">Catat sesi di HP.</h2>
-        <p>Selesai mengajar, tutor cukup menyimpan materi, durasi, murid, dan nominal dari mobile.</p>
-        <div className="tls-mobile-proof"><PublicProductProof id="mobile" /></div>
+      <section className="tls-feature-row" data-feature-row="mobile" aria-labelledby="feature-catat">
+        <div className="tls-feature-copy">
+          <h2 id="feature-catat">Catat sesi di HP.</h2>
+          <p>Selesai mengajar, tutor cukup menyimpan materi, durasi, murid, dan nominal dari mobile.</p>
+        </div>
+        <div className="tls-feature-row-divider" aria-hidden="true" />
+        <PublicProductProof id="mobile" annotation />
       </section>
 
-      <section className="tls-story-section tls-feature-chapter" aria-labelledby="feature-rekap">
-        <h2 id="feature-rekap">Baca rekap di web.</h2>
-        <p>Saat butuh melihat pola bulanan, sesi, jam mengajar, dan murid sudah terkumpul dalam rekap yang sama.</p>
-        <div className="tls-mobile-proof"><PublicProductProof id="recap" /></div>
+      <section className="tls-feature-row" data-feature-row="history" aria-labelledby="feature-riwayat">
+        <div className="tls-feature-copy">
+          <h2 id="feature-riwayat">Buka riwayat dan revisi catatan.</h2>
+          <p>Riwayat menyimpan sesi yang sudah selesai. Dari HP, buka detailnya untuk membaca atau memperbarui catatan bila ada yang perlu dikoreksi.</p>
+        </div>
+        <div className="tls-feature-row-divider" aria-hidden="true" />
+        <PublicProductProof id="history" annotation />
       </section>
 
-      <section className="tls-story-section tls-feature-chapter" aria-labelledby="feature-invoice">
-        <h2 id="feature-invoice">Siapkan invoice dan export.</h2>
-        <p>Pilih murid, cek sesi yang masuk, lalu buat invoice dan arsip PDF dari catatan yang sudah tersedia.</p>
-        <div className="tls-mobile-proof"><PublicProductProof id="invoice" /></div>
+      <section className="tls-feature-row" data-feature-row="recap" aria-labelledby="feature-rekap">
+        <div className="tls-feature-copy">
+          <h2 id="feature-rekap">Rekap dan export dari perangkat yang kamu pakai.</h2>
+          <p>Pilih rentang dan murid, lalu cek sesi yang terkumpul. Rekap serta export PDF atau CSV tersedia di mobile dan web.</p>
+        </div>
+        <div className="tls-feature-row-divider" aria-hidden="true" />
+        <PublicProductProof id="recap" annotation />
+      </section>
+
+      <section className="tls-feature-row" data-feature-row="invoice" aria-labelledby="feature-invoice">
+        <div className="tls-feature-copy">
+          <h2 id="feature-invoice">Buat invoice di web.</h2>
+          <p>Pilih sesi yang akan ditagihkan, atur template dan warna, lalu export PDF yang siap dikirim ke wali murid.</p>
+        </div>
+        <div className="tls-feature-row-divider" aria-hidden="true" />
+        <PublicProductProof id="invoice" annotation />
       </section>
     </PublicStoryLayout>
   );
