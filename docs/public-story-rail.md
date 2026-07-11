@@ -14,7 +14,7 @@
 
 ### Shared composition
 
-- `/fitur` uses four paired product-story rows. Each row has one narrative column on the left, one vertical rule, and its matching proof on the right. The rows are `mobile`, `history`, `recap`, and `invoice`; a proof never switches or moves between stories.
+- `/fitur` uses four paired product-story rows. Each row has one narrative column on the left, one vertical rule, and its matching proof on the right. The rows are `mobile`, `history`, `recap`, and `invoice`; a proof never switches or moves between stories. Feature proofs are compact on desktop/tablet, have bottom breathing room before the following rule, and open in an accessible enlarged dialog when clicked.
 - `/panduan` uses a single narrative column on the left and a sticky product rail on the right, separated by one vertical rule. Its rail starts beside the related guide stories and stays visible while that copy scrolls.
 - Landing is a standalone public landing composition. Its hero, testimonial, and final action use the full content width. Product proof appears as three ordinary feature rows, never as a rail. The hero may include the decorative Timetable Canvas, confined to that hero only; it is never product proof and never appears on `/fitur` or `/panduan`.
 - Arrows are limited to outcome annotations beside a matching product proof. They never number, sequence, separate rows, or animate.
@@ -37,8 +37,8 @@
 
 | Mode | Contract |
 | --- | --- |
-| Desktop `>=1200px` | `1280px` max container, `80px` outer gutter at `1440px`, `72px` nav, story columns `748px / 1px / 435px`, `48px` side gaps, `60px` H1 using the narrative column width, rail top `96px`, rail proof `326px` wide. |
-| Tablet `768-1199px` | `32px` gutter, story columns `minmax(0, 1fr) / 1px / 288px`, `28px` side gaps, `48px` H1, rail top `88px`, rail proof `248px` wide. |
+| Desktop `>=1200px` | `1280px` max container, `80px` outer gutter at `1440px`, `72px` nav, story columns `748px / 1px / 435px`, `48px` side gaps, `60px` H1 using the narrative column width, rail top `96px`, shared rail proof `326px` wide. Fitur portrait proofs are `188px`; recap/invoice proofs are at most `280px`. |
+| Tablet `768-1199px` | `32px` gutter, story columns `minmax(0, 1fr) / 1px / 288px`, `28px` side gaps, `48px` H1, rail top `88px`, shared rail proof `248px` wide. Fitur portrait proofs are `168px`; recap/invoice proofs are at most `248px`. |
 | Mobile `<768px` | `24px` gutter, `64px` nav, `43px` H1, primary CTA `52px` high and full width, secondary CTA as text link, proof `208-232px` wide, `56px` section gaps. |
 
 ### Product proof manifest
@@ -81,12 +81,19 @@
 4. Paired `recap` row: `Rekap dan export dari perangkat yang kamu pakai.` beside the combined mobile and web rekap proof. Rekap and PDF or CSV export are available on both platforms.
 5. Paired `invoice` row: `Buat invoice di web.` beside the invoice preview. Invoice creation is web only.
 6. The final action is full-width below all four rows and never shares their proof column.
+7. Every row has a plain platform label (`Mobile`, `Mobile dan web`, or `Web`). Desktop includes one additional capability sentence; mobile hides that sentence to keep the copy direct.
+8. Every proof uses a keyboard-accessible `Perbesar` trigger. The dialog closes with its close control, backdrop, or Escape and restores focus to the original trigger.
 
 ### Panduan
 
 1. Hero: `Catat di HP, buat invoice di web.`
 2. Phase `Di HP`: install, add student and rate, save session.
 3. Phase `Di web`: sign in, review recap, create invoice.
+
+### Public navigation
+
+- The TutorLog wordmark always returns to `/`.
+- `/fitur`, `/harga`, and `/panduan` also show a visible `Beranda` link above the page hero copy. Landing omits this redundant link.
 
 ## Review Gate Before Every Commit
 

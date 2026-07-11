@@ -42,6 +42,7 @@ export default function PanduanPage() {
       title="Catat di HP, buat invoice di web."
       subtitle="Ikuti alur singkat ini untuk melihat bagaimana mobile app dan web companion memakai data yang sama."
       railLabel="Alur penggunaan TutorLog"
+      showBackLink
       closing={(
         <section className="tls-story-section tls-final-action" aria-labelledby="guide-action">
           <span>Butuh bantuan?</span>

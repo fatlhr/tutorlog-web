@@ -140,7 +140,8 @@ test.describe('Homepage hero guardrails', () => {
       }
 
       if (width === 390) {
-        expect(metrics?.canvasRect.height).toBeLessThanOrEqual(metrics?.proofRect.height ?? 0);
+        expect(metrics?.proofRect.height).toBe(0);
+        expect(metrics?.canvasRect.height).toBeLessThanOrEqual(metrics?.heroRect.height ?? 0);
       }
     }
   });
@@ -351,7 +352,7 @@ test.describe('Feature paired narrative rows', () => {
         await expect(proof).toHaveAttribute('data-rail-proof', featureId!);
 
         const alignment = await row.evaluate((element) => {
-          const heading = element.querySelector<HTMLElement>('h2');
+          const heading = element.querySelector<HTMLElement>('.tls-feature-platform');
           const figcaption = element.querySelector<HTMLElement>('[data-rail-proof] figcaption');
           if (!heading || !figcaption) return null;
 
@@ -410,12 +411,174 @@ test.describe('Feature paired narrative rows', () => {
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const opacities = await page.locator('[data-feature-row] .tls-rail-surface').evaluateAll((elements) =>
+    const opacities = await page.locator('[data-feature-row] [data-proof-trigger]').evaluateAll((elements) =>
       elements.map((element) => Number.parseFloat(window.getComputedStyle(element).opacity)),
     );
 
-    expect(opacities).toHaveLength(4);
+    expect(opacities).toHaveLength(5);
     expect(Math.min(...opacities)).toBeGreaterThanOrEqual(.7);
+  });
+});
+
+test.describe('Feature proof inspection', () => {
+  const featureProofs = ['mobile', 'history', 'recap', 'invoice'];
+  const featureTriggerCount = 5;
+
+  test('opens a larger product proof and restores focus to its trigger', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const triggers = page.locator('[data-feature-row] [data-proof-trigger]');
+    await expect(triggers).toHaveCount(featureTriggerCount);
+
+    const trigger = triggers.first();
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.click();
+
+    const dialog = page.getByRole('dialog', { name: 'Perbesar tampilan TutorLog' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Tutup tampilan' })).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
+  test('uses the available dialog viewport to enlarge every product proof', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    for (const trigger of await page.locator('[data-feature-row] [data-proof-trigger]').all()) {
+      await trigger.scrollIntoViewIfNeeded();
+
+      const proofSelector = '.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern';
+      const triggerVisual = trigger.locator(proofSelector).first();
+      const triggerHeight = await triggerVisual.evaluate((element) => element.getBoundingClientRect().height);
+      await trigger.click();
+
+      const dialog = page.getByRole('dialog', { name: 'Perbesar tampilan TutorLog' });
+      const dialogVisual = dialog.locator(proofSelector).first();
+      await expect(dialogVisual).toBeVisible();
+      const dialogHeight = await dialogVisual.evaluate((element) => element.getBoundingClientRect().height);
+
+      expect(dialogHeight).toBeGreaterThan(triggerHeight * 1.85);
+
+      const placement = await dialog.evaluate((element) => {
+        const proof = element.querySelector<HTMLElement>('.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern');
+        if (!proof) return null;
+        const dialogRect = element.getBoundingClientRect();
+        const proofRect = proof.getBoundingClientRect();
+        return Math.abs((dialogRect.left + dialogRect.width / 2) - (proofRect.left + proofRect.width / 2));
+      });
+      expect(placement).not.toBeNull();
+      expect(placement).toBeLessThanOrEqual(2);
+
+      await dialog.getByRole('button', { name: 'Tutup tampilan' }).click();
+      await expect(dialog).toHaveCount(0);
+    }
+  });
+
+  for (const [viewport, maxPortraitWidth] of [[1440, 188], [1024, 168]] as const) {
+    test(`keeps proof surfaces compact and aligned at ${viewport}px`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport, height: 900 });
+      await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
+
+      const rows = page.locator('[data-feature-row]');
+      await expect(rows).toHaveCount(featureProofs.length);
+
+      for (const row of await rows.all()) {
+        const featureId = await row.getAttribute('data-feature-row');
+        const trigger = row.locator('[data-proof-trigger]');
+        const platform = row.locator('.tls-feature-platform');
+
+        await expect(trigger).toHaveCount(featureId === 'recap' ? 2 : 1);
+        await expect(platform).toBeVisible();
+
+        if (featureId === 'mobile' || featureId === 'history') {
+          const width = await trigger.first().evaluate((element) => element.getBoundingClientRect().width);
+          expect(width).toBeLessThanOrEqual(maxPortraitWidth);
+        }
+
+        const alignment = await row.evaluate((element) => {
+          const platformLabel = element.querySelector<HTMLElement>('.tls-feature-platform');
+          const proofLabel = element.querySelector<HTMLElement>('[data-rail-proof] figcaption');
+          if (!platformLabel || !proofLabel) return null;
+          return Math.abs(platformLabel.getBoundingClientRect().top - proofLabel.getBoundingClientRect().top);
+        });
+
+        expect(alignment).not.toBeNull();
+        expect(alignment).toBeLessThanOrEqual(2);
+
+        const proofBottomGap = await row.evaluate((element) => {
+          const proof = element.querySelector<HTMLElement>('[data-rail-proof]');
+          if (!proof) return null;
+          const rowRect = element.getBoundingClientRect();
+          const proofRect = proof.getBoundingClientRect();
+          return rowRect.bottom - proofRect.bottom;
+        });
+
+        expect(proofBottomGap).not.toBeNull();
+        expect(proofBottomGap).toBeGreaterThanOrEqual(40);
+      }
+    });
+  }
+
+  for (const viewport of [390, 516]) {
+    test(`keeps every compact proof after its matching copy at ${viewport}px`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport, height: 844 });
+      await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
+
+      const rows = page.locator('[data-feature-row]');
+      await expect(rows).toHaveCount(featureProofs.length);
+      await expect(page.locator('[data-feature-row] [data-proof-trigger]')).toHaveCount(featureTriggerCount);
+
+      for (const row of await rows.all()) {
+        const placement = await row.evaluate((element) => {
+          const trigger = element.querySelector<HTMLElement>('[data-proof-trigger]');
+          const copy = element.querySelector<HTMLElement>('.tls-feature-copy');
+          if (!trigger || !copy) return null;
+          return {
+            copyBottom: copy.getBoundingClientRect().bottom,
+            triggerTop: trigger.getBoundingClientRect().top,
+          };
+        });
+
+        expect(placement).not.toBeNull();
+        expect(placement?.triggerTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
+      }
+
+      const width = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        client: document.documentElement.clientWidth,
+      }));
+      expect(width.scroll).toBeLessThanOrEqual(width.client);
+    });
+  }
+});
+
+test.describe('Public home navigation', () => {
+  for (const route of ['/fitur', '/harga', '/panduan']) {
+    test(`shows an explicit return to landing link on ${route}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
+
+      const link = page.locator('.tls-story-back-link');
+      await expect(link).toHaveAttribute('href', '/');
+      await expect(link).toBeVisible();
+    });
+  }
+
+  test('omits the return link on the landing page', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('.tls-story-back-link')).toHaveCount(0);
   });
 });
 
@@ -466,14 +629,14 @@ test.describe('Feature paired narrative reduced-motion guardrails', () => {
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const surfaces = page.locator('[data-feature-row] [data-rail-proof] .tls-rail-surface');
-    await expect(surfaces).toHaveCount(4);
+    const surfaces = page.locator('[data-feature-row] [data-proof-trigger]');
+    await expect(surfaces).toHaveCount(5);
 
     const opacities = await surfaces.evaluateAll((elements) =>
       elements.map((element) => window.getComputedStyle(element).opacity),
     );
 
-    expect(opacities).toEqual(['1', '1', '1', '1']);
+    expect(opacities).toEqual(['1', '1', '1', '1', '1']);
   });
 });
 
@@ -500,7 +663,7 @@ test.describe('Guide story hierarchy', () => {
 });
 
 test.describe('Landing mobile story guardrails', () => {
-  test('hero action and first product proof remain in a linear mobile story', async ({ page }) => {
+  test('keeps the hero action compact while hiding the decorative mobile proof', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
@@ -513,20 +676,17 @@ test.describe('Landing mobile story guardrails', () => {
 
       const heroRect = hero.getBoundingClientRect();
       const actionRect = action.getBoundingClientRect();
-      const proofRect = proof.getBoundingClientRect();
-
       return {
         actionWidth: actionRect.width,
-        proofTop: proofRect.top,
-        actionBottom: actionRect.bottom,
-        heroBottom: heroRect.bottom,
+        heroContainsAction: actionRect.top >= heroRect.top && actionRect.bottom <= heroRect.bottom,
+        proofVisible: proof.getClientRects().length > 0,
       };
     });
 
     expect(metrics).not.toBeNull();
     expect(metrics?.actionWidth).toBeLessThanOrEqual(342);
-    expect(metrics?.proofTop).toBeGreaterThanOrEqual(metrics?.actionBottom ?? 0);
-    expect(metrics?.proofTop).toBeLessThanOrEqual(metrics?.heroBottom ?? 0);
+    expect(metrics?.heroContainsAction).toBe(true);
+    expect(metrics?.proofVisible).toBe(false);
   });
 
   test('keeps hero actions and mobile proof compact at 516px', async ({ page }) => {

@@ -81,6 +81,7 @@ export default function HargaPage() {
       subtitle="Mulai gratis untuk mencoba. Upgrade saat export dan invoice sudah jadi bagian dari pekerjaan rutin."
       icon={null}
       aside={<PriceVisual />}
+      showBackLink
     >
       <section className="tl-price-ledger" aria-label="Pilihan paket TutorLog">
         {plans.map((plan) => (

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
 
@@ -13,6 +14,7 @@ type PublicShellProps = {
   aside?: ReactNode;
   compact?: boolean;
   className?: string;
+  showBackLink?: boolean;
 };
 
 export function PublicShell({
@@ -24,6 +26,7 @@ export function PublicShell({
   aside,
   compact = false,
   className = "",
+  showBackLink = false,
 }: PublicShellProps) {
   return (
     <main className={`tl-public ${compact ? "tl-public-compact" : ""} ${className}`}>
@@ -32,6 +35,12 @@ export function PublicShell({
 
       <header className={`tl-public-hero ${aside ? "" : "tl-public-hero-solo"}`}>
         <div className="tl-public-hero-copy">
+          {showBackLink ? (
+            <Link className="tls-story-back-link" href="/">
+              <ArrowLeft size={15} weight="bold" aria-hidden="true" />
+              <span>Beranda</span>
+            </Link>
+          ) : null}
           {icon ? (
             <span className="tl-public-icon" aria-hidden="true">
               {icon}
