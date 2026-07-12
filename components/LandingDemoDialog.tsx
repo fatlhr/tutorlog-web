@@ -43,7 +43,7 @@ export default function LandingDemoDialog() {
               <div>
                 <p className="tl-kicker">Video contoh sementara</p>
                 <h2>Melihat format demo.</h2>
-                <p>Rekaman TutorLog sedang disiapkan. Video ini dipakai sementara untuk mencoba tampilan pemutar.</p>
+                <p>Video ini hanya contoh sementara, bukan rekaman TutorLog. Rekaman TutorLog sedang disiapkan.</p>
               </div>
               <button ref={closeRef} className="tl-demo-close" type="button" aria-label="Tutup demo" onClick={close}>
                 <X size={20} weight="bold" aria-hidden="true" />

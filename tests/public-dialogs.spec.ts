@@ -11,7 +11,9 @@ test.describe('Public dialogs', () => {
     const frame = dialog.locator('iframe');
 
     await expect(dialog).toContainText('Video contoh sementara');
-    await expect(dialog).toContainText('Rekaman TutorLog sedang disiapkan');
+    await expect(dialog).toContainText(
+      'Video ini hanya contoh sementara, bukan rekaman TutorLog. Rekaman TutorLog sedang disiapkan.',
+    );
     await expect(frame).toHaveAttribute('title', 'Video contoh sementara');
     await expect(close).toBeFocused();
     await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden');
