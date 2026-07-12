@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { MagnifyingGlassPlus, X } from "@phosphor-icons/react";
+import useAccessibleDialog from "@/components/useAccessibleDialog";
 
 type PublicProofDialogProps = {
   label: string;
@@ -14,24 +15,11 @@ type PublicProofDialogProps = {
 export default function PublicProofDialog({ label, proofId, triggerContent, dialogContent }: PublicProofDialogProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  const close = () => {
-    setOpen(false);
-    requestAnimationFrame(() => triggerRef.current?.focus());
-  };
-
-  useEffect(() => {
-    if (!open) return;
-
-    closeRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open]);
+  const close = useCallback(() => setOpen(false), []);
+  useAccessibleDialog({ open, onClose: close, triggerRef, dialogRef, initialFocusRef: closeRef });
 
   return (
     <>
@@ -51,6 +39,7 @@ export default function PublicProofDialog({ label, proofId, triggerContent, dial
       {open ? (
         <div className="tl-proof-dialog-backdrop" role="presentation" onMouseDown={close}>
           <section
+            ref={dialogRef}
             className="tl-proof-dialog"
             data-proof-dialog={proofId}
             role="dialog"
