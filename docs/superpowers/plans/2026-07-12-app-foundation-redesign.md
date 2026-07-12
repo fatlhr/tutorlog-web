@@ -25,7 +25,7 @@
 - [x] Capture `/app`, `/app/rekap`, and `/app/invoice` at `1440x900`, `1024x768`, and `390x844`. Baseline extracted from `develop` to `/private/tmp/tutorlog-app-baseline`.
 - [x] Classify recommendations in `docs/app-audit-redesign.md` as implement, defer, or reject.
 - [x] Run `git diff --check`.
-- [x] Commit `docs: define app redesign contract` (`43c2ef4`).
+- [x] Include the design contract in source checkpoint `60d4c83` after migration to the main repository branch.
 
 **Status:** Complete. Baseline review will be repeated against the redesigned routes during their milestones.
 
@@ -39,7 +39,7 @@
 - [x] Add route-level loading UI shaped like the final summary and rows.
 - [x] Review empty and error states at desktop, tablet, and mobile.
 - [x] Run `git diff --check`.
-- [ ] Commit `fix: make protected app data truthful`.
+- [x] Commit truthful data changes in source checkpoint `60d4c83`.
 
 ## Milestone 2: Shared App Shell
 
@@ -52,7 +52,7 @@
 - [x] Remove duplicated responsive markup from touched pages.
 - [x] Review keyboard navigation and three viewports.
 - [x] Run `git diff --check`.
-- [ ] Commit `refactor: unify protected app shell`.
+- [x] Commit shared shell changes in source checkpoint `60d4c83`.
 
 **Status:** Implementation complete. Desktop, tablet, mobile, active routes, account menu, and Escape close reviewed in Chrome. Commit pending because Git metadata writes are temporarily unavailable; user approved continuing without the checkpoint.
 
@@ -72,7 +72,7 @@
 - [x] Remove `PricingCards` if no consumer remains.
 - [ ] Review empty, active free, exhausted free, and paid states.
 - [x] Run `git diff --check`.
-- [ ] Commit `feat: rebuild tutor home overview`.
+- [x] Commit home overview changes in source checkpoint `60d4c83`.
 
 ## Milestone 4: Understandable Recap
 
@@ -86,7 +86,7 @@
 - [x] Show paywall only after a blocked download action.
 - [ ] Review desktop table and mobile session list.
 - [x] Run `git diff --check`.
-- [ ] Commit `refactor: simplify session recap`.
+- [x] Commit recap changes in source checkpoint `60d4c83`.
 
 ## Milestone 5: Stable Invoice Workflow
 
@@ -101,7 +101,7 @@
 - [x] Preserve quota gate and client-side PDF generation.
 - [ ] Review draft restore, data states, tablet preview, and mobile handoff.
 - [x] Run `git diff --check`.
-- [ ] Commit `feat: stabilize invoice workflow`.
+- [x] Commit invoice changes in source checkpoint `60d4c83`.
 
 **Status:** Source implementation complete. Responsive and draft behavior still require authenticated manual review. Commit remains pending while Git metadata writes are unavailable.
 
@@ -126,12 +126,12 @@
 
 | Milestone | Commit | `git diff --check` | Manual review |
 | --- | --- | --- | --- |
-| 0 | `43c2ef4` | Passed | Baseline captured; final visual comparison pending implementation |
-| 1 | Pending | Passed | Empty and error states reviewed before server became unavailable |
-| 2 | Pending | Passed | Desktop, tablet, mobile shell and account menu reviewed |
-| 3 | Pending | Passed | Source review complete; account-state review pending |
-| 4 | Pending | Passed | Source review complete; responsive route review pending |
-| 5 | Pending | Passed | Source review complete; authenticated responsive review pending |
+| 0 | `60d4c83` | Passed | Baseline captured; final visual comparison pending implementation |
+| 1 | `60d4c83` | Passed | Empty and error states reviewed before server became unavailable |
+| 2 | `60d4c83` | Passed | Desktop, tablet, mobile shell and account menu reviewed |
+| 3 | `60d4c83` | Passed | Source review complete; account-state review pending |
+| 4 | `60d4c83` | Passed | Source review complete; responsive route review pending |
+| 5 | `60d4c83` | Passed | Source review complete; authenticated responsive review pending |
 | 6 | Pending | Pending | Pending |
 
 ## Continuation Handoff
@@ -143,4 +143,4 @@
 - Full tests remain intentionally deferred until integration to `main` is requested.
 - Continue from the first unchecked review item. Do not reopen completed source tasks unless runtime review finds a regression.
 - Source was moved from the temporary worktree into the main repository branch on 2026-07-13. Continue all work from the repository path above.
-- Required continuation order: create the source checkpoint commit, run the main repository dev server, then review the unchecked account and responsive states.
+- Required continuation order: run the main repository dev server, then review the unchecked account and responsive states.
