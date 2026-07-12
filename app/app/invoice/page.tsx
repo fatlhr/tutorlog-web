@@ -11,6 +11,7 @@ import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
 import PaywallDialog from "@/components/PaywallDialog";
+import { formatCurrency } from "@/lib/format";
 
 const IcMinus = ({ size = 14 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
