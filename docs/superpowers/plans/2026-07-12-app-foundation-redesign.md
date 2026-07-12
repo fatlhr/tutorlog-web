@@ -70,7 +70,10 @@
 - [x] Link upgrade actions to `/harga`, not directly to a payment provider.
 - [x] Show paid status only inside the account menu.
 - [x] Remove `PricingCards` if no consumer remains.
-- [ ] Review empty, active free, exhausted free, and paid states.
+- [ ] Review empty-account state.
+- [ ] Review active free state with quota available.
+- [ ] Review exhausted free state.
+- [x] Review paid state with real sessions.
 - [x] Run `git diff --check`.
 - [x] Commit home overview changes in source checkpoint `60d4c83`.
 
@@ -84,7 +87,7 @@
 - [x] Add a normal period summary row.
 - [x] Add clear empty and retryable error states.
 - [x] Show paywall only after a blocked download action.
-- [ ] Review desktop table and mobile session list.
+- [x] Review desktop table and mobile session list.
 - [x] Run `git diff --check`.
 - [x] Commit recap changes in source checkpoint `60d4c83`.
 
@@ -99,9 +102,9 @@
 - [x] Keep saved settings separate from draft data.
 - [x] Use `Buat invoice`, `Periksa invoice`, and `Unduh PDF` copy.
 - [x] Preserve quota gate and client-side PDF generation.
-- [ ] Review draft restore, data states, tablet preview, and mobile handoff.
+- [x] Review draft restore, data states, tablet preview, and mobile handoff.
 - [x] Run `git diff --check`.
-- [x] Commit invoice changes in source checkpoint `60d4c83`.
+- [x] Commit invoice changes in `60d4c83` and runtime rendering fix in `ed2b278`.
 
 **Status:** Source implementation complete. Responsive and draft behavior still require authenticated manual review. Commit remains pending while Git metadata writes are unavailable.
 
@@ -109,7 +112,7 @@
 
 - [x] Audit all visible copy for novice-friendly language.
 - [x] Audit card density, dummy data, and responsive duplication.
-- [ ] Review all protected routes at desktop, tablet, and mobile.
+- [x] Review all protected routes at desktop, tablet, and mobile for the authenticated paid account.
 - [ ] Wait for manual approval.
 - [ ] Move protected test session token to an environment variable before `main` integration.
 - [ ] Run lint, build, protected responsive sweep, accessibility, reduced motion, and visual regression only when integration is requested.
@@ -129,9 +132,9 @@
 | 0 | `60d4c83` | Passed | Baseline captured; final visual comparison pending implementation |
 | 1 | `60d4c83` | Passed | Empty and error states reviewed before server became unavailable |
 | 2 | `60d4c83` | Passed | Desktop, tablet, mobile shell and account menu reviewed |
-| 3 | `60d4c83` | Passed | Source review complete; account-state review pending |
-| 4 | `60d4c83` | Passed | Source review complete; responsive route review pending |
-| 5 | `60d4c83` | Passed | Source review complete; authenticated responsive review pending |
+| 3 | `60d4c83` | Passed | Paid state reviewed at three breakpoints; empty and free quota states pending fixtures |
+| 4 | `60d4c83` | Passed | Desktop table, tablet table, and mobile session rows reviewed at runtime |
+| 5 | `60d4c83`, `ed2b278` | Passed | Draft restore, real and empty session states, tablet dialog, mobile handoff, and desktop preview reviewed at runtime |
 | 6 | Pending | Pending | Pending |
 
 ## Continuation Handoff
