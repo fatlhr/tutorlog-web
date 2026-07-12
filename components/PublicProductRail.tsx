@@ -65,18 +65,28 @@ const invoiceProof = {
   note: "Invoice dibuat dan diperiksa dari web.",
 } as const;
 
-export function PublicProductProof({ id, annotation = false }: { id: ProductProofId; annotation?: boolean }) {
+export function PublicProductProof({
+  id,
+  annotation = false,
+  interactive = true,
+}: {
+  id: ProductProofId;
+  annotation?: boolean;
+  interactive?: boolean;
+}) {
   if (id === "invoice") {
     const proof = invoiceProof;
     return (
       <figure className="tls-rail-proof tls-rail-proof-invoice" data-rail-proof={id}>
         <figcaption>{proof.label}</figcaption>
-        <PublicProofDialog
-          label={proof.label}
-          proofId={id}
-          triggerContent={<InvoiceSurface />}
-          dialogContent={<InvoiceSurface />}
-        />
+        {interactive ? (
+          <PublicProofDialog
+            label={proof.label}
+            proofId={id}
+            triggerContent={<InvoiceSurface />}
+            dialogContent={<InvoiceSurface />}
+          />
+        ) : <InvoiceSurface />}
         {annotation ? <Annotation note={proof.note} /> : null}
       </figure>
     );
@@ -87,18 +97,27 @@ export function PublicProductProof({ id, annotation = false }: { id: ProductProo
       <figure className="tls-rail-proof tls-rail-proof-recap" data-rail-proof={id}>
         <figcaption>{recapProof.label}</figcaption>
         <div className="tls-recap-proof-pair">
-          <PublicProofDialog
-            label="Rekap web"
-            proofId="recap-web"
-            triggerContent={<Image className="tls-recap-proof-web" src={recapProof.web.src} alt={recapProof.web.alt} width={recapProof.web.width} height={recapProof.web.height} sizes="(max-width: 767px) 214px, (max-width: 1199px) 166px, 216px" />}
-            dialogContent={<div className="tls-rail-surface"><Image className="tls-proof-image" src={recapProof.web.src} alt={recapProof.web.alt} width={recapProof.web.width} height={recapProof.web.height} sizes="(max-width: 1199px) 480px, 620px" /></div>}
-          />
-          <PublicProofDialog
-            label="Rekap mobile"
-            proofId="recap-mobile"
-            triggerContent={<Image className="tls-recap-proof-mobile" src={recapProof.mobile.src} alt={recapProof.mobile.alt} width={recapProof.mobile.width} height={recapProof.mobile.height} sizes="(max-width: 767px) 94px, (max-width: 1199px) 70px, 98px" />}
-            dialogContent={<div className="tls-rail-surface"><Image className="tls-proof-image" src={recapProof.mobile.src} alt={recapProof.mobile.alt} width={recapProof.mobile.width} height={recapProof.mobile.height} sizes="(max-width: 1199px) 240px, 320px" /></div>}
-          />
+          {interactive ? (
+            <>
+              <PublicProofDialog
+                label="Rekap web"
+                proofId="recap-web"
+                triggerContent={<Image className="tls-recap-proof-web" src={recapProof.web.src} alt={recapProof.web.alt} width={recapProof.web.width} height={recapProof.web.height} sizes="(max-width: 767px) 214px, (max-width: 1199px) 166px, 216px" />}
+                dialogContent={<div className="tls-rail-surface"><Image className="tls-proof-image" src={recapProof.web.src} alt={recapProof.web.alt} width={recapProof.web.width} height={recapProof.web.height} sizes="(max-width: 1199px) 480px, 620px" /></div>}
+              />
+              <PublicProofDialog
+                label="Rekap mobile"
+                proofId="recap-mobile"
+                triggerContent={<Image className="tls-recap-proof-mobile" src={recapProof.mobile.src} alt={recapProof.mobile.alt} width={recapProof.mobile.width} height={recapProof.mobile.height} sizes="(max-width: 767px) 94px, (max-width: 1199px) 70px, 98px" />}
+                dialogContent={<div className="tls-rail-surface"><Image className="tls-proof-image" src={recapProof.mobile.src} alt={recapProof.mobile.alt} width={recapProof.mobile.width} height={recapProof.mobile.height} sizes="(max-width: 1199px) 240px, 320px" /></div>}
+              />
+            </>
+          ) : (
+            <>
+              <Image className="tls-recap-proof-web" src={recapProof.web.src} alt={recapProof.web.alt} width={recapProof.web.width} height={recapProof.web.height} />
+              <Image className="tls-recap-proof-mobile" src={recapProof.mobile.src} alt={recapProof.mobile.alt} width={recapProof.mobile.width} height={recapProof.mobile.height} />
+            </>
+          )}
         </div>
         {annotation ? <Annotation note={recapProof.note} /> : null}
       </figure>
@@ -110,12 +129,14 @@ export function PublicProductProof({ id, annotation = false }: { id: ProductProo
   return (
     <figure className="tls-rail-proof tls-rail-proof-image" data-rail-proof={id}>
       <figcaption>{proof.label}</figcaption>
-      <PublicProofDialog
-        label={proof.label}
-        proofId={id}
-        triggerContent={<ImageSurface id={id} />}
-        dialogContent={<ImageSurface id={id} />}
-      />
+      {interactive ? (
+        <PublicProofDialog
+          label={proof.label}
+          proofId={id}
+          triggerContent={<ImageSurface id={id} />}
+          dialogContent={<ImageSurface id={id} />}
+        />
+      ) : <ImageSurface id={id} />}
       {annotation ? <Annotation note={proof.note} /> : null}
     </figure>
   );

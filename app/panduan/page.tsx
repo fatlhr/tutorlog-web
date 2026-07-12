@@ -16,7 +16,7 @@ const mobileSteps = [
 ] as const;
 
 const webSteps = [
-  ["Buka web dengan email yang sama.", "Magic link menghubungkan akun web dengan catatan dari mobile."],
+  ["Buka web dengan email yang sama.", "Kami mengirim link masuk ke emailmu agar catatan dari mobile bisa dibuka di web."],
   ["Lihat rekap bulanannya.", "Sesi, jam, dan murid sudah terkumpul untuk dicek ulang."],
   ["Buat invoice.", "Pilih murid, cek detail sesi, export PDF, lalu kirim."],
 ] as const;

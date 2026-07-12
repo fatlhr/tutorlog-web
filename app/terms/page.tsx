@@ -36,7 +36,7 @@ export default function TermsPage() {
           <section className="tl-article-section">
             <h2>Akun pengguna</h2>
             <ul className="tl-article-list">
-              <li>Kamu bertanggung jawab menjaga kerahasiaan akses akun, termasuk email login dan magic link.</li>
+              <li>Kamu bertanggung jawab menjaga kerahasiaan email dan link yang dipakai untuk masuk.</li>
               <li>Satu akun hanya boleh digunakan oleh satu orang tutor.</li>
               <li>TutorLog berhak menonaktifkan akun yang melanggar ketentuan ini.</li>
             </ul>
@@ -74,7 +74,7 @@ export default function TermsPage() {
         </article>
         <aside className="tl-margin-notes" aria-label="Ringkasan syarat">
           <p><strong>Akun</strong></p>
-          <p>Gunakan email login dan magic link hanya untuk akun sendiri.</p>
+          <p>Gunakan email dan link masuk hanya untuk akun sendiri.</p>
           <p><strong>Plus</strong></p>
           <p>Fitur premium mengikuti paket yang dipilih saat pembayaran.</p>
         </aside>

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const faqs = [
   {
     question: "Bagaimana cara masuk ke TutorLog Web?",
-    answer: "Klik Masuk, isi email yang sama dengan akun mobile, lalu buka magic link dari email.",
+    answer: "Klik Masuk, isi email yang sama dengan akun mobile, lalu buka link yang kami kirim ke emailmu.",
   },
   {
     question: "Apakah data sesi otomatis muncul di web?",

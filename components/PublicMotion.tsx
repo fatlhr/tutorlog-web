@@ -15,6 +15,18 @@ export default function PublicMotion() {
     }
 
     if (window.matchMedia("(max-width: 767px)").matches) {
+      const mobileNotes = gsap.utils.toArray<HTMLElement>(
+        ".tl-landing-hero .tl-hero-schedule-block-raka, .tl-landing-hero .tl-hero-schedule-block-nala",
+      );
+
+      if (mobileNotes.length) {
+        gsap.fromTo(
+          mobileNotes,
+          { opacity: 0, y: 8 },
+          { opacity: 0.88, y: 0, duration: 0.55, stagger: 0.1, ease: "power2.out" },
+        );
+      }
+
       return;
     }
 

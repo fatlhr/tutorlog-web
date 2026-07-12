@@ -58,7 +58,7 @@ export default function Home() {
               sizes="(max-width: 1199px) 132px, 164px"
             />
           </figure>
-          <PublicProductProof id="mobile" />
+          <PublicProductProof id="mobile" interactive={false} />
         </div>
       </section>
 
@@ -80,7 +80,7 @@ export default function Home() {
       </section>
 
       <section className="tl-landing-next" aria-labelledby="landing-next-title">
-        <p id="landing-next-title">Mulai gratis. Upgrade saat kamu membutuhkan export dan invoice tanpa batas.</p>
+        <p id="landing-next-title">Mulai gratis. Upgrade saat export dan invoice mulai rutin dipakai.</p>
         <nav aria-label="Jelajahi TutorLog">
           <Link href="/fitur">Lihat fitur <ArrowRight size={16} aria-hidden="true" /></Link>
           <Link href="/harga">Bandingkan paket <ArrowRight size={16} aria-hidden="true" /></Link>
