@@ -7,14 +7,18 @@ test.describe('Public dialogs', () => {
     await trigger.click();
 
     const dialog = page.getByRole('dialog', { name: 'Preview sementara TutorLog' });
-    const close = dialog.getByRole('button', { name: 'Tutup demo' });
+    const close = dialog.getByRole('button', { name: 'Tutup demo', exact: true });
     const frame = dialog.locator('iframe');
+    const startGuard = dialog.getByRole('button', { name: 'Kembali ke video demo' });
+    const endGuard = dialog.getByRole('button', { name: 'Kembali ke tombol tutup demo' });
 
     await expect(dialog).toContainText('Video contoh sementara');
     await expect(dialog).toContainText(
       'Video ini hanya contoh sementara, bukan rekaman TutorLog. Rekaman TutorLog sedang disiapkan.',
     );
     await expect(frame).toHaveAttribute('title', 'Video contoh sementara');
+    await expect(startGuard).not.toHaveAttribute('aria-hidden');
+    await expect(endGuard).not.toHaveAttribute('aria-hidden');
     await expect(close).toBeFocused();
     await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden');
 
@@ -22,7 +26,7 @@ test.describe('Public dialogs', () => {
     await expect(frame).toBeFocused();
     await expect(dialog).toContainText('Rekaman TutorLog sedang disiapkan');
 
-    await dialog.locator('[data-focus-guard="end"]').focus();
+    await endGuard.focus();
     await expect(close).toBeFocused();
 
     await page.keyboard.press('Escape');

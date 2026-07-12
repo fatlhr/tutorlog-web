@@ -1,7 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type AccessibleDialogOptions = {
   open: boolean;
@@ -12,13 +12,13 @@ type AccessibleDialogOptions = {
 };
 
 const focusableSelector = [
-  'a[href]',
-  'button:not([disabled])',
-  'iframe',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
+  'a[href]:not([data-focus-guard])',
+  'button:not([disabled]):not([data-focus-guard])',
+  'iframe:not([data-focus-guard])',
+  'input:not([disabled]):not([data-focus-guard])',
+  'select:not([disabled]):not([data-focus-guard])',
+  'textarea:not([disabled]):not([data-focus-guard])',
+  '[tabindex]:not([tabindex="-1"]):not([data-focus-guard])',
 ].join(',');
 
 export default function useAccessibleDialog({
@@ -28,10 +28,18 @@ export default function useAccessibleDialog({
   dialogRef,
   initialFocusRef,
 }: AccessibleDialogOptions) {
+  const restoreFocusFrameRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (!open) return;
 
+    if (restoreFocusFrameRef.current !== null) {
+      cancelAnimationFrame(restoreFocusFrameRef.current);
+      restoreFocusFrameRef.current = null;
+    }
+
     const previousOverflow = document.body.style.overflow;
+    const triggerElement = triggerRef.current;
     document.body.style.overflow = "hidden";
     initialFocusRef.current?.focus();
 
@@ -62,7 +70,16 @@ export default function useAccessibleDialog({
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
-      requestAnimationFrame(() => triggerRef.current?.focus());
+      restoreFocusFrameRef.current = requestAnimationFrame(() => {
+        restoreFocusFrameRef.current = null;
+        triggerElement?.focus();
+      });
     };
   }, [dialogRef, initialFocusRef, onClose, open, triggerRef]);
+
+  useEffect(() => () => {
+    if (restoreFocusFrameRef.current !== null) {
+      cancelAnimationFrame(restoreFocusFrameRef.current);
+    }
+  }, []);
 }

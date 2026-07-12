@@ -47,7 +47,7 @@
 | --- | --- | --- |
 | Mobile | `/images/tutorlog-clean-home.png` | Landing, Fitur, Panduan |
 | Riwayat | `/images/tutorlog-clean-history.png` | Fitur |
-| Rekap | `/images/tutorlog-clean-recap.png` and `/images/tutorlog-web-recap.png`, captured from `RekapContent` with deterministic local data | Landing, Fitur, Panduan |
+| Rekap | `/images/tutorlog-clean-recap.png` and `/images/tutorlog-web-recap.png`, captured from `RekapContent` with deterministic local data | Landing, Fitur |
 | Invoice | `TplModern` with deterministic `InvoiceData` | Landing, Fitur, Panduan |
 
 ### Forbidden selectors and patterns
@@ -87,7 +87,7 @@
 
 1. Hero: `Catat di HP, buat invoice di web.` (via `PublicShell`)
 2. Phase `01 Di HP`: install, add student and rate, save session. Steps in border-left cards, mobile proof inline below.
-3. Phase `02 Di web`: sign in, review recap, create invoice. Steps in border-left cards, recap and invoice proofs inline below.
+3. Phase `02 Di web`: sign in, review recap, create invoice. Steps in border-left cards, with one invoice proof inline below.
 4. Closing: CTA to `/kontak` with `Butuh bantuan?` eyebrow.
 
 ### Public navigation

@@ -32,10 +32,10 @@ export default function LandingDemoDialog() {
             aria-label="Preview sementara TutorLog"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <span
+            <button
               data-focus-guard="start"
-              tabIndex={0}
-              aria-hidden="true"
+              type="button"
+              aria-label="Kembali ke video demo"
               style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
               onFocus={() => frameRef.current?.focus()}
             />
@@ -58,10 +58,10 @@ export default function LandingDemoDialog() {
                 allowFullScreen
               />
             </div>
-            <span
+            <button
               data-focus-guard="end"
-              tabIndex={0}
-              aria-hidden="true"
+              type="button"
+              aria-label="Kembali ke tombol tutup demo"
               style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
               onFocus={() => closeRef.current?.focus()}
             />
