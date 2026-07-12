@@ -1010,7 +1010,7 @@ html, body { overflow-x: hidden; }
   width: max-content;
   color: var(--tl-ink);
   font-family: var(--f-title), monospace;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 18px;
   letter-spacing: -.02em;
   text-decoration: none;
@@ -1111,8 +1111,8 @@ html, body { overflow-x: hidden; }
   margin: 0 0 20px;
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
-  font-weight: 800;
-  font-size: 15px;
+  font-weight: 700;
+  font-size: 13px;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -1153,7 +1153,7 @@ html, body { overflow-x: hidden; }
   border-radius: 999px;
   border: 2px solid transparent;
   font-family: var(--f-body), Georgia, serif;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14px;
   line-height: 1;
   text-decoration: none;
@@ -2776,9 +2776,9 @@ html, body { overflow-x: hidden; }
   margin: 18px 0 0;
   color: var(--tl-ink);
   font-family: var(--f-title), monospace;
-  font-size: clamp(46px, 6vw, 82px);
-  font-weight: 800;
-  line-height: .98;
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1.05;
 }
 
 .tl-public-compact .tl-public-hero h1 {
@@ -2790,8 +2790,8 @@ html, body { overflow-x: hidden; }
   max-width: 590px;
   margin: 24px 0 0;
   color: var(--tl-muted);
-  font-size: clamp(17px, 2vw, 22px);
-  line-height: 1.45;
+  font-size: 18px;
+  line-height: 1.55;
 }
 
 .tl-public-hero-aside {
@@ -2863,7 +2863,7 @@ html, body { overflow-x: hidden; }
   margin: 0;
   color: var(--tl-ink);
   font-family: var(--f-title), monospace;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.08;
 }
 
@@ -2939,7 +2939,7 @@ html, body { overflow-x: hidden; }
   background: var(--tl-soft);
   color: var(--tl-ink);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .tl-public-tags {
@@ -3056,7 +3056,7 @@ html, body { overflow-x: hidden; }
   color: #f2fff9 !important;
   font-family: var(--f-body), Georgia, serif;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   box-shadow: 0 9px 0 rgba(0, 82, 63, .16);
 }
@@ -3153,7 +3153,7 @@ html, body { overflow-x: hidden; }
   }
 
   .tl-public-hero h1 {
-    font-size: clamp(40px, 12vw, 54px);
+    font-size: 43px;
   }
 
   .tl-public-hero p:not(.tl-kicker) {
@@ -3214,7 +3214,7 @@ html, body { overflow-x: hidden; }
   display: block;
   margin-bottom: 16px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -3310,7 +3310,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -3363,7 +3363,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .tl-strip-route svg {
@@ -3386,15 +3386,19 @@ html, body { overflow-x: hidden; }
   margin: 0;
   color: var(--tl-ink);
   font-family: var(--f-title), monospace;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.08;
 }
 
 .tl-strip-copy h2,
-.tl-price-faq h2,
 .tl-article-accordion h2 {
   max-width: 720px;
-  font-size: clamp(30px, 4vw, 48px);
+  font-size: 38px;
+}
+
+.tl-price-faq h2 {
+  max-width: 720px;
+  font-size: 30px;
 }
 
 .tl-strip-copy p,
@@ -3520,7 +3524,7 @@ html, body { overflow-x: hidden; }
 
 .tl-price-name p {
   max-width: 300px;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .tl-price-amount {
@@ -3601,7 +3605,7 @@ html, body { overflow-x: hidden; }
   cursor: pointer;
   font-family: var(--f-title), monospace;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   list-style: none;
 }
 
@@ -3945,7 +3949,6 @@ html, body { overflow-x: hidden; }
 
 .tl-public-features .tl-public-hero h1 {
   max-width: 960px;
-  font-size: clamp(44px, 5.4vw, 72px);
 }
 
 .tl-public-guide .tl-public-hero {
@@ -3955,7 +3958,6 @@ html, body { overflow-x: hidden; }
 
 .tl-public-guide .tl-public-hero h1 {
   max-width: 960px;
-  font-size: clamp(44px, 5.4vw, 72px);
 }
 
 /* Guide phases — single-column numbered layout */
@@ -3989,7 +3991,7 @@ html, body { overflow-x: hidden; }
   margin: 0;
   color: #12211f;
   font-family: var(--f-title), monospace;
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1.12;
@@ -4072,7 +4074,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -4080,7 +4082,7 @@ html, body { overflow-x: hidden; }
   margin: 10px 0 0;
   color: #12211f;
   font-family: var(--f-title), monospace;
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1.12;
@@ -4173,7 +4175,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -4184,7 +4186,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-ink);
   font-family: var(--f-title), monospace;
   font-size: clamp(25px, 2.5vw, 34px);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.08;
 }
 
@@ -4221,7 +4223,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-muted);
   font-family: var(--f-title), monospace;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -4479,7 +4481,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -4607,7 +4609,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -4669,7 +4671,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -4846,8 +4848,8 @@ html, body { overflow-x: hidden; }
   margin: 0 0 12px;
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
@@ -4937,7 +4939,7 @@ html, body { overflow-x: hidden; }
   max-width: 510px;
   margin: 24px 0 0;
   color: #50645e;
-  font-size: 19px;
+  font-size: 18px;
   line-height: 1.55;
 }
 
@@ -5021,7 +5023,7 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
