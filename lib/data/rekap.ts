@@ -81,11 +81,33 @@ export async function fetchRekapDataByRange(
 
   if (error) {
     console.error("Failed to fetch rekap data:", error);
-    return emptyResult(from, to);
+    throw new Error("REKAP_FETCH_FAILED");
   }
 
   const sessions = buildSessions(rows ?? []);
   return buildResult(sessions, rows ?? [], from, to);
+}
+
+export async function fetchRecentSessions(limit = 3): Promise<SessionItem[]> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data: rows, error } = await supabase
+    .from("sessions")
+    .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode")
+    .eq("tutor_id", user.id)
+    .eq("status", "completed")
+    .order("clock_in_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("Failed to fetch recent sessions:", error);
+    throw new Error("RECENT_SESSIONS_FETCH_FAILED");
+  }
+
+  return buildSessions(rows ?? []);
 }
 
 function emptyResult(from: string, to: string): RekapData {

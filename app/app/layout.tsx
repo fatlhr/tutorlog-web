@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { checkQuota } from "@/lib/data/quota";
 import AppTopBar from "@/components/AppTopBar";
 import TabBar from "@/components/TabBar";
 
@@ -33,55 +33,22 @@ export default async function AppLayout({
   const email = user.email ?? "";
   const name = displayNameOf(email, user.user_metadata?.full_name ?? user.user_metadata?.name);
   const initials = initialsOf(name);
+  const quota = await checkQuota();
+  const isPlus = quota.pdfExportUnlimited || quota.plan !== "free";
 
   return (
     <div className="app-shell-h" style={{ minHeight: "100svh" }}>
-      <div className="vp-desktop">
-        <AppTopBar name={name} initials={initials} />
-      </div>
-      <div className="vp-mobile">
-        <div className="mob-brand-bar">
-          <Link href="/app" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <Image src="/tutorlog-logo.png" alt="" width={24} height={24} />
-            <span style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 16, color: "var(--tw-primary)" }}>TutorLog</span>
-          </Link>
-        </div>
-      </div>
+      <AppTopBar name={name} initials={initials} isPlus={isPlus} />
       {children}
 
-      <div className="vp-desktop">
-        <div style={{
-          borderTop: "1px solid var(--tw-divider)",
-          padding: "20px 40px",
-          textAlign: "center",
-          fontFamily: "var(--f-body)",
-          fontSize: 12,
-          color: "var(--tw-text-3)",
-          display: "flex", justifyContent: "center", gap: 16,
-        }}>
-          <span>© 2026 TutorLog</span>
-          <Link href="/privacy" style={{ color: "var(--tw-text-3)", textDecoration: "none" }}>Privacy</Link>
-          <Link href="/terms" style={{ color: "var(--tw-text-3)", textDecoration: "none" }}>Terms</Link>
-          <Link href="/kontak" style={{ color: "var(--tw-text-3)", textDecoration: "none" }}>Kontak</Link>
+      <footer className="app-shell-footer">
+        <span>© 2026 TutorLog</span>
+        <div>
+          <Link href="/privacy">Privasi</Link>
+          <Link href="/terms">Syarat</Link>
+          <Link href="/kontak">Kontak</Link>
         </div>
-      </div>
-
-      <div className="vp-mobile">
-        <div style={{
-          borderTop: "1px solid var(--tw-divider)",
-          padding: "16px 20px 100px",
-          textAlign: "center",
-          fontFamily: "var(--f-body)",
-          fontSize: 11,
-          color: "var(--tw-text-3)",
-          display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap",
-        }}>
-          <span>© 2026 TutorLog</span>
-          <Link href="/privacy" style={{ color: "var(--tw-text-3)", textDecoration: "none" }}>Privacy</Link>
-          <Link href="/terms" style={{ color: "var(--tw-text-3)", textDecoration: "none" }}>Terms</Link>
-          <Link href="/kontak" style={{ color: "var(--tw-text-3)", textDecoration: "none" }}>Kontak</Link>
-        </div>
-      </div>
+      </footer>
 
       <TabBar />
     </div>

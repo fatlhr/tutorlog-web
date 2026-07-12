@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Desktop } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -10,13 +11,6 @@ import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
 import PaywallDialog from "@/components/PaywallDialog";
-
-const MonitorIcon = () => (
-  <svg width={36} height={36} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="3" width="20" height="14" rx="2" />
-    <path d="M8 21h8 M12 17v4" />
-  </svg>
-);
 
 const IcMinus = ({ size = 14 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,14 +46,8 @@ const Required = () => <span style={{ color: "var(--tw-error)" }}> *</span>;
 
 const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#B7950B"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
+const DRAFT_KEY = "tutorlog-invoice-draft:v1";
 type Template = (typeof TEMPLATES)[number];
-
-const DUMMY_STUDENTS = [
-  { id: "dummy-1", name: "Bintang Wijaya", hourlyRate: null, billingType: null, educationLevel: "Kelas 10 – SMA Al-Azhar", address: "Jl. Kemang Raya No. 42, Jakarta Selatan", parentName: "Bpk. Ahmad Wijaya" },
-  { id: "dummy-2", name: "Kirana Putri", hourlyRate: null, billingType: null, educationLevel: "Kelas 8 – SMP Labschool", address: null, parentName: null },
-  { id: "dummy-3", name: "Aditya Rahman", hourlyRate: null, billingType: null, educationLevel: null, address: null, parentName: null },
-  { id: "dummy-4", name: "Meilani Sari", hourlyRate: null, billingType: null, educationLevel: null, address: null, parentName: null },
-];
 
 interface StudentOption {
   id: string;
@@ -103,6 +91,16 @@ function generateInvoiceNo(): string {
   return `INV-${yy}${mm}-${seq}`;
 }
 
+function currentMonthPeriod() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  return {
+    from: `${year}-${String(month).padStart(2, "0")}-01`,
+    to: `${year}-${String(month).padStart(2, "0")}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`,
+  };
+}
+
 export default function InvoicePage() {
   const supabase = createClient();
 
@@ -131,38 +129,32 @@ export default function InvoicePage() {
     return () => ro.disconnect();
   }, [previewOpen]);
 
-  const [showMobileDialog, setShowMobileDialog] = useState(true);
-
-  useEffect(() => {
-    if (showMobileDialog) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [showMobileDialog]);
-  const [periodStart, setPeriodStart] = useState("2026-06-01");
-  const [periodEnd, setPeriodEnd] = useState("2026-06-30");
+  const [periodStart, setPeriodStart] = useState(() => currentMonthPeriod().from);
+  const [periodEnd, setPeriodEnd] = useState(() => currentMonthPeriod().to);
   const [lembaga, setLembaga] = useState("");
-  const [tutorName, setTutorName] = useState("Rina Novianti");
-  const [tutorLocation, setTutorLocation] = useState("Jakarta Selatan");
-  const [tutorContact, setTutorContact] = useState("rina@tutorlog.id · 0812-3456-7890");
-  const [parentName, setParentName] = useState("Bpk. Ahmad Wijaya");
-  const [studentName, setStudentName] = useState("Bintang Wijaya");
+  const [tutorName, setTutorName] = useState("");
+  const [tutorLocation, setTutorLocation] = useState("");
+  const [tutorContact, setTutorContact] = useState("");
+  const [parentName, setParentName] = useState("");
+  const [studentName, setStudentName] = useState("");
   const [studentInfo, setStudentInfo] = useState("");
   const [studentAddress, setStudentAddress] = useState("");
-  const [bankAccount, setBankAccount] = useState("BCA · 1234 5678 9012");
-  const [bankName, setBankName] = useState("Rina Novianti");
-  const [notes, setNotes] = useState("Terima kasih atas kepercayaannya. Pembayaran paling lambat 7 Juli 2026.");
+  const [bankAccount, setBankAccount] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [notes, setNotes] = useState("");
   const [saveSettings, setSaveSettings] = useState(false);
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
+  const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
   const [invoiceNo, setInvoiceNo] = useState("");
   const [exporting, setExporting] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [quotaState, setQuotaState] = useState<{ pdfExportUnlimited: boolean; pdfExportCount30d: number }>({ pdfExportUnlimited: false, pdfExportCount30d: 0 });
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [studentsError, setStudentsError] = useState(false);
+  const [sessionsError, setSessionsError] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   /* eslint-disable-next-line react-hooks/set-state-in-effect */
@@ -171,7 +163,7 @@ export default function InvoicePage() {
   const periodLabel = (() => {
     const s = new Date(periodStart + "T00:00:00");
     const e = new Date(periodEnd + "T00:00:00");
-    if (isNaN(s.getTime()) || isNaN(e.getTime())) return "1 – 30 Juni 2026";
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return "Pilih periode";
     const sy = s.getFullYear() === e.getFullYear() ? "" : ` ${s.getFullYear()}`;
     return `${s.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][s.getMonth()]}${sy} – ${e.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][e.getMonth()]} ${e.getFullYear()}`;
   })();
@@ -179,18 +171,19 @@ export default function InvoicePage() {
   useEffect(() => {
     const doFetch = async () => {
       setStudentsLoading(true);
+      setStudentsError(false);
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setStudents(DUMMY_STUDENTS); return; }
+        if (!user) throw new Error("AUTH_REQUIRED");
 
         const { data, error } = await supabase
           .from("student_locations")
-          .select("id, student_name, hourly_rate, billing_type, education_level, address, parent_name")
+          .select("id, student_name, hourly_rate, billing_type, education_level")
           .eq("tutor_id", user.id)
           .is("deleted_at", null)
           .order("student_name", { ascending: true });
 
-        if (error || !data) { setStudents(DUMMY_STUDENTS); return; }
+        if (error || !data) throw error ?? new Error("STUDENTS_FETCH_FAILED");
 
         const list: StudentOption[] = (data as Record<string, unknown>[]).map((row) => ({
           id: row.id as string,
@@ -198,13 +191,14 @@ export default function InvoicePage() {
           hourlyRate: (row.hourly_rate as number) ?? null,
           billingType: (row.billing_type as string) ?? null,
           educationLevel: (row.education_level as string) ?? null,
-          address: (row.address as string) ?? null,
-          parentName: (row.parent_name as string) ?? null,
+          address: null,
+          parentName: null,
         }));
 
-        setStudents(list.length > 0 ? list : DUMMY_STUDENTS);
+        setStudents(list);
       } catch {
-        setStudents(DUMMY_STUDENTS);
+        setStudents([]);
+        setStudentsError(true);
       } finally {
         setStudentsLoading(false);
       }
@@ -213,12 +207,35 @@ export default function InvoicePage() {
   }, [supabase]);
 
   useEffect(() => {
-    if (!studentName || !periodStart || !periodEnd) return;
+    if (students.length === 0) {
+      setStudentName("");
+      setStudentInfo("");
+      setStudentAddress("");
+      setParentName("");
+      return;
+    }
+
+    if (!students.some((student) => student.name === studentName)) {
+      const firstStudent = students[0];
+      setStudentName(firstStudent.name);
+      setStudentInfo(firstStudent.educationLevel ?? "");
+      setStudentAddress(firstStudent.address ?? "");
+      setParentName(firstStudent.parentName ?? "");
+    }
+  }, [studentName, students]);
+
+  useEffect(() => {
+    if (!studentName || !periodStart || !periodEnd) {
+      setInvoiceSessions([]);
+      setSessionsError(false);
+      return;
+    }
     const doFetch = async () => {
       setSessionsLoading(true);
+      setSessionsError(false);
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setInvoiceSessions([]); return; }
+        if (!user) throw new Error("AUTH_REQUIRED");
 
         const startISO = new Date(periodStart + "T00:00:00").toISOString();
         const endISO = new Date(periodEnd + "T23:59:59.999").toISOString();
@@ -232,7 +249,7 @@ export default function InvoicePage() {
           .lte("clock_in_at", endISO)
           .order("clock_in_at", { ascending: true });
 
-        if (error || !data) { setInvoiceSessions([]); return; }
+        if (error || !data) throw error ?? new Error("SESSIONS_FETCH_FAILED");
 
         const filtered = (data as Record<string, unknown>[]).filter((row) =>
           (row.student_name_snapshot as string) === studentName
@@ -254,12 +271,19 @@ export default function InvoicePage() {
           if (teachingMode && subject) subject += ` · ${teachingMode}`;
           else if (teachingMode) subject = teachingMode;
 
-          return { id: clockIn, clockIn, clockOut, subject: subject || "Sesi les", hours, rate, amount };
+          return { id: row.id as string, clockIn, clockOut, subject: subject || "Sesi les", hours, rate, amount };
         });
 
         setInvoiceSessions(items);
+        setSelectedSessionIds((current) => {
+          const availableIds = new Set(items.map((item) => item.id));
+          const restored = current.filter((id) => availableIds.has(id));
+          return restored.length > 0 ? restored : items.map((item) => item.id);
+        });
       } catch {
         setInvoiceSessions([]);
+        setSelectedSessionIds([]);
+        setSessionsError(true);
       } finally {
         setSessionsLoading(false);
       }
@@ -361,6 +385,12 @@ export default function InvoicePage() {
     }
   };
 
+  const toggleSession = (sessionId: string) => {
+    setSelectedSessionIds((current) => current.includes(sessionId)
+      ? current.filter((id) => id !== sessionId)
+      : [...current, sessionId]);
+  };
+
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
@@ -379,6 +409,62 @@ export default function InvoicePage() {
     } catch { /* ignore */ }
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    try {
+      const savedDraft = localStorage.getItem(DRAFT_KEY);
+      if (!savedDraft) return;
+      const draft = JSON.parse(savedDraft) as Record<string, unknown>;
+      if (typeof draft.periodStart === "string") setPeriodStart(draft.periodStart);
+      if (typeof draft.periodEnd === "string") setPeriodEnd(draft.periodEnd);
+      if (typeof draft.studentName === "string") setStudentName(draft.studentName);
+      if (Array.isArray(draft.selectedSessionIds)) setSelectedSessionIds(draft.selectedSessionIds.filter((id): id is string => typeof id === "string"));
+      if (typeof draft.invoiceNo === "string") setInvoiceNo(draft.invoiceNo);
+      if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
+      if (typeof draft.tutorName === "string") setTutorName(draft.tutorName);
+      if (typeof draft.tutorLocation === "string") setTutorLocation(draft.tutorLocation);
+      if (typeof draft.tutorContact === "string") setTutorContact(draft.tutorContact);
+      if (typeof draft.parentName === "string") setParentName(draft.parentName);
+      if (typeof draft.studentInfo === "string") setStudentInfo(draft.studentInfo);
+      if (typeof draft.studentAddress === "string") setStudentAddress(draft.studentAddress);
+      if (typeof draft.bankAccount === "string") setBankAccount(draft.bankAccount);
+      if (typeof draft.bankName === "string") setBankName(draft.bankName);
+      if (typeof draft.notes === "string") setNotes(draft.notes);
+      if (typeof draft.accent === "string") setAccent(draft.accent);
+      if (typeof draft.template === "string" && TEMPLATES.includes(draft.template as Template)) setTemplate(draft.template as Template);
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    } finally {
+      setDraftReady(true);
+    }
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!draftReady) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        periodStart,
+        periodEnd,
+        studentName,
+        selectedSessionIds,
+        invoiceNo,
+        lembaga,
+        tutorName,
+        tutorLocation,
+        tutorContact,
+        parentName,
+        studentInfo,
+        studentAddress,
+        bankAccount,
+        bankName,
+        notes,
+        accent,
+        template,
+      }));
+    } catch { /* localStorage not available */ }
+  }, [draftReady, periodStart, periodEnd, studentName, selectedSessionIds, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, studentInfo, studentAddress, bankAccount, bankName, notes, accent, template]);
 
   useEffect(() => {
     if (!saveSettings) return;
@@ -406,23 +492,12 @@ export default function InvoicePage() {
     const bankCode = bankParts[0] || bankAccount;
     const bankNo = bankParts[1] || bankAccount;
 
-    const items = invoiceSessions.length > 0
-      ? invoiceSessions.map((s) => ({
-          date: formatMonthDay(new Date(s.clockIn)),
-          desc: s.subject || "Sesi les",
-          h: s.hours,
-          rate: s.rate,
-        }))
-      : [
-          { date: "03 Jun", desc: "Matematika · Trigonometri", h: 1.5, rate: 120000 },
-          { date: "05 Jun", desc: "Matematika · Latihan Soal", h: 1.5, rate: 120000 },
-          { date: "10 Jun", desc: "Fisika · Gerak Lurus", h: 2.0, rate: 130000 },
-          { date: "12 Jun", desc: "Matematika · Trigonometri", h: 1.5, rate: 120000 },
-          { date: "17 Jun", desc: "Fisika · Hukum Newton", h: 2.0, rate: 130000 },
-          { date: "19 Jun", desc: "Matematika · Persiapan UH", h: 1.5, rate: 120000 },
-          { date: "24 Jun", desc: "Fisika · Energi & Usaha", h: 2.0, rate: 130000 },
-          { date: "26 Jun", desc: "Matematika · Review UH", h: 1.5, rate: 120000 },
-        ];
+    const items = invoiceSessions.filter((session) => selectedSessionIds.includes(session.id)).map((s) => ({
+      date: formatMonthDay(new Date(s.clockIn)),
+      desc: s.subject || "Sesi les",
+      h: s.hours,
+      rate: s.rate,
+    }));
 
     return {
       no: invoiceNo,
@@ -468,7 +543,7 @@ export default function InvoicePage() {
           </div>
         )}
         <div className="inv-preview-toolbar">
-          <div className="tw-title-md">Preview · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
+          <div className="tw-title-md">Periksa invoice · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
           <div className="zoom-ctl">
             <button type="button" onClick={() => setZ((v) => Math.max(40, v - 10))}><IcMinus /></button>
             <span className="z">{z}%</span>
@@ -492,13 +567,13 @@ export default function InvoicePage() {
     <div className="inv-form" style={{ overflowY: "auto", paddingRight: 8 }}>
 
       <div className="inv-section">
-        <h4 className="inv-section-title">Invoice</h4>
+        <h4 className="inv-section-title">Murid dan periode</h4>
 
         <div className="field">
           <div className="lbl">Periode<Required /></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ flex: 1, minWidth: 0, cursor: "pointer" }} />
-            <span style={{ color: "var(--tw-text-3)", fontWeight: 700, flexShrink: 0 }}>—</span>
+            <span style={{ color: "var(--tw-text-3)", fontWeight: 700, flexShrink: 0 }}>sampai</span>
             <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" style={{ flex: 1, minWidth: 0, cursor: "pointer" }} />
           </div>
           <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
@@ -507,8 +582,8 @@ export default function InvoicePage() {
       </div>
 
       <div className="inv-section-row">
-        <div className="inv-section-col">
-          <h4 className="inv-section-title">Tutor</h4>
+        <div className="inv-section-col inv-tutor-details">
+          <h4 className="inv-section-title">Detail tambahan</h4>
 
           <div className="field">
             <div className="lbl">Nama<Required /></div>
@@ -516,8 +591,8 @@ export default function InvoicePage() {
           </div>
 
           <div className="field">
-            <div className="lbl">Lembaga</div>
-            <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Nama bimbel atau jasa les" />
+            <div className="lbl">Nama layanan atau brand (opsional)</div>
+            <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Contoh: Les Privat Rina" />
           </div>
 
           <div className="field">
@@ -533,20 +608,29 @@ export default function InvoicePage() {
 
         <div className="divide inv-section-divide"></div>
 
-        <div className="inv-section-col">
+        <div className="inv-section-col inv-student-details">
           <h4 className="inv-section-title">Murid</h4>
 
           <div className="field">
             <div className="lbl">Nama Murid<Required /></div>
-            <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }} disabled={studentsLoading}>
+            <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }} disabled={studentsLoading || studentsError || students.length === 0}>
               {studentsLoading ? (
                 <option value="">Memuat...</option>
+              ) : studentsError ? (
+                <option value="">Murid belum dapat dimuat</option>
+              ) : students.length === 0 ? (
+                <option value="">Belum ada murid</option>
               ) : (
                 students.map((s) => (
                   <option key={s.id} value={s.name}>{s.name}</option>
                 ))
               )}
             </select>
+            {!studentsLoading && studentsError ? (
+              <div className="tw-helper" style={{ marginTop: 6, color: "var(--tw-error)" }}>Daftar murid belum dapat dimuat. Coba muat ulang halaman.</div>
+            ) : !studentsLoading && students.length === 0 ? (
+              <div className="tw-helper" style={{ marginTop: 6 }}>Belum ada murid. Tambahkan murid melalui aplikasi mobile.</div>
+            ) : null}
           </div>
 
           <div className="field">
@@ -569,18 +653,29 @@ export default function InvoicePage() {
               <div className="lbl">Item Invoice</div>
               <div className="tw-helper" style={{ marginTop: 2 }}>Memuat sesi...</div>
             </div>
-          ) : invoiceSessions.length > 0 ? (
+          ) : sessionsError ? (
             <div className="field">
               <div className="lbl">Item Invoice</div>
-              <div className="tw-helper" style={{ marginTop: 2 }}>
-                {invoiceSessions.length} sesi otomatis dari {studentName} ({periodLabel})
+              <div className="tw-helper" style={{ marginTop: 2, color: "var(--tw-error)" }}>Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
+            </div>
+          ) : invoiceSessions.length > 0 ? (
+            <div className="field">
+              <div className="lbl">Sesi yang ditagihkan</div>
+              <div className="inv-session-options">
+                {invoiceSessions.map((session) => (
+                  <label key={session.id}>
+                    <input type="checkbox" checked={selectedSessionIds.includes(session.id)} onChange={() => toggleSession(session.id)} />
+                    <span>{formatMonthDay(new Date(session.clockIn))} · {session.subject}</span>
+                    <strong>{formatCurrency(session.amount)}</strong>
+                  </label>
+                ))}
               </div>
             </div>
           ) : invoiceSessions.length === 0 && studentName && periodStart && periodEnd ? (
             <div className="field">
               <div className="lbl">Item Invoice</div>
               <div className="tw-helper" style={{ marginTop: 2, color: "var(--tw-text-3)" }}>
-                Tidak ada sesi untuk {studentName} di periode ini
+                Belum ada sesi untuk {studentName} pada periode ini.
               </div>
             </div>
           ) : null}
@@ -659,25 +754,25 @@ export default function InvoicePage() {
         </label>
 
         <div className="tw-helper" style={{ marginTop: -4 }}>
-          Yang disimpan: profil tutor (nama, lembaga, lokasi, kontak), rekening
-          pembayaran, dan tema (template + warna aksen) — tersimpan di perangkat
-          ini dan terisi otomatis saat halaman dibuka lagi.
+          Yang disimpan: profil tutor, nama layanan, rekening pembayaran, dan
+          tampilan invoice. Data tersimpan di perangkat ini dan terisi otomatis
+          saat halaman dibuka lagi.
         </div>
       </div>
 
       <div className="inv-form-actions">
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setInvoiceNo(generateInvoiceNo()); setPreviewOpen(true); }}>
           <IcEye />
-          <span>Lihat Preview</span>
+          <span>Periksa invoice</span>
         </button>
-        <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting}>
+        <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || selectedSessionIds.length === 0}>
           <IcLockSm />
-          <span>{exporting ? "Mengekspor..." : "Export PDF"}</span>
+          <span>{exporting ? "Menyiapkan..." : "Unduh PDF"}</span>
           <IcDownload size={16} />
         </button>
       </div>
       <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
-        Fitur premium — perlu langganan aktif.
+        Unduh PDF termasuk fitur Plus.
       </div>
     </div>
   );
@@ -694,7 +789,7 @@ export default function InvoicePage() {
         onClick={() => setPreviewOpen(false)}
         role="dialog"
         aria-modal="true"
-        aria-label="Preview Invoice"
+        aria-label="Periksa invoice"
       >
         {renderPreview(true)}
       </div>
@@ -703,81 +798,34 @@ export default function InvoicePage() {
 
   return (
     <>
-      {showMobileDialog && (
-        <div className="vp-mobile">
-          <div className="mob-page tw">
-            <div className="mob-app-shell">
-              <div className="mob-dialog-scrim">
-                <div className="mob-dialog-card">
-                  <div className="mob-dialog-icon"><MonitorIcon /></div>
-                  <h2 className="mob-dialog-title">Buka di Desktop</h2>
-                  <p className="mob-dialog-desc">Invoice Builder dirancang untuk layar lebar. Buka di laptop atau PC untuk pengalaman terbaik.</p>
-                  <div className="mob-dialog-actions">
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      style={{ width: "100%" }}
-                      onClick={() => setShowMobileDialog(false)}
-                    >
-                      Tetap Lanjutkan
-                    </button>
-                    <Link href="/app" className="btn btn-ghost btn-sm" style={{ width: "100%" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5 M11 6l-6 6 6 6" /></svg>
-                      <span>Kembali ke Home</span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <div id="main-content">
+        <main className="app-invoice-mobile-handoff">
+          <Desktop size={34} aria-hidden="true" />
+          <p>Invoice TutorLog</p>
+          <h1>Buat invoice di laptop.</h1>
+          <span>Editor dan preview A4 lebih nyaman diperiksa pada layar yang lebih lebar.</span>
+          <Link href="/app">Kembali ke Beranda</Link>
+        </main>
 
-      {!showMobileDialog && (
-        <div className="vp-mobile">
-          <div className="mob-page tw">
-            <div className="mob-app-shell">
-              <div className="mob-app-main" style={{ padding: "68px 16px 100px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                  <Link href="/app" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 13, color: "var(--tw-primary)", textDecoration: "none", marginBottom: 8 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5 M11 6l-6 6 6 6" /></svg>
-                    Home
-                  </Link>
-                  <h1 style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 20, margin: 0 }}>Invoice Builder</h1>
-                  <div style={{ width: 50 }} />
-                </div>
-                {renderForm()}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="vp-desktop">
-        <main className="app-main" style={{ padding: "96px 40px 40px", position: "relative" }}>
-          <div className="app-header">
+        <main className="app-main app-invoice-main">
+          <header className="app-invoice-heading">
             <div>
-              <Link href="/app" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "var(--f-body)", fontSize: 12, color: "var(--tw-primary)", textDecoration: "none", marginBottom: 8 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5 M11 6l-6 6 6 6" /></svg>
-                Home
-              </Link>
-              <h1>Invoice Builder</h1>
-              <div className="sub">Pilih murid & rentang tanggal — semua sesi akan otomatis dimasukkan.</div>
+              <p>Invoice</p>
+              <h1>Buat invoice.</h1>
+              <span>Pilih murid dan periode. Sesi yang tersimpan akan dimasukkan otomatis.</span>
             </div>
-          </div>
-
-          <div className="inv-export-top">
-              <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting}>
+            <div className="inv-export-top">
+              <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || selectedSessionIds.length === 0}>
                 <IcLockSm />
-                <span>{exporting ? "Mengekspor..." : "Export PDF"}</span>
+                <span>{exporting ? "Menyiapkan..." : "Unduh PDF"}</span>
                 <IcDownload size={16} />
               </button>
             </div>
-            <div className="invoice-layout">
+          </header>
+
+          <div className="invoice-layout">
             {renderForm()}
-            <div className="inv-preview-col">
-              {renderPreview()}
-            </div>
+            <div className="inv-preview-col">{renderPreview()}</div>
           </div>
         </main>
       </div>
