@@ -54,7 +54,7 @@
 - [x] Run `git diff --check`.
 - [x] Commit shared shell changes in source checkpoint `60d4c83`.
 
-**Status:** Implementation complete. Desktop, tablet, mobile, active routes, account menu, and Escape close reviewed in Chrome. Commit pending because Git metadata writes are temporarily unavailable; user approved continuing without the checkpoint.
+**Status:** Complete. Desktop, tablet, mobile, active routes, account menu, and Escape close were reviewed in Chrome and checkpointed in `60d4c83`.
 
 ## Milestone 3: Personal Home and Conversion Entry
 
@@ -70,12 +70,14 @@
 - [x] Link upgrade actions to `/harga`, not directly to a payment provider.
 - [x] Show paid status only inside the account menu.
 - [x] Remove `PricingCards` if no consumer remains.
-- [ ] Review empty-account state.
-- [ ] Review active free state with quota available.
-- [ ] Review exhausted free state.
+- [x] Review empty-account state.
+- [x] Review active free state with quota available.
+- [x] Review exhausted free state.
 - [x] Review paid state with real sessions.
 - [x] Run `git diff --check`.
 - [x] Commit home overview changes in source checkpoint `60d4c83`.
+
+**Status:** Complete. Empty, active free, exhausted free, and paid states were reviewed at desktop, tablet, and mobile. The development-only review fixture was removed before this checkpoint.
 
 ## Milestone 4: Understandable Recap
 
@@ -106,7 +108,7 @@
 - [x] Run `git diff --check`.
 - [x] Commit invoice changes in `60d4c83` and runtime rendering fix in `ed2b278`.
 
-**Status:** Source implementation complete. Responsive and draft behavior still require authenticated manual review. Commit remains pending while Git metadata writes are unavailable.
+**Status:** Complete. Draft restore, real and empty session states, tablet preview dialog, mobile handoff, and desktop side-by-side preview were reviewed in the authenticated session.
 
 ## Milestone 6: Final Review Gate
 
@@ -132,7 +134,7 @@
 | 0 | `60d4c83` | Passed | Baseline captured; final visual comparison pending implementation |
 | 1 | `60d4c83` | Passed | Empty and error states reviewed before server became unavailable |
 | 2 | `60d4c83` | Passed | Desktop, tablet, mobile shell and account menu reviewed |
-| 3 | `60d4c83` | Passed | Paid state reviewed at three breakpoints; empty and free quota states pending fixtures |
+| 3 | `60d4c83` | Passed | Empty, active free, exhausted free, and paid states reviewed at three breakpoints; temporary fixture removed |
 | 4 | `60d4c83` | Passed | Desktop table, tablet table, and mobile session rows reviewed at runtime |
 | 5 | `60d4c83`, `ed2b278` | Passed | Draft restore, real and empty session states, tablet dialog, mobile handoff, and desktop preview reviewed at runtime |
 | 6 | Pending | Pending | Pending |
@@ -141,9 +143,7 @@
 
 - Branch: `feat/app-foundation-redesign`
 - Repository: `/Users/fatih/Code/Playground/tutorlog-web`
-- Source implementation for Milestones 1-5 is complete.
-- Runtime review remains open for home account states, recap breakpoints, invoice draft restore, tablet preview, and mobile handoff.
+- Source implementation and runtime review for Milestones 1-5 are complete.
 - Full tests remain intentionally deferred until integration to `main` is requested.
-- Continue from the first unchecked review item. Do not reopen completed source tasks unless runtime review finds a regression.
+- Continue from the first unchecked Milestone 6 item. Do not reopen completed source tasks unless manual review finds a regression.
 - Source was moved from the temporary worktree into the main repository branch on 2026-07-13. Continue all work from the repository path above.
-- Required continuation order: run the main repository dev server, then review the unchecked account and responsive states.
