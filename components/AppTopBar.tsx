@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChartBar, FileText, House, Lifebuoy, SignOut } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
+import { NavigationItem } from "@/components/app-ui/navigation";
+import { APP_ROUTE_ITEMS, getActiveAppRoute } from "@/components/app-ui/routes";
 
 interface AppTopBarProps {
   name: string;
@@ -13,14 +15,15 @@ interface AppTopBarProps {
   isPlus: boolean;
 }
 
-const items = [
-  { label: "Beranda", href: "/app", icon: House },
-  { label: "Rekap", href: "/app/rekap", icon: ChartBar },
-  { label: "Invoice", href: "/app/invoice", icon: FileText },
-];
+const routeIcons = {
+  home: House,
+  recap: ChartBar,
+  invoice: FileText,
+};
 
 export default function AppTopBar({ name, initials, isPlus }: AppTopBarProps) {
   const pathname = usePathname();
+  const activeRoute = getActiveAppRoute(pathname);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -61,14 +64,19 @@ export default function AppTopBar({ name, initials, isPlus }: AppTopBarProps) {
         </Link>
 
         <nav className="app-topbar-nav" aria-label="Navigasi utama">
-          {items.map((item) => {
-            const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
-            const Icon = item.icon;
+          {APP_ROUTE_ITEMS.map((item) => {
+            const active = activeRoute === item.route;
+            const Icon = routeIcons[item.route];
             return (
-              <Link key={item.href} href={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}>
-                <Icon size={17} weight={active ? "fill" : "regular"} aria-hidden="true" />
-                <span>{item.label}</span>
-              </Link>
+              <NavigationItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                route={item.route}
+                mode="top"
+                active={active}
+                icon={<Icon size={18} weight={active ? "fill" : "regular"} />}
+              />
             );
           })}
         </nav>

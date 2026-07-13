@@ -10,6 +10,12 @@ export interface SessionItem {
   h: number;
   t: string;
   rawAmount: number;
+  time: string;
+  mode: string;
+  location: string;
+  rate: string;
+  rateLabel: string;
+  note: string;
 }
 
 export interface RekapSummary {
@@ -72,7 +78,7 @@ export async function fetchRekapDataByRange(
 
   const { data: rows, error } = await supabase
     .from("sessions")
-    .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode")
+    .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode, clock_in_latitude, clock_in_longitude, session_learning_notes(tutor_note)")
     .eq("tutor_id", user.id)
     .eq("status", "completed")
     .gte("clock_in_at", fromISO)
@@ -96,7 +102,7 @@ export async function fetchRecentSessions(limit = 3): Promise<SessionItem[]> {
 
   const { data: rows, error } = await supabase
     .from("sessions")
-    .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode")
+    .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode, clock_in_latitude, clock_in_longitude, session_learning_notes(tutor_note)")
     .eq("tutor_id", user.id)
     .eq("status", "completed")
     .order("clock_in_at", { ascending: false })
@@ -138,6 +144,12 @@ function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
     const studentName = (row.student_name_snapshot as string) ?? "Tanpa Nama";
     const educationLevel = (row.education_level_snapshot as string) ?? "";
     const teachingMode = (row.teaching_mode as string) ?? "";
+    const hasLocation = typeof row.clock_in_latitude === "number" && typeof row.clock_in_longitude === "number";
+    const nestedNotes = row.session_learning_notes;
+    const noteRecord = Array.isArray(nestedNotes) ? nestedNotes[0] : nestedNotes;
+    const note = noteRecord && typeof noteRecord === "object" && "tutor_note" in noteRecord
+      ? (noteRecord as { tutor_note?: unknown }).tutor_note
+      : null;
 
     let subject = educationLevel;
     if (teachingMode && subject) subject += ` · ${teachingMode}`;
@@ -152,8 +164,25 @@ function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
       h: hours,
       t: formatCurrency(amount),
       rawAmount: amount,
+      time: formatTimeRange(clockIn, clockOut),
+      mode: teachingMode === "online" ? "Online" : "Tatap muka",
+      location: hasLocation ? "Lokasi tersimpan di aplikasi" : "Lokasi tidak tercatat",
+      rate: formatCurrency(rate ?? 0),
+      rateLabel: billingType === "flat" ? "Tarif per sesi" : "Tarif per jam",
+      note: typeof note === "string" && note.trim() ? note.trim() : "Belum ada catatan sesi",
     };
   });
+}
+
+function formatTimeRange(clockIn: string, clockOut: string | null): string {
+  const formatter = new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const start = formatter.format(new Date(clockIn)).replace(".", ":");
+  if (!clockOut) return `${start} - selesai`;
+  return `${start} - ${formatter.format(new Date(clockOut)).replace(".", ":")}`;
 }
 
 function buildResult(sessions: SessionItem[], rows: Record<string, unknown>[], from: string, to: string): RekapData {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Desktop } from "@phosphor-icons/react";
+import { CheckCircle, Desktop, DownloadSimple, Eye, LockKey, Minus, Plus } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -11,37 +11,6 @@ import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
 import PaywallDialog from "@/components/PaywallDialog";
-import { formatCurrency } from "@/lib/format";
-
-const IcMinus = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12h14" />
-  </svg>
-);
-
-const IcPlus = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14 M5 12h14" />
-  </svg>
-);
-
-const IcLockSm = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 10V7a3 3 0 0 1 6 0v3 M4 10h10v7H4z" />
-  </svg>
-);
-
-const IcDownload = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3" />
-  </svg>
-);
-
-const IcEye = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
-  </svg>
-);
 
 const Required = () => <span style={{ color: "var(--tw-error)" }}> *</span>;
 
@@ -64,7 +33,7 @@ interface InvoiceSessionItem {
   id: string;
   clockIn: string;
   clockOut: string | null;
-  subject: string;
+  note: string;
   hours: number;
   rate: number;
   amount: number;
@@ -146,16 +115,17 @@ export default function InvoicePage() {
   const [saveSettings, setSaveSettings] = useState(false);
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
-  const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
   const [invoiceNo, setInvoiceNo] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [quotaState, setQuotaState] = useState<{ pdfExportUnlimited: boolean; pdfExportCount30d: number }>({ pdfExportUnlimited: false, pdfExportCount30d: 0 });
+  const [quotaState, setQuotaState] = useState({ pdfExportUnlimited: false });
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [studentsError, setStudentsError] = useState(false);
   const [sessionsError, setSessionsError] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
+  const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   /* eslint-disable-next-line react-hooks/set-state-in-effect */
@@ -243,7 +213,7 @@ export default function InvoicePage() {
 
         const { data, error } = await supabase
           .from("sessions")
-          .select("id, clock_in_at, clock_out_at, student_name_snapshot, education_level_snapshot, hourly_rate_snapshot, billing_type_snapshot, teaching_mode")
+          .select("id, clock_in_at, clock_out_at, student_name_snapshot, hourly_rate_snapshot, billing_type_snapshot, session_learning_notes(tutor_note)")
           .eq("tutor_id", user.id)
           .eq("status", "completed")
           .gte("clock_in_at", startISO)
@@ -265,25 +235,18 @@ export default function InvoicePage() {
           const rate = (row.hourly_rate_snapshot as number) ?? 0;
           const billingType = (row.billing_type_snapshot as string) ?? null;
           const amount = billingType === "flat" ? (rate || 0) : Math.round(hours * rate);
-          const educationLevel = (row.education_level_snapshot as string) ?? "";
-          const teachingMode = (row.teaching_mode as string) ?? "";
+          const relation = row.session_learning_notes;
+          const noteRecord = Array.isArray(relation) ? relation[0] : relation;
+          const note = typeof (noteRecord as Record<string, unknown> | null)?.tutor_note === "string"
+            ? ((noteRecord as Record<string, unknown>).tutor_note as string).trim()
+            : "";
 
-          let subject = educationLevel;
-          if (teachingMode && subject) subject += ` · ${teachingMode}`;
-          else if (teachingMode) subject = teachingMode;
-
-          return { id: row.id as string, clockIn, clockOut, subject: subject || "Sesi les", hours, rate, amount };
+          return { id: row.id as string, clockIn, clockOut, note: note || "Belum ada catatan sesi", hours, rate, amount };
         });
 
         setInvoiceSessions(items);
-        setSelectedSessionIds((current) => {
-          const availableIds = new Set(items.map((item) => item.id));
-          const restored = current.filter((id) => availableIds.has(id));
-          return restored.length > 0 ? restored : items.map((item) => item.id);
-        });
       } catch {
         setInvoiceSessions([]);
-        setSelectedSessionIds([]);
         setSessionsError(true);
       } finally {
         setSessionsLoading(false);
@@ -300,7 +263,6 @@ export default function InvoicePage() {
           const result = data as Record<string, unknown>;
           setQuotaState({
             pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
-            pdfExportCount30d: (result.pdf_export_count_30d as number) ?? 0,
           });
         }
       } catch { /* ignore */ }
@@ -308,21 +270,8 @@ export default function InvoicePage() {
     doCheck();
   }, [supabase]);
 
-  const refreshQuota = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.rpc("get_user_access_status");
-      if (!error && data) {
-        const result = data as Record<string, unknown>;
-        setQuotaState({
-          pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
-          pdfExportCount30d: (result.pdf_export_count_30d as number) ?? 0,
-        });
-      }
-    } catch { /* ignore */ }
-  }, [supabase]);
-
   const handleExportPDF = useCallback(async () => {
-    if (!quotaState.pdfExportUnlimited && quotaState.pdfExportCount30d >= 1) {
+    if (!quotaState.pdfExportUnlimited) {
       setPaywallOpen(true);
       return;
     }
@@ -360,6 +309,7 @@ export default function InvoicePage() {
       }
 
       pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
+      setExportSuccess(true);
 
       try {
         await supabase.rpc("record_feature_usage_event", {
@@ -367,14 +317,19 @@ export default function InvoicePage() {
           p_event_type: "success",
           p_metadata: { format: "pdf" },
         });
-        refreshQuota();
       } catch { /* non-blocking */ }
     } catch (err) {
       console.error("PDF export failed:", err);
     } finally {
       setExporting(false);
     }
-  }, [invoiceNo, quotaState, supabase, refreshQuota]);
+  }, [invoiceNo, quotaState.pdfExportUnlimited, supabase]);
+
+  useEffect(() => {
+    if (!exportSuccess) return;
+    const timer = window.setTimeout(() => setExportSuccess(false), 3600);
+    return () => window.clearTimeout(timer);
+  }, [exportSuccess]);
 
   const handleStudentChange = (name: string) => {
     setStudentName(name);
@@ -384,12 +339,6 @@ export default function InvoicePage() {
       if (found.address) setStudentAddress(found.address);
       if (found.parentName) setParentName(found.parentName);
     }
-  };
-
-  const toggleSession = (sessionId: string) => {
-    setSelectedSessionIds((current) => current.includes(sessionId)
-      ? current.filter((id) => id !== sessionId)
-      : [...current, sessionId]);
   };
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -420,7 +369,6 @@ export default function InvoicePage() {
       if (typeof draft.periodStart === "string") setPeriodStart(draft.periodStart);
       if (typeof draft.periodEnd === "string") setPeriodEnd(draft.periodEnd);
       if (typeof draft.studentName === "string") setStudentName(draft.studentName);
-      if (Array.isArray(draft.selectedSessionIds)) setSelectedSessionIds(draft.selectedSessionIds.filter((id): id is string => typeof id === "string"));
       if (typeof draft.invoiceNo === "string") setInvoiceNo(draft.invoiceNo);
       if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
       if (typeof draft.tutorName === "string") setTutorName(draft.tutorName);
@@ -449,7 +397,6 @@ export default function InvoicePage() {
         periodStart,
         periodEnd,
         studentName,
-        selectedSessionIds,
         invoiceNo,
         lembaga,
         tutorName,
@@ -465,7 +412,7 @@ export default function InvoicePage() {
         template,
       }));
     } catch { /* localStorage not available */ }
-  }, [draftReady, periodStart, periodEnd, studentName, selectedSessionIds, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, studentInfo, studentAddress, bankAccount, bankName, notes, accent, template]);
+  }, [draftReady, periodStart, periodEnd, studentName, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, studentInfo, studentAddress, bankAccount, bankName, notes, accent, template]);
 
   useEffect(() => {
     if (!saveSettings) return;
@@ -493,9 +440,9 @@ export default function InvoicePage() {
     const bankCode = bankParts[0] || bankAccount;
     const bankNo = bankParts[1] || bankAccount;
 
-    const items = invoiceSessions.filter((session) => selectedSessionIds.includes(session.id)).map((s) => ({
+    const items = invoiceSessions.map((s) => ({
       date: formatMonthDay(new Date(s.clockIn)),
-      desc: s.subject || "Sesi les",
+      desc: s.note,
       h: s.hours,
       rate: s.rate,
     }));
@@ -546,9 +493,9 @@ export default function InvoicePage() {
         <div className="inv-preview-toolbar">
           <div className="tw-title-md">Periksa invoice · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
           <div className="zoom-ctl">
-            <button type="button" onClick={() => setZ((v) => Math.max(40, v - 10))}><IcMinus /></button>
+            <button type="button" onClick={() => setZ((v) => Math.max(40, v - 10))} aria-label="Perkecil preview"><Minus size={14} /></button>
             <span className="z">{z}%</span>
-            <button type="button" onClick={() => setZ((v) => Math.min(200, v + 10))}><IcPlus /></button>
+            <button type="button" onClick={() => setZ((v) => Math.min(200, v + 10))} aria-label="Perbesar preview"><Plus size={14} /></button>
           </div>
         </div>
         <div style={{ overflow: "auto", flex: 1 }} className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
@@ -571,6 +518,23 @@ export default function InvoicePage() {
         <h4 className="inv-section-title">Murid dan periode</h4>
 
         <div className="field">
+          <div className="lbl">Nama murid<Required /></div>
+          <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }} disabled={studentsLoading || studentsError || students.length === 0}>
+            {studentsLoading ? (
+              <option value="">Memuat...</option>
+            ) : studentsError ? (
+              <option value="">Murid belum dapat dimuat</option>
+            ) : students.length === 0 ? (
+              <option value="">Belum ada murid</option>
+            ) : (
+              students.map((student) => (
+                <option key={student.id} value={student.name}>{student.name}</option>
+              ))
+            )}
+          </select>
+        </div>
+
+        <div className="field">
           <div className="lbl">Periode<Required /></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ flex: 1, minWidth: 0, cursor: "pointer" }} />
@@ -580,107 +544,19 @@ export default function InvoicePage() {
           <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
         </div>
 
-      </div>
-
-      <div className="inv-section-row">
-        <div className="inv-section-col inv-tutor-details">
-          <h4 className="inv-section-title">Detail tambahan</h4>
-
-          <div className="field">
-            <div className="lbl">Nama<Required /></div>
-            <input className="input" value={tutorName} onChange={(e) => setTutorName(e.target.value)} />
+        {sessionsLoading ? (
+          <div className="inv-auto-sessions">Memuat sesi selesai untuk periode ini...</div>
+        ) : sessionsError ? (
+          <div className="inv-auto-sessions inv-auto-sessions-error">Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
+        ) : invoiceSessions.length > 0 ? (
+          <div className="inv-auto-sessions">
+            <strong>{invoiceSessions.length} sesi dimuat otomatis.</strong>
+            <span>Semua sesi selesai pada periode ini dimasukkan otomatis ke preview.</span>
           </div>
+        ) : studentName && periodStart && periodEnd ? (
+          <div className="inv-auto-sessions">Belum ada sesi untuk {studentName} pada periode ini.</div>
+        ) : null}
 
-          <div className="field">
-            <div className="lbl">Nama layanan atau brand (opsional)</div>
-            <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Contoh: Les Privat Rina" />
-          </div>
-
-          <div className="field">
-            <div className="lbl">Lokasi</div>
-            <input className="input" value={tutorLocation} onChange={(e) => setTutorLocation(e.target.value)} />
-          </div>
-
-          <div className="field">
-            <div className="lbl">Kontak</div>
-            <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
-          </div>
-        </div>
-
-        <div className="divide inv-section-divide"></div>
-
-        <div className="inv-section-col inv-student-details">
-          <h4 className="inv-section-title">Murid</h4>
-
-          <div className="field">
-            <div className="lbl">Nama Murid<Required /></div>
-            <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }} disabled={studentsLoading || studentsError || students.length === 0}>
-              {studentsLoading ? (
-                <option value="">Memuat...</option>
-              ) : studentsError ? (
-                <option value="">Murid belum dapat dimuat</option>
-              ) : students.length === 0 ? (
-                <option value="">Belum ada murid</option>
-              ) : (
-                students.map((s) => (
-                  <option key={s.id} value={s.name}>{s.name}</option>
-                ))
-              )}
-            </select>
-            {!studentsLoading && studentsError ? (
-              <div className="tw-helper" style={{ marginTop: 6, color: "var(--tw-error)" }}>Daftar murid belum dapat dimuat. Coba muat ulang halaman.</div>
-            ) : !studentsLoading && students.length === 0 ? (
-              <div className="tw-helper" style={{ marginTop: 6 }}>Belum ada murid. Tambahkan murid melalui aplikasi mobile.</div>
-            ) : null}
-          </div>
-
-          <div className="field">
-            <div className="lbl">Tingkat Pendidikan</div>
-            <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA Al-Azhar" />
-          </div>
-
-          <div className="field">
-            <div className="lbl">Ditagih Kepada<Required /></div>
-            <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
-          </div>
-
-          <div className="field">
-            <div className="lbl">Alamat</div>
-            <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. Kemang Raya No. 42" />
-          </div>
-
-          {sessionsLoading ? (
-            <div className="field">
-              <div className="lbl">Item Invoice</div>
-              <div className="tw-helper" style={{ marginTop: 2 }}>Memuat sesi...</div>
-            </div>
-          ) : sessionsError ? (
-            <div className="field">
-              <div className="lbl">Item Invoice</div>
-              <div className="tw-helper" style={{ marginTop: 2, color: "var(--tw-error)" }}>Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
-            </div>
-          ) : invoiceSessions.length > 0 ? (
-            <div className="field">
-              <div className="lbl">Sesi yang ditagihkan</div>
-              <div className="inv-session-options">
-                {invoiceSessions.map((session) => (
-                  <label key={session.id}>
-                    <input type="checkbox" checked={selectedSessionIds.includes(session.id)} onChange={() => toggleSession(session.id)} />
-                    <span>{formatMonthDay(new Date(session.clockIn))} · {session.subject}</span>
-                    <strong>{formatCurrency(session.amount)}</strong>
-                  </label>
-                ))}
-              </div>
-            </div>
-          ) : invoiceSessions.length === 0 && studentName && periodStart && periodEnd ? (
-            <div className="field">
-              <div className="lbl">Item Invoice</div>
-              <div className="tw-helper" style={{ marginTop: 2, color: "var(--tw-text-3)" }}>
-                Belum ada sesi untuk {studentName} pada periode ini.
-              </div>
-            </div>
-          ) : null}
-        </div>
       </div>
 
       <div className="inv-section">
@@ -700,15 +576,7 @@ export default function InvoicePage() {
       </div>
 
       <div className="inv-section">
-        <h4 className="inv-section-title">Catatan</h4>
-
-        <div className="field">
-          <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
-        </div>
-      </div>
-
-      <div className="inv-section">
-        <h4 className="inv-section-title">Tema</h4>
+        <h4 className="inv-section-title">Tampilan invoice</h4>
 
         <div className="field">
           <div className="lbl">Template</div>
@@ -742,6 +610,61 @@ export default function InvoicePage() {
         </div>
       </div>
 
+      <div className="inv-section-row">
+        <div className="inv-section-col inv-tutor-details">
+          <h4 className="inv-section-title">Detail tambahan</h4>
+
+          <div className="field">
+            <div className="lbl">Nama<Required /></div>
+            <input className="input" value={tutorName} onChange={(e) => setTutorName(e.target.value)} />
+          </div>
+
+          <div className="field">
+            <div className="lbl">Nama layanan atau brand (opsional)</div>
+            <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Contoh: Les Privat Rina" />
+          </div>
+
+          <div className="field">
+            <div className="lbl">Lokasi</div>
+            <input className="input" value={tutorLocation} onChange={(e) => setTutorLocation(e.target.value)} />
+          </div>
+
+          <div className="field">
+            <div className="lbl">Kontak</div>
+            <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="divide inv-section-divide"></div>
+
+        <div className="inv-section-col inv-student-details">
+          <h4 className="inv-section-title">Detail murid</h4>
+
+          <div className="field">
+            <div className="lbl">Tingkat Pendidikan</div>
+            <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA Al-Azhar" />
+          </div>
+
+          <div className="field">
+            <div className="lbl">Ditagih Kepada<Required /></div>
+            <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
+          </div>
+
+          <div className="field">
+            <div className="lbl">Alamat</div>
+            <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. Kemang Raya No. 42" />
+          </div>
+        </div>
+      </div>
+
+      <div className="inv-section">
+        <h4 className="inv-section-title">Catatan tambahan</h4>
+
+        <div className="field">
+          <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
+        </div>
+      </div>
+
       <div className="inv-section">
         <h4 className="inv-section-title">Pengaturan</h4>
 
@@ -763,17 +686,17 @@ export default function InvoicePage() {
 
       <div className="inv-form-actions">
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setInvoiceNo(generateInvoiceNo()); setPreviewOpen(true); }}>
-          <IcEye />
+          <Eye size={16} />
           <span>Periksa invoice</span>
         </button>
-        <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || selectedSessionIds.length === 0}>
-          <IcLockSm />
+        <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || invoiceSessions.length === 0}>
+          <LockKey size={14} />
           <span>{exporting ? "Menyiapkan..." : "Unduh PDF"}</span>
-          <IcDownload size={16} />
+          <DownloadSimple size={16} />
         </button>
       </div>
       <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
-        Unduh PDF termasuk fitur Plus.
+        Unduh PDF tersedia untuk TutorLog Plus.
       </div>
     </div>
   );
@@ -781,12 +704,7 @@ export default function InvoicePage() {
   const renderPreviewDialog = () => (
     previewOpen && (
       <div
-        style={{
-          position: "fixed", inset: 0, zIndex: 100,
-          background: "rgba(0,0,0,.5)", display: "flex",
-          alignItems: "center", justifyContent: "center",
-          padding: 8,
-        }}
+        className="inv-preview-scrim"
         onClick={() => setPreviewOpen(false)}
         role="dialog"
         aria-modal="true"
@@ -800,15 +718,18 @@ export default function InvoicePage() {
   return (
     <>
       <div id="main-content">
-        <main className="app-invoice-mobile-handoff">
+        <main className={`app-invoice-mobile-handoff${mobileEditorOpen ? " app-invoice-mobile-handoff-hidden" : ""}`}>
           <Desktop size={34} aria-hidden="true" />
           <p>Invoice TutorLog</p>
           <h1>Buat invoice di laptop.</h1>
           <span>Editor dan preview A4 lebih nyaman diperiksa pada layar yang lebih lebar.</span>
-          <Link href="/app">Kembali ke Beranda</Link>
+          <div className="app-invoice-handoff-actions">
+            <Link className="btn btn-primary" href="/app">Kembali ke Beranda</Link>
+            <button type="button" className="btn btn-ghost" onClick={() => setMobileEditorOpen(true)}>Lanjutkan di sini</button>
+          </div>
         </main>
 
-        <main className="app-main app-invoice-main">
+        <main className={`app-main app-invoice-main${mobileEditorOpen ? " app-invoice-mobile-editor" : ""}`}>
           <header className="app-invoice-heading">
             <div>
               <p>Invoice</p>
@@ -816,10 +737,10 @@ export default function InvoicePage() {
               <span>Pilih murid dan periode. Sesi yang tersimpan akan dimasukkan otomatis.</span>
             </div>
             <div className="inv-export-top">
-              <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || selectedSessionIds.length === 0}>
-                <IcLockSm />
+              <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || invoiceSessions.length === 0}>
+                <LockKey size={14} />
                 <span>{exporting ? "Menyiapkan..." : "Unduh PDF"}</span>
-                <IcDownload size={16} />
+                <DownloadSimple size={16} />
               </button>
             </div>
           </header>
@@ -833,7 +754,14 @@ export default function InvoicePage() {
 
       {renderPreviewDialog()}
 
-      <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} />
+      <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} variant="invoice" />
+
+      {exportSuccess ? (
+        <div className="app-success-toast" role="status">
+          <CheckCircle size={20} weight="fill" aria-hidden="true" />
+          <span>PDF invoice berhasil diunduh.</span>
+        </div>
+      ) : null}
 
       <div
         ref={exportRef}

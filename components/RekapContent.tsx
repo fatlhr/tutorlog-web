@@ -1,14 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { FileCsv, FilePdf } from "@phosphor-icons/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CaretRight, FileCsv, FilePdf, Funnel, X } from "@phosphor-icons/react";
 import { sessionsToCSV, downloadCSV } from "@/lib/csv";
 import { canExport, recordExportEvent } from "@/lib/data/quota";
 import PaywallDialog from "@/components/PaywallDialog";
-import type { RekapData } from "@/lib/data/rekap";
+import type { RekapData, SessionItem } from "@/lib/data/rekap";
 import { formatCurrency } from "@/lib/format";
 
-const STUDENT_COLORS = ["#D5EDE4", "#D5E0F5", "#F5E8D5", "#E8D5F5", "#F5D5E0", "#E0F5D5"];
+const PAGE_SIZE = 20;
 
 type RangeMode = "current" | "previous" | "custom";
 
@@ -31,9 +31,56 @@ function monthDateRange(offset: number) {
   };
 }
 
-function initialsOf(name: string) {
-  const parts = name.split(/\s+/).filter(Boolean);
-  return (parts.length > 1 ? parts[0][0] + parts[1][0] : name.slice(0, 2)).toUpperCase();
+interface RecapFilterControlsProps {
+  rangeMode: RangeMode;
+  dateFrom: string;
+  dateTo: string;
+  students: string[];
+  studentFilter: string | null;
+  onRangeMode: (mode: RangeMode) => void;
+  onDateFromChange: (value: string) => void;
+  onDateToChange: (value: string) => void;
+  onApplyRange: () => void;
+  onStudentChange: (student: string | null) => void;
+}
+
+function RecapFilterControls({
+  rangeMode,
+  dateFrom,
+  dateTo,
+  students,
+  studentFilter,
+  onRangeMode,
+  onDateFromChange,
+  onDateToChange,
+  onApplyRange,
+  onStudentChange,
+}: RecapFilterControlsProps) {
+  return (
+    <>
+      <div className="app-recap-presets" role="group" aria-label="Periode">
+        <button type="button" className={rangeMode === "current" ? "active" : ""} onClick={() => onRangeMode("current")}>Bulan ini</button>
+        <button type="button" className={rangeMode === "previous" ? "active" : ""} onClick={() => onRangeMode("previous")}>Bulan lalu</button>
+        <button type="button" className={rangeMode === "custom" ? "active" : ""} onClick={() => onRangeMode("custom")}>Pilih tanggal</button>
+      </div>
+
+      {rangeMode === "custom" ? (
+        <div className="app-recap-custom-range">
+          <input type="date" value={dateFrom} onChange={(event) => onDateFromChange(event.target.value)} aria-label="Tanggal mulai" />
+          <span>sampai</span>
+          <input type="date" value={dateTo} onChange={(event) => onDateToChange(event.target.value)} aria-label="Tanggal selesai" />
+          <button type="button" onClick={onApplyRange}>Terapkan</button>
+        </div>
+      ) : null}
+
+      <div className="app-recap-students" role="group" aria-label="Filter murid">
+        <button type="button" className={studentFilter === null ? "active" : ""} onClick={() => onStudentChange(null)}>Semua murid</button>
+        {students.map((student) => (
+          <button type="button" key={student} className={studentFilter === student ? "active" : ""} onClick={() => onStudentChange(student)}>{student.split(" ")[0]}</button>
+        ))}
+      </div>
+    </>
+  );
 }
 
 export default function RekapContent({ rekapData, from, to, loadError = false }: RekapContentProps) {
@@ -41,6 +88,9 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const [csvLoading, setCsvLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<SessionItem | null>(null);
+  const [page, setPage] = useState(1);
   const [dateFrom, setDateFrom] = useState(from);
   const [dateTo, setDateTo] = useState(to);
   const [rangeMode, setRangeMode] = useState<RangeMode>(() => {
@@ -55,6 +105,11 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const rows = useMemo(
     () => studentFilter ? allRows.filter((row) => row.m === studentFilter) : allRows,
     [allRows, studentFilter],
+  );
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const paginatedRows = useMemo(
+    () => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [page, rows],
   );
   const summary = useMemo(() => rekapData?.summary ?? {
     totalSesi: 0,
@@ -78,20 +133,37 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     };
   }, [rows, studentFilter, summary]);
 
-  const studentColors = useMemo(() => new Map(summary.students.map((name, index) => [name, STUDENT_COLORS[index % STUDENT_COLORS.length]])), [summary.students]);
-
   const openRange = useCallback((newFrom: string, newTo: string) => {
     window.location.href = `/app/rekap?from=${newFrom}&to=${newTo}`;
   }, []);
 
   const handleRangeMode = useCallback((mode: RangeMode) => {
     setRangeMode(mode);
+    setPage(1);
     if (mode === "custom") return;
     const range = monthDateRange(mode === "current" ? 0 : -1);
     setDateFrom(range.from);
     setDateTo(range.to);
     openRange(range.from, range.to);
   }, [openRange]);
+
+  const handleStudentChange = useCallback((student: string | null) => {
+    setStudentFilter(student);
+    setPage(1);
+  }, []);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    if (!selectedSession) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedSession(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedSession]);
 
   const handleExportCSV = useCallback(async () => {
     const { allowed } = await canExport("csv");
@@ -166,29 +238,31 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
           </div>
         </header>
 
-        <section className="app-recap-controls" aria-label="Filter rekap">
-          <div className="app-recap-presets" role="group" aria-label="Periode">
-            <button type="button" className={rangeMode === "current" ? "active" : ""} onClick={() => handleRangeMode("current")}>Bulan ini</button>
-            <button type="button" className={rangeMode === "previous" ? "active" : ""} onClick={() => handleRangeMode("previous")}>Bulan lalu</button>
-            <button type="button" className={rangeMode === "custom" ? "active" : ""} onClick={() => handleRangeMode("custom")}>Pilih tanggal</button>
-          </div>
-
-          {rangeMode === "custom" ? (
-            <div className="app-recap-custom-range">
-              <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} aria-label="Tanggal mulai" />
-              <span>sampai</span>
-              <input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} aria-label="Tanggal selesai" />
-              <button type="button" onClick={() => openRange(dateFrom, dateTo)}>Terapkan</button>
-            </div>
-          ) : null}
-
-          <div className="app-recap-students" role="group" aria-label="Filter murid">
-            <button type="button" className={studentFilter === null ? "active" : ""} onClick={() => setStudentFilter(null)}>Semua murid</button>
-            {summary.students.map((student) => (
-              <button type="button" key={student} className={studentFilter === student ? "active" : ""} onClick={() => setStudentFilter(student)}>{student.split(" ")[0]}</button>
-            ))}
-          </div>
+        <section className="app-recap-controls app-recap-controls-desktop" aria-label="Filter rekap">
+          <RecapFilterControls
+            rangeMode={rangeMode}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            students={summary.students}
+            studentFilter={studentFilter}
+            onRangeMode={handleRangeMode}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onApplyRange={() => openRange(dateFrom, dateTo)}
+            onStudentChange={handleStudentChange}
+          />
         </section>
+
+        <button
+          type="button"
+          className="app-recap-filter-trigger"
+          aria-expanded={filtersOpen}
+          aria-controls="recap-filter-sheet"
+          onClick={() => setFiltersOpen(true)}
+        >
+          <Funnel size={17} aria-hidden="true" /> Filter
+          {(studentFilter || rangeMode !== "current") ? <span>{Number(Boolean(studentFilter)) + Number(rangeMode !== "current")}</span> : null}
+        </button>
 
         <section className="app-recap-summary" aria-label="Ringkasan periode">
           <div><span>Jumlah sesi</span><strong>{filteredSummary.totalSesi}</strong></div>
@@ -211,28 +285,69 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
             <div className="app-data-state">Belum ada sesi pada periode ini.</div>
           ) : (
             <>
-              <div className="app-recap-table-wrap">
-                <table className="table">
-                  <thead><tr><th>Tanggal</th><th>Murid</th><th>Sesi</th><th className="right">Jam</th><th className="right">Tagihan</th></tr></thead>
-                  <tbody>{rows.map((row) => (
-                    <tr key={row.id}><td>{row.d}</td><td><strong>{row.m}</strong></td><td>{row.s}</td><td className="right">{row.h}</td><td className="right">{row.t}</td></tr>
-                  ))}</tbody>
-                </table>
-              </div>
-
-              <div className="app-recap-mobile-list">
-                {rows.map((row) => (
-                  <div className="app-recap-mobile-row" key={row.id}>
-                    <span className="app-recap-avatar" style={{ background: studentColors.get(row.m) }}>{initialsOf(row.m)}</span>
-                    <div><strong>{row.m}</strong><span>{row.d} · {row.s}</span></div>
-                    <div><strong>{row.t}</strong><span>{row.h} jam</span></div>
-                  </div>
+              <div className="app-recap-session-list">
+                {paginatedRows.map((row) => (
+                  <button type="button" className="app-recap-session-row" key={row.id} onClick={() => setSelectedSession(row)}>
+                    <span className="app-recap-session-date">{row.d}</span>
+                    <span className="app-recap-session-person"><strong>{row.m}</strong><small>{row.time} · {row.h} jam</small></span>
+                    <span className="app-recap-session-amount">{row.t}</span>
+                    <CaretRight size={18} aria-hidden="true" />
+                  </button>
                 ))}
               </div>
+              {totalPages > 1 ? (
+                <nav className="app-recap-pagination" aria-label="Halaman sesi">
+                  <button type="button" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>Sebelumnya</button>
+                  <span>Halaman {page} dari {totalPages}</span>
+                  <button type="button" disabled={page === totalPages} onClick={() => setPage((current) => current + 1)}>Berikutnya</button>
+                </nav>
+              ) : null}
             </>
           )}
         </section>
       </main>
+
+      {filtersOpen ? (
+        <div className="app-recap-sheet-scrim" onMouseDown={() => setFiltersOpen(false)}>
+          <section className="app-recap-filter-sheet" id="recap-filter-sheet" role="dialog" aria-modal="true" aria-label="Filter rekap" onMouseDown={(event) => event.stopPropagation()}>
+            <header>
+              <strong>Filter rekap</strong>
+              <button type="button" aria-label="Tutup filter" onClick={() => setFiltersOpen(false)}><X size={20} aria-hidden="true" /></button>
+            </header>
+            <RecapFilterControls
+              rangeMode={rangeMode}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              students={summary.students}
+              studentFilter={studentFilter}
+              onRangeMode={handleRangeMode}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+              onApplyRange={() => openRange(dateFrom, dateTo)}
+              onStudentChange={handleStudentChange}
+            />
+          </section>
+        </div>
+      ) : null}
+
+      {selectedSession ? (
+        <div className="app-session-detail-scrim" onMouseDown={() => setSelectedSession(null)}>
+          <aside className="app-session-detail" role="dialog" aria-modal="true" aria-label={`Detail sesi ${selectedSession.m}`} onMouseDown={(event) => event.stopPropagation()}>
+            <header>
+              <div><p>Detail sesi</p><h2>{selectedSession.m}</h2></div>
+              <button type="button" aria-label="Tutup detail sesi" onClick={() => setSelectedSession(null)}><X size={20} aria-hidden="true" /></button>
+            </header>
+            <dl>
+              <div><dt>Tanggal dan waktu</dt><dd>{selectedSession.d} · {selectedSession.time}</dd></div>
+              <div><dt>Mode</dt><dd>{selectedSession.mode}</dd></div>
+              <div><dt>Lokasi</dt><dd>{selectedSession.location}</dd></div>
+              <div><dt>{selectedSession.rateLabel}</dt><dd>{selectedSession.rate}</dd></div>
+              <div><dt>Total sesi</dt><dd>{selectedSession.t}</dd></div>
+            </dl>
+            <section className="app-session-detail-note"><h3>Catatan sesi</h3><p>{selectedSession.note}</p></section>
+          </aside>
+        </div>
+      ) : null}
 
       <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </>

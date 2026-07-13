@@ -442,22 +442,6 @@
   padding: 6px 0 24px;
   z-index: 20;
 }
-.mob-tab {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-family: var(--f-body); font-weight: 700; font-size: 10px;
-  color: var(--tw-text-3); text-decoration: none;
-  padding: 4px 12px;
-  transition: color .15s ease;
-}
-.mob-tab.active { color: var(--tw-primary); }
-.mob-tab .tab-ic {
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--r-sm);
-  transition: background .15s ease;
-}
-.mob-tab.active .tab-ic { background: var(--tw-secondary-soft); }
-
 /* App header */
 .mob-app-hdr { margin-bottom: 20px; }
 .mob-app-hdr h1 {

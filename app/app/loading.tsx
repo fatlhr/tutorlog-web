@@ -1,17 +1,12 @@
+import { PageMain } from "@/components/app-ui/route-canvas";
+import { LoadingState } from "@/components/app-ui/states";
+
 export default function AppLoading() {
   return (
-    <main className="app-loading" aria-label="Memuat halaman">
-      <div className="app-loading-heading" />
-      <div className="app-loading-summary">
-        <span />
-        <span />
-        <span />
-      </div>
-      <div className="app-loading-rows">
-        <span />
-        <span />
-        <span />
-      </div>
-    </main>
+    <PageMain>
+      <LoadingState shape="form" rowCount={1} label="Memuat judul halaman" />
+      <LoadingState shape="summary" rowCount={3} label="Memuat ringkasan halaman" />
+      <LoadingState shape="rows" rowCount={3} label="Memuat isi halaman" />
+    </PageMain>
   );
 }

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Button } from "@/components/app-ui/controls";
+import { FeedbackMessage } from "@/components/app-ui/structure";
 
 interface HomeUpgradePromptProps {
   exhausted: boolean;
@@ -6,12 +7,18 @@ interface HomeUpgradePromptProps {
 
 export default function HomeUpgradePrompt({ exhausted }: HomeUpgradePromptProps) {
   return (
-    <aside className="home-upgrade-prompt">
-      <div>
-        <strong>{exhausted ? "Batas unduhan gratis bulan ini sudah digunakan." : "Unduhan gratis masih tersedia bulan ini."}</strong>
-        <span>Plus membuka unduhan rekap dan invoice tanpa batas.</span>
-      </div>
-      <Link href="/harga">{exhausted ? "Aktifkan Plus" : "Lihat Plus"}</Link>
+    <aside aria-label="TutorLog Plus">
+      <FeedbackMessage
+        status="warning"
+        density="compact"
+        title={exhausted ? "Batas unduhan gratis bulan ini sudah digunakan." : "Unduhan gratis masih tersedia bulan ini."}
+        body="Plus membuka unduhan rekap dan invoice tanpa batas."
+        action={(
+          <Button href="/harga" variant="quiet" size="compact">
+            {exhausted ? "Aktifkan Plus" : "Lihat Plus"}
+          </Button>
+        )}
+      />
     </aside>
   );
 }
