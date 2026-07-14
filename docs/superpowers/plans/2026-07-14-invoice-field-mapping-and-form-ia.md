@@ -667,7 +667,7 @@ Expected: the staged diff contains only the two listed files.
 - Consumes: completed Tasks 1-3.
 - Produces: verified implementation evidence and a clear handoff for the later user-requested visual review.
 
-- [ ] **Step 1: Run the focused Invoice contract from a clean command invocation**
+- [x] **Step 1: Run the focused Invoice contract from a clean command invocation**
 
 Run:
 
@@ -677,7 +677,7 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: exit code `0` and the final `Invoice export contract` message.
 
-- [ ] **Step 2: Confirm removed names and dead data do not remain**
+- [x] **Step 2: Confirm removed names and dead data do not remain**
 
 Run:
 
@@ -687,7 +687,7 @@ rtk rg -n 'invoice-student-level|Detail tambahan|Detail murid|inv-section-row|in
 
 Expected: no matches.
 
-- [ ] **Step 3: Confirm the approved mapping appears exactly once**
+- [x] **Step 3: Confirm the approved mapping appears exactly once**
 
 Run:
 
@@ -697,7 +697,7 @@ rtk rg -n 'Profil tutor|Penerima invoice|Tingkat pendidikan|Murid:|Tutor Privat|
 
 Expected: the section titles and mapping terms are present in the intended page blocks. `invoiceActionsDisabled` is declared once and consumed by three buttons.
 
-- [ ] **Step 4: Inspect the final diff and whitespace**
+- [x] **Step 4: Inspect the final diff and whitespace**
 
 Run:
 
@@ -709,7 +709,7 @@ rtk git status --short --branch
 
 Expected: no whitespace error. Existing unrelated dirty files may remain, but none may be staged by this work.
 
-- [ ] **Step 5: Report deferred verification accurately**
+- [x] **Step 5: Report deferred verification accurately**
 
 The implementation handoff must explicitly report:
 
