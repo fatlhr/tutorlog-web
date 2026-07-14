@@ -53,16 +53,12 @@ function useOverlayAvailability(kind: OverlayFrameProps["kind"]) {
   const [available, setAvailable] = useState(() => getOverlayAvailability(kind));
 
   useEffect(() => {
-    if (kind === "dialog") {
-      setAvailable(true);
-      return;
-    }
+    if (kind === "dialog") return;
 
     const media = window.matchMedia(
       kind === "bottomSheet" ? "(max-width: 767px)" : "(min-width: 768px)",
     );
     const update = () => setAvailable(media.matches);
-    update();
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, [kind]);

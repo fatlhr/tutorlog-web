@@ -222,9 +222,10 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     [allRows, studentFilter],
   );
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
   const paginatedRows = useMemo(
-    () => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [page, rows],
+    () => rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [safePage, rows],
   );
   const summary = useMemo(() => rekapData?.summary ?? {
     totalSesi: 0,
@@ -266,10 +267,6 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     setStudentFilter(student);
     setPage(1);
   }, []);
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
 
   const handleExportCSV = useCallback(async () => {
     const { allowed } = await canExport("csv");
@@ -435,9 +432,9 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
                 </Surface>
                 {totalPages > 1 ? (
                   <nav className="app-recap-pagination" aria-label="Halaman sesi">
-                    <Button type="button" variant="quiet" size="compact" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>Sebelumnya</Button>
-                    <span>Halaman {page} dari {totalPages}</span>
-                    <Button type="button" variant="quiet" size="compact" disabled={page === totalPages} onClick={() => setPage((current) => current + 1)}>Berikutnya</Button>
+                    <Button type="button" variant="quiet" size="compact" disabled={safePage <= 1} onClick={() => setPage((current) => Math.max(current - 1, 1))}>Sebelumnya</Button>
+                    <span>Halaman {safePage} dari {totalPages}</span>
+                    <Button type="button" variant="quiet" size="compact" disabled={safePage >= totalPages} onClick={() => setPage((current) => Math.min(current + 1, totalPages))}>Berikutnya</Button>
                   </nav>
                 ) : null}
               </>
