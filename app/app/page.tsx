@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
 import { fetchRecentSessions, fetchRekapDataByRange } from "@/lib/data/rekap";
 import HomeUpgradePrompt from "@/components/HomeUpgradePrompt";
+import NamePromptDialog from "@/components/NamePromptDialog";
 import { Button } from "@/components/app-ui/controls";
 import { DataRow } from "@/components/app-ui/data-row";
 import { RouteCanvas, PageMain } from "@/components/app-ui/route-canvas";
@@ -43,7 +44,9 @@ export default async function HomePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const email = user?.email ?? "";
-  const name = email.split("@")[0] || "Tutor";
+  const rawName = user?.user_metadata?.full_name?.toString().trim() ?? "";
+  const hasName = Boolean(rawName);
+  const name = hasName ? rawName : (email.split("@")[0] || "Tutor");
   const now = new Date();
   const monthFormatter = new Intl.DateTimeFormat("id-ID", {
     month: "long",
@@ -79,7 +82,9 @@ export default async function HomePage() {
   ] : [];
 
   return (
-    <RouteCanvas route="home">
+    <>
+      <NamePromptDialog hasName={hasName} />
+      <RouteCanvas route="home">
       <PageMain>
         <PageHeader
           route="home"
@@ -285,5 +290,6 @@ export default async function HomePage() {
         </section>
       </PageMain>
     </RouteCanvas>
+    </>
   );
 }
