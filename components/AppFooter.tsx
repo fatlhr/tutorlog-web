@@ -18,6 +18,13 @@ export function AppFooter({ context }: AppFooterProps) {
         TutorLog
       </Link>
       <p className={styles.footerDesc}>Teman kerja untuk catatan les, rekap, dan invoice tutor privat.</p>
+      <nav className={styles.footerNav}>
+        <Link className={styles.footerNavLink} href="/fitur">Fitur</Link>
+        <span className={styles.footerNavDot} aria-hidden="true">·</span>
+        <Link className={styles.footerNavLink} href="/harga">Harga</Link>
+        <span className={styles.footerNavDot} aria-hidden="true">·</span>
+        <Link className={styles.footerNavLink} href="/panduan">Panduan</Link>
+      </nav>
       <div className={styles.footerSupport}>
         <span className={styles.footerSupportLabel}>Pusat Bantuan</span>
         {context === "public" ? (
@@ -25,7 +32,7 @@ export function AppFooter({ context }: AppFooterProps) {
             Hapus Akun
           </Link>
         ) : (
-          <Link className={styles.footerSupportLink} href="/kontak" target="_blank">
+          <Link className={styles.footerSupportLink} href="/kontak">
             Kontak
           </Link>
         )}
@@ -41,9 +48,9 @@ export function AppFooter({ context }: AppFooterProps) {
           </>
         ) : (
           <>
-            <Link className={styles.footerLegalLink} href="/privacy" target="_blank">Privasi</Link>
+            <Link className={styles.footerLegalLink} href="/privacy">Privasi</Link>
             <span className={styles.footerLegalDot} aria-hidden="true">·</span>
-            <Link className={styles.footerLegalLink} href="/terms" target="_blank">Syarat</Link>
+            <Link className={styles.footerLegalLink} href="/terms">Syarat</Link>
           </>
         )}
       </div>
