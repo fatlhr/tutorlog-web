@@ -147,6 +147,8 @@ export default function InvoicePage() {
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const sessionsRequestSequence = useRef(0);
+  const restoredDraftStudentNameRef = useRef<string | null>(null);
+  const restoredDraftHasStudentAddressRef = useRef(false);
   const currentSessionsQueryKey = JSON.stringify([studentName, periodStart, periodEnd]);
   const invoiceDownloadLocked = quotaReady && !quotaState.pdfExportUnlimited;
   const invoiceActionsDisabled =
@@ -226,7 +228,12 @@ export default function InvoicePage() {
     }
 
     setStudentInfo(selectedStudent.educationLevel ?? "");
-    setStudentAddress((current) => current || selectedStudent.address || "");
+    const shouldPreserveDraftStudentAddress =
+      restoredDraftStudentNameRef.current === selectedStudent.name &&
+      restoredDraftHasStudentAddressRef.current;
+    setStudentAddress((current) =>
+      shouldPreserveDraftStudentAddress ? current : current || selectedStudent.address || ""
+    );
     setParentName((current) => current.trim() || getStudentRecipientName(selectedStudent));
   }, [studentName, students, studentsLoading]);
 
@@ -377,6 +384,8 @@ export default function InvoicePage() {
   }, [exportSuccess]);
 
   const handleStudentChange = (name: string) => {
+    restoredDraftStudentNameRef.current = null;
+    restoredDraftHasStudentAddressRef.current = false;
     setStudentName(name);
     const found = students.find((student) => student.name === name);
 
@@ -419,14 +428,20 @@ export default function InvoicePage() {
       const draft = JSON.parse(savedDraft) as Record<string, unknown>;
       if (typeof draft.periodStart === "string") setPeriodStart(draft.periodStart);
       if (typeof draft.periodEnd === "string") setPeriodEnd(draft.periodEnd);
-      if (typeof draft.studentName === "string") setStudentName(draft.studentName);
+      if (typeof draft.studentName === "string") {
+        restoredDraftStudentNameRef.current = draft.studentName;
+        setStudentName(draft.studentName);
+      }
       if (typeof draft.invoiceNo === "string") setInvoiceNo(draft.invoiceNo);
       if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
       if (typeof draft.tutorName === "string") setTutorName(draft.tutorName);
       if (typeof draft.tutorLocation === "string") setTutorLocation(draft.tutorLocation);
       if (typeof draft.tutorContact === "string") setTutorContact(draft.tutorContact);
       if (typeof draft.parentName === "string") setParentName(draft.parentName);
-      if (typeof draft.studentAddress === "string") setStudentAddress(draft.studentAddress);
+      if (typeof draft.studentAddress === "string") {
+        restoredDraftHasStudentAddressRef.current = true;
+        setStudentAddress(draft.studentAddress);
+      }
       if (typeof draft.bankAccount === "string") setBankAccount(draft.bankAccount);
       if (typeof draft.bankName === "string") setBankName(draft.bankName);
       if (typeof draft.notes === "string") setNotes(draft.notes);

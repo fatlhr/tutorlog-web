@@ -283,6 +283,26 @@ assert.match(
   /setStudentInfo\(found\.educationLevel \?\? ""\);[\s\S]*setStudentAddress\(found\.address \?\? ""\);[\s\S]*setParentName\(getStudentRecipientName\(found\)\);/,
   "Changing students must reset every student-derived Invoice value",
 );
+assert.match(
+  page,
+  /const restoredDraftStudentNameRef = useRef<string \| null>\(null\);[\s\S]*const restoredDraftHasStudentAddressRef = useRef\(false\);/,
+  "Draft restoration must track student identity and explicit address presence separately",
+);
+assert.match(
+  page,
+  /const shouldPreserveDraftStudentAddress =\s*restoredDraftStudentNameRef\.current === selectedStudent\.name &&\s*restoredDraftHasStudentAddressRef\.current;[\s\S]*setStudentAddress\(\(current\) =>\s*shouldPreserveDraftStudentAddress \? current : current \|\| selectedStudent\.address \|\| ""\s*\);/,
+  "Initial student hydration must preserve an explicitly present address only for the restored student",
+);
+assert.match(
+  page,
+  /const handleStudentChange = \(name: string\) => \{\s*restoredDraftStudentNameRef\.current = null;\s*restoredDraftHasStudentAddressRef\.current = false;\s*setStudentName\(name\);/,
+  "Changing students must clear restored-address preservation markers",
+);
+assert.match(
+  page,
+  /if \(typeof draft\.studentName === "string"\) \{\s*restoredDraftStudentNameRef\.current = draft\.studentName;\s*setStudentName\(draft\.studentName\);\s*\}[\s\S]*if \(typeof draft\.studentAddress === "string"\) \{\s*restoredDraftHasStudentAddressRef\.current = true;\s*setStudentAddress\(draft\.studentAddress\);\s*\}/,
+  "Draft restoration must retain explicit address presence, including an empty string",
+);
 assert.doesNotMatch(
   page,
   /typeof draft\.studentInfo === "string"/,

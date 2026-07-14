@@ -817,15 +817,15 @@ After the task review approves this commit, repeat the focused audit and the who
 - Consumes: the restored draft student name and the presence/value of `studentAddress` in that draft.
 - Produces: exact same-student draft address restoration, including an intentionally saved empty string.
 
-- [ ] **Step 1: Add a failing focused assertion**
+- [x] **Step 1: Add a failing focused assertion**
 
 Extend the focused contract to require explicit draft-address presence tracking, a same-student identity check during initial hydration, and reset of that preservation marker when the user changes student.
 
-- [ ] **Step 2: Run the focused contract and confirm RED**
+- [x] **Step 2: Run the focused contract and confirm RED**
 
 Run `rtk node scripts/test-invoice-export-contract.mjs` and confirm it fails because an empty draft address is still collapsed with a missing value.
 
-- [ ] **Step 3: Preserve address presence separately from address truthiness**
+- [x] **Step 3: Preserve address presence separately from address truthiness**
 
 Track the restored draft student identity and whether `studentAddress` was explicitly present as a string. During the initial students hydration:
 
@@ -835,7 +835,7 @@ Track the restored draft student identity and whether `studentAddress` was expli
 
 Do not change recipient, education, session, or persistence behavior.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 Run:
 
