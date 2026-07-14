@@ -1231,6 +1231,7 @@
   .footer {
     width: calc(100% - 48px);
     padding: 28px 0 32px;
+    grid-template-columns: 1fr;
   }
 
   .footerNav {
