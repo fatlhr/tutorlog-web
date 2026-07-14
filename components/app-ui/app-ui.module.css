@@ -1236,21 +1236,37 @@
   .footerNav {
     grid-column: 1;
     grid-row: 3;
+    flex-direction: column;
+    gap: 2px;
   }
 
-  .footerSupport {
-    grid-column: 1;
-    grid-row: 4;
-  }
-
-  .footerCopyright {
-    grid-column: 1;
-    grid-row: 5;
+  .footerNavDot {
+    display: none;
   }
 
   .footerLegal {
     grid-column: 1;
+    grid-row: 4;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .footerLegalDot {
+    display: none;
+  }
+
+  .footerDivider {
+    grid-row: 5;
+  }
+
+  .footerSupport {
+    grid-column: 1;
     grid-row: 6;
+  }
+
+  .footerCopyright {
+    grid-column: 1;
+    grid-row: 7;
   }
 }
 
