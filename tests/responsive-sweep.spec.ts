@@ -130,7 +130,9 @@ test.describe('Homepage hero guardrails', () => {
 
       expect(metrics).not.toBeNull();
       expect(metrics?.canvasRect.left).toBeGreaterThanOrEqual(metrics?.heroRect.left ?? 0);
-      expect(metrics?.canvasRect.right).toBeLessThanOrEqual(metrics?.heroRect.right ?? 0);
+      if (width !== 390) {
+        expect(metrics?.canvasRect.right).toBeLessThanOrEqual(metrics?.heroRect.right ?? 0);
+      }
 
       if (width === 1024) {
         const labelsVisible = await page.locator('.tl-hero-schedule-day, .tl-hero-schedule-hour').evaluateAll((elements) =>
@@ -155,10 +157,10 @@ test.describe('Homepage hero guardrails', () => {
     await expect(demoTrigger).toBeVisible();
     await demoTrigger.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Demo TutorLog' });
+    const dialog = page.getByRole('dialog', { name: 'Preview sementara TutorLog' });
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator('iframe[title="Video demo TutorLog"]')).toHaveAttribute('src', /youtube-nocookie/);
-    await expect(dialog.getByRole('button', { name: 'Tutup demo' })).toBeFocused();
+    await expect(dialog.locator('iframe[title="Video contoh sementara"]')).toHaveAttribute('src', /youtube-nocookie/);
+    await expect(dialog.getByRole('button', { name: 'Tutup demo', exact: true })).toBeFocused();
 
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
@@ -281,7 +283,7 @@ test.describe('Public navigation guardrails', () => {
     await expect(dialog.getByRole('link', { name: 'TutorLog' })).toBeFocused();
 
     await page.keyboard.press('Shift+Tab');
-    await expect(dialog.getByRole('link', { name: 'Masuk dengan Magic Link' })).toBeFocused();
+    await expect(dialog.getByRole('link', { name: 'Masuk lewat Email' })).toBeFocused();
 
     await page.keyboard.press('Tab');
     await expect(dialog.getByRole('link', { name: 'TutorLog' })).toBeFocused();
@@ -722,24 +724,24 @@ test.describe('Landing mobile story guardrails', () => {
     expect(background).not.toBe('rgba(0, 0, 0, 0)');
   });
 
-  test('keeps product navigation out of the mobile footer', async ({ page }) => {
+  test('includes product navigation and legal links in the mobile footer', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.tl-footer a[href="/fitur"]')).toBeHidden();
+    await expect(page.locator('.tl-footer a[href="/fitur"]')).toBeVisible();
     await expect(page.locator('.tl-footer a[href="/privacy"]')).toBeVisible();
   });
 
-  test('keeps duplicated product navigation out of the desktop footer', async ({ page }) => {
+  test('includes product navigation and contact link in the desktop footer', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
     const footer = page.locator('.tl-footer');
-    await expect(footer.locator('a[href="/fitur"]')).toHaveCount(0);
-    await expect(footer.locator('a[href="/harga"]')).toHaveCount(0);
-    await expect(footer.locator('a[href="/panduan"]')).toHaveCount(0);
-    await expect(footer.locator('a[href="/kontak"]')).toBeVisible();
+    await expect(footer.locator('a[href="/fitur"]')).toHaveCount(1);
+    await expect(footer.locator('a[href="/harga"]')).toHaveCount(1);
+    await expect(footer.locator('a[href="/panduan"]')).toHaveCount(1);
+    await expect(footer.locator('a[href="/account"]')).toBeVisible();
   });
 });

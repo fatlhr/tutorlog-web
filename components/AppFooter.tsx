@@ -10,7 +10,7 @@ interface AppFooterProps {
 
 export function AppFooter({ context }: AppFooterProps) {
   return (
-    <footer className={`${styles.footer} ${context === "public" ? styles.themeScope : ""}`}>
+    <footer className={`tl-footer ${styles.footer} ${context === "public" ? styles.themeScope : ""}`}>
       <div className={styles.footerCol}>
         <Link className={styles.footerBrand} href="/" aria-label="Kembali ke beranda TutorLog">
           <span className={styles.footerBrandMark}>
