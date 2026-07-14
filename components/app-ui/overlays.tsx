@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type MouseEvent,
@@ -28,9 +29,28 @@ interface OverlayBehaviorOptions {
 }
 
 const OverlayContext = createContext(false);
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+let scrollbarWidthCache: number | null = null;
+function ensureScrollbarWidth(): number {
+  if (scrollbarWidthCache === null) {
+    if (typeof window === "undefined") return 0;
+    scrollbarWidthCache = window.innerWidth - document.documentElement.clientWidth;
+  }
+  return scrollbarWidthCache;
+}
+
+function getOverlayAvailability(kind: OverlayFrameProps["kind"]) {
+  if (kind === "dialog") return true;
+  if (typeof window === "undefined") return false;
+
+  return window.matchMedia(
+    kind === "bottomSheet" ? "(max-width: 767px)" : "(min-width: 768px)",
+  ).matches;
+}
 
 function useOverlayAvailability(kind: OverlayFrameProps["kind"]) {
-  const [available, setAvailable] = useState(kind === "dialog");
+  const [available, setAvailable] = useState(() => getOverlayAvailability(kind));
 
   useEffect(() => {
     if (kind === "dialog") {
@@ -68,12 +88,16 @@ function useOverlayBehavior({
     throw new Error("Protected app overlays cannot be nested.");
   }
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!open) return;
 
     const previousActive = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const scrollbarWidth = ensureScrollbarWidth();
+
+    if (scrollbarWidth > 0) {
+      document.documentElement.style.setProperty("--scrollbar-compensation", `${scrollbarWidth}px`);
+    }
+    document.documentElement.classList.add("bodyScrollLock");
 
     const focusableSelector = [
       "button:not([disabled])",
@@ -119,7 +143,8 @@ function useOverlayBehavior({
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
+      document.documentElement.classList.remove("bodyScrollLock");
+      document.documentElement.style.removeProperty("--scrollbar-compensation");
       (returnFocusRef?.current ?? previousActive)?.focus();
     };
   }, [

@@ -215,8 +215,7 @@
 
 .button:active:not(:disabled):not([aria-disabled="true"]),
 .iconButton:active:not(:disabled),
-.segmented button:active,
-.dataRowInteractive:active {
+.segmented button:active {
   transform: translateY(1px);
 }
 
@@ -867,6 +866,7 @@
   padding: var(--space-7);
   background: var(--app-overlay);
   font-family: var(--app-font-body);
+  will-change: opacity;
   animation: overlayFade var(--motion-slow) var(--ease-out) both;
 }
 
@@ -879,7 +879,7 @@
 }
 
 .dialogLayer { align-items: center; justify-content: center; }
-.dialogPanel { max-height: calc(100dvh - 48px); border-radius: var(--radius-overlay); animation: dialogIn var(--motion-slow) var(--ease-out) both; }
+.dialogPanel { max-height: calc(100dvh - 48px); border-radius: var(--radius-overlay); will-change: opacity; animation: overlayFade var(--motion-overlay) var(--ease-out) both; }
 .dialogSmall { width: min(400px, calc(100vw - 32px)); }
 .dialogMedium { width: min(560px, calc(100vw - 32px)); }
 .dialogLarge { width: min(760px, calc(100vw - 32px)); }
@@ -887,12 +887,12 @@
 .dialogPreview .overlayBody { min-height: 0; flex: 1; padding: var(--space-0); }
 
 .bottomSheetLayer { align-items: flex-end; padding: 0; }
-.bottomSheetPanel { width: 100%; border-radius: var(--radius-overlay) var(--radius-overlay) 0 0; animation: sheetIn var(--motion-overlay) var(--ease-out) both; }
+.bottomSheetPanel { width: 100%; border-radius: var(--radius-overlay) var(--radius-overlay) 0 0; will-change: opacity; animation: overlayFade var(--motion-overlay) var(--ease-out) both; }
 .bottomSheetContent { max-height: 62dvh; }
 .bottomSheetTall { max-height: 82dvh; }
 
 .sidePanelLayer { justify-content: flex-end; }
-.sidePanelPanel { width: min(400px, calc(100vw - 48px)); height: calc(100dvh - 48px); border-radius: var(--radius-overlay); animation: panelIn var(--motion-overlay) var(--ease-out) both; }
+.sidePanelPanel { width: min(400px, calc(100vw - 48px)); height: calc(100dvh - 48px); border-radius: var(--radius-overlay); }
 .sidePanelDefault { max-width: 100%; }
 
 .overlayHeader {

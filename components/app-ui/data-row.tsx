@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Children, isValidElement, type ReactNode } from "react";
+import { Children, isValidElement, memo, type ReactNode } from "react";
 import { Button, IconButton } from "./controls";
 import styles from "./app-ui.module.css";
 
@@ -68,7 +68,7 @@ function assertNonInteractiveSlot(node: ReactNode, slot: string) {
   });
 }
 
-export function DataRow(props: DataRowProps) {
+export const DataRow = memo(function DataRow(props: DataRowProps) {
   assertNonInteractiveSlot(props.leading, "leading");
   assertNonInteractiveSlot(props.title, "title");
   assertNonInteractiveSlot(props.metadata, "metadata");
@@ -118,4 +118,4 @@ export function DataRow(props: DataRowProps) {
   }
 
   return <div className={className}>{content}</div>;
-}
+});
