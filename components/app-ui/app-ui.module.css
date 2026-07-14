@@ -1106,8 +1106,8 @@
 }
 
 .footerLegal {
-  grid-column: 2;
-  grid-row: 5;
+  grid-column: 1;
+  grid-row: 6;
   display: flex;
   gap: 8px;
   align-items: center;
