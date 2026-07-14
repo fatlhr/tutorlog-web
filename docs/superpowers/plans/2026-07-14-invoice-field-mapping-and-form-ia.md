@@ -262,7 +262,7 @@ Expected: the staged diff contains only the three listed files. Do not stage any
 - Consumes: existing `Field`, `Select`, `DateField`, `TextField`, `SectionHeading`, and protected-app CSS tokens.
 - Produces: `.inv-student-meta` and `.inv-payment-fields`; removes `.inv-section-row`, `.inv-section-col`, and `.inv-section-divide` from Invoice markup and CSS.
 
-- [ ] **Step 1: Add failing form-structure and alignment assertions**
+- [x] **Step 1: Add failing form-structure and alignment assertions**
 
 Add these assertions to `scripts/test-invoice-export-contract.mjs`:
 
@@ -314,7 +314,7 @@ assert.match(
 );
 ```
 
-- [ ] **Step 2: Run the focused contract and confirm the form assertions fail**
+- [x] **Step 2: Run the focused contract and confirm the form assertions fail**
 
 Run:
 
@@ -324,7 +324,7 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: FAIL because `.inv-student-meta`, Profil tutor, and Penerima invoice do not exist yet.
 
-- [ ] **Step 3: Insert static education metadata below Nama murid**
+- [x] **Step 3: Insert static education metadata below Nama murid**
 
 Immediately after the closing `</Field>` for `invoice-student`, add:
 
@@ -335,7 +335,7 @@ Immediately after the closing `</Field>` for `invoice-student`, add:
 </dl>
 ```
 
-- [ ] **Step 4: Replace the inline payment grid with a named responsive class**
+- [x] **Step 4: Replace the inline payment grid with a named responsive class**
 
 Replace:
 
@@ -349,7 +349,7 @@ with:
 <div className="inv-payment-fields">
 ```
 
-- [ ] **Step 5: Replace the lower split row with sequential sections**
+- [x] **Step 5: Replace the lower split row with sequential sections**
 
 Replace the entire `inv-section-row` block with:
 
@@ -387,7 +387,7 @@ Replace the entire `inv-section-row` block with:
 </div>
 ```
 
-- [ ] **Step 6: Add metadata, payment-grid, and alignment styles**
+- [x] **Step 6: Add metadata, payment-grid, and alignment styles**
 
 Add next to `.inv-period-fields` in `css/site.css`:
 
@@ -441,7 +441,7 @@ Add next to `.inv-period-fields` in `css/site.css`:
 
 The metadata value is right-aligned only to make the label-value relationship readable. The approved hint and field-content rule remains left-aligned.
 
-- [ ] **Step 7: Remove obsolete split-row CSS**
+- [x] **Step 7: Remove obsolete split-row CSS**
 
 Delete these exact selector blocks from `css/site.css` after their markup is gone:
 
@@ -489,7 +489,7 @@ rtk rg -n 'inv-section-row|inv-section-col|inv-section-divide' app/app/invoice/p
 
 Expected: no matches.
 
-- [ ] **Step 8: Run the focused contract and confirm Task 2 passes**
+- [x] **Step 8: Run the focused contract and confirm Task 2 passes**
 
 Run:
 
@@ -499,7 +499,7 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: PASS with no assertion error.
 
-- [ ] **Step 9: Review and commit only Task 2 files**
+- [x] **Step 9: Review and commit only Task 2 files**
 
 Run:
 
