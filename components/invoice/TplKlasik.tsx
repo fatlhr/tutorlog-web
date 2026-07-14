@@ -59,7 +59,7 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
             <th style={{ width: "60px" }}>Tgl</th>
             {showDescription ? <th>Deskripsi</th> : null}
             <th className="right mono" style={{ width: "46px" }}>Jam</th>
-            <th className="right mono" style={{ width: "80px" }}>Tarif/jam</th>
+            <th className="right mono" style={{ width: "80px" }}>Tarif</th>
             <th className="right mono" style={{ width: "90px" }}>Subtotal</th>
           </tr>
         </thead>
@@ -70,7 +70,7 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
               {showDescription ? <td><span className="cell-content">{it.desc.trim() || "-"}</span></td> : null}
               <td className="right mono"><span className="cell-content">{it.h.toFixed(1)}</span></td>
               <td className="right mono"><span className="cell-content">{formatIDR(it.rate)}</span></td>
-              <td className="right mono"><span className="cell-content">{formatIDR(it.h * it.rate)}</span></td>
+              <td className="right mono"><span className="cell-content">{formatIDR(it.amount)}</span></td>
             </tr>
           ))}
         </tbody>

@@ -50,7 +50,7 @@ export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }
             <th style={{ width: "55px" }}>Tgl</th>
             {showDescription ? <th>Deskripsi sesi</th> : null}
             <th className="right mono" style={{ width: "46px" }}>Jam</th>
-            <th className="right mono" style={{ width: "90px" }}>Tarif/jam</th>
+            <th className="right mono" style={{ width: "90px" }}>Tarif</th>
             <th className="right mono" style={{ width: "100px" }}>Subtotal</th>
           </tr>
         </thead>
@@ -61,7 +61,7 @@ export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }
               {showDescription ? <td>{it.desc.trim() || "-"}</td> : null}
               <td className="right mono">{it.h.toFixed(1)}</td>
               <td className="right mono">{formatIDR(it.rate)}</td>
-              <td className="right mono">{formatIDR(it.h * it.rate)}</td>
+              <td className="right mono">{formatIDR(it.amount)}</td>
             </tr>
           ))}
         </tbody>

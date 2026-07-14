@@ -52,6 +52,7 @@ interface InvoiceSessionItem {
   hours: number;
   rate: number;
   amount: number;
+  billingType: "hourly" | "flat";
 }
 
 function formatDateLabel(d: Date): string {
@@ -141,11 +142,18 @@ export default function InvoicePage() {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [studentsError, setStudentsError] = useState(false);
   const [sessionsError, setSessionsError] = useState(false);
+  const [loadedSessionsQueryKey, setLoadedSessionsQueryKey] = useState<string | null>(null);
   const [draftReady, setDraftReady] = useState(false);
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const sessionsRequestSequence = useRef(0);
+  const currentSessionsQueryKey = JSON.stringify([studentName, periodStart, periodEnd]);
   const invoiceDownloadLocked = quotaReady && !quotaState.pdfExportUnlimited;
-  const invoiceActionsDisabled = sessionsLoading || sessionsError || invoiceSessions.length === 0;
+  const invoiceActionsDisabled =
+    sessionsLoading ||
+    sessionsError ||
+    invoiceSessions.length === 0 ||
+    loadedSessionsQueryKey !== currentSessionsQueryKey;
 
   /* eslint-disable-next-line react-hooks/set-state-in-effect */
   useEffect(() => { setInvoiceNo(generateInvoiceNo()); }, []);
@@ -223,14 +231,25 @@ export default function InvoicePage() {
   }, [studentName, students, studentsLoading]);
 
   useEffect(() => {
+    const requestQueryKey = currentSessionsQueryKey;
+    const requestSequence = ++sessionsRequestSequence.current;
+    let cancelled = false;
+    const ownsLatestRequest = () =>
+      !cancelled && sessionsRequestSequence.current === requestSequence;
+
     if (!studentName || !periodStart || !periodEnd) {
       setInvoiceSessions([]);
       setSessionsError(false);
-      return;
+      setSessionsLoading(false);
+      setLoadedSessionsQueryKey(null);
+      return () => {
+        cancelled = true;
+      };
     }
     const doFetch = async () => {
       setSessionsLoading(true);
       setSessionsError(false);
+      setLoadedSessionsQueryKey(null);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("AUTH_REQUIRED");
@@ -260,7 +279,9 @@ export default function InvoicePage() {
           const endTime = clockOut ? new Date(clockOut).getTime() : 0;
           const hours = endTime > startTime ? Math.round(((endTime - startTime) / 36e5) * 10) / 10 : 0;
           const rate = (row.hourly_rate_snapshot as number) ?? 0;
-          const billingType = (row.billing_type_snapshot as string) ?? null;
+          const billingType: InvoiceSessionItem["billingType"] = row.billing_type_snapshot === "flat"
+            ? "flat"
+            : "hourly";
           const amount = billingType === "flat" ? (rate || 0) : Math.round(hours * rate);
           const relation = row.session_learning_notes;
           const noteRecord = Array.isArray(relation) ? relation[0] : relation;
@@ -268,19 +289,28 @@ export default function InvoicePage() {
             ? ((noteRecord as Record<string, unknown>).tutor_note as string).trim()
             : "";
 
-          return { id: row.id as string, clockIn, clockOut, note: note || "-", hours, rate, amount };
+          return { id: row.id as string, clockIn, clockOut, note: note || "-", hours, rate, amount, billingType };
         });
 
+        if (!ownsLatestRequest()) return;
         setInvoiceSessions(items);
+        setLoadedSessionsQueryKey(requestQueryKey);
       } catch {
+        if (!ownsLatestRequest()) return;
         setInvoiceSessions([]);
         setSessionsError(true);
+        setLoadedSessionsQueryKey(null);
       } finally {
-        setSessionsLoading(false);
+        if (ownsLatestRequest()) {
+          setSessionsLoading(false);
+        }
       }
     };
     doFetch();
-  }, [studentName, periodStart, periodEnd, supabase]);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentSessionsQueryKey, studentName, periodStart, periodEnd, supabase]);
 
   useEffect(() => {
     const plan = document.querySelector<HTMLElement>(".app-shell-h")?.dataset.plan;
@@ -459,6 +489,8 @@ export default function InvoicePage() {
       desc: session.note,
       h: session.hours,
       rate: session.rate,
+      amount: session.amount,
+      billingType: session.billingType,
     }));
 
     return {

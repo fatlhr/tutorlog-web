@@ -9,6 +9,7 @@ const invoiceCss = readFileSync(join(root, "css/tutorlog-web-invoices.css"), "ut
 const siteCss = readFileSync(join(root, "css/site.css"), "utf8");
 const baseCss = readFileSync(join(root, "css/tutorlog-web.css"), "utf8");
 const controls = readFileSync(join(root, "components/app-ui/controls.tsx"), "utf8");
+const publicProductRail = readFileSync(join(root, "components/PublicProductRail.tsx"), "utf8");
 const klasikTemplate = readFileSync(join(root, "components/invoice/TplKlasik.tsx"), "utf8");
 const modernTemplate = readFileSync(join(root, "components/invoice/TplModern.tsx"), "utf8");
 const minimalTemplate = readFileSync(join(root, "components/invoice/TplMinimal.tsx"), "utf8");
@@ -247,6 +248,31 @@ assert.doesNotMatch(
   /^\s*due:\s*formatInvoiceDate|const dueDate =/m,
   "The page mapper must not calculate unused due data",
 );
+assert.doesNotMatch(
+  publicProductRail,
+  /^\s*due:\s*/m,
+  "The public InvoiceData fixture must not retain an unused due field",
+);
+assert.match(
+  invoiceData,
+  /export interface InvoiceItem \{[\s\S]*amount: number;[\s\S]*billingType: "hourly" \| "flat";[\s\S]*\}/,
+  "Every InvoiceItem must retain authoritative amount and billing semantics",
+);
+assert.match(
+  invoiceData,
+  /items: InvoiceItem\[\];/,
+  "InvoiceData must consume the shared InvoiceItem contract",
+);
+assert.match(
+  invoiceData,
+  /amount:\s*totals\.amount \+ item\.amount/,
+  "Invoice totals must add each authoritative item amount",
+);
+assert.doesNotMatch(
+  invoiceData,
+  /amount:\s*totals\.amount \+ item\.h \* item\.rate/,
+  "Invoice totals must never derive amount from hours and rate",
+);
 assert.match(
   page,
   /function getStudentRecipientName\(student: StudentOption\): string \{[\s\S]*student\.parentName\?\.trim\(\)[\s\S]*`Orang tua\/wali \$\{student\.name\}`[\s\S]*\}/,
@@ -352,6 +378,16 @@ assert.match(
   /note: note \|\| "-"/,
   "A session without a note must use a neutral dash",
 );
+assert.match(
+  page,
+  /interface InvoiceSessionItem \{[\s\S]*amount: number;[\s\S]*billingType: "hourly" \| "flat";[\s\S]*\}/,
+  "Fetched Invoice sessions must retain amount and billing semantics",
+);
+assert.match(
+  page,
+  /amount:\s*session\.amount,\s*billingType:\s*session\.billingType,/,
+  "The Invoice mapper must forward authoritative amount and billing semantics",
+);
 assert.doesNotMatch(
   page,
   /Belum ada catatan sesi/,
@@ -371,7 +407,7 @@ for (const [index, template] of templateSources.entries()) {
     /data\.period/,
     /data\.from\.lines\.map/,
     /data\.to\.lines\.map/,
-    /Tarif\/jam/,
+    />Tarif<\/th>/,
     /hours\.toFixed\(1\)/,
     /formatIDR\(sub\)/,
     /<InvoiceNotes notes=\{data\.notes\} \/>/,
@@ -381,6 +417,16 @@ for (const [index, template] of templateSources.entries()) {
   ]) {
     assert.match(template, requiredContent, `${name} must preserve the shared Invoice content contract`);
   }
+  assert.match(
+    template,
+    /formatIDR\(it\.amount\)/,
+    `${name} must render the authoritative session amount`,
+  );
+  assert.doesNotMatch(
+    template,
+    /it\.h\s*\*\s*it\.rate|Tarif\/jam/,
+    `${name} must not derive subtotals or label mixed billing as hourly-only`,
+  );
   assert.match(
     template,
     /hasInvoiceDescriptions\(data\.items\)/,
@@ -400,8 +446,43 @@ for (const [index, template] of templateSources.entries()) {
 
 assert.match(
   page,
-  /const invoiceActionsDisabled = sessionsLoading \|\| sessionsError \|\| invoiceSessions\.length === 0;/,
-  "Invoice actions must share one loading, error, and empty-session guard",
+  /const currentSessionsQueryKey = JSON\.stringify\(\[studentName, periodStart, periodEnd\]\);/,
+  "Invoice sessions must use one stable student and date query key",
+);
+assert.match(
+  page,
+  /const \[loadedSessionsQueryKey, setLoadedSessionsQueryKey\] = useState<string \| null>\(null\);/,
+  "Loaded Invoice sessions must record their query key",
+);
+assert.match(
+  page,
+  /const sessionsRequestSequence = useRef\(0\);/,
+  "Invoice session requests must have sequence ownership",
+);
+assert.match(
+  page,
+  /const requestQueryKey = currentSessionsQueryKey;[\s\S]*const requestSequence = \+\+sessionsRequestSequence\.current;[\s\S]*let cancelled = false;[\s\S]*const ownsLatestRequest = \(\) =>[\s\S]*!cancelled && sessionsRequestSequence\.current === requestSequence;/,
+  "Session fetches must capture their query key and latest-request ownership",
+);
+assert.match(
+  page,
+  /if \(!ownsLatestRequest\(\)\) return;[\s\S]*setInvoiceSessions\(items\);[\s\S]*setLoadedSessionsQueryKey\(requestQueryKey\);/,
+  "Only the latest session request may write successful data",
+);
+assert.match(
+  page,
+  /catch \{[\s\S]*if \(!ownsLatestRequest\(\)\) return;[\s\S]*setInvoiceSessions\(\[\]\);[\s\S]*setSessionsError\(true\);[\s\S]*setLoadedSessionsQueryKey\(null\);[\s\S]*\} finally \{[\s\S]*if \(ownsLatestRequest\(\)\) \{[\s\S]*setSessionsLoading\(false\);[\s\S]*\}/,
+  "Stale session requests must not write error or loading-finalization state",
+);
+assert.match(
+  page,
+  /return \(\) => \{\s*cancelled = true;\s*\};/,
+  "Session fetch cleanup must cancel state ownership",
+);
+assert.match(
+  page,
+  /const invoiceActionsDisabled =\s*sessionsLoading \|\|[\s\S]*sessionsError \|\|[\s\S]*invoiceSessions\.length === 0 \|\|[\s\S]*loadedSessionsQueryKey !== currentSessionsQueryKey;/,
+  "Invoice actions must reject loading, error, empty, and stale-query sessions",
 );
 assert.equal(
   [...page.matchAll(/disabled=\{invoiceActionsDisabled\}/g)].length,
