@@ -12,6 +12,23 @@ Aturan ini berlaku hanya untuk repo `/Users/fatih/Code/Playground/tutorlog-web`.
 
 ## Git Boundaries
 
+Jangan pernah mengubah application code langsung di branch `develop`.
+
+Jika sedang berada di `develop`:
+
+- Boleh melakukan read-only inspection, review diff, dan menjalankan checks/tests yang relevan.
+- Boleh mengubah dan commit docs-only sesuai batasan di bawah.
+- Untuk perubahan code, buat branch baru terlebih dahulu. Tidak perlu approval tambahan untuk branch baru selama branch dibuat dari `develop` dan namanya mengikuti pattern repo.
+
+Branch naming mengikuti pattern yang sudah dipakai di repo:
+
+- `feat/<short-kebab-scope>` untuk fitur atau perubahan UI/UX yang menambah behavior.
+- `fix/<short-kebab-scope>` untuk bugfix.
+- `docs/<short-kebab-scope>` untuk perubahan dokumentasi jika branch docs memang diperlukan.
+- `chore/<short-kebab-scope>` untuk maintenance non-feature.
+
+Contoh valid: `feat/app-foundation-redesign`, `fix/invoice-field-mapping`, `fix/rekap-detail-overlay`.
+
 Boleh tanpa approval tambahan:
 
 - Menjalankan command Git read-only seperti `git status`, `git diff`, `git log`, dan inspeksi branch.
@@ -20,7 +37,7 @@ Boleh tanpa approval tambahan:
 
 Harus minta approval eksplisit sebelum:
 
-- Membuat atau switch branch.
+- Switch ke branch existing yang tidak terkait task.
 - Membuat atau memakai Git worktree.
 - Commit perubahan code.
 - Merge ke branch apa pun.
@@ -32,6 +49,7 @@ Jangan pakai worktree kecuali user meminta worktree secara eksplisit.
 ## Development Test Policy
 
 - Selama development atau feature work, jangan menjalankan test, full test suite, responsive sweep, accessibility check, visual regression, atau PDF export test kecuali diminta eksplisit oleh user.
+- Jika sedang berada di `develop`, checks/tests boleh dijalankan untuk verifikasi read-only, tetapi tetap jangan mengubah application code langsung di `develop`.
 - Untuk commit development biasa, default verification cukup review diff dan `git diff --check`.
 - Sebelum merge atau sync ke `develop`, berhenti dan tanya apakah user ingin menjalankan atau skip check berikut: test, responsive sweep, accessibility check, visual regression, dan PDF export test.
 - Full test suite hanya wajib ketika akan sync ke `main`, merge ke `main`, atau membuat PR yang menargetkan `main`, kecuali user mengubah instruksi itu.
@@ -103,7 +121,7 @@ Untuk perubahan UI atau PDF, jangan menyiratkan hasil visual sudah diverifikasi 
 <claude-mem-context>
 # Memory Context
 
-# [tutorlog-web] recent context, 2026-07-14 6:13pm GMT+7
+# [tutorlog-web] recent context, 2026-07-14 6:28pm GMT+7
 
 No previous sessions found.
 </claude-mem-context>
