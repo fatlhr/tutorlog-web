@@ -1160,9 +1160,13 @@
 
   .footer {
     width: 100%;
-    padding: 28px 16px calc(72px + env(safe-area-inset-bottom) + 32px);
+    padding: 28px 16px 40px;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
+  }
+
+  .footerTabBar {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom) + 32px);
   }
 
   .footer > :first-child {
