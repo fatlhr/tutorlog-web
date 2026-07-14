@@ -221,25 +221,38 @@ body.menu-open { overflow: hidden; }
 .features-v2 { padding: 10px clamp(24px, 6.5vw, 96px) 0px; }
 .landing-footer { padding: 32px clamp(24px, 6.5vw, 96px); }
 .nav-top { padding: 20px clamp(20px, 4.5vw, 64px); }
-.app-shell-h .app-main { padding: 96px clamp(20px, 4.5vw, 64px) 56px; }
 .app-topbar { padding: 0 clamp(16px, 3vw, 40px); }
-
-.inv-section-title {
-  font-family: var(--f-title); font-weight: 700; font-size: 13px;
-  color: var(--tw-text-3); text-transform: uppercase; letter-spacing: .5px;
-  margin: 0 0 8px;
-}
 
 .inv-section {
   display: flex; flex-direction: column; gap: 12px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0,0,0,.12);
+  border-bottom: 1px solid var(--app-line);
+}
+
+.inv-period-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.inv-choice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inv-choice-label {
+  color: var(--app-ink);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
 }
 
 .inv-section-row {
   display: grid; grid-template-columns: 1fr; gap: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0,0,0,.12);
+  border-bottom: 1px solid var(--app-line);
 }
 
 .inv-section-col {
@@ -250,13 +263,6 @@ body.menu-open { overflow: hidden; }
   display: block;
 }
 
-/* A4 preview: allow content to grow beyond page height */
-.a4-preview .a4 {
-  overflow: visible;
-  height: auto;
-  aspect-ratio: auto;
-}
-
 /* Zoom manual > fit: kertas lebih lebar dari container — "safe" supaya
    tepi kiri tetap terjangkau saat scroll horizontal. flex-shrink 0 supaya
    kertas tidak dipampatkan balik ke lebar container (zoom jadi tak terlihat). */
@@ -265,17 +271,14 @@ body.menu-open { overflow: hidden; }
 
 /* Preview dialog: satu card (tanpa nested chrome), kertas dimaksimalkan */
 .inv-preview-dialog {
-  width: min(1040px, 100%);
-  max-height: 96vh;
+  width: 100%;
+  height: 100%;
   min-height: 0;
   padding: 12px 12px 16px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, .18);
+  border-radius: 0;
+  box-shadow: none;
 }
 .inv-preview-dialog .a4-preview { min-height: 0; }
-.inv-dialog-close {
-  display: flex; justify-content: flex-end;
-  margin-bottom: -6px; /* rapat ke toolbar di bawahnya */
-}
 
 /* Helper: grid 2 kolom konten (pakai class ini, JANGAN inline style,
    supaya bisa collapse — dipakai halaman legal/harga/kontak/fitur) */
@@ -296,13 +299,12 @@ body.menu-open { overflow: hidden; }
 /* Konteks sempit (mobile <768 & kolom form desktop ≥1100):
    stack vertikal full-width, Export PDF jadi hero CTA ukuran penuh */
 .inv-form-actions { display: flex; flex-direction: column; gap: 10px; }
-.inv-form-actions .btn { width: 100%; white-space: nowrap; }
-.inv-form-actions .btn-primary { height: 48px; font-size: 15px; }
+.inv-form-actions > * { width: 100%; white-space: nowrap; }
 .inv-premium-note { text-align: center; }
 
 /* Ceklis simpan pengaturan */
 .inv-save-check {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; min-height: 44px; align-items: center; gap: 10px;
   font-family: var(--f-body); font-size: 14px; font-weight: 600;
   color: var(--tw-text); cursor: pointer;
 }
@@ -314,18 +316,12 @@ body.menu-open { overflow: hidden; }
 /* Tablet (container lebar): kembali sebaris, lebar natural, rata kanan */
 @media (min-width: 768px) and (max-width: 1099px) {
   .inv-form-actions { flex-direction: row; justify-content: flex-end; }
-  .inv-form-actions .btn { width: auto; min-width: 180px; }
-  .inv-form-actions .btn-primary { height: 40px; font-size: 13px; }
+  .inv-form-actions > * { width: auto; min-width: 180px; }
   .inv-premium-note { text-align: right; }
 }
 
 /* Mobile: stack Tutor/Murid vertically */
 .vp-mobile .inv-section-row { grid-template-columns: 1fr; }
-
-/* Desktop: hide form action buttons (Export PDF is in preview toolbar) */
-@media (min-width: 1100px) {
-  .inv-form-actions { display: none; }
-}
 
 /* Mobile: stack Tutor/Murid vertically, compact buttons */
 @media (max-width: 767px) {
@@ -350,11 +346,8 @@ body.menu-open { overflow: hidden; }
 @media (max-width: 1099px) {
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .invoice-layout { grid-template-columns: 1fr; }
-  .invoice-layout .inv-form { max-height: none; }
-  .invoice-layout .inv-preview-col { display: none; }
   .inv-section-row { grid-template-columns: 1fr 1fr; }
   .inv-section-divide { display: none; }
-  .rekap-toolbar { flex-wrap: wrap; gap: 14px; }
   .features-v2 { padding-top: 48px; min-height: 90svh; }
 }
 
@@ -365,8 +358,6 @@ body.menu-open { overflow: hidden; }
 
 .app-invoice-main {
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
 }
 
 .app-invoice-heading {
@@ -393,7 +384,7 @@ body.menu-open { overflow: hidden; }
   line-height: 1.15;
 }
 
-.app-invoice-heading span {
+.app-invoice-heading > div:first-child > span {
   display: block;
   max-width: 560px;
   margin-top: 8px;
@@ -409,26 +400,13 @@ body.menu-open { overflow: hidden; }
 
 .app-invoice-main .inv-form {
   max-height: calc(100vh - 160px);
-  border: 1px solid var(--tw-border);
-  border-radius: 12px;
-  padding: 24px;
-}
-
-.app-invoice-main .inv-preview-wrap {
-  border-radius: 12px;
+  padding-inline: var(--space-2);
+  overflow-y: auto;
 }
 
 .app-invoice-main .inv-section-row {
   grid-template-columns: 1fr;
-  grid-template-areas:
-    "student"
-    "divide"
-    "tutor";
 }
-
-.app-invoice-main .inv-student-details { grid-area: student; }
-.app-invoice-main .inv-section-divide { grid-area: divide; }
-.app-invoice-main .inv-tutor-details { grid-area: tutor; }
 
 .inv-auto-sessions {
   display: grid;
@@ -440,20 +418,13 @@ body.menu-open { overflow: hidden; }
   font-size: 13px;
   line-height: 1.45;
 }
-.inv-auto-sessions strong { color: var(--tw-text); font-size: 13px; }
 .inv-auto-sessions-error { color: var(--tw-error); }
-.inv-preview-scrim {
-  position: fixed;
-  z-index: 100;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  background: rgba(0, 0, 0, .5);
-}
-
 @media (min-width: 1200px) {
+  .app-invoice-main .inv-form {
+    padding-inline-end: var(--space-4);
+    scrollbar-gutter: stable;
+  }
+
   .app-invoice-main .inv-form-actions {
     display: none;
   }
@@ -481,13 +452,16 @@ body.menu-open { overflow: hidden; }
     justify-content: flex-end;
   }
 
-  .app-invoice-main .inv-form-actions .btn {
+  .app-invoice-main .inv-form-actions > * {
     width: auto;
     min-width: 180px;
   }
 }
 
 @media (max-width: 767px) {
+  .app-invoice-route { display: none; }
+  .app-invoice-route.app-invoice-route-open { display: block; }
+
   .app-invoice-main {
     display: none;
   }
@@ -524,7 +498,7 @@ body.menu-open { overflow: hidden; }
     line-height: 1.12;
   }
 
-  .app-invoice-mobile-handoff span {
+  .app-invoice-mobile-handoff > span {
     max-width: 340px;
     color: var(--tw-text-2);
     font-size: 16px;
@@ -542,19 +516,33 @@ body.menu-open { overflow: hidden; }
     margin-top: 8px;
   }
 
-  .app-invoice-handoff-actions .btn { justify-content: center; }
+  .app-invoice-continue {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--tw-primary);
+    font-family: var(--f-title);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
 
   .app-invoice-mobile-handoff.app-invoice-mobile-handoff-hidden { display: none; }
   .app-invoice-main.app-invoice-mobile-editor { display: block; }
   .app-invoice-mobile-editor .app-invoice-heading { align-items: flex-start; flex-direction: column; }
   .app-invoice-mobile-editor .invoice-layout { display: block; }
-  .app-invoice-mobile-editor .inv-form { max-height: none; padding: 20px; }
+  .app-invoice-mobile-editor .inv-form { max-height: none; }
   .app-invoice-mobile-editor .inv-preview-col,
   .app-invoice-mobile-editor .inv-export-top { display: none; }
   .app-invoice-mobile-editor .inv-form-actions { display: flex; }
+  .app-invoice-mobile-editor .color-picker .sw { width: 44px; height: 44px; }
 
-  .inv-preview-scrim { padding: 0; }
-  .inv-preview-dialog { width: 100%; max-height: 100svh; height: 100svh; border-radius: 0; padding: 12px; }
+  .inv-preview-dialog { width: 100%; height: 100%; border-radius: 0; padding: 12px; }
   .inv-preview-dialog .a4-preview { display: flex; align-items: flex-start; justify-content: center; }
 }
 

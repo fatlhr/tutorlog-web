@@ -1,8 +1,9 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
 const rootLayout = readFileSync(join(root, "app/layout.tsx"), "utf8");
+const legacyCss = readFileSync(join(root, "css/tutorlog-web.css"), "utf8");
 const uiDirectory = join(root, "components/app-ui");
 const css = readFileSync(join(uiDirectory, "app-ui.module.css"), "utf8");
 const sources = readdirSync(uiDirectory)
@@ -56,7 +57,13 @@ const contractComponents = [
   "LoadingState",
   "ErrorState",
 ];
-const clarifiedComponents = ["Textarea", "Section", "RouteCanvas", "PageMain"];
+const clarifiedComponents = [
+  "Textarea",
+  "Section",
+  "RouteCanvas",
+  "PageMain",
+  "LoadingLayout",
+];
 
 for (const component of [...contractComponents, ...clarifiedComponents]) {
   check(
@@ -178,7 +185,15 @@ contains(
   ".fieldControlSizeDefault { min-height: 48px; }",
   "input-height audit: default fields must be 48px",
 );
+contains(
+  ".selectIcon {\n  position: absolute;\n  inset-inline-end: var(--space-5);",
+  "select audit: dropdown arrow must keep a 16px trailing inset",
+);
 contains("min-height: 96px;", "input-height audit: textarea must be at least 96px");
+contains(
+  ".choiceOption:not(:has(small)) { align-items: center; }\n.choiceOption:not(:has(small)) input { margin-top: 0; }",
+  "choice audit: single-line options must be vertically centered",
+);
 contains(
   ".loadingState,\n.pageMain {\n  box-sizing: border-box;",
   "dimension audit: PageMain and primitives must use border-box sizing",
@@ -204,6 +219,12 @@ contains(
 check(!/outline:\s*0(?:px)?\s*;/.test(css), "focus audit: outline suppression is forbidden");
 check(!css.includes("!important"), "foundation audit: !important is forbidden");
 check(
+  legacyCss.includes(
+    ".color-picker { display: flex; max-width: 100%; gap: 10px; padding: 4px; flex-wrap: wrap; }",
+  ),
+  "invoice audit: accent swatches need a four-pixel safe inset for selection and focus rings",
+);
+check(
   /<main\s+id=["']main-content["']>/.test(rootLayout),
   "landmark audit: root layout must own one main#main-content landmark",
 );
@@ -222,8 +243,13 @@ const productionImports = productionFiles.filter((file) => {
 const allowedProductionConsumers = new Set([
   join(root, "app/app/loading.tsx"),
   join(root, "app/app/page.tsx"),
+  join(root, "app/app/rekap/loading.tsx"),
+  join(root, "app/app/invoice/page.tsx"),
+  join(root, "app/app/invoice/loading.tsx"),
   join(root, "components/AppTopBar.tsx"),
   join(root, "components/HomeUpgradePrompt.tsx"),
+  join(root, "components/PaywallDialog.tsx"),
+  join(root, "components/RekapContent.tsx"),
   join(root, "components/TabBar.tsx"),
 ]);
 const unexpectedProductionConsumers = productionImports.filter(
@@ -240,6 +266,31 @@ check(
   missingProductionConsumers.length === 0,
   `route isolation: approved phased consumers missing: ${missingProductionConsumers.join(", ")}`,
 );
+
+const routeLoadingContracts = [
+  { file: join(root, "app/app/loading.tsx"), route: "home" },
+  { file: join(root, "app/app/rekap/loading.tsx"), route: "recap" },
+  { file: join(root, "app/app/invoice/loading.tsx"), route: "invoice" },
+];
+for (const { file, route } of routeLoadingContracts) {
+  const fileExists = existsSync(file);
+  check(fileExists, `loading contract: missing ${file}`);
+  if (!fileExists) continue;
+
+  const content = readFileSync(file, "utf8");
+  check(
+    content.includes(`<RouteCanvas route="${route}">`),
+    `loading contract: ${file} must use the ${route} route canvas`,
+  );
+  check(
+    content.includes("<PageMain>"),
+    `loading contract: ${file} must use PageMain`,
+  );
+  check(
+    (content.match(/<LoadingState\b/g) ?? []).length >= 3,
+    `loading contract: ${file} must expose at least three structured regions`,
+  );
+}
 const allowedPackages = new Set([
   "react",
   "react-dom",

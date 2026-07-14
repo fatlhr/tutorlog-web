@@ -3,7 +3,7 @@ import { fetchRekapDataByRange, type RekapData } from "@/lib/data/rekap";
 import RekapContent from "@/components/RekapContent";
 
 export const metadata: Metadata = {
-  title: "TutorLog — Rekap",
+  title: "TutorLog - Rekap",
   description: "Rekap sesi mengajar kamu.",
 };
 

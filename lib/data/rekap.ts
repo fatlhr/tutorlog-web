@@ -130,7 +130,7 @@ function rangeLabel(from: string, to: string): string {
   const s = new Date(from + "T00:00:00");
   const e = new Date(to + "T00:00:00");
   if (isNaN(s.getTime()) || isNaN(e.getTime())) return "";
-  return `${s.getDate()} ${months[s.getMonth()]} ${s.getFullYear()} – ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
+  return `${s.getDate()} ${months[s.getMonth()]} ${s.getFullYear()} - ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
 }
 
 function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
@@ -160,7 +160,7 @@ function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
       d: formatDate(clockIn),
       rawDate: clockIn,
       m: studentName,
-      s: subject || "—",
+      s: subject || "Belum diisi",
       h: hours,
       t: formatCurrency(amount),
       rawAmount: amount,

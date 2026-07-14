@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SpinnerGap } from "@phosphor-icons/react";
+import { CaretDown, SpinnerGap } from "@phosphor-icons/react";
 import {
   Children,
   createContext,
@@ -248,6 +248,7 @@ const FieldContext = createContext<FieldContextValue | null>(null);
 export interface FieldProps {
   controlId: string;
   label: string;
+  labelVisuallyHidden?: boolean;
   required?: boolean;
   helper?: string;
   error?: string;
@@ -258,6 +259,7 @@ export interface FieldProps {
 export function Field({
   controlId,
   label,
+  labelVisuallyHidden = false,
   required = false,
   helper,
   error,
@@ -293,7 +295,10 @@ export function Field({
   return (
     <FieldContext.Provider value={value}>
       <div className={`${styles.field} ${styles[`fieldDensity${capitalize(density)}`]}`}>
-        <label className={styles.fieldLabel} htmlFor={controlId}>
+        <label
+          className={`${styles.fieldLabel} ${labelVisuallyHidden ? styles.fieldLabelVisuallyHidden : ""}`}
+          htmlFor={controlId}
+        >
           {label}
           {required ? <span className={styles.requiredMark}> *</span> : null}
         </label>
@@ -365,29 +370,32 @@ export function Select({
   const resolvedSize = size ?? field.size;
 
   return (
-    <select
-      id={id}
-      name={name}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      disabled={disabled}
-      required={required || field.required}
-      autoComplete={autoComplete}
-      className={`${styles.fieldControl} ${styles[`fieldControlSize${capitalize(resolvedSize)}`]}`}
-      aria-label={ariaLabel}
-      aria-labelledby={ariaLabelledBy}
-      aria-describedby={field.describedBy}
-      aria-controls={ariaControls}
-      aria-expanded={ariaExpanded}
-      aria-invalid={field.invalid || undefined}
-      data-analytics-id={analyticsId}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value} disabled={option.disabled}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <span className={styles.selectShell}>
+      <select
+        id={id}
+        name={name}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+        required={required || field.required}
+        autoComplete={autoComplete}
+        className={`${styles.fieldControl} ${styles.selectControl} ${styles[`fieldControlSize${capitalize(resolvedSize)}`]}`}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        aria-describedby={field.describedBy}
+        aria-controls={ariaControls}
+        aria-expanded={ariaExpanded}
+        aria-invalid={field.invalid || undefined}
+        data-analytics-id={analyticsId}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value} disabled={option.disabled}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <CaretDown className={styles.selectIcon} size={16} weight="bold" aria-hidden="true" />
+    </span>
   );
 }
 

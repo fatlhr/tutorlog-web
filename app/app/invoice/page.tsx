@@ -1,18 +1,28 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { CheckCircle, Desktop, DownloadSimple, Eye, LockKey, Minus, Plus } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import TplKlasik, { type InvoiceData } from "@/components/invoice/TplKlasik";
+import TplKlasik from "@/components/invoice/TplKlasik";
+import type { InvoiceData } from "@/components/invoice/invoice-data";
 import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
 import PaywallDialog from "@/components/PaywallDialog";
-
-const Required = () => <span style={{ color: "var(--tw-error)" }}> *</span>;
+import {
+  Button,
+  DateField,
+  Field,
+  IconButton,
+  Select,
+  Textarea,
+  TextField,
+} from "@/components/app-ui/controls";
+import { Dialog } from "@/components/app-ui/overlays";
+import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
+import { SectionHeading, Surface } from "@/components/app-ui/structure";
 
 const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#B7950B"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
@@ -80,6 +90,7 @@ export default function InvoicePage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [dialogZoom, setDialogZoom] = useState(75);
   const dialogStageRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useLayoutEffect(() => {
     if (!previewOpen) return;
@@ -90,7 +101,7 @@ export default function InvoicePage() {
       const w = el.clientWidth;
       if (w > 0 && Math.abs(w - lastW) > 8) {
         lastW = w;
-        setDialogZoom(Math.max(40, Math.min(200, Math.floor(((w - 16) / 594) * 100))));
+        setDialogZoom(Math.max(40, Math.min(200, Math.floor(((w - 16) / 794) * 100))));
       }
     };
     fit();
@@ -120,6 +131,7 @@ export default function InvoicePage() {
   const [exportSuccess, setExportSuccess] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [quotaState, setQuotaState] = useState({ pdfExportUnlimited: false });
+  const [quotaReady, setQuotaReady] = useState(false);
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [studentsError, setStudentsError] = useState(false);
@@ -127,6 +139,7 @@ export default function InvoicePage() {
   const [draftReady, setDraftReady] = useState(false);
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const invoiceDownloadLocked = quotaReady && !quotaState.pdfExportUnlimited;
 
   /* eslint-disable-next-line react-hooks/set-state-in-effect */
   useEffect(() => { setInvoiceNo(generateInvoiceNo()); }, []);
@@ -136,7 +149,7 @@ export default function InvoicePage() {
     const e = new Date(periodEnd + "T00:00:00");
     if (isNaN(s.getTime()) || isNaN(e.getTime())) return "Pilih periode";
     const sy = s.getFullYear() === e.getFullYear() ? "" : ` ${s.getFullYear()}`;
-    return `${s.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][s.getMonth()]}${sy} – ${e.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][e.getMonth()]} ${e.getFullYear()}`;
+    return `${s.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][s.getMonth()]}${sy} - ${e.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][e.getMonth()]} ${e.getFullYear()}`;
   })();
 
   useEffect(() => {
@@ -178,6 +191,8 @@ export default function InvoicePage() {
   }, [supabase]);
 
   useEffect(() => {
+    if (studentsLoading) return;
+
     if (students.length === 0) {
       setStudentName("");
       setStudentInfo("");
@@ -193,7 +208,7 @@ export default function InvoicePage() {
       setStudentAddress(firstStudent.address ?? "");
       setParentName(firstStudent.parentName ?? "");
     }
-  }, [studentName, students]);
+  }, [studentName, students, studentsLoading]);
 
   useEffect(() => {
     if (!studentName || !periodStart || !periodEnd) {
@@ -241,7 +256,7 @@ export default function InvoicePage() {
             ? ((noteRecord as Record<string, unknown>).tutor_note as string).trim()
             : "";
 
-          return { id: row.id as string, clockIn, clockOut, note: note || "Belum ada catatan sesi", hours, rate, amount };
+          return { id: row.id as string, clockIn, clockOut, note: note || "-", hours, rate, amount };
         });
 
         setInvoiceSessions(items);
@@ -256,25 +271,25 @@ export default function InvoicePage() {
   }, [studentName, periodStart, periodEnd, supabase]);
 
   useEffect(() => {
-    const doCheck = async () => {
-      try {
-        const { data, error } = await supabase.rpc("get_user_access_status");
-        if (!error && data) {
-          const result = data as Record<string, unknown>;
-          setQuotaState({
-            pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
-          });
-        }
-      } catch { /* ignore */ }
-    };
-    doCheck();
-  }, [supabase]);
+    const plan = document.querySelector<HTMLElement>(".app-shell-h")?.dataset.plan;
+    setQuotaState({ pdfExportUnlimited: plan === "plus" });
+    setQuotaReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (mobileEditorOpen) window.scrollTo(0, 0);
+  }, [mobileEditorOpen]);
+
+  const validateInvoiceForm = useCallback(() => (
+    formRef.current?.reportValidity() ?? false
+  ), []);
 
   const handleExportPDF = useCallback(async () => {
     if (!quotaState.pdfExportUnlimited) {
       setPaywallOpen(true);
       return;
     }
+    if (!validateInvoiceForm()) return;
     setExporting(true);
     try {
       const container = exportRef.current;
@@ -287,43 +302,30 @@ export default function InvoicePage() {
         backgroundColor: "#ffffff",
       });
 
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/jpeg", 0.88);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
       const pageWidth = 210;
       const pageHeight = 297;
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = position - pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+      pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
 
       pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
       setExportSuccess(true);
 
-      try {
-        await supabase.rpc("record_feature_usage_event", {
-          p_feature_key: "invoice_export",
-          p_event_type: "success",
-          p_metadata: { format: "pdf" },
-        });
-      } catch { /* non-blocking */ }
+      void supabase.rpc("record_feature_usage_event", {
+        p_feature_key: "invoice_export",
+        p_event_type: "success",
+        p_metadata: { format: "pdf" },
+      }).then(
+        () => undefined,
+        () => undefined,
+      );
     } catch (err) {
       console.error("PDF export failed:", err);
     } finally {
       setExporting(false);
     }
-  }, [invoiceNo, quotaState.pdfExportUnlimited, supabase]);
+  }, [invoiceNo, quotaState.pdfExportUnlimited, supabase, validateInvoiceForm]);
 
   useEffect(() => {
     if (!exportSuccess) return;
@@ -436,9 +438,7 @@ export default function InvoicePage() {
     const dueDate = new Date(periodEnd);
     dueDate.setDate(dueDate.getDate() + 7);
 
-    const bankParts = bankAccount.split(" · ");
-    const bankCode = bankParts[0] || bankAccount;
-    const bankNo = bankParts[1] || bankAccount;
+    const [bankCode = "", bankNo = ""] = bankAccount.split(/\s*(?:·|-)\s*/, 2);
 
     const items = invoiceSessions.map((s) => ({
       date: formatMonthDay(new Date(s.clockIn)),
@@ -475,6 +475,12 @@ export default function InvoicePage() {
     };
   };
 
+  const handlePreview = () => {
+    if (!validateInvoiceForm()) return;
+    setInvoiceNo(generateInvoiceNo());
+    setPreviewOpen(true);
+  };
+
   const renderPreview = (dialog = false) => {
     const z = dialog ? dialogZoom : zoom;
     const setZ = dialog ? setDialogZoom : setZoom;
@@ -483,19 +489,25 @@ export default function InvoicePage() {
       <div
         className={"inv-preview-wrap" + (dialog ? " inv-preview-dialog" : "")}
         style={{ overflow: "auto" }}
-        onClick={dialog ? (e) => e.stopPropagation() : undefined}
       >
-        {dialog && (
-          <div className="inv-dialog-close">
-            <button type="button" onClick={() => setPreviewOpen(false)} className="btn btn-ghost btn-sm">Tutup</button>
-          </div>
-        )}
         <div className="inv-preview-toolbar">
-          <div className="tw-title-md">Periksa invoice · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
+          <div className="tw-title-md">{dialog ? "Tampilan" : "Periksa invoice"} · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
           <div className="zoom-ctl">
-            <button type="button" onClick={() => setZ((v) => Math.max(40, v - 10))} aria-label="Perkecil preview"><Minus size={14} /></button>
+            <IconButton
+              label="Perkecil preview"
+              icon={<Minus size={14} />}
+              variant="quiet"
+              size="compact"
+              onClick={() => setZ((v) => Math.max(40, v - 10))}
+            />
             <span className="z">{z}%</span>
-            <button type="button" onClick={() => setZ((v) => Math.min(200, v + 10))} aria-label="Perbesar preview"><Plus size={14} /></button>
+            <IconButton
+              label="Perbesar preview"
+              icon={<Plus size={14} />}
+              variant="quiet"
+              size="compact"
+              onClick={() => setZ((v) => Math.min(200, v + 10))}
+            />
           </div>
         </div>
         <div style={{ overflow: "auto", flex: 1 }} className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
@@ -512,77 +524,92 @@ export default function InvoicePage() {
   };
 
   const renderForm = () => (
-    <div className="inv-form" style={{ overflowY: "auto", paddingRight: 8 }}>
+    <Surface padding="compact">
+      <form
+        id="invoice-form"
+        ref={formRef}
+        className="inv-form"
+        onSubmit={(event) => event.preventDefault()}
+      >
 
       <div className="inv-section">
-        <h4 className="inv-section-title">Murid dan periode</h4>
+        <SectionHeading level="h2" size="compact" title="Murid dan periode" />
 
-        <div className="field">
-          <div className="lbl">Nama murid<Required /></div>
-          <select className="input" value={studentName} onChange={(e) => handleStudentChange(e.target.value)} style={{ appearance: "none", cursor: "pointer", backgroundImage: "none" }} disabled={studentsLoading || studentsError || students.length === 0}>
-            {studentsLoading ? (
-              <option value="">Memuat...</option>
-            ) : studentsError ? (
-              <option value="">Murid belum dapat dimuat</option>
-            ) : students.length === 0 ? (
-              <option value="">Belum ada murid</option>
-            ) : (
-              students.map((student) => (
-                <option key={student.id} value={student.name}>{student.name}</option>
-              ))
-            )}
-          </select>
-        </div>
+        <Field controlId="invoice-student" label="Nama murid" required>
+          <Select
+            id="invoice-student"
+            value={studentName}
+            onChange={handleStudentChange}
+            disabled={studentsLoading || studentsError || students.length === 0}
+            options={studentsLoading
+              ? [{ value: "", label: "Memuat..." }]
+              : studentsError
+                ? [{ value: "", label: "Murid belum dapat dimuat" }]
+                : students.length === 0
+                  ? [{ value: "", label: "Belum ada murid" }]
+                  : students.map((student) => ({ value: student.name, label: student.name }))}
+          />
+        </Field>
 
-        <div className="field">
-          <div className="lbl">Periode<Required /></div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="input" style={{ flex: 1, minWidth: 0, cursor: "pointer" }} />
-            <span style={{ color: "var(--tw-text-3)", fontWeight: 700, flexShrink: 0 }}>sampai</span>
-            <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" style={{ flex: 1, minWidth: 0, cursor: "pointer" }} />
-          </div>
-          <div className="help" style={{ marginTop: 4 }}>{periodLabel}</div>
+        <div className="inv-period-fields">
+          <Field controlId="invoice-period-start" label="Periode" required>
+            <DateField
+              id="invoice-period-start"
+              value={periodStart}
+              onChange={setPeriodStart}
+            />
+          </Field>
+          <Field controlId="invoice-period-end" label="Sampai" required>
+            <DateField
+              id="invoice-period-end"
+              value={periodEnd}
+              onChange={setPeriodEnd}
+            />
+          </Field>
         </div>
 
         {sessionsLoading ? (
-          <div className="inv-auto-sessions">Memuat sesi selesai untuk periode ini...</div>
+          <div className="inv-auto-sessions" aria-live="polite">Memuat sesi selesai untuk periode ini...</div>
         ) : sessionsError ? (
-          <div className="inv-auto-sessions inv-auto-sessions-error">Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
+          <div className="inv-auto-sessions inv-auto-sessions-error" aria-live="polite">Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
         ) : invoiceSessions.length > 0 ? (
-          <div className="inv-auto-sessions">
-            <strong>{invoiceSessions.length} sesi dimuat otomatis.</strong>
-            <span>Semua sesi selesai pada periode ini dimasukkan otomatis ke preview.</span>
+          <div className="inv-auto-sessions" aria-live="polite">
+            Semua sesi selesai pada periode yang dipilih akan dimasukkan otomatis ke preview invoice.
           </div>
         ) : studentName && periodStart && periodEnd ? (
-          <div className="inv-auto-sessions">Belum ada sesi untuk {studentName} pada periode ini.</div>
+          <div className="inv-auto-sessions" aria-live="polite">Belum ada sesi untuk {studentName} pada periode ini.</div>
         ) : null}
 
       </div>
 
       <div className="inv-section">
-        <h4 className="inv-section-title">Pembayaran</h4>
+        <SectionHeading level="h2" size="compact" title="Pembayaran" />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div className="field">
-            <div className="lbl">Bank<Required /></div>
-            <input className="input" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="BCA · 1234 5678 9012" />
-          </div>
+          <Field controlId="invoice-bank-account" label="Bank" required>
+            <TextField id="invoice-bank-account" value={bankAccount} onChange={setBankAccount} placeholder="BCA - 1234 5678 9012" />
+          </Field>
 
-          <div className="field">
-            <div className="lbl">Nama Pemilik Rekening<Required /></div>
-            <input className="input" value={bankName} onChange={(e) => setBankName(e.target.value)} />
-          </div>
+          <Field controlId="invoice-bank-name" label="Nama Pemilik Rekening" required>
+            <TextField id="invoice-bank-name" value={bankName} onChange={setBankName} placeholder="Contoh: Rina Novianti" />
+          </Field>
         </div>
       </div>
 
       <div className="inv-section">
-        <h4 className="inv-section-title">Tampilan invoice</h4>
+        <SectionHeading level="h2" size="compact" title="Tampilan invoice" />
 
-        <div className="field">
-          <div className="lbl">Template</div>
+        <div className="inv-choice-field">
+          <div className="inv-choice-label">Template</div>
           <div className="template-picker">
             {TEMPLATES.map((t) => (
-              <div key={t} className={"opt" + (template === t ? " on" : "")} onClick={() => setTemplate(t)}>
+              <button
+                type="button"
+                key={t}
+                className={"opt" + (template === t ? " on" : "")}
+                aria-pressed={template === t}
+                onClick={() => setTemplate(t)}
+              >
                 <div className="preview" style={{ background: t === "klasik" ? `linear-gradient(${accent} 22%, #fff 22%)` : "#fff" }}>
                   {t === "modern" && <div style={{ height: 3, background: accent, marginBottom: 4 }}></div>}
                   {t === "minimal" && <div style={{ borderBottom: `1px solid ${accent}`, paddingBottom: 3, fontFamily: "var(--f-title)", fontSize: 8, fontWeight: 700 }}>INVOICE</div>}
@@ -595,16 +622,24 @@ export default function InvoicePage() {
                   <div style={{ marginTop: "auto", height: 4, background: accent, width: "40%", alignSelf: "flex-end" }}></div>
                 </div>
                 <span className="nm">{t.charAt(0).toUpperCase() + t.slice(1)}</span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="field">
-          <div className="lbl">Warna Aksen</div>
+        <div className="inv-choice-field">
+          <div className="inv-choice-label">Warna Aksen</div>
           <div className="color-picker">
             {COLORS.map((c) => (
-              <span key={c} className={"sw" + (c === accent ? " on" : "")} style={{ background: c, color: c }} onClick={() => setAccent(c)} />
+              <button
+                type="button"
+                key={c}
+                className={"sw" + (c === accent ? " on" : "")}
+                style={{ background: c, color: c }}
+                aria-label={`Pilih warna ${c}`}
+                aria-pressed={c === accent}
+                onClick={() => setAccent(c)}
+              />
             ))}
           </div>
         </div>
@@ -612,61 +647,59 @@ export default function InvoicePage() {
 
       <div className="inv-section-row">
         <div className="inv-section-col inv-tutor-details">
-          <h4 className="inv-section-title">Detail tambahan</h4>
+          <SectionHeading level="h2" size="compact" title="Detail tambahan" />
 
-          <div className="field">
-            <div className="lbl">Nama<Required /></div>
-            <input className="input" value={tutorName} onChange={(e) => setTutorName(e.target.value)} />
-          </div>
+          <Field controlId="invoice-tutor-name" label="Nama" required>
+            <TextField id="invoice-tutor-name" value={tutorName} onChange={setTutorName} placeholder="Contoh: Nama tutor" />
+          </Field>
 
-          <div className="field">
-            <div className="lbl">Nama layanan atau brand (opsional)</div>
-            <input className="input" value={lembaga} onChange={(e) => setLembaga(e.target.value)} placeholder="Contoh: Les Privat Rina" />
-          </div>
+          <Field controlId="invoice-service-name" label="Nama layanan atau brand (opsional)">
+            <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les Privat Rina" />
+          </Field>
 
-          <div className="field">
-            <div className="lbl">Lokasi</div>
-            <input className="input" value={tutorLocation} onChange={(e) => setTutorLocation(e.target.value)} />
-          </div>
+          <Field controlId="invoice-tutor-location" label="Lokasi">
+            <TextField id="invoice-tutor-location" value={tutorLocation} onChange={setTutorLocation} placeholder="Contoh: Jakarta Selatan" />
+          </Field>
 
-          <div className="field">
-            <div className="lbl">Kontak</div>
-            <input className="input" value={tutorContact} onChange={(e) => setTutorContact(e.target.value)} />
-          </div>
+          <Field controlId="invoice-tutor-contact" label="Kontak">
+            <TextField id="invoice-tutor-contact" value={tutorContact} onChange={setTutorContact} placeholder="Contoh: 0812-3456-7890" />
+          </Field>
         </div>
 
         <div className="divide inv-section-divide"></div>
 
         <div className="inv-section-col inv-student-details">
-          <h4 className="inv-section-title">Detail murid</h4>
+          <SectionHeading level="h2" size="compact" title="Detail murid" />
 
-          <div className="field">
-            <div className="lbl">Tingkat Pendidikan</div>
-            <input className="input" value={studentInfo} onChange={(e) => setStudentInfo(e.target.value)} placeholder="Kelas 10 – SMA Al-Azhar" />
-          </div>
+          <Field controlId="invoice-student-level" label="Tingkat Pendidikan">
+            <TextField id="invoice-student-level" value={studentInfo} onChange={setStudentInfo} placeholder="Tingkat pendidikan murid" disabled />
+          </Field>
 
-          <div className="field">
-            <div className="lbl">Ditagih Kepada<Required /></div>
-            <input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} />
-          </div>
+          <Field controlId="invoice-parent-name" label="Ditagih Kepada" required>
+            <TextField id="invoice-parent-name" value={parentName} onChange={setParentName} placeholder="Contoh: Orang tua/wali murid" />
+          </Field>
 
-          <div className="field">
-            <div className="lbl">Alamat</div>
-            <input className="input" value={studentAddress} onChange={(e) => setStudentAddress(e.target.value)} placeholder="Jl. Kemang Raya No. 42" />
-          </div>
+          <Field controlId="invoice-student-address" label="Alamat">
+            <TextField id="invoice-student-address" value={studentAddress} onChange={setStudentAddress} placeholder="Jalan Sudirman" />
+          </Field>
         </div>
       </div>
 
       <div className="inv-section">
-        <h4 className="inv-section-title">Catatan tambahan</h4>
+        <SectionHeading level="h2" size="compact" title="Catatan tambahan" />
 
-        <div className="field">
-          <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: "auto", minHeight: 72, alignItems: "flex-start", paddingTop: 14, paddingBottom: 14, lineHeight: 1.5, resize: "vertical" }} />
-        </div>
+        <Field controlId="invoice-notes" label="Catatan tambahan" labelVisuallyHidden>
+          <Textarea
+            id="invoice-notes"
+            value={notes}
+            onChange={setNotes}
+            placeholder="Contoh: Bulan ini pembelajaran berfokus pada persiapan ujian dan penguatan materi."
+          />
+        </Field>
       </div>
 
       <div className="inv-section">
-        <h4 className="inv-section-title">Pengaturan</h4>
+        <SectionHeading level="h2" size="compact" title="Pengaturan" />
 
         <label className="inv-save-check">
           <input
@@ -685,71 +718,110 @@ export default function InvoicePage() {
       </div>
 
       <div className="inv-form-actions">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setInvoiceNo(generateInvoiceNo()); setPreviewOpen(true); }}>
-          <Eye size={16} />
-          <span>Periksa invoice</span>
-        </button>
-        <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || invoiceSessions.length === 0}>
-          <LockKey size={14} />
-          <span>{exporting ? "Menyiapkan..." : "Unduh PDF"}</span>
-          <DownloadSimple size={16} />
-        </button>
+        <Button
+          type="button"
+          variant="quiet"
+          size="compact"
+          leadingIcon={<Eye size={16} aria-hidden="true" />}
+          onClick={handlePreview}
+        >
+          Periksa invoice
+        </Button>
+        <Button
+          type="button"
+          size="compact"
+          leadingIcon={invoiceDownloadLocked ? <LockKey size={14} aria-hidden="true" /> : undefined}
+          trailingIcon={<DownloadSimple size={16} aria-hidden="true" />}
+          loading={exporting}
+          disabled={invoiceSessions.length === 0}
+          onClick={handleExportPDF}
+        >
+          Unduh PDF
+        </Button>
       </div>
-      <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
-        Unduh PDF tersedia untuk TutorLog Plus.
-      </div>
-    </div>
+      {invoiceDownloadLocked ? (
+        <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
+          Unduh PDF tersedia untuk TutorLog Plus.
+        </div>
+      ) : null}
+      </form>
+    </Surface>
   );
 
   const renderPreviewDialog = () => (
-    previewOpen && (
-      <div
-        className="inv-preview-scrim"
-        onClick={() => setPreviewOpen(false)}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Periksa invoice"
-      >
-        {renderPreview(true)}
-      </div>
-    )
+    <Dialog
+      open={previewOpen}
+      onOpenChange={setPreviewOpen}
+      title="Periksa invoice"
+      size="preview"
+    >
+      {renderPreview(true)}
+    </Dialog>
   );
 
   return (
     <>
-      <div id="main-content">
-        <main className={`app-invoice-mobile-handoff${mobileEditorOpen ? " app-invoice-mobile-handoff-hidden" : ""}`}>
+      <div>
+        <section
+          className={`app-invoice-mobile-handoff${mobileEditorOpen ? " app-invoice-mobile-handoff-hidden" : ""}`}
+          aria-labelledby="invoice-mobile-handoff-title"
+        >
           <Desktop size={34} aria-hidden="true" />
           <p>Invoice TutorLog</p>
-          <h1>Buat invoice di laptop.</h1>
+          <h1 id="invoice-mobile-handoff-title">Buat invoice di laptop.</h1>
           <span>Editor dan preview A4 lebih nyaman diperiksa pada layar yang lebih lebar.</span>
           <div className="app-invoice-handoff-actions">
-            <Link className="btn btn-primary" href="/app">Kembali ke Beranda</Link>
-            <button type="button" className="btn btn-ghost" onClick={() => setMobileEditorOpen(true)}>Lanjutkan di sini</button>
+            <Button href="/app" size="large" block>Kembali ke Beranda</Button>
+            <button
+              type="button"
+              className="app-invoice-continue"
+              onClick={() => setMobileEditorOpen(true)}
+            >
+              Lanjutkan di sini
+            </button>
           </div>
-        </main>
+        </section>
 
-        <main className={`app-main app-invoice-main${mobileEditorOpen ? " app-invoice-mobile-editor" : ""}`}>
-          <header className="app-invoice-heading">
-            <div>
-              <p>Invoice</p>
-              <h1>Buat invoice.</h1>
-              <span>Pilih murid dan periode. Sesi yang tersimpan akan dimasukkan otomatis.</span>
-            </div>
-            <div className="inv-export-top">
-              <button type="button" className="btn btn-primary btn-sm" onClick={handleExportPDF} disabled={exporting || invoiceSessions.length === 0}>
-                <LockKey size={14} />
-                <span>{exporting ? "Menyiapkan..." : "Unduh PDF"}</span>
-                <DownloadSimple size={16} />
-              </button>
-            </div>
-          </header>
+        <div className={`app-invoice-route${mobileEditorOpen ? " app-invoice-route-open" : ""}`}>
+          <RouteCanvas route="invoice">
+            <PageMain>
+              <section
+                className={`app-invoice-main${mobileEditorOpen ? " app-invoice-mobile-editor" : ""}`}
+                aria-labelledby="invoice-page-title"
+              >
+                <header className="app-invoice-heading">
+                  <div>
+                    <p>Invoice</p>
+                    <h1 id="invoice-page-title">Buat invoice.</h1>
+                    <span>Pilih murid dan periode untuk menyiapkan invoice.</span>
+                  </div>
+              <div className="inv-export-top">
+                <Button
+                  type="button"
+                  size="compact"
+                  leadingIcon={invoiceDownloadLocked ? <LockKey size={14} aria-hidden="true" /> : undefined}
+                  trailingIcon={<DownloadSimple size={16} aria-hidden="true" />}
+                  loading={exporting}
+                  disabled={invoiceSessions.length === 0}
+                  onClick={handleExportPDF}
+                >
+                  Unduh PDF
+                </Button>
+              </div>
+                </header>
 
-          <div className="invoice-layout">
-            {renderForm()}
-            <div className="inv-preview-col">{renderPreview()}</div>
-          </div>
-        </main>
+                <div className="invoice-layout">
+                  {renderForm()}
+                  <div className="inv-preview-col">
+                    <Surface variant="preview" padding="compact">
+                      {renderPreview()}
+                    </Surface>
+                  </div>
+                </div>
+              </section>
+            </PageMain>
+          </RouteCanvas>
+        </div>
       </div>
 
       {renderPreviewDialog()}
@@ -764,7 +836,6 @@ export default function InvoicePage() {
       ) : null}
 
       <div
-        ref={exportRef}
         style={{
           position: "fixed",
           top: 0,
@@ -773,12 +844,11 @@ export default function InvoicePage() {
           zIndex: -1,
         }}
       >
-        <div style={{ width: "794px", aspectRatio: "1 / 1.4142", background: "#fff", padding: "42px", position: "relative", overflow: "hidden", fontFamily: "var(--f-body)", fontSize: "11px", color: "var(--tw-text)" }}>
+        <A4Page pageRef={exportRef}>
           {template === "klasik" && <TplKlasik acc={accent} data={buildInvoiceData()} />}
           {template === "modern" && <TplModern acc={accent} data={buildInvoiceData()} />}
           {template === "minimal" && <TplMinimal acc={accent} data={buildInvoiceData()} />}
-          <div style={{ position: "absolute", right: "20px", bottom: "16px", fontFamily: "var(--f-body)", fontStyle: "italic", fontSize: "9px", color: "var(--tw-text-3)", opacity: 0.6 }}>Generated by TutorLog</div>
-        </div>
+        </A4Page>
       </div>
     </>
   );

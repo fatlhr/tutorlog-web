@@ -1,5 +1,7 @@
 # Protected App Prototype
 
+> **Status:** Archived reference. Step 2B visual approval was skipped by explicit user direction on 2026-07-13 because the production Beranda implementation had already superseded this prototype through later approved visual iterations. Do not use this artifact as the current visual acceptance source.
+
 Isolated coded prototype for the approved TutorLog protected-app visual system. It does not enter Next.js routing and does not connect to Supabase, authentication, production data, quota, or PDF logic.
 
 ## Serve locally

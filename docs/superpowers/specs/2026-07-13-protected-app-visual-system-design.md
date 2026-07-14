@@ -511,3 +511,7 @@ The routes feel related because primitives and behavior are shared. Their charac
 - [x] Accessibility and reduced-motion behavior are approved.
 
 These approval boxes belong to this design contract. They do not update the active implementation-plan checkboxes.
+
+## 13. Step 2B disposition
+
+Step 2B visual approval was skipped by explicit user direction on 2026-07-13. The isolated prototype had become an outdated reference after the production Beranda implementation received later approved visual iterations. The prototype remains available for historical context, but production source and fresh runtime review are the acceptance authority from Step 3 onward.

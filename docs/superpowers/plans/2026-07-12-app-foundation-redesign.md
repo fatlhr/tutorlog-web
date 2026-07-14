@@ -125,13 +125,13 @@
 - [x] Update mobile header and bottom navigation to the same route model, while preserving a 44px minimum touch target and no route-layout jump.
 - [x] Move account status, help, and logout into a compact account menu whose Plus state is informative, not promotional.
 - [x] Keep page headings at 28px desktop/tablet and 24px mobile; retain existing TutorLog title and body fonts.
-- [ ] Review the shared shell at `1440x900`, `1024x768`, and `390x844`, checking background containment, navigation alignment, focus visibility, and no horizontal overflow.
+- [x] Review the shared shell at `1440x900`, `1024x768`, and `390x844`, checking background containment, navigation alignment, focus visibility, and no horizontal overflow.
 - [x] Run `git diff --check`.
-- [ ] Commit: `style: establish protected tutor workspace system`.
+- [x] Commit checkpoint: `56d5038 feat: apply protected app visual system`.
 
 **Gate:** Routes share one recognisable workspace language, while each route has a quiet distinct context and no decorative element compromises content.
 
-**Status:** Internal design-system foundation manually approved on 2026-07-13. Production shell migration, three-viewport visual review, and the milestone commit remain pending.
+**Status:** Complete. Internal design-system foundation and the production shell screenshots were manually approved on 2026-07-14. Evidence covers all three viewports, focus return, a 44px mobile account trigger, navigation alignment, background containment, and no horizontal overflow.
 
 ## Milestone 7: Beranda Workspace and Quiet Conversion
 
@@ -144,11 +144,13 @@
 - [x] Restyle `HomeUpgradePrompt` as a quiet contextual strip for free users with sessions. Use quota wording only for recap downloads: available quota links to `Lihat Plus`; exhausted quota uses `Aktifkan Plus` and links to `/harga`.
 - [x] Ensure paid users see no promotional home block. `Plus aktif` remains visible only in the account menu.
 - [x] Preserve the existing no-session state: guide the tutor to record sessions in mobile first and do not show an upsell.
-- [ ] Review empty, free-with-quota, free-quota-exhausted, and paid states at `1440x900`, `1024x768`, and `390x844`.
+- [x] Review empty, free-with-quota, free-quota-exhausted, and paid states at `1440x900`, `1024x768`, and `390x844`.
 - [x] Run `git diff --check`.
 - [ ] Commit: `feat: polish tutor home workspace`.
 
 **Gate:** Beranda feels like a personal weekly work surface: enough information to act, no KPI wall, no pricing takeover.
+
+**Status:** Visual review manually approved on 2026-07-14. Paid, empty, free-with-quota, and free-quota-exhausted evidence covers all three viewports. Development-only state fixtures were removed after capture. Runtime review also moved the contextual upgrade action below its copy so narrow side panels retain readable line lengths.
 
 ## Milestone 8: Rekap Compact List, Filters, and Session Detail
 
@@ -162,11 +164,13 @@
 - [x] Present filter choices as compact controls, not a permanent tall filter card. Native date inputs appear only for `Pilih tanggal`.
 - [x] Preserve the period summary, student filter, empty state, retryable error state, and existing recap download behavior.
 - [x] Use `Unduh` consistently. Free recap PDF/CSV remains governed by the existing monthly quota; only a blocked download opens the quota upgrade dialog.
-- [ ] Review dense data at `1440x900`, filter disclosure at `1024x768`, and list/detail/bottom-sheet behavior at `390x844`.
+- [x] Review dense data at `1440x900`, filter disclosure at `1024x768`, and list/detail/bottom-sheet behavior at `390x844`.
 - [x] Run `git diff --check`.
 - [ ] Commit: `feat: compact tutor session recap`.
 
 **Gate:** A tutor can scan a busy month, filter it, inspect one session, and download a recap without feeling pushed through analytics tooling.
+
+**Status:** Visual review manually approved on 2026-07-14. A temporary 25-row development fixture verified 20-row pagination and was removed after capture. Review also restored desktop duration metadata, migrated filter and session-detail overlays to the approved shared primitives, verified focus transfer, Escape, scroll lock, and focus return, and raised mobile date inputs to the 44px target. Single-line student choices are vertically centered so their top and bottom spacing remain visually equal, while choices with descriptions retain top alignment.
 
 ## Milestone 9: Invoice Composition and Plus Boundary
 
@@ -183,11 +187,13 @@
 - [x] Mark `Unduh PDF` with a lock for free users and show `Unduh PDF tersedia untuk TutorLog Plus.` before download. Clicking opens a Plus upgrade dialog that preserves the draft and links to `/harga`.
 - [x] Paid users download normally with no upsell. Invoice download never consumes recap quota.
 - [x] Replace remaining hand-drawn invoice icons with existing Phosphor icons.
-- [ ] Review automatic inclusion, note fallback, draft restore, desktop preview, tablet centered dialog, mobile handoff/continue, free lock dialog, and paid download at `1440x900`, `1024x768`, and `390x844`.
+- [x] Review automatic inclusion, note fallback, draft restore, desktop preview, tablet centered dialog, mobile handoff/continue, free lock dialog, and paid download at `1440x900`, `1024x768`, and `390x844`.
 - [x] Run `git diff --check`.
 - [ ] Commit: `feat: refine invoice composition and Plus gate`.
 
 **Gate:** The invoice remains a clear desktop-first task, a workable mobile fallback, and a trustworthy paid conversion moment without exposing irrelevant session-selection complexity.
+
+**Status:** Fresh runtime review completed on 2026-07-14 and awaits final screenshot approval. The review verified automatic session inclusion, the exact missing-note fallback, draft restore after reload, one document landmark, semantic template and accent controls, and 44px mobile action targets. Text inputs now use concise placeholders inside the controls, both period inputs stay aligned, and automatic inclusion is explained once after the range. The scrollable desktop form keeps a safe inset from its scrollbar. The accent picker also reserves a four-pixel inset so selected and focused swatch rings stay inside the scroll container without horizontal overflow. The shared `Unduh PDF` control no longer inherits route copy styles. Invoice preview and the Plus boundary use the shared dialog primitive with focus transfer, Escape close, scroll lock, and focus return. Opening the mobile editor resets the page to the top. The protected shell remains the single plan source, so paid accounts do not see the lock or upgrade copy. The temporary free-state fixture used for dialog review was removed. PDF actions now run native required-field validation before preview or export, invoice accent colors avoid unsupported canvas color functions, and export uses a compressed JPEG fitted to exactly one A4 page so a rounding remainder cannot create a blank second page. Template body, label, heading, and total sizes were increased proportionally; the focused Invoice export contract and protected-app audit pass, while a fresh downloaded artifact remains the final visual and file-size check.
 
 ## Milestone 10: State, Density, and Copy Polish
 
@@ -199,11 +205,13 @@
 - [x] Confirm all public-facing protected copy uses common terms: `Beranda`, `Rekap sesi`, `Buat invoice`, `Periksa invoice`, and `Unduh PDF`.
 - [x] Check low-density and high-density scenarios: no-session tutor, three recent sessions, 20 recap rows, a long session note, and a form with optional invoice details.
 - [x] Confirm backgrounds remain quiet and do not sit beneath opaque content incorrectly; table/form surfaces must be solid and ornaments must not intrude into their bounds.
-- [ ] Review keyboard focus, menu/dialog Escape close, mobile bottom-sheet dismissal, and touch-target spacing at `1440x900`, `1024x768`, and `390x844`.
+- [x] Review keyboard focus, menu/dialog Escape close, mobile bottom-sheet dismissal, and touch-target spacing at `1440x900`, `1024x768`, and `390x844`.
 - [x] Run `git diff --check`.
 - [ ] Commit: `style: polish protected tutor workspace states`.
 
 **Gate:** The app feels friendly and consistent at every density, without the visual overhead of a generic SaaS dashboard.
+
+**Status:** Fresh cross-route audit completed on 2026-07-14 and awaits final screenshot approval. Beranda, Rekap, and Invoice were reviewed at `1440x900`, `1024x768`, and `390x844` with one visible heading, one document landmark, no horizontal overflow, no generic dummy copy, and no mobile control below 44px. Account menu, Rekap filter and session sheets, and Invoice preview verified focus transfer, Escape close, scroll lock, and focus return. Route transitions now use dedicated Beranda, Rekap, and Invoice skeletons inside the matching `RouteCanvas` and `PageMain`; a focused runtime preview verified that the route canvas grows to the footer boundary instead of allowing the footer to rise into loading content. The design-system audit and `git diff --check` passed. Protected copy contains no en dash or em dash. Shared motion has a `prefers-reduced-motion` override; runtime media emulation remains part of the deferred integration checks.
 
 ## Milestone 11: Final Review and Integration Gate
 
@@ -233,11 +241,11 @@
 | 3 | `60d4c83` | Passed | Empty, active free, exhausted free, and paid states reviewed at three breakpoints; temporary fixture removed |
 | 4 | `60d4c83` | Passed | Desktop table, tablet table, and mobile session rows reviewed at runtime |
 | 5 | `60d4c83`, `ed2b278` | Passed | Draft restore, real and empty session states, tablet dialog, mobile handoff, and desktop preview reviewed at runtime |
-| 6 | Pending (working tree based on `2eb8d86`) | Passed on 2026-07-13 | Internal component APIs, scoped tokens, interaction states, responsive rules, decorative utilities, documentation, and static audits manually approved; production shell and viewport review pending |
-| 7 | Pending | Passed | Pending: Beranda workspace and quiet conversion |
-| 8 | Pending | Passed | Pending: compact recap, filters, and session detail |
-| 9 | Pending | Passed | Pending: invoice composition and Plus boundary |
-| 10 | Pending | Passed | Pending: state, density, and copy polish |
+| 6 | `56d5038` | Passed on 2026-07-14 | Production shell reviewed at all three viewports and manually approved |
+| 7 | Pending | Passed on 2026-07-14 | Four Beranda states reviewed at all three viewports with temporary fixtures removed; screenshots manually approved |
+| 8 | Pending | Passed on 2026-07-14 | Dense pagination, tablet date disclosure, mobile filters, SidePanel, and BottomSheet reviewed and manually approved |
+| 9 | Pending | Passed on 2026-07-14 | Fresh review complete at all three viewports; final screenshots awaiting manual approval |
+| 10 | Pending | Passed on 2026-07-14 | Focus, Escape, sheet/dialog dismissal, scroll lock, touch targets, copy, decoration, component consistency, and route-shaped loading skeletons reviewed; final screenshots awaiting manual approval |
 | 11 | Pending | Pending | Pending: final review only after manual integration approval |
 
 ## Continuation Handoff

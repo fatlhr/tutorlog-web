@@ -74,6 +74,7 @@
 .feedback,
 .overlayPanel,
 .contentState,
+.loadingLayout,
 .loadingState,
 .pageMain {
   box-sizing: border-box;
@@ -260,6 +261,18 @@
   line-height: 18px;
 }
 
+.fieldLabelVisuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .requiredMark { color: var(--app-error-ink); }
 
 .fieldControl,
@@ -277,6 +290,28 @@
 .fieldControl { padding-inline: var(--space-4); }
 .fieldControlSizeCompact { min-height: 40px; }
 .fieldControlSizeDefault { min-height: 48px; }
+
+.selectShell {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.selectControl {
+  appearance: none;
+  padding-inline-end: calc(var(--space-5) + 16px);
+}
+
+.selectIcon {
+  position: absolute;
+  inset-inline-end: var(--space-5);
+  top: 50%;
+  color: var(--app-ink);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.selectShell:has(.selectControl:disabled) .selectIcon { color: var(--app-ink-disabled); }
 
 .textarea {
   min-height: 96px;
@@ -531,8 +566,8 @@
 
 .feedback {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
   border: 1px solid var(--app-line);
   border-inline-start: 3px solid var(--feedback-ink);
   border-radius: var(--radius-surface);
@@ -552,7 +587,7 @@
 .feedbackIcon { box-sizing: content-box; padding: var(--space-3); border-radius: var(--radius-control); color: var(--feedback-ink); background: var(--feedback-soft); }
 .feedbackCopy strong { display: block; font-family: var(--app-font-title); font-size: 16px; line-height: 22px; }
 .feedbackCopy p { margin: var(--space-2) 0 0; color: var(--app-ink-secondary); font-size: 13px; line-height: 19px; }
-.feedbackAction { flex: 0 0 auto; }
+.feedbackAction { grid-column: 2; justify-self: start; }
 
 @keyframes feedbackIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -647,6 +682,8 @@
 .choiceWrap { flex-wrap: wrap; }
 .choiceGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .choiceOption { display: flex; align-items: flex-start; min-height: 44px; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--app-line); border-radius: var(--radius-control); color: var(--app-ink); background: var(--app-paper); font-family: var(--app-font-body); cursor: pointer; }
+.choiceOption:not(:has(small)) { align-items: center; }
+.choiceOption:not(:has(small)) input { margin-top: 0; }
 .choiceOption:has(input:checked) { border-color: var(--app-line-strong); background: var(--app-paper-soft); }
 .choiceOption input { margin: var(--space-1) 0 0; accent-color: var(--app-action); }
 .choiceOption span { display: grid; gap: var(--space-1); }
@@ -846,7 +883,8 @@
 .dialogSmall { width: min(400px, calc(100vw - 32px)); }
 .dialogMedium { width: min(560px, calc(100vw - 32px)); }
 .dialogLarge { width: min(760px, calc(100vw - 32px)); }
-.dialogPreview { width: min(1040px, calc(100vw - 32px)); }
+.dialogPreview { display: flex; width: min(1040px, calc(100vw - 32px)); flex-direction: column; overflow: hidden; }
+.dialogPreview .overlayBody { min-height: 0; flex: 1; padding: var(--space-0); }
 
 .bottomSheetLayer { align-items: flex-end; padding: 0; }
 .bottomSheetPanel { width: 100%; border-radius: var(--radius-overlay) var(--radius-overlay) 0 0; animation: sheetIn var(--motion-overlay) var(--ease-out) both; }
@@ -908,6 +946,16 @@
 .errorScopeSection { padding: var(--space-7); }
 .errorScopeInline .stateVisual { width: 40px; height: 40px; }
 
+.loadingLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+  min-width: 0;
+}
+.loadingLayout > * { min-width: 0; }
+.loadingLayoutHome { grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); }
+.loadingLayoutInvoice { grid-template-columns: minmax(360px, 430px) minmax(0, 1fr); }
 .loadingState { display: grid; overflow: hidden; border: 1px solid var(--app-line); border-radius: var(--radius-surface); background: var(--app-paper); }
 .loadingRows { grid-template-columns: 1fr; }
 .skeleton { display: block; min-height: 44px; border-bottom: 1px solid var(--app-line); background: var(--app-paper-soft); animation: skeletonPulse var(--motion-overlay) var(--ease-standard) infinite alternate; }
@@ -941,6 +989,11 @@
   .navigationTop:not(.navigationActive):hover { color: var(--app-ink); }
   .fieldControl:not(:disabled):not([aria-invalid="true"]):hover,
   .textarea:not(:disabled):not([aria-invalid="true"]):hover { border-color: var(--app-line-strong); }
+}
+
+@media (max-width: 1199px) {
+  .loadingLayoutInvoice { grid-template-columns: minmax(0, 1fr); }
+  .loadingLayoutInvoice > :last-child { display: none; }
 }
 
 @media (max-width: 1100px) and (min-width: 768px) {
@@ -1011,6 +1064,7 @@
   .sidePanelLayer { display: none; }
   .contentState { grid-template-columns: auto minmax(0, 1fr); padding: var(--space-6); }
   .stateAction { grid-column: 2; }
+  .loadingLayoutHome { grid-template-columns: minmax(0, 1fr); }
   .loadingSummary.loadingSummary { grid-template-columns: 1fr; }
   .loadingSummary .skeleton { min-height: 52px; border-right: 0; border-bottom: 1px solid var(--app-line); }
   .loadingSummary .skeleton:last-child { border-bottom: 0; }

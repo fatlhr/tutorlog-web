@@ -1,10 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CaretRight, FileCsv, FilePdf, Funnel, X } from "@phosphor-icons/react";
+import { CaretRight, FileCsv, FilePdf, Funnel } from "@phosphor-icons/react";
 import { sessionsToCSV, downloadCSV } from "@/lib/csv";
 import { canExport, recordExportEvent } from "@/lib/data/quota";
 import PaywallDialog from "@/components/PaywallDialog";
+import { Button, DateField, Field } from "@/components/app-ui/controls";
+import { DataRow } from "@/components/app-ui/data-row";
+import { ChoiceGroup, SegmentedNavigation } from "@/components/app-ui/navigation";
+import { BottomSheet, SidePanel } from "@/components/app-ui/overlays";
+import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
+import { EmptyState, ErrorState } from "@/components/app-ui/states";
+import {
+  PageHeader,
+  Section,
+  SectionHeading,
+  SummaryBand,
+  Surface,
+} from "@/components/app-ui/structure";
 import type { RekapData, SessionItem } from "@/lib/data/rekap";
 import { formatCurrency } from "@/lib/format";
 
@@ -56,30 +69,61 @@ function RecapFilterControls({
   onApplyRange,
   onStudentChange,
 }: RecapFilterControlsProps) {
+  const rangeItems = [
+    { value: "current", label: "Bulan ini" },
+    { value: "previous", label: "Bulan lalu" },
+    { value: "custom", label: "Pilih tanggal" },
+  ];
+  const studentOptions = [
+    { value: "", label: "Semua murid" },
+    ...students.map((student) => ({ value: student, label: student.split(" ")[0] })),
+  ];
+
   return (
-    <>
-      <div className="app-recap-presets" role="group" aria-label="Periode">
-        <button type="button" className={rangeMode === "current" ? "active" : ""} onClick={() => onRangeMode("current")}>Bulan ini</button>
-        <button type="button" className={rangeMode === "previous" ? "active" : ""} onClick={() => onRangeMode("previous")}>Bulan lalu</button>
-        <button type="button" className={rangeMode === "custom" ? "active" : ""} onClick={() => onRangeMode("custom")}>Pilih tanggal</button>
-      </div>
+    <div className="app-recap-filter-stack">
+      <SegmentedNavigation
+        label="Periode"
+        items={rangeItems}
+        value={rangeMode}
+        onChange={(value) => onRangeMode(value as RangeMode)}
+        size="compact"
+        tone="recap"
+      />
 
       {rangeMode === "custom" ? (
         <div className="app-recap-custom-range">
-          <input type="date" value={dateFrom} onChange={(event) => onDateFromChange(event.target.value)} aria-label="Tanggal mulai" />
-          <span>sampai</span>
-          <input type="date" value={dateTo} onChange={(event) => onDateToChange(event.target.value)} aria-label="Tanggal selesai" />
-          <button type="button" onClick={onApplyRange}>Terapkan</button>
+          <Field controlId="recap-date-from" label="Tanggal mulai" density="compact">
+            <DateField id="recap-date-from" value={dateFrom} onChange={onDateFromChange} />
+          </Field>
+          <Field controlId="recap-date-to" label="Tanggal selesai" density="compact">
+            <DateField id="recap-date-to" value={dateTo} onChange={onDateToChange} />
+          </Field>
+          <Button type="button" size="compact" onClick={onApplyRange}>Terapkan</Button>
         </div>
       ) : null}
 
-      <div className="app-recap-students" role="group" aria-label="Filter murid">
-        <button type="button" className={studentFilter === null ? "active" : ""} onClick={() => onStudentChange(null)}>Semua murid</button>
-        {students.map((student) => (
-          <button type="button" key={student} className={studentFilter === student ? "active" : ""} onClick={() => onStudentChange(student)}>{student.split(" ")[0]}</button>
-        ))}
-      </div>
-    </>
+      <ChoiceGroup
+        label="Filter murid"
+        options={studentOptions}
+        value={studentFilter ?? ""}
+        onChange={(value) => onStudentChange(value || null)}
+      />
+    </div>
+  );
+}
+
+function SessionDetailContent({ session }: { session: SessionItem }) {
+  return (
+    <div className="app-session-detail-content">
+      <dl>
+        <div><dt>Tanggal dan waktu</dt><dd>{session.d} · {session.time}</dd></div>
+        <div><dt>Mode</dt><dd>{session.mode}</dd></div>
+        <div><dt>Lokasi</dt><dd>{session.location}</dd></div>
+        <div><dt>{session.rateLabel}</dt><dd>{session.rate}</dd></div>
+        <div><dt>Total sesi</dt><dd>{session.t}</dd></div>
+      </dl>
+      <section className="app-session-detail-note"><h3>Catatan sesi</h3><p>{session.note}</p></section>
+    </div>
   );
 }
 
@@ -156,15 +200,6 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
-  useEffect(() => {
-    if (!selectedSession) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelectedSession(null);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedSession]);
-
   const handleExportCSV = useCallback(async () => {
     const { allowed } = await canExport("csv");
     if (!allowed) {
@@ -221,99 +256,42 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
 
   return (
     <>
-      <main className="app-main app-recap-main" id="main-content">
-        <header className="app-recap-heading">
-          <div>
-            <p>Rekap sesi</p>
-            <h1>Periksa sesi mengajarmu.</h1>
-            <span>{rekapData?.monthLabel || "Pilih periode yang ingin dilihat."}</span>
-          </div>
-          <div className="app-recap-downloads">
-            <button type="button" onClick={handleExportCSV} disabled={csvLoading || loadError || rows.length === 0}>
-              <FileCsv size={18} aria-hidden="true" /> {csvLoading ? "Menyiapkan..." : "Unduh CSV"}
-            </button>
-            <button type="button" onClick={handleExportPDF} disabled={pdfLoading || loadError || rows.length === 0}>
-              <FilePdf size={18} aria-hidden="true" /> {pdfLoading ? "Menyiapkan..." : "Unduh PDF"}
-            </button>
-          </div>
-        </header>
-
-        <section className="app-recap-controls app-recap-controls-desktop" aria-label="Filter rekap">
-          <RecapFilterControls
-            rangeMode={rangeMode}
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            students={summary.students}
-            studentFilter={studentFilter}
-            onRangeMode={handleRangeMode}
-            onDateFromChange={setDateFrom}
-            onDateToChange={setDateTo}
-            onApplyRange={() => openRange(dateFrom, dateTo)}
-            onStudentChange={handleStudentChange}
+      <RouteCanvas route="recap">
+        <PageMain>
+          <PageHeader
+            route="recap"
+            eyebrow="Rekap sesi"
+            title="Periksa sesi mengajarmu."
+            description={rekapData?.monthLabel || "Pilih periode yang ingin dilihat."}
+            actions={[
+              <Button
+                key="csv"
+                type="button"
+                variant="secondary"
+                size="compact"
+                leadingIcon={<FileCsv size={18} aria-hidden="true" />}
+                loading={csvLoading}
+                disabled={loadError || rows.length === 0}
+                onClick={handleExportCSV}
+              >
+                Unduh CSV
+              </Button>,
+              <Button
+                key="pdf"
+                type="button"
+                variant="secondary"
+                size="compact"
+                leadingIcon={<FilePdf size={18} aria-hidden="true" />}
+                loading={pdfLoading}
+                disabled={loadError || rows.length === 0}
+                onClick={handleExportPDF}
+              >
+                Unduh PDF
+              </Button>,
+            ]}
           />
-        </section>
 
-        <button
-          type="button"
-          className="app-recap-filter-trigger"
-          aria-expanded={filtersOpen}
-          aria-controls="recap-filter-sheet"
-          onClick={() => setFiltersOpen(true)}
-        >
-          <Funnel size={17} aria-hidden="true" /> Filter
-          {(studentFilter || rangeMode !== "current") ? <span>{Number(Boolean(studentFilter)) + Number(rangeMode !== "current")}</span> : null}
-        </button>
-
-        <section className="app-recap-summary" aria-label="Ringkasan periode">
-          <div><span>Jumlah sesi</span><strong>{filteredSummary.totalSesi}</strong></div>
-          <div><span>Total jam</span><strong>{filteredSummary.totalJam}</strong></div>
-          <div><span>Perkiraan pendapatan</span><strong>{filteredSummary.totalPendapatan}</strong></div>
-        </section>
-
-        <section className="app-recap-list" aria-labelledby="recap-list-title">
-          <div className="app-recap-list-heading">
-            <h2 id="recap-list-title">Daftar sesi</h2>
-            <span>{rows.length} sesi</span>
-          </div>
-
-          {loadError ? (
-            <div className="app-data-state app-data-state-error">
-              <strong>Rekap belum dapat dimuat.</strong>
-              <button type="button" onClick={() => window.location.reload()}>Coba lagi</button>
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="app-data-state">Belum ada sesi pada periode ini.</div>
-          ) : (
-            <>
-              <div className="app-recap-session-list">
-                {paginatedRows.map((row) => (
-                  <button type="button" className="app-recap-session-row" key={row.id} onClick={() => setSelectedSession(row)}>
-                    <span className="app-recap-session-date">{row.d}</span>
-                    <span className="app-recap-session-person"><strong>{row.m}</strong><small>{row.time} · {row.h} jam</small></span>
-                    <span className="app-recap-session-amount">{row.t}</span>
-                    <CaretRight size={18} aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-              {totalPages > 1 ? (
-                <nav className="app-recap-pagination" aria-label="Halaman sesi">
-                  <button type="button" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>Sebelumnya</button>
-                  <span>Halaman {page} dari {totalPages}</span>
-                  <button type="button" disabled={page === totalPages} onClick={() => setPage((current) => current + 1)}>Berikutnya</button>
-                </nav>
-              ) : null}
-            </>
-          )}
-        </section>
-      </main>
-
-      {filtersOpen ? (
-        <div className="app-recap-sheet-scrim" onMouseDown={() => setFiltersOpen(false)}>
-          <section className="app-recap-filter-sheet" id="recap-filter-sheet" role="dialog" aria-modal="true" aria-label="Filter rekap" onMouseDown={(event) => event.stopPropagation()}>
-            <header>
-              <strong>Filter rekap</strong>
-              <button type="button" aria-label="Tutup filter" onClick={() => setFiltersOpen(false)}><X size={20} aria-hidden="true" /></button>
-            </header>
+          <section className="app-recap-controls app-recap-controls-desktop" aria-label="Filter rekap">
             <RecapFilterControls
               rangeMode={rangeMode}
               dateFrom={dateFrom}
@@ -327,26 +305,127 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
               onStudentChange={handleStudentChange}
             />
           </section>
+
+          <div className="app-recap-filter-trigger">
+            <Button
+              type="button"
+              variant="secondary"
+              size="compact"
+              leadingIcon={<Funnel size={17} aria-hidden="true" />}
+              aria-expanded={filtersOpen}
+              aria-controls="recap-filter-sheet"
+              onClick={() => setFiltersOpen(true)}
+            >
+              Filter{(studentFilter || rangeMode !== "current") ? ` (${Number(Boolean(studentFilter)) + Number(rangeMode !== "current")})` : ""}
+            </Button>
+          </div>
+
+          <SummaryBand
+            label="Ringkasan periode"
+            density="compact"
+            tone="recap"
+            items={[
+              { label: "Jumlah sesi", value: filteredSummary.totalSesi },
+              { label: "Total jam", value: filteredSummary.totalJam },
+              { label: "Perkiraan pendapatan", value: filteredSummary.totalPendapatan },
+            ]}
+          />
+
+          <Section labelledBy="recap-list-title">
+            <SectionHeading
+              headingId="recap-list-title"
+              title="Daftar sesi"
+              description={`${rows.length} sesi`}
+            />
+
+            {loadError ? (
+              <ErrorState
+                scope="section"
+                title="Rekap belum dapat dimuat"
+                body="Data sesi tidak berubah. Coba buka rekap ini lagi."
+                retry={<Button type="button" variant="secondary" onClick={() => window.location.reload()}>Coba lagi</Button>}
+              />
+            ) : rows.length === 0 ? (
+              <EmptyState
+                context="recap"
+                title="Belum ada sesi pada periode ini"
+                body="Ubah periode atau filter murid untuk memeriksa sesi lain."
+              />
+            ) : (
+              <>
+                <Surface padding="none" labelledBy="recap-list-title">
+                  {paginatedRows.map((row) => (
+                    <DataRow
+                      key={row.id}
+                      label={`${row.m}, ${row.d}, ${row.time}, ${row.h} jam, ${row.t}`}
+                      density="compact"
+                      tone="recap"
+                      leading={<span className="app-recap-row-date">{row.d}</span>}
+                      title={row.m}
+                      metadata={`${row.time} · ${row.h} jam`}
+                      trailing={(
+                        <span className="app-recap-row-trailing">
+                          <strong>{row.t}</strong>
+                          <CaretRight size={18} aria-hidden="true" />
+                        </span>
+                      )}
+                      onActivate={() => setSelectedSession(row)}
+                    />
+                  ))}
+                </Surface>
+                {totalPages > 1 ? (
+                  <nav className="app-recap-pagination" aria-label="Halaman sesi">
+                    <Button type="button" variant="quiet" size="compact" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>Sebelumnya</Button>
+                    <span>Halaman {page} dari {totalPages}</span>
+                    <Button type="button" variant="quiet" size="compact" disabled={page === totalPages} onClick={() => setPage((current) => current + 1)}>Berikutnya</Button>
+                  </nav>
+                ) : null}
+              </>
+            )}
+          </Section>
+        </PageMain>
+      </RouteCanvas>
+
+      <BottomSheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        title="Filter rekap"
+        height="tall"
+      >
+        <div className="app-recap-filter-content" id="recap-filter-sheet">
+            <RecapFilterControls
+              rangeMode={rangeMode}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              students={summary.students}
+              studentFilter={studentFilter}
+              onRangeMode={handleRangeMode}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+              onApplyRange={() => openRange(dateFrom, dateTo)}
+              onStudentChange={handleStudentChange}
+            />
         </div>
-      ) : null}
+      </BottomSheet>
 
       {selectedSession ? (
-        <div className="app-session-detail-scrim" onMouseDown={() => setSelectedSession(null)}>
-          <aside className="app-session-detail" role="dialog" aria-modal="true" aria-label={`Detail sesi ${selectedSession.m}`} onMouseDown={(event) => event.stopPropagation()}>
-            <header>
-              <div><p>Detail sesi</p><h2>{selectedSession.m}</h2></div>
-              <button type="button" aria-label="Tutup detail sesi" onClick={() => setSelectedSession(null)}><X size={20} aria-hidden="true" /></button>
-            </header>
-            <dl>
-              <div><dt>Tanggal dan waktu</dt><dd>{selectedSession.d} · {selectedSession.time}</dd></div>
-              <div><dt>Mode</dt><dd>{selectedSession.mode}</dd></div>
-              <div><dt>Lokasi</dt><dd>{selectedSession.location}</dd></div>
-              <div><dt>{selectedSession.rateLabel}</dt><dd>{selectedSession.rate}</dd></div>
-              <div><dt>Total sesi</dt><dd>{selectedSession.t}</dd></div>
-            </dl>
-            <section className="app-session-detail-note"><h3>Catatan sesi</h3><p>{selectedSession.note}</p></section>
-          </aside>
-        </div>
+        <>
+          <SidePanel
+            open
+            onOpenChange={(open) => { if (!open) setSelectedSession(null); }}
+            title={`Detail sesi ${selectedSession.m}`}
+          >
+            <SessionDetailContent session={selectedSession} />
+          </SidePanel>
+          <BottomSheet
+            open
+            onOpenChange={(open) => { if (!open) setSelectedSession(null); }}
+            title={`Detail sesi ${selectedSession.m}`}
+            height="tall"
+          >
+            <SessionDetailContent session={selectedSession} />
+          </BottomSheet>
+        </>
       ) : null}
 
       <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} />

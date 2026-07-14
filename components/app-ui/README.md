@@ -1,6 +1,6 @@
 # Protected app UI foundation
 
-This directory is the isolated visual foundation for `/app`. It implements the approved protected-app contract without migrating a production route. Import components from their source files so server components do not inherit a client boundary from a barrel export.
+This directory contains the shared visual foundation for `/app`. It implements the approved protected-app contract and is consumed by the phased production-route migrations. Import components from their source files so server components do not inherit a client boundary from a barrel export.
 
 ## Scope
 
@@ -8,7 +8,7 @@ This directory is the isolated visual foundation for `/app`. It implements the a
 - Theme: light paper only, scoped by `.app-shell-h` or the internal overlay theme wrapper.
 - Dependencies: React, Next.js, and the existing Phosphor package only.
 - Boundaries: no fetching, quota logic, persistence, calculations, PDF behavior, or route exceptions.
-- Status: foundation only. Existing routes must not consume it until this review is approved.
+- Status: foundation, Step 3A, and Step 3B are manually approved. Step 3C and the cross-route final audit are complete and await final screenshot approval.
 
 ## Tokens and responsive rules
 
@@ -34,11 +34,11 @@ Compact controls become their default size below 768px. Reduced motion removes t
 | `data-row.tsx` | `DataRow` | static or exactly one whole-row link or button trigger |
 | `navigation.tsx` | `NavigationItem`, `SegmentedNavigation`, `ChoiceGroup` | route links, bounded single choice, and variable-length choice lists |
 | `overlays.tsx` | `Dialog`, `BottomSheet`, `SidePanel` | shared focus trap, Escape handling, scroll lock, focus return, and visible close action |
-| `states.tsx` | `EmptyState`, `LoadingState`, `ErrorState` | mutually exclusive content states using final-layout dimensions |
+| `states.tsx` | `EmptyState`, `LoadingState`, `LoadingLayout`, `ErrorState` | mutually exclusive content states and route-shaped loading composition using final-layout dimensions |
 | `route-canvas.tsx` | `RouteCanvas`, `PageMain` | route decoration outside the operational content layer and fixed page rhythm |
 | `routes.ts` | `APP_ROUTE_ITEMS`, `getActiveAppRoute` | one route-label configuration for shell migration |
 
-The 21 named components in the formal API tables are implemented. `Textarea`, `Section`, `RouteCanvas`, and `PageMain` are explicit contract clarifications because the composition and dimension sections require them but the API tables do not define them.
+The 21 named components in the formal API tables are implemented. `Textarea`, `Section`, `RouteCanvas`, `PageMain`, and `LoadingLayout` are explicit contract clarifications because the composition and dimension sections require them but the API tables do not define them.
 
 `PageMain` is a layout `div`, not another `main` landmark, because the root layout already owns the document's `main#main-content` target.
 
@@ -48,6 +48,7 @@ The 21 named components in the formal API tables are implemented. `Textarea`, `S
 | `Section` | `labelledBy`, `children` | owns the 28px, 24px, and 20px section gap across desktop, tablet, and mobile |
 | `RouteCanvas` | `route`, `children` | owns one approved route motif and all `aria-hidden` decoration |
 | `PageMain` | `children` | owns content width, page padding, and route gap without creating a second `main` landmark |
+| `LoadingLayout` | `variant`, `children` | mirrors the approved Home or Invoice desktop split and collapses to the final route structure at narrower widths |
 
 `SectionHeading` accepts `headingId` for an existing section anchor or `aria-labelledby` relationship. The ID is applied to the rendered `h2` or `h3`, never its wrapper.
 
@@ -86,6 +87,7 @@ Run `rtk node scripts/audit-protected-app-system.mjs` after foundation changes. 
 - Exact component dimensions override the spacing scale where the approved contract gives raw values such as 14px, 18px, 22px, and 28px.
 - `DataRow` supports a static form for the Beranda migration map; interactive rows still accept exactly one trigger.
 - `SummaryBand` uses the item count as its desktop column count for one to four entries and stacks every item on mobile.
+- `FeedbackMessage` keeps its optional action below the copy column so contextual messages remain readable inside narrow route sidebars.
 - Dialog padding maps `small` to 24px and other desktop sizes to 32px.
 - Primary press feedback uses the approved 120ms boundary.
-- The mobile Home canvas keeps one 13px by 50px paper tab from the approved prototype. This is the only intentional deviation from the written rule that mobile keeps only the background motif; its inner schedule blocks are removed.
+- The mobile Home canvas keeps one 13px by 50px mint edge marker from the latest approved route treatment. This is the only intentional deviation from the written rule that mobile keeps only the background motif; the desktop Bookmark Fan is removed below 768px.

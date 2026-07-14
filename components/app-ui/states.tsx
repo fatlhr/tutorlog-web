@@ -70,6 +70,24 @@ export type LoadingStateProps = {
   | { shape: "preview"; rowCount?: never }
 );
 
+export interface LoadingLayoutProps {
+  variant: "home" | "invoice";
+  children: ReactNode;
+}
+
+export function LoadingLayout({
+  variant,
+  children,
+}: LoadingLayoutProps) {
+  return (
+    <div
+      className={`${styles.loadingLayout} ${styles[`loadingLayout${variant.charAt(0).toUpperCase()}${variant.slice(1)}`]}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function LoadingState({
   shape,
   rowCount,

@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowBendDownRight } from "@phosphor-icons/react/dist/ssr";
 import TplModern from "@/components/invoice/TplModern";
 import PublicProofDialog from "@/components/PublicProofDialog";
-import type { InvoiceData } from "@/components/invoice/TplKlasik";
+import type { InvoiceData } from "@/components/invoice/invoice-data";
 
 const invoiceData: InvoiceData = {
   no: "INV-2026-06-014",

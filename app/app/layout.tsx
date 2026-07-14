@@ -37,7 +37,11 @@ export default async function AppLayout({
   const isPlus = quota.pdfExportUnlimited || quota.plan !== "free";
 
   return (
-    <div className="app-shell-h" style={{ minHeight: "100svh" }}>
+    <div
+      className="app-shell-h"
+      data-plan={isPlus ? "plus" : "free"}
+      style={{ minHeight: "100svh" }}
+    >
       <AppTopBar name={name} initials={initials} isPlus={isPlus} />
       {children}
 
