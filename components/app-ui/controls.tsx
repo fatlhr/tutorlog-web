@@ -404,6 +404,7 @@ export interface TextFieldProps extends BaseFieldControlProps {
   placeholder?: string;
   autoComplete?: string;
   inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
+  style?: InputHTMLAttributes<HTMLInputElement>["style"];
 }
 
 export function TextField({
@@ -418,6 +419,7 @@ export function TextField({
   disabled = false,
   required = false,
   size,
+  style,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
@@ -440,6 +442,7 @@ export function TextField({
       inputMode={inputMode}
       disabled={disabled}
       required={required || field.required}
+      style={style}
       className={`${styles.fieldControl} ${styles[`fieldControlSize${capitalize(resolvedSize)}`]}`}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
