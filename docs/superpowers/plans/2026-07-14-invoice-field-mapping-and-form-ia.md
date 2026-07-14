@@ -721,3 +721,88 @@ Fresh runtime screenshots: deferred until explicitly approved.
 ```
 
 Do not update Milestone 9 or 10 as fully audited from this focused implementation alone. That ledger update remains gated on the previously requested cross-route visual and interaction audit.
+
+## Task 5: Resolve Whole-Branch Correctness Findings
+
+**Files:**
+- Modify: `scripts/test-invoice-export-contract.mjs`
+- Modify: `components/PublicProductRail.tsx`
+- Modify: `app/app/invoice/page.tsx`
+- Modify: `components/invoice/invoice-data.ts`
+- Modify: `components/invoice/TplKlasik.tsx`
+- Modify: `components/invoice/TplModern.tsx`
+- Modify: `components/invoice/TplMinimal.tsx`
+
+**Interfaces:**
+- Consumes: `InvoiceSession.amount`, `InvoiceSession.billingType`, the shared `InvoiceData` contract, and the current student/date query key.
+- Produces: repository-wide removal of dead `due`, authoritative flat/hourly totals in all templates, and latest-request-only session state.
+
+- [ ] **Step 1: Add failing cross-consumer, billing, and request-race assertions**
+
+Extend the focused contract so it fails unless all of these relationships hold:
+
+- `PublicProductRail` no longer supplies `due` to an `InvoiceData` fixture.
+- Every `InvoiceItem` carries both authoritative `amount` and `billingType`.
+- The page mapper forwards `session.amount` and `session.billingType`.
+- Every template totals and renders `item.amount`, never `hours * rate`, and uses the billing-neutral column label `Tarif` instead of `Tarif/jam`.
+- The session fetch has a latest-request cleanup/sequence guard.
+- A loaded-session query key must equal the current student/date key before Invoice actions can be enabled.
+
+- [ ] **Step 2: Run the focused contract and confirm the new assertions fail**
+
+Run:
+
+```bash
+rtk node scripts/test-invoice-export-contract.mjs
+```
+
+Expected: FAIL because the public fixture still has `due`, templates still derive totals from hours and rate, and session results are not query-key guarded.
+
+- [ ] **Step 3: Remove dead `due` from the remaining typed consumer**
+
+Delete the `due` property from the `InvoiceData` fixture in `components/PublicProductRail.tsx`. Do not add compatibility shims to the shared contract.
+
+- [ ] **Step 4: Carry authoritative billing values through the shared item contract**
+
+Add `amount: number` and `billingType: "hourly" | "flat"` to `InvoiceItem`, update sample data, and forward both values from every fetched session in `buildInvoiceData()`.
+
+In all three templates:
+
+- calculate the total from `item.amount`;
+- render the row subtotal from `item.amount`;
+- retain the entered rate value but label the column `Tarif`, which remains correct for hourly, flat, and mixed invoices.
+
+- [ ] **Step 5: Reject obsolete session responses and stale query data**
+
+Derive one stable current query key from selected student, start date, and end date. Track the query key associated with the sessions currently loaded.
+
+In the fetch effect:
+
+- capture the request/query key;
+- ignore success, error, and loading-finalization updates after cleanup or when a newer request owns the state;
+- only record the loaded key when the current request succeeds.
+
+Extend `invoiceActionsDisabled` so actions remain disabled whenever the loaded key differs from the current key. Preserve `reportValidity()` ordering and the existing loading/error/empty guards.
+
+- [ ] **Step 6: Run focused verification**
+
+Run:
+
+```bash
+rtk node scripts/test-invoice-export-contract.mjs
+rtk rg -n 'due:' components/PublicProductRail.tsx components/invoice app/app/invoice/page.tsx
+rtk rg -n 'hours\s*\*\s*(it|item)\.rate|Tarif/jam' components/invoice
+rtk git diff --check
+```
+
+Expected: contract PASS, both negative searches return no matches, and diff check is clean.
+
+- [ ] **Step 7: Review and commit only Task 5 files**
+
+Inspect the scoped diff, stage only the seven listed files, run `rtk git diff --cached --check`, and commit with:
+
+```bash
+rtk git commit -m "fix: preserve invoice billing integrity"
+```
+
+After the task review approves this commit, repeat the focused audit and the whole-branch review before development integration.
