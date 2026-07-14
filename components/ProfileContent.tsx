@@ -2,10 +2,11 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { DeviceMobile, PencilSimple } from "@phosphor-icons/react";
-import { Button, Field, TextField } from "@/components/app-ui/controls";
+import { Check, DeviceMobile, PencilSimple } from "@phosphor-icons/react";
+import { Button, IconButton } from "@/components/app-ui/controls";
 import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
 import { PageHeader, Surface } from "@/components/app-ui/structure";
+import styles from "@/components/app-ui/app-ui.module.css";
 import { updateName } from "@/app/app/actions";
 
 interface ProfileContentProps {
@@ -57,7 +58,7 @@ export default function ProfileContent({ email, name: initialName, initials, isP
         <PageHeader route="settings" title="Profil" description="Nama dan informasi akun kamu." />
 
         <Surface padding="compact">
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
             <div
               style={{
                 width: 64,
@@ -76,39 +77,98 @@ export default function ProfileContent({ email, name: initialName, initials, isP
             >
               {initials}
             </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: 15 }}>{name}</div>
-              <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)", overflow: "hidden", textOverflow: "ellipsis" }}>{email}</div>
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted, #5f6b68)", marginBottom: 4 }}>Nama</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 15 }}>{name}</span>
-              {!editing && (
-                <Button type="button" variant="quiet" size="compact" onClick={() => { setEditValue(name); setEditing(true); }}>
-                  <PencilSimple size={16} />
-                </Button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {!editing ? (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontWeight: 600, fontSize: 15 }}>{name}</span>
+                    <Button type="button" variant="quiet" size="compact" onClick={() => { setEditValue(name); setEditing(true); }}>
+                      <PencilSimple size={16} />
+                    </Button>
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)", overflow: "hidden", textOverflow: "ellipsis" }}>{email}</div>
+                </>
+              ) : (
+                <div>
+                  <label
+                    className={styles.fieldLabel}
+                    htmlFor="profile-name"
+                    style={{ display: "block", marginBottom: 8 }}
+                  >
+                    Edit nama<span className={styles.requiredMark}> *</span>
+                  </label>
+                  <div
+                    className={`${styles.fieldControl} ${styles.fieldControlSizeDefault}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      width: "fit-content",
+                      maxWidth: "100%",
+                      paddingInline: 8,
+                    }}
+                  >
+                    <input
+                      id="profile-name"
+                      value={editValue}
+                      onChange={(event) => setEditValue(event.target.value)}
+                      placeholder="Nama lengkap"
+                      autoComplete="name"
+                      required
+                      aria-invalid={error ? true : undefined}
+                      aria-describedby={error ? "profile-name-error" : undefined}
+                      style={{
+                        flex: "1 1 120px",
+                        minWidth: 0,
+                        width: `max(120px, ${Math.max(editValue.length, 1) + 1}ch)`,
+                        border: 0,
+                        outline: "none",
+                        background: "transparent",
+                        fontFamily: "var(--app-font-body)",
+                        fontSize: 14,
+                        lineHeight: "21px",
+                        color: "var(--app-ink)",
+                        fieldSizing: "content",
+                      }}
+                    />
+                    <IconButton
+                      icon={<Check size={18} weight="light" />}
+                      label="Simpan"
+                      variant="quiet"
+                      size="compact"
+                      disabled={pending}
+                      onClick={handleSave}
+                    />
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => setEditing(false)}
+                      style={{
+                        appearance: "none",
+                        border: 0,
+                        background: "transparent",
+                        padding: "0 4px",
+                        color: "var(--app-ink-muted, #5f6b68)",
+                        fontFamily: "var(--app-font-body)",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        lineHeight: "18px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Batal
+                    </button>
+                  </div>
+                  {error ? (
+                    <p id="profile-name-error" className={styles.fieldError} role="alert" style={{ marginTop: 8 }}>
+                      {error}
+                    </p>
+                  ) : null}
+                </div>
               )}
             </div>
           </div>
-
-          {editing && (
-            <div style={{ marginTop: 12 }}>
-              <Field controlId="profile-name" label="Edit nama" required error={error ?? undefined}>
-                <TextField id="profile-name" value={editValue} onChange={setEditValue} placeholder="Nama lengkap" autoComplete="name" />
-              </Field>
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
-                <Button type="button" variant="quiet" size="compact" onClick={() => setEditing(false)}>
-                  Batal
-                </Button>
-                <Button type="button" variant="primary" size="compact" disabled={pending} onClick={handleSave}>
-                  {pending ? "Menyimpan..." : "Simpan"}
-                </Button>
-              </div>
-            </div>
-          )}
         </Surface>
 
         {isPlus ? (
@@ -142,15 +202,19 @@ export default function ProfileContent({ email, name: initialName, initials, isP
         )}
 
         <Surface padding="compact" style={{ marginTop: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <DeviceMobile size={24} aria-hidden="true" />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>Catat sesi dari aplikasi TutorLog</div>
-              <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)" }}>Unduh aplikasi untuk mencatat sesi les di HP.</div>
+          <div className={styles.profileCta}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
+              <DeviceMobile size={24} aria-hidden="true" />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Catat sesi dari aplikasi TutorLog</div>
+                <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)" }}>Unduh aplikasi untuk mencatat sesi les di HP.</div>
+              </div>
             </div>
-            <Button href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" variant="primary" size="compact" style={{ flexShrink: 0 }}>
-              Buka aplikasi
-            </Button>
+            <div className={styles.profileCtaButton}>
+              <Button href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" variant="primary" size="compact">
+                Buka aplikasi
+              </Button>
+            </div>
           </div>
         </Surface>
       </PageMain>
