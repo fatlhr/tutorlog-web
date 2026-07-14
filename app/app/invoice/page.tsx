@@ -39,6 +39,11 @@ interface StudentOption {
   parentName: string | null;
 }
 
+function getStudentRecipientName(student: StudentOption): string {
+  const storedName = student.parentName?.trim();
+  return storedName || `Orang tua/wali ${student.name}`;
+}
+
 interface InvoiceSessionItem {
   id: string;
   clockIn: string;
@@ -201,13 +206,19 @@ export default function InvoicePage() {
       return;
     }
 
-    if (!students.some((student) => student.name === studentName)) {
+    const selectedStudent = students.find((student) => student.name === studentName);
+    if (!selectedStudent) {
       const firstStudent = students[0];
       setStudentName(firstStudent.name);
       setStudentInfo(firstStudent.educationLevel ?? "");
       setStudentAddress(firstStudent.address ?? "");
-      setParentName(firstStudent.parentName ?? "");
+      setParentName(getStudentRecipientName(firstStudent));
+      return;
     }
+
+    setStudentInfo(selectedStudent.educationLevel ?? "");
+    setStudentAddress((current) => current || selectedStudent.address || "");
+    setParentName((current) => current.trim() || getStudentRecipientName(selectedStudent));
   }, [studentName, students, studentsLoading]);
 
   useEffect(() => {
@@ -335,12 +346,18 @@ export default function InvoicePage() {
 
   const handleStudentChange = (name: string) => {
     setStudentName(name);
-    const found = students.find((s) => s.name === name);
-    if (found) {
-      if (found.educationLevel) setStudentInfo(found.educationLevel);
-      if (found.address) setStudentAddress(found.address);
-      if (found.parentName) setParentName(found.parentName);
+    const found = students.find((student) => student.name === name);
+
+    if (!found) {
+      setStudentInfo("");
+      setStudentAddress("");
+      setParentName("");
+      return;
     }
+
+    setStudentInfo(found.educationLevel ?? "");
+    setStudentAddress(found.address ?? "");
+    setParentName(getStudentRecipientName(found));
   };
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -377,7 +394,6 @@ export default function InvoicePage() {
       if (typeof draft.tutorLocation === "string") setTutorLocation(draft.tutorLocation);
       if (typeof draft.tutorContact === "string") setTutorContact(draft.tutorContact);
       if (typeof draft.parentName === "string") setParentName(draft.parentName);
-      if (typeof draft.studentInfo === "string") setStudentInfo(draft.studentInfo);
       if (typeof draft.studentAddress === "string") setStudentAddress(draft.studentAddress);
       if (typeof draft.bankAccount === "string") setBankAccount(draft.bankAccount);
       if (typeof draft.bankName === "string") setBankName(draft.bankName);
@@ -405,7 +421,6 @@ export default function InvoicePage() {
         tutorLocation,
         tutorContact,
         parentName,
-        studentInfo,
         studentAddress,
         bankAccount,
         bankName,
@@ -414,7 +429,7 @@ export default function InvoicePage() {
         template,
       }));
     } catch { /* localStorage not available */ }
-  }, [draftReady, periodStart, periodEnd, studentName, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, studentInfo, studentAddress, bankAccount, bankName, notes, accent, template]);
+  }, [draftReady, periodStart, periodEnd, studentName, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, studentAddress, bankAccount, bankName, notes, accent, template]);
 
   useEffect(() => {
     if (!saveSettings) return;
@@ -435,28 +450,24 @@ export default function InvoicePage() {
 
   const buildInvoiceData = (): InvoiceData => {
     const now = new Date();
-    const dueDate = new Date(periodEnd);
-    dueDate.setDate(dueDate.getDate() + 7);
-
     const [bankCode = "", bankNo = ""] = bankAccount.split(/\s*(?:·|-)\s*/, 2);
 
-    const items = invoiceSessions.map((s) => ({
-      date: formatMonthDay(new Date(s.clockIn)),
-      desc: s.note,
-      h: s.hours,
-      rate: s.rate,
+    const items = invoiceSessions.map((session) => ({
+      date: formatMonthDay(new Date(session.clockIn)),
+      desc: session.note,
+      h: session.hours,
+      rate: session.rate,
     }));
 
     return {
       no: invoiceNo,
       date: formatInvoiceDate(now),
-      due: formatInvoiceDate(dueDate),
       period: periodLabel,
       lembaga: lembaga || undefined,
       from: {
         name: tutorName,
         lines: [
-          lembaga || "Tutor Privat",
+          "Tutor Privat",
           tutorLocation,
           tutorContact,
         ].filter(Boolean),
@@ -464,9 +475,9 @@ export default function InvoicePage() {
       to: {
         name: parentName,
         lines: [
-          studentInfo ? `Orang tua ${studentName}` : studentName,
-          studentInfo || "",
-          studentAddress || "",
+          `Murid: ${studentName}`,
+          studentInfo,
+          studentAddress,
         ].filter(Boolean),
       },
       bank: { bank: bankCode, no: bankNo, name: bankName },

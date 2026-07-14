@@ -1,7 +1,6 @@
 export interface InvoiceData {
   no: string;
   date: string;
-  due: string;
   period: string;
   lembaga?: string;
   from: { name: string; lines: string[] };
@@ -14,7 +13,6 @@ export interface InvoiceData {
 export const sampleInvoiceData: InvoiceData = {
   no: "INV-2026/06-014",
   date: "30 Juni 2026",
-  due: "7 Juli 2026",
   period: "1 - 30 Juni 2026",
   from: {
     name: "Rina Novianti",

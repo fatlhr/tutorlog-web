@@ -237,6 +237,51 @@ assert.match(
   /export interface InvoiceData/,
   "Invoice data contract must not belong to one visual template",
 );
+assert.doesNotMatch(
+  invoiceData,
+  /^\s*due:\s*string;|^\s*due:\s*"/m,
+  "InvoiceData and sample data must not retain an unused due field",
+);
+assert.doesNotMatch(
+  page,
+  /^\s*due:\s*formatInvoiceDate|const dueDate =/m,
+  "The page mapper must not calculate unused due data",
+);
+assert.match(
+  page,
+  /function getStudentRecipientName\(student: StudentOption\): string \{[\s\S]*student\.parentName\?\.trim\(\)[\s\S]*`Orang tua\/wali \$\{student\.name\}`[\s\S]*\}/,
+  "Billing recipient defaults must prefer stored parent data and fall back to the selected student",
+);
+assert.match(
+  page,
+  /setStudentInfo\(found\.educationLevel \?\? ""\);[\s\S]*setStudentAddress\(found\.address \?\? ""\);[\s\S]*setParentName\(getStudentRecipientName\(found\)\);/,
+  "Changing students must reset every student-derived Invoice value",
+);
+assert.doesNotMatch(
+  page,
+  /typeof draft\.studentInfo === "string"/,
+  "Derived education data must not be restored from the draft",
+);
+const persistedDraftMatch = page.match(
+  /localStorage\.setItem\(DRAFT_KEY, JSON\.stringify\(\{([\s\S]*?)\}\)\);/,
+);
+assert.ok(persistedDraftMatch, "Invoice draft persistence block must remain present");
+const persistedDraftBody = persistedDraftMatch[1];
+assert.doesNotMatch(
+  persistedDraftBody,
+  /^\s*studentInfo,\s*$/m,
+  "Derived education data must not be written to the draft",
+);
+assert.match(
+  page,
+  /from:\s*\{[\s\S]*lines:\s*\[\s*"Tutor Privat",\s*tutorLocation,\s*tutorContact,?\s*\]\.filter\(Boolean\)/,
+  "Sender lines must contain the tutor role, location, and contact without duplicating the brand",
+);
+assert.match(
+  page,
+  /to:\s*\{[\s\S]*lines:\s*\[\s*`Murid: \$\{studentName\}`,\s*studentInfo,\s*studentAddress,?\s*\]\.filter\(Boolean\)/,
+  "Recipient lines must identify the student without repeating the billing relationship",
+);
 assert.match(
   page,
   /placeholder="Contoh: Nama tutor"/,
