@@ -1160,7 +1160,7 @@
 
   .footer {
     width: 100%;
-    padding: 28px 16px 32px;
+    padding: 28px 16px calc(72px + env(safe-area-inset-bottom) + 32px);
     grid-template-columns: 1fr 1fr;
     gap: 24px;
   }
