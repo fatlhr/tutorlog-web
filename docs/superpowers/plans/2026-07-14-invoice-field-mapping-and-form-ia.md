@@ -523,7 +523,7 @@ Expected: the staged diff contains only the three listed files.
 - Consumes: `sessionsLoading`, `sessionsError`, `invoiceSessions`, `periodStart`, `periodEnd`, and existing `Button` plus `DateField` props.
 - Produces: `invoiceActionsDisabled: boolean` shared by Periksa invoice and both Unduh PDF buttons.
 
-- [ ] **Step 1: Add failing state-guard assertions**
+- [x] **Step 1: Add failing state-guard assertions**
 
 Add these assertions to `scripts/test-invoice-export-contract.mjs`:
 
@@ -560,7 +560,7 @@ assert.match(
 );
 ```
 
-- [ ] **Step 2: Run the focused contract and confirm the guard assertions fail**
+- [x] **Step 2: Run the focused contract and confirm the guard assertions fail**
 
 Run:
 
@@ -570,7 +570,7 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: FAIL because `invoiceActionsDisabled` does not exist and Periksa invoice is still enabled for empty sessions.
 
-- [ ] **Step 3: Add one shared action guard and extend validation**
+- [x] **Step 3: Add one shared action guard and extend validation**
 
 Add next to `invoiceDownloadLocked`:
 
@@ -587,7 +587,7 @@ const validateInvoiceForm = useCallback(() => {
 }, [invoiceActionsDisabled]);
 ```
 
-- [ ] **Step 4: Constrain the date range with native DateField props**
+- [x] **Step 4: Constrain the date range with native DateField props**
 
 Update the two date controls:
 
@@ -606,7 +606,7 @@ Update the two date controls:
 />
 ```
 
-- [ ] **Step 5: Use the approved empty-session copy**
+- [x] **Step 5: Use the approved empty-session copy**
 
 Replace the current empty-period message with:
 
@@ -618,7 +618,7 @@ Replace the current empty-period message with:
 
 Keep the existing loading and fetch-error messages unchanged.
 
-- [ ] **Step 6: Disable all three session-dependent actions**
+- [x] **Step 6: Disable all three session-dependent actions**
 
 Add this prop to Periksa invoice, the form Unduh PDF button, and the desktop-header Unduh PDF button:
 
@@ -628,7 +628,7 @@ disabled={invoiceActionsDisabled}
 
 Replace the two existing `disabled={invoiceSessions.length === 0}` props with the shared guard.
 
-- [ ] **Step 7: Run the focused contract and confirm Task 3 passes**
+- [x] **Step 7: Run the focused contract and confirm Task 3 passes**
 
 Run:
 
@@ -638,7 +638,7 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: PASS with no assertion error.
 
-- [ ] **Step 8: Review and commit only Task 3 files**
+- [x] **Step 8: Review and commit only Task 3 files**
 
 Run:
 
