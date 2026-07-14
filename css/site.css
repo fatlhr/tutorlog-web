@@ -41,10 +41,45 @@ html, body {
 .app-shell-h .mob-tab-bar {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  transform: none;
   width: 100%;
-  max-width: 480px;
+  max-width: none;
+}
+
+/* Protected app shell uses one navigation model across breakpoints. */
+.app-shell-h > .mob-tab-bar { display: none; }
+
+@media (max-width: 767px) {
+  .app-shell-h .app-topbar { padding: 0 16px; }
+  .app-shell-h .app-topbar-inner { height: 56px; }
+  .app-shell-h .app-brand { font-size: 16px; }
+  .app-shell-h .app-brand-mark { width: 32px; height: 32px; }
+  .app-shell-h .app-topbar-nav { display: none; }
+  .app-shell-h .app-account-name { display: none; }
+  .app-shell-h .app-account-avatar { width: 34px; height: 34px; }
+  .app-shell-h .app-account-menu { width: min(220px, calc(100vw - 32px)); }
+
+  .app-shell-h > .mob-tab-bar {
+    display: flex;
+    min-height: calc(72px + env(safe-area-inset-bottom));
+    justify-content: space-around;
+    padding: 6px 0 max(10px, env(safe-area-inset-bottom));
+    box-sizing: border-box;
+  }
+
+  .app-shell-h > .mob-tab-bar > a { flex: 1; }
+
+  .app-shell-h .mob-app-main { padding-top: 72px; }
+
+  .app-shell-footer {
+    width: 100%;
+    padding: 18px 20px calc(80px + env(safe-area-inset-bottom));
+    gap: 16px;
+    text-align: left;
+  }
+
+  .app-shell-footer div { gap: 14px; }
 }
 
 .mob-dialog-scrim {
@@ -186,40 +221,61 @@ body.menu-open { overflow: hidden; }
 .features-v2 { padding: 10px clamp(24px, 6.5vw, 96px) 0px; }
 .landing-footer { padding: 32px clamp(24px, 6.5vw, 96px); }
 .nav-top { padding: 20px clamp(20px, 4.5vw, 64px); }
-.app-shell-h .app-main { padding: 96px clamp(20px, 4.5vw, 64px) 56px; }
 .app-topbar { padding: 0 clamp(16px, 3vw, 40px); }
-
-.inv-section-title {
-  font-family: var(--f-title); font-weight: 700; font-size: 13px;
-  color: var(--tw-text-3); text-transform: uppercase; letter-spacing: .5px;
-  margin: 0 0 8px;
-}
 
 .inv-section {
   display: flex; flex-direction: column; gap: 12px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0,0,0,.12);
+  border-bottom: 1px solid var(--app-line);
 }
 
-.inv-section-row {
-  display: grid; grid-template-columns: 1fr; gap: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0,0,0,.12);
+.inv-period-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.inv-section-col {
-  display: flex; flex-direction: column; gap: 12px;
+.inv-payment-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 
-.inv-section-divide {
+.inv-student-meta {
   display: block;
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  color: var(--app-ink);
+  background: var(--app-paper-soft);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  line-height: 18px;
 }
 
-/* A4 preview: allow content to grow beyond page height */
-.a4-preview .a4 {
-  overflow: visible;
-  height: auto;
-  aspect-ratio: auto;
+.app-invoice-main .inv-form :is(input, select, textarea, .tw-helper, .inv-auto-sessions) {
+  text-align: left;
+}
+
+@media (max-width: 389px) {
+  .inv-period-fields,
+  .inv-payment-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inv-choice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inv-choice-label {
+  color: var(--app-ink);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
 }
 
 /* Zoom manual > fit: kertas lebih lebar dari container — "safe" supaya
@@ -230,17 +286,14 @@ body.menu-open { overflow: hidden; }
 
 /* Preview dialog: satu card (tanpa nested chrome), kertas dimaksimalkan */
 .inv-preview-dialog {
-  width: min(1040px, 100%);
-  max-height: 96vh;
+  width: 100%;
+  height: 100%;
   min-height: 0;
   padding: 12px 12px 16px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, .18);
+  border-radius: 0;
+  box-shadow: none;
 }
 .inv-preview-dialog .a4-preview { min-height: 0; }
-.inv-dialog-close {
-  display: flex; justify-content: flex-end;
-  margin-bottom: -6px; /* rapat ke toolbar di bawahnya */
-}
 
 /* Helper: grid 2 kolom konten (pakai class ini, JANGAN inline style,
    supaya bisa collapse — dipakai halaman legal/harga/kontak/fitur) */
@@ -261,13 +314,12 @@ body.menu-open { overflow: hidden; }
 /* Konteks sempit (mobile <768 & kolom form desktop ≥1100):
    stack vertikal full-width, Export PDF jadi hero CTA ukuran penuh */
 .inv-form-actions { display: flex; flex-direction: column; gap: 10px; }
-.inv-form-actions .btn { width: 100%; white-space: nowrap; }
-.inv-form-actions .btn-primary { height: 48px; font-size: 15px; }
+.inv-form-actions > * { width: 100%; white-space: nowrap; }
 .inv-premium-note { text-align: center; }
 
 /* Ceklis simpan pengaturan */
 .inv-save-check {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; min-height: 44px; align-items: center; gap: 10px;
   font-family: var(--f-body); font-size: 14px; font-weight: 600;
   color: var(--tw-text); cursor: pointer;
 }
@@ -279,23 +331,8 @@ body.menu-open { overflow: hidden; }
 /* Tablet (container lebar): kembali sebaris, lebar natural, rata kanan */
 @media (min-width: 768px) and (max-width: 1099px) {
   .inv-form-actions { flex-direction: row; justify-content: flex-end; }
-  .inv-form-actions .btn { width: auto; min-width: 180px; }
-  .inv-form-actions .btn-primary { height: 40px; font-size: 13px; }
+  .inv-form-actions > * { width: auto; min-width: 180px; }
   .inv-premium-note { text-align: right; }
-}
-
-/* Mobile: stack Tutor/Murid vertically */
-.vp-mobile .inv-section-row { grid-template-columns: 1fr; }
-
-/* Desktop: hide form action buttons (Export PDF is in preview toolbar) */
-@media (min-width: 1100px) {
-  .inv-form-actions { display: none; }
-}
-
-/* Mobile: stack Tutor/Murid vertically, compact buttons */
-@media (max-width: 767px) {
-  .inv-section-row { grid-template-columns: 1fr; }
-  .inv-section-divide { display: block; }
 }
 
 .inv-export-top {
@@ -315,12 +352,198 @@ body.menu-open { overflow: hidden; }
 @media (max-width: 1099px) {
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .invoice-layout { grid-template-columns: 1fr; }
-  .invoice-layout .inv-form { max-height: none; }
-  .invoice-layout .inv-preview-col { display: none; }
-  .inv-section-row { grid-template-columns: 1fr 1fr; }
-  .inv-section-divide { display: none; }
-  .rekap-toolbar { flex-wrap: wrap; gap: 14px; }
   .features-v2 { padding-top: 48px; min-height: 90svh; }
+}
+
+/* ---------- Protected invoice workflow ---------- */
+.app-invoice-mobile-handoff {
+  display: none;
+}
+
+.app-invoice-main {
+  width: 100%;
+}
+
+.app-invoice-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.app-invoice-heading p {
+  margin: 0 0 6px;
+  font-family: var(--f-title);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tw-primary);
+  text-transform: uppercase;
+}
+
+.app-invoice-heading h1 {
+  margin: 0;
+  font-family: var(--f-title);
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.app-invoice-heading > div:first-child > span {
+  display: block;
+  max-width: 560px;
+  margin-top: 8px;
+  color: var(--tw-text-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.app-invoice-main .invoice-layout {
+  grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+  gap: 28px;
+}
+
+.app-invoice-main .inv-form {
+  max-height: calc(100vh - 160px);
+  padding-inline: var(--space-2);
+  overflow-y: auto;
+}
+
+.inv-auto-sessions {
+  display: grid;
+  gap: 4px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--tw-divider);
+  color: var(--tw-text-2);
+  font-family: var(--f-body);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.inv-auto-sessions-error { color: var(--tw-error); }
+@media (min-width: 1200px) {
+  .app-invoice-main .inv-form {
+    padding-inline-end: var(--space-4);
+    scrollbar-gutter: stable;
+  }
+
+  .app-invoice-main .inv-form-actions {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .app-invoice-main .invoice-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-invoice-main .inv-form {
+    max-width: 760px;
+    max-height: none;
+    margin: 0 auto;
+  }
+
+  .app-invoice-main .inv-preview-col,
+  .app-invoice-main .inv-export-top {
+    display: none;
+  }
+
+  .app-invoice-main .inv-form-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .app-invoice-main .inv-form-actions > * {
+    width: auto;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-invoice-route { display: none; }
+  .app-invoice-route.app-invoice-route-open { display: block; }
+
+  .app-invoice-main {
+    display: none;
+  }
+
+  .app-invoice-mobile-handoff {
+    min-height: calc(100svh - 64px);
+    padding: 128px 24px 132px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 14px;
+    background: var(--tw-surface-soft);
+  }
+
+  .app-invoice-mobile-handoff > svg {
+    color: var(--tw-primary);
+  }
+
+  .app-invoice-mobile-handoff p {
+    margin: 0;
+    font-family: var(--f-title);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tw-primary);
+    text-transform: uppercase;
+  }
+
+  .app-invoice-mobile-handoff h1 {
+    max-width: 330px;
+    margin: 0;
+    font-family: var(--f-title);
+    font-size: 30px;
+    line-height: 1.12;
+  }
+
+  .app-invoice-mobile-handoff > span {
+    max-width: 340px;
+    color: var(--tw-text-2);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .app-invoice-mobile-handoff a {
+    text-decoration: none;
+  }
+
+  .app-invoice-handoff-actions {
+    display: grid;
+    width: min(100%, 290px);
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .app-invoice-continue {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--tw-primary);
+    font-family: var(--f-title);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .app-invoice-mobile-handoff.app-invoice-mobile-handoff-hidden { display: none; }
+  .app-invoice-main.app-invoice-mobile-editor { display: block; }
+  .app-invoice-mobile-editor .app-invoice-heading { align-items: flex-start; flex-direction: column; }
+  .app-invoice-mobile-editor .invoice-layout { display: block; }
+  .app-invoice-mobile-editor .inv-form { max-height: none; }
+  .app-invoice-mobile-editor .inv-preview-col,
+  .app-invoice-mobile-editor .inv-export-top { display: none; }
+  .app-invoice-mobile-editor .inv-form-actions { display: flex; }
+  .app-invoice-mobile-editor .color-picker .sw { width: 44px; height: 44px; }
+
+  .inv-preview-dialog { width: 100%; height: 100%; border-radius: 0; padding: 12px; }
+  .inv-preview-dialog .a4-preview { display: flex; align-items: flex-start; justify-content: center; }
 }
 
 @media (max-width: 899px) {

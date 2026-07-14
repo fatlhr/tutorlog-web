@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>TutorLog Protected App Prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Source+Serif+4:wght@400;500;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./prototype.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="#main-content" aria-label="Beranda TutorLog">
+          <span class="brand-mark"><img src="../../public/tutorlog-logo.png" alt="" /></span>
+          <span>TutorLog</span>
+        </a>
+
+        <nav class="desktop-navigation" aria-label="Navigasi utama">
+          <a class="navigation-item is-current" href="#main-content" aria-current="page">
+            <span class="icon" data-icon="house" aria-hidden="true"></span>
+            Beranda
+          </a>
+          <a class="navigation-item" href="#rekap-preview">
+            <span class="icon" data-icon="chart-bar" aria-hidden="true"></span>
+            Rekap
+          </a>
+          <a class="navigation-item" href="#invoice-preview">
+            <span class="icon" data-icon="file-text" aria-hidden="true"></span>
+            Invoice
+          </a>
+        </nav>
+
+        <div class="account">
+          <button
+            class="account-trigger icon-button"
+            type="button"
+            aria-label="Menu akun Rina"
+            aria-expanded="false"
+            aria-controls="account-menu"
+          >
+            <span class="account-initials">RN</span>
+            <span class="account-name">Rina</span>
+            <span class="icon icon-small" data-icon="caret-down" aria-hidden="true"></span>
+          </button>
+          <div class="account-menu" id="account-menu" role="menu" hidden>
+            <div class="account-summary">
+              <strong>Rina Novianti</strong>
+              <span>Paket Free</span>
+            </div>
+            <a href="#help" role="menuitem">
+              <span class="icon" data-icon="question" aria-hidden="true"></span>
+              Bantuan
+            </a>
+            <button type="button" role="menuitem">Keluar</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="route-canvas" id="main-content">
+      <div class="planner-decoration" aria-hidden="true">
+        <span class="planner-paper-tab"></span>
+        <div class="planner-board">
+          <div class="planner-days">
+            <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span>
+          </div>
+          <div class="planner-lines"></div>
+          <span class="planner-block planner-block-one"></span>
+          <span class="planner-block planner-block-two"></span>
+        </div>
+      </div>
+
+      <div class="page">
+        <header class="page-header entrance entrance-one">
+          <p class="route-eyebrow">Juli 2026</p>
+          <h1>Selamat sore, Rina.</h1>
+          <p>Ringkasan sesi dan langkah berikutnya sudah siap.</p>
+        </header>
+
+        <section class="state-panel" data-state-panel="default">
+          <section class="summary-band entrance entrance-two" aria-label="Ringkasan Juli 2026">
+            <div class="summary-item">
+              <span>Sesi selesai</span>
+              <strong>12</strong>
+            </div>
+            <div class="summary-item">
+              <span>Waktu mengajar</span>
+              <strong>18 jam 30 menit</strong>
+            </div>
+            <div class="summary-item">
+              <span>Estimasi pendapatan</span>
+              <strong>Rp2.775.000</strong>
+            </div>
+          </section>
+
+          <div class="workspace-grid entrance entrance-three">
+            <section class="recent-section" aria-labelledby="recent-title">
+              <div class="section-heading">
+                <div>
+                  <h2 id="recent-title">Sesi terbaru</h2>
+                  <p>Tiga sesi terakhir yang tercatat dari aplikasi.</p>
+                </div>
+                <a class="text-action" href="#rekap-preview">
+                  Lihat semua
+                  <span class="icon icon-small" data-icon="arrow-right" aria-hidden="true"></span>
+                </a>
+              </div>
+
+              <div class="data-surface">
+                <div class="data-row">
+                  <time datetime="2026-07-12">12 Jul</time>
+                  <div class="data-row-main">
+                    <strong>Alya Prameswari</strong>
+                    <span>Matematika, 1 jam 30 menit</span>
+                  </div>
+                  <strong class="amount">Rp225.000</strong>
+                </div>
+                <div class="data-row">
+                  <time datetime="2026-07-11">11 Jul</time>
+                  <div class="data-row-main">
+                    <strong>Bima Arya</strong>
+                    <span>Fisika, 2 jam</span>
+                  </div>
+                  <strong class="amount">Rp300.000</strong>
+                </div>
+                <div class="data-row">
+                  <time datetime="2026-07-09">9 Jul</time>
+                  <div class="data-row-main">
+                    <strong>Nadira Putri</strong>
+                    <span>Kimia, 1 jam 30 menit</span>
+                  </div>
+                  <strong class="amount">Rp225.000</strong>
+                </div>
+              </div>
+            </section>
+
+            <aside class="workspace-aside">
+              <section class="contextual-surface">
+                <div class="contextual-icon" aria-hidden="true">
+                  <span class="icon" data-icon="calendar"></span>
+                </div>
+                <div>
+                  <h2>Rekap Juli siap diperiksa</h2>
+                  <p>Periksa sesi bulan ini sebelum mengunduh rekap.</p>
+                </div>
+                <a class="button button-primary" href="#rekap-preview" data-primary-action>
+                  Buka rekap
+                  <span class="icon" data-icon="arrow-right" aria-hidden="true"></span>
+                </a>
+              </section>
+
+              <section class="upgrade-strip" data-plus-state="eligible">
+                <span class="upgrade-icon" aria-hidden="true">
+                  <span class="icon" data-icon="lock-key"></span>
+                </span>
+                <div>
+                  <strong>1 unduhan rekap gratis tersisa</strong>
+                  <span>Plus membuka unduhan rekap tanpa batas.</span>
+                </div>
+                <a class="text-action" href="#harga">Lihat Plus</a>
+              </section>
+
+              <section class="upgrade-strip" data-plus-state="exhausted" hidden>
+                <span class="upgrade-icon" aria-hidden="true">
+                  <span class="icon" data-icon="lock-key"></span>
+                </span>
+                <div>
+                  <strong>Unduhan gratis bulan ini sudah digunakan</strong>
+                  <span>Aktifkan Plus untuk mengunduh rekap lagi.</span>
+                </div>
+                <a class="text-action" href="#harga">Aktifkan Plus</a>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section class="state-panel loading-state" data-state-panel="loading" aria-label="Memuat Beranda" hidden>
+          <div class="skeleton summary-skeleton" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="skeleton-workspace" aria-hidden="true">
+            <div class="skeleton rows-skeleton"><span></span><span></span><span></span></div>
+            <div class="skeleton action-skeleton"><span></span><span></span></div>
+          </div>
+          <p class="sr-only">Memuat ringkasan dan sesi terbaru.</p>
+        </section>
+
+        <section class="state-panel" data-state-panel="empty" hidden>
+          <section class="empty-state surface">
+            <span class="state-icon" aria-hidden="true">
+              <span class="icon" data-icon="device-mobile"></span>
+            </span>
+            <div>
+              <h2>Belum ada sesi yang tercatat</h2>
+              <p>Catat sesi pertama dari aplikasi TutorLog di ponsel. Ringkasannya akan muncul di sini.</p>
+            </div>
+            <button class="button button-primary" type="button">Buka panduan</button>
+          </section>
+        </section>
+
+        <section class="state-panel" data-state-panel="error" hidden>
+          <section class="error-state surface" role="alert">
+            <span class="state-icon state-icon-error" aria-hidden="true">
+              <span class="icon" data-icon="warning-circle"></span>
+            </span>
+            <div>
+              <h2>Ringkasan belum dapat dimuat</h2>
+              <p>Periksa koneksi, lalu coba lagi. Data sesi tidak berubah.</p>
+            </div>
+            <button class="button button-secondary" type="button">
+              <span class="icon" data-icon="arrow-clockwise" aria-hidden="true"></span>
+              Coba lagi
+            </button>
+          </section>
+        </section>
+
+        <section class="state-panel component-lab" data-state-panel="lab" hidden aria-labelledby="lab-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="lab-title">Component state lab</h2>
+              <p>Halaman internal prototype untuk memeriksa state komponen.</p>
+            </div>
+          </div>
+
+          <section class="surface lab-surface">
+            <h3>Button states</h3>
+            <div class="button-lab">
+              <button class="button button-primary" type="button">Default</button>
+              <button class="button button-primary is-hover" type="button">Hover</button>
+              <button class="button button-primary is-focus" type="button">Focus</button>
+              <button class="button button-primary is-active" type="button">Active</button>
+              <button class="button button-primary" type="button" disabled>Disabled</button>
+              <button class="button button-primary is-loading" type="button" aria-busy="true" disabled>
+                <span class="icon spin" data-icon="spinner-gap" aria-hidden="true"></span>
+                Menyiapkan...
+              </button>
+              <button class="icon-button" type="button" aria-label="Tandai selesai">
+                <span class="icon" data-icon="check-circle" aria-hidden="true"></span>
+              </button>
+            </div>
+          </section>
+
+          <section class="surface lab-surface">
+            <h3>Overlay primitives</h3>
+            <div class="button-lab">
+              <button class="button button-secondary" type="button" data-open-dialog>Buka dialog</button>
+              <button class="button button-secondary" type="button" data-open-sheet>Buka bottom sheet</button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <nav class="mobile-navigation" aria-label="Navigasi utama mobile">
+      <a class="mobile-navigation-item is-current" href="#main-content" aria-current="page">
+        <span class="mobile-icon"><span class="icon" data-icon="house" aria-hidden="true"></span></span>
+        Beranda
+      </a>
+      <a class="mobile-navigation-item" href="#rekap-preview">
+        <span class="mobile-icon"><span class="icon" data-icon="chart-bar" aria-hidden="true"></span></span>
+        Rekap
+      </a>
+      <a class="mobile-navigation-item" href="#invoice-preview">
+        <span class="mobile-icon"><span class="icon" data-icon="file-text" aria-hidden="true"></span></span>
+        Invoice
+      </a>
+    </nav>
+
+    <dialog class="prototype-dialog" id="prototype-dialog" aria-labelledby="dialog-title">
+      <form method="dialog">
+        <header>
+          <div>
+            <h2 id="dialog-title">Dialog prototype</h2>
+            <p>Memakai radius, spacing, focus, dan motion overlay dari contract.</p>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="Tutup dialog">
+            <span aria-hidden="true">×</span>
+          </button>
+        </header>
+        <div class="dialog-body">Konten dialog tetap berada di atas permukaan kertas yang solid.</div>
+        <footer><button class="button button-primary" value="default">Selesai</button></footer>
+      </form>
+    </dialog>
+
+    <dialog class="prototype-sheet" id="prototype-sheet" aria-labelledby="sheet-title">
+      <form method="dialog">
+        <header>
+          <div>
+            <h2 id="sheet-title">Bottom sheet prototype</h2>
+            <p>Digunakan untuk disclosure pada viewport mobile.</p>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="Tutup bottom sheet">
+            <span aria-hidden="true">×</span>
+          </button>
+        </header>
+        <div class="dialog-body">Sheet tidak memakai swipe sebagai satu-satunya cara menutup.</div>
+      </form>
+    </dialog>
+  </body>
+</html>

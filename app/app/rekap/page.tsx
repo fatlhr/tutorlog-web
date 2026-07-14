@@ -3,7 +3,7 @@ import { fetchRekapDataByRange, type RekapData } from "@/lib/data/rekap";
 import RekapContent from "@/components/RekapContent";
 
 export const metadata: Metadata = {
-  title: "TutorLog — Rekap",
+  title: "TutorLog - Rekap",
   description: "Rekap sesi mengajar kamu.",
 };
 
@@ -21,12 +21,13 @@ export default async function RekapPage({ searchParams }: RekapPageProps) {
   const to = params.to ?? `${year}-${String(month).padStart(2, "0")}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`;
 
   let rekapData: RekapData | null = null;
+  let loadError = false;
 
   try {
     rekapData = await fetchRekapDataByRange(from, to);
   } catch {
-    // Data fetch failed — component will show dummy data (dev) or empty (prod)
+    loadError = true;
   }
 
-  return <RekapContent rekapData={rekapData} from={from} to={to} />;
+  return <RekapContent rekapData={rekapData} from={from} to={to} loadError={loadError} />;
 }

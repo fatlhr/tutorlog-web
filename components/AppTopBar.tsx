@@ -4,23 +4,29 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { ChartBar, FileText, House, Lifebuoy, SignOut } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
+import { NavigationItem } from "@/components/app-ui/navigation";
+import { APP_ROUTE_ITEMS, getActiveAppRoute } from "@/components/app-ui/routes";
 
 interface AppTopBarProps {
   name: string;
   initials: string;
+  isPlus: boolean;
 }
 
-export default function AppTopBar({ name, initials }: AppTopBarProps) {
+const routeIcons = {
+  home: House,
+  recap: ChartBar,
+  invoice: FileText,
+};
+
+export default function AppTopBar({ name, initials, isPlus }: AppTopBarProps) {
   const pathname = usePathname();
+  const activeRoute = getActiveAppRoute(pathname);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const items = [
-    { id: "rekap", label: "Rekap Sesi", href: "/app/rekap", icon: <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18 M7 15V9 M12 15V5 M17 15v-3" /></svg> },
-    { id: "invoice", label: "Invoice Builder", href: "/app/invoice", icon: <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M9 13h6 M9 17h4" /></svg> },
-  ];
 
   const handleLogout = useCallback(async () => {
     const supabase = createClient();
@@ -31,95 +37,75 @@ export default function AppTopBar({ name, initials }: AppTopBarProps) {
 
   useEffect(() => {
     if (!open) return;
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
     };
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
+
     document.addEventListener("keydown", handleEscape);
-    document.addEventListener("mousedown", handler);
+    document.addEventListener("mousedown", handleOutsideClick);
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [open]);
 
   return (
     <header className="app-topbar">
       <div className="app-topbar-inner">
-        <div className="app-topbar-left">
-          <Link href="/app" className="brand">
-            <span className="mk"><Image src="/tutorlog-logo.png" alt="" width={34} height={34} /></span>
-            <span className="wm">TutorLog</span>
-          </Link>
-          <nav className="app-topbar-nav">
-            {items.map((it) => (
-              <Link
-                key={it.id}
-                href={it.href}
-                className={pathname.startsWith(it.href) ? "active" : ""}
-              >
-                {it.icon}
-                <span>{it.label}</span>
-              </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="app-topbar-right" ref={dropdownRef} style={{ position: "relative" }}>
+        <Link href="/app" className="app-brand" aria-label="Beranda TutorLog">
+          <span className="app-brand-mark"><Image src="/tutorlog-logo.png" alt="" width={34} height={34} /></span>
+          <span>TutorLog</span>
+        </Link>
+
+        <nav className="app-topbar-nav" aria-label="Navigasi utama">
+          {APP_ROUTE_ITEMS.map((item) => {
+            const active = activeRoute === item.route;
+            const Icon = routeIcons[item.route];
+            return (
+              <NavigationItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                route={item.route}
+                mode="top"
+                active={active}
+                icon={<Icon size={18} weight={active ? "fill" : "regular"} />}
+              />
+            );
+          })}
+        </nav>
+
+        <div className="app-account" ref={dropdownRef}>
           <button
             type="button"
-            className="app-topbar-user"
-            onClick={() => setOpen(!open)}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            className="app-account-trigger"
+            onClick={() => setOpen((current) => !current)}
             aria-expanded={open}
-            aria-haspopup="true"
+            aria-haspopup="menu"
+            aria-label={`Menu akun ${name}`}
           >
-            <div className="av">{initials}</div>
-            <span className="em">{name}</span>
+            <span className="app-account-avatar">{initials}</span>
+            <span className="app-account-name">{name}</span>
           </button>
+
           {open && (
-            <div style={{
-              position: "absolute",
-              top: "100%",
-              right: 0,
-              marginTop: 8,
-              background: "var(--tw-surface)",
-              border: "1px solid var(--tw-border)",
-              borderRadius: "var(--r-md)",
-              boxShadow: "0 8px 24px rgba(0,0,0,.08)",
-              minWidth: 200,
-              padding: "8px 0",
-              zIndex: 50,
-            }}>
-              <div style={{
-                padding: "8px 16px",
-                borderBottom: "1px solid var(--tw-border)",
-              }}>
-                <div style={{ fontFamily: "var(--f-title)", fontWeight: 700, fontSize: 14, color: "var(--tw-text)" }}>{name}</div>
-                <div style={{ fontFamily: "var(--f-body)", fontSize: 12, color: "var(--tw-text-3)", marginTop: 2 }}>Tutor</div>
+            <div className="app-account-menu" role="menu">
+              <div className="app-account-summary">
+                <strong>{name}</strong>
+                <span>{isPlus ? "Plus aktif" : "Paket Free"}</span>
               </div>
-              <button
-                type="button"
-                onClick={handleLogout}
-                style={{
-                  width: "100%",
-                  textAlign: "left",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: "10px 16px",
-                  fontFamily: "var(--f-body)",
-                  fontSize: 14,
-                  color: "var(--tw-text-2)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9" /></svg>
+              <Link href="/kontak" role="menuitem" onClick={() => setOpen(false)}>
+                <Lifebuoy size={17} aria-hidden="true" />
+                Bantuan
+              </Link>
+              <button type="button" role="menuitem" onClick={handleLogout}>
+                <SignOut size={17} aria-hidden="true" />
                 Keluar
               </button>
             </div>
