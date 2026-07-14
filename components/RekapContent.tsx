@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { CaretRight, FileCsv, FilePdf, Funnel } from "@phosphor-icons/react";
 import { sessionsToCSV, downloadCSV } from "@/lib/csv";
 import { canExport, recordExportEvent } from "@/lib/data/quota";
@@ -127,6 +127,74 @@ function SessionDetailContent({ session }: { session: SessionItem }) {
   );
 }
 
+const SessionRow = memo(function SessionRow({
+  row,
+  onSelectSession,
+}: {
+  row: SessionItem;
+  onSelectSession: (row: SessionItem) => void;
+}) {
+  const handleClick = useCallback(() => onSelectSession(row), [onSelectSession, row]);
+  return (
+    <DataRow
+      label={`${row.m}, ${row.d}, ${row.time}, ${row.h} jam, ${row.t}`}
+      density="compact"
+      tone="recap"
+      leading={<span className="app-recap-row-date">{row.d}</span>}
+      title={row.m}
+      metadata={`${row.time} · ${row.h} jam`}
+      trailing={(
+        <span className="app-recap-row-trailing">
+          <strong>{row.t}</strong>
+          <CaretRight size={18} aria-hidden="true" />
+        </span>
+      )}
+      onActivate={handleClick}
+    />
+  );
+});
+
+function SessionDetailOverlay({
+  session,
+  onClose,
+}: {
+  session: SessionItem;
+  onClose: () => void;
+}) {
+  const [overlayKind, setOverlayKind] = useState<"sidePanel" | "bottomSheet">("sidePanel");
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setOverlayKind(mq.matches ? "sidePanel" : "bottomSheet");
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  if (overlayKind === "sidePanel") {
+    return (
+      <SidePanel
+        open
+        onOpenChange={(open) => { if (!open) onClose(); }}
+        title={`Detail sesi ${session.m}`}
+      >
+        <SessionDetailContent session={session} />
+      </SidePanel>
+    );
+  }
+
+  return (
+    <BottomSheet
+      open
+      onOpenChange={(open) => { if (!open) onClose(); }}
+      title={`Detail sesi ${session.m}`}
+      height="tall"
+    >
+      <SessionDetailContent session={session} />
+    </BottomSheet>
+  );
+}
+
 export default function RekapContent({ rekapData, from, to, loadError = false }: RekapContentProps) {
   const [studentFilter, setStudentFilter] = useState<string | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
@@ -134,6 +202,9 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<SessionItem | null>(null);
+  const handleSessionClick = useCallback((row: SessionItem) => {
+    setSelectedSession(row);
+  }, []);
   const [page, setPage] = useState(1);
   const [dateFrom, setDateFrom] = useState(from);
   const [dateTo, setDateTo] = useState(to);
@@ -151,9 +222,10 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     [allRows, studentFilter],
   );
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
   const paginatedRows = useMemo(
-    () => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [page, rows],
+    () => rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [safePage, rows],
   );
   const summary = useMemo(() => rekapData?.summary ?? {
     totalSesi: 0,
@@ -195,10 +267,6 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     setStudentFilter(student);
     setPage(1);
   }, []);
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
 
   const handleExportCSV = useCallback(async () => {
     const { allowed } = await canExport("csv");
@@ -355,29 +423,18 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
               <>
                 <Surface padding="none" labelledBy="recap-list-title">
                   {paginatedRows.map((row) => (
-                    <DataRow
+                    <SessionRow
                       key={row.id}
-                      label={`${row.m}, ${row.d}, ${row.time}, ${row.h} jam, ${row.t}`}
-                      density="compact"
-                      tone="recap"
-                      leading={<span className="app-recap-row-date">{row.d}</span>}
-                      title={row.m}
-                      metadata={`${row.time} · ${row.h} jam`}
-                      trailing={(
-                        <span className="app-recap-row-trailing">
-                          <strong>{row.t}</strong>
-                          <CaretRight size={18} aria-hidden="true" />
-                        </span>
-                      )}
-                      onActivate={() => setSelectedSession(row)}
+                      row={row}
+                      onSelectSession={handleSessionClick}
                     />
                   ))}
                 </Surface>
                 {totalPages > 1 ? (
                   <nav className="app-recap-pagination" aria-label="Halaman sesi">
-                    <Button type="button" variant="quiet" size="compact" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>Sebelumnya</Button>
-                    <span>Halaman {page} dari {totalPages}</span>
-                    <Button type="button" variant="quiet" size="compact" disabled={page === totalPages} onClick={() => setPage((current) => current + 1)}>Berikutnya</Button>
+                    <Button type="button" variant="quiet" size="compact" disabled={safePage <= 1} onClick={() => setPage((current) => Math.max(current - 1, 1))}>Sebelumnya</Button>
+                    <span>Halaman {safePage} dari {totalPages}</span>
+                    <Button type="button" variant="quiet" size="compact" disabled={safePage >= totalPages} onClick={() => setPage((current) => Math.min(current + 1, totalPages))}>Berikutnya</Button>
                   </nav>
                 ) : null}
               </>
@@ -409,23 +466,10 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
       </BottomSheet>
 
       {selectedSession ? (
-        <>
-          <SidePanel
-            open
-            onOpenChange={(open) => { if (!open) setSelectedSession(null); }}
-            title={`Detail sesi ${selectedSession.m}`}
-          >
-            <SessionDetailContent session={selectedSession} />
-          </SidePanel>
-          <BottomSheet
-            open
-            onOpenChange={(open) => { if (!open) setSelectedSession(null); }}
-            title={`Detail sesi ${selectedSession.m}`}
-            height="tall"
-          >
-            <SessionDetailContent session={selectedSession} />
-          </BottomSheet>
-        </>
+        <SessionDetailOverlay
+          session={selectedSession}
+          onClose={() => setSelectedSession(null)}
+        />
       ) : null}
 
       <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} />

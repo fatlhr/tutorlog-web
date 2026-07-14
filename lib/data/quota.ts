@@ -62,7 +62,7 @@ export async function canExport(
 ): Promise<{ allowed: boolean; quota: QuotaInfo }> {
   const quota = await checkQuota();
 
-  if (quota.pdfExportUnlimited) {
+  if (quota.pdfExportUnlimited || quota.plan !== "free") {
     return { allowed: true, quota };
   }
 

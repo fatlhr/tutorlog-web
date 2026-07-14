@@ -12,6 +12,11 @@ html, body {
   font-family: var(--f-body);
 }
 
+html.bodyScrollLock body {
+  overflow: hidden;
+  padding-right: var(--scrollbar-compensation, 0px);
+}
+
 /* Artboard fixed-width → kolom responsif di tengah */
 .mob-page {
   width: 100%;
