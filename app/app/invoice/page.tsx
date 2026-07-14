@@ -562,6 +562,11 @@ export default function InvoicePage() {
           />
         </Field>
 
+        <dl className="inv-student-meta" aria-label="Data murid">
+          <dt>Tingkat pendidikan</dt>
+          <dd aria-live="polite">{studentInfo || "Belum tersedia"}</dd>
+        </dl>
+
         <div className="inv-period-fields">
           <Field controlId="invoice-period-start" label="Periode" required>
             <DateField
@@ -596,7 +601,7 @@ export default function InvoicePage() {
       <div className="inv-section">
         <SectionHeading level="h2" size="compact" title="Pembayaran" />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="inv-payment-fields">
           <Field controlId="invoice-bank-account" label="Bank" required>
             <TextField id="invoice-bank-account" value={bankAccount} onChange={setBankAccount} placeholder="BCA - 1234 5678 9012" />
           </Field>
@@ -656,44 +661,36 @@ export default function InvoicePage() {
         </div>
       </div>
 
-      <div className="inv-section-row">
-        <div className="inv-section-col inv-tutor-details">
-          <SectionHeading level="h2" size="compact" title="Detail tambahan" />
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Profil tutor" />
 
-          <Field controlId="invoice-tutor-name" label="Nama" required>
-            <TextField id="invoice-tutor-name" value={tutorName} onChange={setTutorName} placeholder="Contoh: Nama tutor" />
-          </Field>
+        <Field controlId="invoice-tutor-name" label="Nama" required>
+          <TextField id="invoice-tutor-name" value={tutorName} onChange={setTutorName} placeholder="Contoh: Nama tutor" />
+        </Field>
 
-          <Field controlId="invoice-service-name" label="Nama layanan atau brand (opsional)">
-            <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les Privat Rina" />
-          </Field>
+        <Field controlId="invoice-service-name" label="Nama layanan atau brand (opsional)">
+          <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les Privat Rina" />
+        </Field>
 
-          <Field controlId="invoice-tutor-location" label="Lokasi">
-            <TextField id="invoice-tutor-location" value={tutorLocation} onChange={setTutorLocation} placeholder="Contoh: Jakarta Selatan" />
-          </Field>
+        <Field controlId="invoice-tutor-location" label="Lokasi">
+          <TextField id="invoice-tutor-location" value={tutorLocation} onChange={setTutorLocation} placeholder="Contoh: Jakarta Selatan" />
+        </Field>
 
-          <Field controlId="invoice-tutor-contact" label="Kontak">
-            <TextField id="invoice-tutor-contact" value={tutorContact} onChange={setTutorContact} placeholder="Contoh: 0812-3456-7890" />
-          </Field>
-        </div>
+        <Field controlId="invoice-tutor-contact" label="Kontak">
+          <TextField id="invoice-tutor-contact" value={tutorContact} onChange={setTutorContact} placeholder="Contoh: 0812-3456-7890" />
+        </Field>
+      </div>
 
-        <div className="divide inv-section-divide"></div>
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Penerima invoice" />
 
-        <div className="inv-section-col inv-student-details">
-          <SectionHeading level="h2" size="compact" title="Detail murid" />
+        <Field controlId="invoice-parent-name" label="Ditagih Kepada" required>
+          <TextField id="invoice-parent-name" value={parentName} onChange={setParentName} placeholder="Contoh: Orang tua/wali murid" />
+        </Field>
 
-          <Field controlId="invoice-student-level" label="Tingkat Pendidikan">
-            <TextField id="invoice-student-level" value={studentInfo} onChange={setStudentInfo} placeholder="Tingkat pendidikan murid" disabled />
-          </Field>
-
-          <Field controlId="invoice-parent-name" label="Ditagih Kepada" required>
-            <TextField id="invoice-parent-name" value={parentName} onChange={setParentName} placeholder="Contoh: Orang tua/wali murid" />
-          </Field>
-
-          <Field controlId="invoice-student-address" label="Alamat">
-            <TextField id="invoice-student-address" value={studentAddress} onChange={setStudentAddress} placeholder="Jalan Sudirman" />
-          </Field>
-        </div>
+        <Field controlId="invoice-student-address" label="Alamat">
+          <TextField id="invoice-student-address" value={studentAddress} onChange={setStudentAddress} placeholder="Jalan Sudirman" />
+        </Field>
       </div>
 
       <div className="inv-section">

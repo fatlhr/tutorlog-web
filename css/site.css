@@ -235,6 +235,52 @@ body.menu-open { overflow: hidden; }
   gap: 12px;
 }
 
+.inv-payment-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.inv-student-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  color: var(--app-ink);
+  background: var(--app-paper-soft);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.inv-student-meta dt,
+.inv-student-meta dd {
+  margin: 0;
+}
+
+.inv-student-meta dt {
+  color: var(--app-ink-muted);
+}
+
+.inv-student-meta dd {
+  font-weight: 700;
+  text-align: right;
+}
+
+.app-invoice-main .inv-form :is(input, select, textarea, .tw-helper, .inv-auto-sessions) {
+  text-align: left;
+}
+
+@media (max-width: 389px) {
+  .inv-period-fields,
+  .inv-payment-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
 .inv-choice-field {
   display: flex;
   flex-direction: column;
@@ -247,20 +293,6 @@ body.menu-open { overflow: hidden; }
   font-size: 13px;
   font-weight: 700;
   line-height: 18px;
-}
-
-.inv-section-row {
-  display: grid; grid-template-columns: 1fr; gap: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--app-line);
-}
-
-.inv-section-col {
-  display: flex; flex-direction: column; gap: 12px;
-}
-
-.inv-section-divide {
-  display: block;
 }
 
 /* Zoom manual > fit: kertas lebih lebar dari container — "safe" supaya
@@ -320,15 +352,6 @@ body.menu-open { overflow: hidden; }
   .inv-premium-note { text-align: right; }
 }
 
-/* Mobile: stack Tutor/Murid vertically */
-.vp-mobile .inv-section-row { grid-template-columns: 1fr; }
-
-/* Mobile: stack Tutor/Murid vertically, compact buttons */
-@media (max-width: 767px) {
-  .inv-section-row { grid-template-columns: 1fr; }
-  .inv-section-divide { display: block; }
-}
-
 .inv-export-top {
   display: flex; justify-content: flex-end; margin-bottom: 12px;
 }
@@ -346,8 +369,6 @@ body.menu-open { overflow: hidden; }
 @media (max-width: 1099px) {
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .invoice-layout { grid-template-columns: 1fr; }
-  .inv-section-row { grid-template-columns: 1fr 1fr; }
-  .inv-section-divide { display: none; }
   .features-v2 { padding-top: 48px; min-height: 90svh; }
 }
 
@@ -402,10 +423,6 @@ body.menu-open { overflow: hidden; }
   max-height: calc(100vh - 160px);
   padding-inline: var(--space-2);
   overflow-y: auto;
-}
-
-.app-invoice-main .inv-section-row {
-  grid-template-columns: 1fr;
 }
 
 .inv-auto-sessions {

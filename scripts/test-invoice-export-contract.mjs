@@ -299,8 +299,48 @@ assert.match(
 );
 assert.match(
   page,
-  /<TextField id="invoice-student-level"[^>]*disabled/s,
-  "Student education level must be read-only because it comes from student data",
+  /<dl className="inv-student-meta" aria-label="Data murid">[\s\S]*<dt>Tingkat pendidikan<\/dt>[\s\S]*<dd aria-live="polite">\{studentInfo \|\| "Belum tersedia"\}<\/dd>[\s\S]*<\/dl>/,
+  "Education must render as static metadata below the selected student",
+);
+assert.doesNotMatch(
+  page,
+  /controlId="invoice-student-level"|id="invoice-student-level"/,
+  "Education must not remain a disabled form field",
+);
+assert.match(
+  page,
+  /title="Profil tutor"/,
+  "Tutor identity fields must use the Profil tutor section title",
+);
+assert.match(
+  page,
+  /title="Penerima invoice"/,
+  "Billing recipient fields must use the Penerima invoice section title",
+);
+assert.doesNotMatch(
+  page,
+  /inv-section-row|inv-section-col|inv-section-divide/,
+  "The narrow Invoice form must not retain a nested two-column section row",
+);
+assert.match(
+  page,
+  /className="inv-payment-fields"/,
+  "Payment fields need a named responsive grid instead of inline layout styles",
+);
+assert.match(
+  siteCss,
+  /\.inv-student-meta \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto;[\s\S]*background: var\(--app-paper-soft\);/,
+  "Student metadata must use the protected soft-paper treatment",
+);
+assert.match(
+  siteCss,
+  /\.app-invoice-main \.inv-form :is\(input, select, textarea, \.tw-helper, \.inv-auto-sessions\) \{\s*text-align: left;/,
+  "Invoice field content and hints must remain left-aligned",
+);
+assert.match(
+  siteCss,
+  /@media \(max-width: 389px\) \{[\s\S]*\.inv-period-fields,[\s\S]*\.inv-payment-fields[\s\S]*grid-template-columns: 1fr;/,
+  "Date and payment pairs must stack below 390px",
 );
 assert.match(
   page,
