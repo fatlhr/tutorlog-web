@@ -189,11 +189,11 @@
 - [x] Replace remaining hand-drawn invoice icons with existing Phosphor icons.
 - [x] Review automatic inclusion, note fallback, draft restore, desktop preview, tablet centered dialog, mobile handoff/continue, free lock dialog, and paid download at `1440x900`, `1024x768`, and `390x844`.
 - [x] Run `git diff --check`.
-- [ ] Commit: `feat: refine invoice composition and Plus gate`.
+- [x] Include Milestone 9 in the final Invoice composition checkpoint.
 
 **Gate:** The invoice remains a clear desktop-first task, a workable mobile fallback, and a trustworthy paid conversion moment without exposing irrelevant session-selection complexity.
 
-**Status:** Fresh runtime review completed on 2026-07-14 and awaits final screenshot approval. The review verified automatic session inclusion, the exact missing-note fallback, draft restore after reload, one document landmark, semantic template and accent controls, and 44px mobile action targets. Text inputs now use concise placeholders inside the controls, both period inputs stay aligned, and automatic inclusion is explained once after the range. The scrollable desktop form keeps a safe inset from its scrollbar. The accent picker also reserves a four-pixel inset so selected and focused swatch rings stay inside the scroll container without horizontal overflow. The shared `Unduh PDF` control no longer inherits route copy styles. Invoice preview and the Plus boundary use the shared dialog primitive with focus transfer, Escape close, scroll lock, and focus return. Opening the mobile editor resets the page to the top. The protected shell remains the single plan source, so paid accounts do not see the lock or upgrade copy. The temporary free-state fixture used for dialog review was removed. PDF actions now run native required-field validation before preview or export, invoice accent colors avoid unsupported canvas color functions, and export uses a compressed JPEG fitted to exactly one A4 page so a rounding remainder cannot create a blank second page. Template body, label, heading, and total sizes were increased proportionally; the focused Invoice export contract and protected-app audit pass, while a fresh downloaded artifact remains the final visual and file-size check.
+**Status:** Approved on 2026-07-14 after manual UI review in the Invoice worktree. Automatic session inclusion, draft restore, shared overlay behavior, form alignment, template parity, one-page PDF export, authoritative flat/hourly totals, and responsive action targets were reviewed through the focused contract, source audit, prior downloaded artifacts, and the user's final visual check. Education metadata now reads as one inline sentence. Total hours are larger than table items in all templates. Modern notes and transfer details follow the totals behind a divider.
 
 ## Milestone 10: State, Density, and Copy Polish
 
@@ -207,11 +207,11 @@
 - [x] Confirm backgrounds remain quiet and do not sit beneath opaque content incorrectly; table/form surfaces must be solid and ornaments must not intrude into their bounds.
 - [x] Review keyboard focus, menu/dialog Escape close, mobile bottom-sheet dismissal, and touch-target spacing at `1440x900`, `1024x768`, and `390x844`.
 - [x] Run `git diff --check`.
-- [ ] Commit: `style: polish protected tutor workspace states`.
+- [x] Include Milestone 10 in the final protected-workspace checkpoint.
 
 **Gate:** The app feels friendly and consistent at every density, without the visual overhead of a generic SaaS dashboard.
 
-**Status:** Fresh cross-route audit completed on 2026-07-14 and awaits final screenshot approval. Beranda, Rekap, and Invoice were reviewed at `1440x900`, `1024x768`, and `390x844` with one visible heading, one document landmark, no horizontal overflow, no generic dummy copy, and no mobile control below 44px. Account menu, Rekap filter and session sheets, and Invoice preview verified focus transfer, Escape close, scroll lock, and focus return. Route transitions now use dedicated Beranda, Rekap, and Invoice skeletons inside the matching `RouteCanvas` and `PageMain`; a focused runtime preview verified that the route canvas grows to the footer boundary instead of allowing the footer to rise into loading content. The design-system audit and `git diff --check` passed. Protected copy contains no en dash or em dash. Shared motion has a `prefers-reduced-motion` override; runtime media emulation remains part of the deferred integration checks.
+**Status:** Approved on 2026-07-14. The user completed the final UI review manually. The protected-system audit confirms shared focus treatment, control sizing, token boundaries, and reduced-motion support. Source review confirms focus trap, Escape dismissal, scroll lock, focus return, 44px mobile actions, route-shaped loading skeletons, and no en dash or em dash in protected UI copy.
 
 ## Milestone 11: Final Review and Integration Gate
 
@@ -244,8 +244,8 @@
 | 6 | `56d5038` | Passed on 2026-07-14 | Production shell reviewed at all three viewports and manually approved |
 | 7 | Pending | Passed on 2026-07-14 | Four Beranda states reviewed at all three viewports with temporary fixtures removed; screenshots manually approved |
 | 8 | Pending | Passed on 2026-07-14 | Dense pagination, tablet date disclosure, mobile filters, SidePanel, and BottomSheet reviewed and manually approved |
-| 9 | Pending | Passed on 2026-07-14 | Fresh review complete at all three viewports; final screenshots awaiting manual approval |
-| 10 | Pending | Passed on 2026-07-14 | Focus, Escape, sheet/dialog dismissal, scroll lock, touch targets, copy, decoration, component consistency, and route-shaped loading skeletons reviewed; final screenshots awaiting manual approval |
+| 9 | Final Invoice checkpoint | Passed on 2026-07-14 | Manual UI review approved; form mapping, PDF templates, totals, and Modern footer placement accepted |
+| 10 | Final protected-workspace checkpoint | Passed on 2026-07-14 | Manual UI review approved; source-level interaction and design-system audits passed |
 | 11 | Pending | Pending | Pending: final review only after manual integration approval |
 
 ## Continuation Handoff

@@ -611,10 +611,9 @@ export default function InvoicePage() {
           />
         </Field>
 
-        <dl className="inv-student-meta" aria-label="Data murid">
-          <dt>Tingkat pendidikan</dt>
-          <dd aria-live="polite">{studentInfo || "Belum tersedia"}</dd>
-        </dl>
+        <p className="inv-student-meta" aria-live="polite">
+          {`Tingkat pendidikan: ${studentInfo || "Belum tersedia"}`}
+        </p>
 
         <div className="inv-period-fields">
           <Field controlId="invoice-period-start" label="Periode" required>

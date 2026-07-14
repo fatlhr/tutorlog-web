@@ -32,6 +32,31 @@ assert.doesNotMatch(
 );
 assert.match(
   invoiceCss,
+  /\.tpl-klasik \.k-total-block \.row \{[^}]*font-size: 13px;[^}]*\}[\s\S]*\.tpl-klasik \.k-total-block \.row \.val \{[^}]*font-size: 15px;/,
+  "Klasik total hours must be larger than 11px table items",
+);
+assert.match(
+  invoiceCss,
+  /\.tpl-modern \.m-total-hours \{[^}]*font-size: 13px;[^}]*\}[\s\S]*\.tpl-modern \.m-total-hours strong \{[^}]*font-size: 15px;/,
+  "Modern total hours must be larger than 11px table items",
+);
+assert.match(
+  invoiceCss,
+  /\.tpl-minimal \.mn-total-row \.hours \{[^}]*font-size: 13px;[^}]*\}[\s\S]*\.tpl-minimal \.mn-total-row \.hours strong \{[^}]*font-size: 15px;/,
+  "Minimal total hours must be larger than 11px table items",
+);
+assert.match(
+  invoiceCss,
+  /\.tpl-modern \.m-foot \{[^}]*margin-top: 24px;[^}]*padding-top: 20px;[^}]*border-top: 1px solid var\(--tw-divider\);[^}]*display: grid;/,
+  "Modern notes and transfer details must follow the totals behind a proportional divider",
+);
+assert.doesNotMatch(
+  invoiceCss,
+  /\.tpl-modern \.m-foot \{[^}]*margin-top: auto;/,
+  "Modern notes and transfer details must not use bottom-pushing auto margin",
+);
+assert.match(
+  invoiceCss,
   /var\(--acc-soft-12/,
   "Invoice styles must consume an export-safe soft accent",
 );
@@ -345,8 +370,8 @@ assert.match(
 );
 assert.match(
   page,
-  /<dl className="inv-student-meta" aria-label="Data murid">[\s\S]*<dt>Tingkat pendidikan<\/dt>[\s\S]*<dd aria-live="polite">\{studentInfo \|\| "Belum tersedia"\}<\/dd>[\s\S]*<\/dl>/,
-  "Education must render as static metadata below the selected student",
+  /<p className="inv-student-meta" aria-live="polite">\s*\{`Tingkat pendidikan: \$\{studentInfo \|\| "Belum tersedia"\}`\}\s*<\/p>/,
+  "Education must render as one text node with exactly one separator space",
 );
 assert.doesNotMatch(
   page,
@@ -375,8 +400,8 @@ assert.match(
 );
 assert.match(
   siteCss,
-  /\.inv-student-meta \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto;[\s\S]*background: var\(--app-paper-soft\);/,
-  "Student metadata must use the protected soft-paper treatment",
+  /\.inv-student-meta \{[\s\S]*display: block;[\s\S]*background: var\(--app-paper-soft\);/,
+  "Student metadata must use an inline protected soft-paper treatment",
 );
 assert.match(
   siteCss,

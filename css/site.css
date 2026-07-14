@@ -242,10 +242,7 @@ body.menu-open { overflow: hidden; }
 }
 
 .inv-student-meta {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-4);
+  display: block;
   margin: 0;
   padding: var(--space-4);
   border-radius: var(--radius-control);
@@ -254,20 +251,6 @@ body.menu-open { overflow: hidden; }
   font-family: var(--app-font-body);
   font-size: 13px;
   line-height: 18px;
-}
-
-.inv-student-meta dt,
-.inv-student-meta dd {
-  margin: 0;
-}
-
-.inv-student-meta dt {
-  color: var(--app-ink-muted);
-}
-
-.inv-student-meta dd {
-  font-weight: 700;
-  text-align: right;
 }
 
 .app-invoice-main .inv-form :is(input, select, textarea, .tw-helper, .inv-auto-sessions) {
