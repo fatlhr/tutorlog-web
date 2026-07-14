@@ -398,4 +398,35 @@ for (const [index, template] of templateSources.entries()) {
   );
 }
 
+assert.match(
+  page,
+  /const invoiceActionsDisabled = sessionsLoading \|\| sessionsError \|\| invoiceSessions\.length === 0;/,
+  "Invoice actions must share one loading, error, and empty-session guard",
+);
+assert.equal(
+  [...page.matchAll(/disabled=\{invoiceActionsDisabled\}/g)].length,
+  3,
+  "Preview and both PDF actions must use the shared session guard",
+);
+assert.match(
+  page,
+  /<DateField[\s\S]*id="invoice-period-start"[\s\S]*max=\{periodEnd \|\| undefined\}/,
+  "The period start must not move after the selected end",
+);
+assert.match(
+  page,
+  /<DateField[\s\S]*id="invoice-period-end"[\s\S]*min=\{periodStart \|\| undefined\}/,
+  "The period end must not precede the selected start",
+);
+assert.match(
+  page,
+  /Pilih periode yang memiliki minimal satu sesi selesai\./,
+  "An empty period must explain why preview and export are unavailable",
+);
+assert.match(
+  page,
+  /const validateInvoiceForm = useCallback\(\(\) => \{[\s\S]*reportValidity\(\)[\s\S]*!invoiceActionsDisabled[\s\S]*\}, \[invoiceActionsDisabled\]\);/,
+  "Programmatic preview and export must retain the same session guard",
+);
+
 console.log("Invoice export contract: validation, safe colors, single-page compression, and legible type present");

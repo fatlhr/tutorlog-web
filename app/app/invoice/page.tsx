@@ -145,6 +145,7 @@ export default function InvoicePage() {
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const invoiceDownloadLocked = quotaReady && !quotaState.pdfExportUnlimited;
+  const invoiceActionsDisabled = sessionsLoading || sessionsError || invoiceSessions.length === 0;
 
   /* eslint-disable-next-line react-hooks/set-state-in-effect */
   useEffect(() => { setInvoiceNo(generateInvoiceNo()); }, []);
@@ -291,9 +292,10 @@ export default function InvoicePage() {
     if (mobileEditorOpen) window.scrollTo(0, 0);
   }, [mobileEditorOpen]);
 
-  const validateInvoiceForm = useCallback(() => (
-    formRef.current?.reportValidity() ?? false
-  ), []);
+  const validateInvoiceForm = useCallback(() => {
+    const fieldsValid = formRef.current?.reportValidity() ?? false;
+    return fieldsValid && !invoiceActionsDisabled;
+  }, [invoiceActionsDisabled]);
 
   const handleExportPDF = useCallback(async () => {
     if (!quotaState.pdfExportUnlimited) {
@@ -572,6 +574,7 @@ export default function InvoicePage() {
             <DateField
               id="invoice-period-start"
               value={periodStart}
+              max={periodEnd || undefined}
               onChange={setPeriodStart}
             />
           </Field>
@@ -579,6 +582,7 @@ export default function InvoicePage() {
             <DateField
               id="invoice-period-end"
               value={periodEnd}
+              min={periodStart || undefined}
               onChange={setPeriodEnd}
             />
           </Field>
@@ -593,7 +597,9 @@ export default function InvoicePage() {
             Semua sesi selesai pada periode yang dipilih akan dimasukkan otomatis ke preview invoice.
           </div>
         ) : studentName && periodStart && periodEnd ? (
-          <div className="inv-auto-sessions" aria-live="polite">Belum ada sesi untuk {studentName} pada periode ini.</div>
+          <div className="inv-auto-sessions inv-auto-sessions-error" aria-live="polite">
+            Pilih periode yang memiliki minimal satu sesi selesai.
+          </div>
         ) : null}
 
       </div>
@@ -731,6 +737,7 @@ export default function InvoicePage() {
           variant="quiet"
           size="compact"
           leadingIcon={<Eye size={16} aria-hidden="true" />}
+          disabled={invoiceActionsDisabled}
           onClick={handlePreview}
         >
           Periksa invoice
@@ -741,7 +748,7 @@ export default function InvoicePage() {
           leadingIcon={invoiceDownloadLocked ? <LockKey size={14} aria-hidden="true" /> : undefined}
           trailingIcon={<DownloadSimple size={16} aria-hidden="true" />}
           loading={exporting}
-          disabled={invoiceSessions.length === 0}
+          disabled={invoiceActionsDisabled}
           onClick={handleExportPDF}
         >
           Unduh PDF
@@ -810,7 +817,7 @@ export default function InvoicePage() {
                   leadingIcon={invoiceDownloadLocked ? <LockKey size={14} aria-hidden="true" /> : undefined}
                   trailingIcon={<DownloadSimple size={16} aria-hidden="true" />}
                   loading={exporting}
-                  disabled={invoiceSessions.length === 0}
+                  disabled={invoiceActionsDisabled}
                   onClick={handleExportPDF}
                 >
                   Unduh PDF
