@@ -737,7 +737,7 @@ Do not update Milestone 9 or 10 as fully audited from this focused implementatio
 - Consumes: `InvoiceSession.amount`, `InvoiceSession.billingType`, the shared `InvoiceData` contract, and the current student/date query key.
 - Produces: repository-wide removal of dead `due`, authoritative flat/hourly totals in all templates, and latest-request-only session state.
 
-- [ ] **Step 1: Add failing cross-consumer, billing, and request-race assertions**
+- [x] **Step 1: Add failing cross-consumer, billing, and request-race assertions**
 
 Extend the focused contract so it fails unless all of these relationships hold:
 
@@ -748,7 +748,7 @@ Extend the focused contract so it fails unless all of these relationships hold:
 - The session fetch has a latest-request cleanup/sequence guard.
 - A loaded-session query key must equal the current student/date key before Invoice actions can be enabled.
 
-- [ ] **Step 2: Run the focused contract and confirm the new assertions fail**
+- [x] **Step 2: Run the focused contract and confirm the new assertions fail**
 
 Run:
 
@@ -758,11 +758,11 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: FAIL because the public fixture still has `due`, templates still derive totals from hours and rate, and session results are not query-key guarded.
 
-- [ ] **Step 3: Remove dead `due` from the remaining typed consumer**
+- [x] **Step 3: Remove dead `due` from the remaining typed consumer**
 
 Delete the `due` property from the `InvoiceData` fixture in `components/PublicProductRail.tsx`. Do not add compatibility shims to the shared contract.
 
-- [ ] **Step 4: Carry authoritative billing values through the shared item contract**
+- [x] **Step 4: Carry authoritative billing values through the shared item contract**
 
 Add `amount: number` and `billingType: "hourly" | "flat"` to `InvoiceItem`, update sample data, and forward both values from every fetched session in `buildInvoiceData()`.
 
@@ -772,7 +772,7 @@ In all three templates:
 - render the row subtotal from `item.amount`;
 - retain the entered rate value but label the column `Tarif`, which remains correct for hourly, flat, and mixed invoices.
 
-- [ ] **Step 5: Reject obsolete session responses and stale query data**
+- [x] **Step 5: Reject obsolete session responses and stale query data**
 
 Derive one stable current query key from selected student, start date, and end date. Track the query key associated with the sessions currently loaded.
 
@@ -784,7 +784,7 @@ In the fetch effect:
 
 Extend `invoiceActionsDisabled` so actions remain disabled whenever the loaded key differs from the current key. Preserve `reportValidity()` ordering and the existing loading/error/empty guards.
 
-- [ ] **Step 6: Run focused verification**
+- [x] **Step 6: Run focused verification**
 
 Run:
 
@@ -797,7 +797,7 @@ rtk git diff --check
 
 Expected: contract PASS, both negative searches return no matches, and diff check is clean.
 
-- [ ] **Step 7: Review and commit only Task 5 files**
+- [x] **Step 7: Review and commit only Task 5 files**
 
 Inspect the scoped diff, stage only the seven listed files, run `rtk git diff --cached --check`, and commit with:
 
