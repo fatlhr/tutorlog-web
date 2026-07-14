@@ -20,6 +20,7 @@ export default function TabBar() {
       {APP_ROUTE_ITEMS.map((item) => {
         const active = activeRoute === item.route;
         const Icon = routeIcons[item.route];
+        if (!Icon) return null;
         return (
           <NavigationItem
             key={item.href}

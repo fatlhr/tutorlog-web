@@ -13,6 +13,7 @@ interface AppTopBarProps {
   name: string;
   initials: string;
   isPlus: boolean;
+  isExpired: boolean;
   communityLink?: string | null;
 }
 
@@ -22,7 +23,7 @@ const routeIcons: Record<string, typeof House> = {
   invoice: FileText,
 };
 
-export default function AppTopBar({ name, initials, isPlus, communityLink }: AppTopBarProps) {
+export default function AppTopBar({ name, initials, isPlus, isExpired, communityLink }: AppTopBarProps) {
   const pathname = usePathname();
   const activeRoute = getActiveAppRoute(pathname);
   const router = useRouter();
@@ -100,7 +101,7 @@ export default function AppTopBar({ name, initials, isPlus, communityLink }: App
             <div className="app-account-menu" role="menu">
               <div className="app-account-summary">
                 <strong>{name}</strong>
-                <span>{isPlus ? "Plus aktif" : "Paket Free"}</span>
+                <span>{isPlus ? (isExpired ? "Plus" : "Plus aktif") : "Paket Free"}</span>
               </div>
               <Link href="/app/profil" role="menuitem" onClick={() => setOpen(false)}>
                 <User size={17} aria-hidden="true" />
@@ -111,7 +112,12 @@ export default function AppTopBar({ name, initials, isPlus, communityLink }: App
                   <TelegramLogo size={17} aria-hidden="true" />
                   Gabung Komunitas
                 </a>
-              ) : null}
+              ) : (
+                <button type="button" role="menuitem" aria-disabled="true" disabled>
+                  <TelegramLogo size={17} aria-hidden="true" />
+                  Gabung Komunitas
+                </button>
+              )}
               <Link href="/kontak" role="menuitem" onClick={() => setOpen(false)}>
                 <Lifebuoy size={17} aria-hidden="true" />
                 Bantuan

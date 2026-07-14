@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, DeviceMobile, PencilSimple } from "@phosphor-icons/react";
+import { DeviceMobile, PencilSimple } from "@phosphor-icons/react";
 import { Button, Field, TextField } from "@/components/app-ui/controls";
 import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
 import { PageHeader, Surface } from "@/components/app-ui/structure";
@@ -12,11 +12,11 @@ interface ProfileContentProps {
   email: string;
   name: string;
   initials: string;
-  plan: string;
+  isPlus: boolean;
   activeUntil: string | null;
 }
 
-export default function ProfileContent({ email, name: initialName, initials, plan, activeUntil }: ProfileContentProps) {
+export default function ProfileContent({ email, name: initialName, initials, isPlus, activeUntil }: ProfileContentProps) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [editing, setEditing] = useState(false);
@@ -47,8 +47,9 @@ export default function ProfileContent({ email, name: initialName, initials, pla
     });
   }, [editValue, router]);
 
-  const isFullAccess = plan === "full_access";
-  const isExpired = plan === "expired";
+  const END_OF_DAY_MS = 86400000;
+  const activeUntilDate = activeUntil ? new Date(activeUntil) : null;
+  const isExpired = activeUntilDate ? activeUntilDate.getTime() + END_OF_DAY_MS < Date.now() : false;
 
   return (
     <RouteCanvas route="settings">
@@ -81,55 +82,64 @@ export default function ProfileContent({ email, name: initialName, initials, pla
             </div>
           </div>
 
-          <Field controlId="profile-name" label="Nama" required error={error ?? undefined}>
-            {editing ? (
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <div style={{ flex: 1 }}>
-                  <TextField id="profile-name" value={editValue} onChange={setEditValue} placeholder="Nama lengkap" autoComplete="name" />
-                </div>
-                <Button type="button" variant="primary" size="compact" disabled={pending} onClick={handleSave}>
-                  {pending ? "..." : <Check size={16} />}
-                </Button>
-              </div>
-            ) : (
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <div style={{ flex: 1, padding: "8px 0", fontSize: 15 }}>{name}</div>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted, #5f6b68)", marginBottom: 4 }}>Nama</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 15 }}>{name}</span>
+              {!editing && (
                 <Button type="button" variant="quiet" size="compact" onClick={() => { setEditValue(name); setEditing(true); }}>
                   <PencilSimple size={16} />
                 </Button>
+              )}
+            </div>
+          </div>
+
+          {editing && (
+            <div style={{ marginTop: 12 }}>
+              <Field controlId="profile-name" label="Edit nama" required error={error ?? undefined}>
+                <TextField id="profile-name" value={editValue} onChange={setEditValue} placeholder="Nama lengkap" autoComplete="name" />
+              </Field>
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
+                <Button type="button" variant="quiet" size="compact" onClick={() => setEditing(false)}>
+                  Batal
+                </Button>
+                <Button type="button" variant="primary" size="compact" disabled={pending} onClick={handleSave}>
+                  {pending ? "Menyimpan..." : "Simpan"}
+                </Button>
               </div>
-            )}
-          </Field>
+            </div>
+          )}
         </Surface>
 
-        <Surface padding="compact" style={{ marginTop: 16 }}>
-          <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted, #5f6b68)", marginBottom: 12 }}>
-            Status Akses
-          </div>
-          <div
-            style={{
-              padding: "12px 16px",
-              borderRadius: 8,
-              background: isFullAccess ? "rgba(0,108,83,.08)" : "var(--app-bg-soft, #f0f5f3)",
-              border: "1px solid",
-              borderColor: isFullAccess ? "rgba(0,108,83,.2)" : "var(--app-line, #d0ddd6)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600, fontSize: 14 }}>
-              {isFullAccess ? "Plus" : isExpired ? "Plus — Kedaluwarsa" : "Paket Free"}
+        {isPlus ? (
+          <Surface padding="compact" style={{ marginTop: 16 }} variant={isExpired ? "paper" : "soft"}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
+              Status Akses
             </div>
-            {isFullAccess && activeUntil && (
-              <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)", marginTop: 4 }}>
-                Aktif sampai {new Date(activeUntil).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+            <div style={{ fontWeight: 600, fontSize: 14, color: isExpired ? "var(--app-error)" : undefined }}>
+              {isExpired ? "Plus — Kedaluwarsa" : "Plus"}
+            </div>
+            {activeUntilDate && !isExpired && (
+              <div style={{ fontSize: 13, color: "var(--app-ink-muted)", marginTop: 4 }}>
+                Aktif sampai {activeUntilDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
               </div>
             )}
             {isExpired && (
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginTop: 10 }}>
                 <Button href="/harga" variant="primary" size="compact">Perpanjang Plus</Button>
               </div>
             )}
-          </div>
-        </Surface>
+          </Surface>
+        ) : (
+          <Surface padding="compact" style={{ marginTop: 16 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
+              Status Akses
+            </div>
+            <div style={{ fontWeight: 600, fontSize: 14 }}>
+              Paket Free
+            </div>
+          </Surface>
+        )}
 
         <Surface padding="compact" style={{ marginTop: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

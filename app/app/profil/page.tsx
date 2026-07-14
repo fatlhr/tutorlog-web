@@ -32,12 +32,14 @@ export default async function SettingsPage() {
   const initials = initialsOf(name);
   const quota = await checkQuota();
 
+  const isPlus = quota.pdfExportUnlimited || quota.plan !== "free";
+
   return (
     <ProfileContent
       email={email}
       name={name}
       initials={initials}
-      plan={quota.plan}
+      isPlus={isPlus}
       activeUntil={quota.activeUntil}
     />
   );

@@ -36,6 +36,8 @@ export default async function AppLayout({
   const initials = initialsOf(name);
   const quota = await checkQuota();
   const isPlus = quota.pdfExportUnlimited || quota.plan !== "free";
+  const activeUntil = quota.activeUntil;
+  const isExpired = activeUntil !== null && new Date(activeUntil).getTime() + 86400000 < Date.now();
   const communityLink = await getCommunityLink();
 
   return (
@@ -44,7 +46,7 @@ export default async function AppLayout({
       data-plan={isPlus ? "plus" : "free"}
       style={{ minHeight: "100svh" }}
     >
-      <AppTopBar name={name} initials={initials} isPlus={isPlus} communityLink={communityLink} />
+      <AppTopBar name={name} initials={initials} isPlus={isPlus} isExpired={isExpired} communityLink={communityLink} />
       {children}
 
       <AppShellFooter />
