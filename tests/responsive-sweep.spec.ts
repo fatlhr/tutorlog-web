@@ -729,8 +729,8 @@ test.describe('Landing mobile story guardrails', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.tl-footer a[href="/fitur"]')).toBeVisible();
-    await expect(page.locator('.tl-footer a[href="/privacy"]')).toBeVisible();
+    await expect(page.locator('[data-footer="public"] a[href="/fitur"]')).toBeVisible();
+    await expect(page.locator('[data-footer="public"] a[href="/privacy"]')).toBeVisible();
   });
 
   test('includes product navigation and contact link in the desktop footer', async ({ page }) => {
@@ -738,7 +738,7 @@ test.describe('Landing mobile story guardrails', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const footer = page.locator('.tl-footer');
+    const footer = page.locator('[data-footer="public"]');
     await expect(footer.locator('a[href="/fitur"]')).toHaveCount(1);
     await expect(footer.locator('a[href="/harga"]')).toHaveCount(1);
     await expect(footer.locator('a[href="/panduan"]')).toHaveCount(1);
