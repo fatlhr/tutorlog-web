@@ -42,7 +42,7 @@
 - Consumes: existing `StudentOption`, `InvoiceData`, `DRAFT_KEY`, and `invoiceSessions` state.
 - Produces: `getStudentRecipientName(student: StudentOption): string` and deterministic `from.lines` plus `to.lines` mapping used by every template.
 
-- [ ] **Step 1: Add failing mapping and student-lifecycle assertions**
+- [x] **Step 1: Add failing mapping and student-lifecycle assertions**
 
 Add these assertions after the existing `invoiceData` contract assertion in `scripts/test-invoice-export-contract.mjs`:
 
@@ -69,8 +69,18 @@ assert.match(
 );
 assert.doesNotMatch(
   page,
-  /typeof draft\.studentInfo === "string"|\n\s*studentInfo,\n\s*studentAddress/,
-  "Derived education data must not be restored from or written to the draft",
+  /typeof draft\.studentInfo === "string"/,
+  "Derived education data must not be restored from the draft",
+);
+const persistedDraftMatch = page.match(
+  /localStorage\.setItem\(DRAFT_KEY, JSON\.stringify\(\{([\s\S]*?)\}\)\);/,
+);
+assert.ok(persistedDraftMatch, "Invoice draft persistence block must remain present");
+const persistedDraftBody = persistedDraftMatch[1];
+assert.doesNotMatch(
+  persistedDraftBody,
+  /^\s*studentInfo,\s*$/m,
+  "Derived education data must not be written to the draft",
 );
 assert.match(
   page,
@@ -84,7 +94,7 @@ assert.match(
 );
 ```
 
-- [ ] **Step 2: Run the focused contract and confirm the new assertions fail**
+- [x] **Step 2: Run the focused contract and confirm the new assertions fail**
 
 Run:
 
@@ -94,7 +104,7 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: FAIL first on the unused `due` field or missing `getStudentRecipientName` contract. Do not change implementation before observing this failure.
 
-- [ ] **Step 3: Add the recipient default helper**
+- [x] **Step 3: Add the recipient default helper**
 
 Add this immediately after `StudentOption` in `app/app/invoice/page.tsx`:
 
@@ -105,7 +115,7 @@ function getStudentRecipientName(student: StudentOption): string {
 }
 ```
 
-- [ ] **Step 4: Make initial selection derive education while preserving a valid draft recipient**
+- [x] **Step 4: Make initial selection derive education while preserving a valid draft recipient**
 
 Replace the current student-initialization effect with:
 
@@ -139,7 +149,7 @@ useEffect(() => {
 
 This keeps non-empty editable draft values for the same valid student. It still derives Tingkat Pendidikan from the freshly loaded student record.
 
-- [ ] **Step 5: Reset all student-dependent values when the user changes students**
+- [x] **Step 5: Reset all student-dependent values when the user changes students**
 
 Replace `handleStudentChange` with:
 
@@ -161,7 +171,7 @@ const handleStudentChange = (name: string) => {
 };
 ```
 
-- [ ] **Step 6: Remove derived education from draft restore and serialization**
+- [x] **Step 6: Remove derived education from draft restore and serialization**
 
 In the draft-restore effect, delete:
 
@@ -171,7 +181,7 @@ if (typeof draft.studentInfo === "string") setStudentInfo(draft.studentInfo);
 
 In the object passed to `localStorage.setItem(DRAFT_KEY, JSON.stringify({`, remove the `studentInfo,` property. Remove `studentInfo` from that effect's dependency list. Keep `studentAddress` and `parentName` because they remain editable and draft-backed.
 
-- [ ] **Step 7: Remove dead due data and fix the page mapper**
+- [x] **Step 7: Remove dead due data and fix the page mapper**
 
 In `components/invoice/invoice-data.ts`, remove `due` from the interface and `sampleInvoiceData`.
 
@@ -217,7 +227,7 @@ const buildInvoiceData = (): InvoiceData => {
 };
 ```
 
-- [ ] **Step 8: Run the focused contract and confirm Task 1 passes**
+- [x] **Step 8: Run the focused contract and confirm Task 1 passes**
 
 Run:
 
@@ -227,7 +237,7 @@ rtk node scripts/test-invoice-export-contract.mjs
 
 Expected: PASS with the existing final `Invoice export contract` message and no assertion error.
 
-- [ ] **Step 9: Review and commit only Task 1 files**
+- [x] **Step 9: Review and commit only Task 1 files**
 
 Run:
 
