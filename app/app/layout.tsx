@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
+import { getCommunityLink } from "@/lib/data/app-config";
 import AppTopBar from "@/components/AppTopBar";
 import TabBar from "@/components/TabBar";
 import { AppShellFooter } from "@/components/app-ui/app-shell-footer";
@@ -35,6 +36,7 @@ export default async function AppLayout({
   const initials = initialsOf(name);
   const quota = await checkQuota();
   const isPlus = quota.pdfExportUnlimited || quota.plan !== "free";
+  const communityLink = await getCommunityLink();
 
   return (
     <div
@@ -42,7 +44,7 @@ export default async function AppLayout({
       data-plan={isPlus ? "plus" : "free"}
       style={{ minHeight: "100svh" }}
     >
-      <AppTopBar name={name} initials={initials} isPlus={isPlus} />
+      <AppTopBar name={name} initials={initials} isPlus={isPlus} communityLink={communityLink} />
       {children}
 
       <AppShellFooter />

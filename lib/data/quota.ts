@@ -8,6 +8,7 @@ export interface QuotaInfo {
   csvExportCount30d: number;
   pdfExportUnlimited: boolean;
   exportWindowDays: number;
+  activeUntil: string | null;
 }
 
 export async function checkQuota(): Promise<QuotaInfo> {
@@ -22,6 +23,7 @@ export async function checkQuota(): Promise<QuotaInfo> {
       csvExportCount30d: 0,
       pdfExportUnlimited: false,
       exportWindowDays: 30,
+      activeUntil: null,
     };
   }
 
@@ -32,6 +34,7 @@ export async function checkQuota(): Promise<QuotaInfo> {
     csvExportCount30d: (result.csv_export_count_30d as number) ?? 0,
     pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
     exportWindowDays: (result.export_window_days as number) ?? 30,
+      activeUntil: (result.active_until as string) ?? null,
   };
 }
 

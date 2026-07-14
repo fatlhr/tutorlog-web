@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChartBar, FileText, House, Lifebuoy, SignOut } from "@phosphor-icons/react";
+import { ChartBar, FileText, House, Lifebuoy, TelegramLogo, SignOut, User } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { NavigationItem } from "@/components/app-ui/navigation";
 import { APP_ROUTE_ITEMS, getActiveAppRoute } from "@/components/app-ui/routes";
@@ -13,15 +13,16 @@ interface AppTopBarProps {
   name: string;
   initials: string;
   isPlus: boolean;
+  communityLink?: string | null;
 }
 
-const routeIcons = {
+const routeIcons: Record<string, typeof House> = {
   home: House,
   recap: ChartBar,
   invoice: FileText,
 };
 
-export default function AppTopBar({ name, initials, isPlus }: AppTopBarProps) {
+export default function AppTopBar({ name, initials, isPlus, communityLink }: AppTopBarProps) {
   const pathname = usePathname();
   const activeRoute = getActiveAppRoute(pathname);
   const router = useRouter();
@@ -67,6 +68,7 @@ export default function AppTopBar({ name, initials, isPlus }: AppTopBarProps) {
           {APP_ROUTE_ITEMS.map((item) => {
             const active = activeRoute === item.route;
             const Icon = routeIcons[item.route];
+            if (!Icon) return null;
             return (
               <NavigationItem
                 key={item.href}
@@ -100,6 +102,16 @@ export default function AppTopBar({ name, initials, isPlus }: AppTopBarProps) {
                 <strong>{name}</strong>
                 <span>{isPlus ? "Plus aktif" : "Paket Free"}</span>
               </div>
+              <Link href="/app/profil" role="menuitem" onClick={() => setOpen(false)}>
+                <User size={17} aria-hidden="true" />
+                Profil
+              </Link>
+              {communityLink ? (
+                <a href={communityLink} role="menuitem" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
+                  <TelegramLogo size={17} aria-hidden="true" />
+                  Gabung Komunitas
+                </a>
+              ) : null}
               <Link href="/kontak" role="menuitem" onClick={() => setOpen(false)}>
                 <Lifebuoy size={17} aria-hidden="true" />
                 Bantuan
