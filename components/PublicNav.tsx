@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import MenuToggle from "@/components/MenuToggle";
 
 const links = [
@@ -13,6 +15,13 @@ const links = [
 
 export default function PublicNav() {
   const pathname = usePathname();
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    createClient().auth.getSession().then(({ data }) => {
+      if (data.session) setAuthed(true);
+    });
+  }, []);
 
   return (
     <nav className="tl-public-nav" aria-label="Navigasi utama">
@@ -31,8 +40,8 @@ export default function PublicNav() {
           </Link>
         ))}
       </div>
-      <Link className="tl-nav-login" href="/login">
-        Masuk
+      <Link className="tl-nav-login" href={authed ? "/app" : "/login"}>
+        {authed ? "Dashboard" : "Masuk"}
       </Link>
       <div className="tl-public-menu">
         <MenuToggle />

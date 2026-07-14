@@ -5,7 +5,7 @@ import LandingDemoDialog from "@/components/LandingDemoDialog";
 import LandingTimetableCanvas from "@/components/LandingTimetableCanvas";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
-import { PublicFooter } from "@/components/PublicShell";
+import { AppFooter } from "@/components/AppFooter";
 import { PublicProductProof } from "@/components/PublicProductRail";
 
 const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog.app";
@@ -107,7 +107,7 @@ export default function Home() {
         </section>
       </div>
 
-      <PublicFooter />
+      <AppFooter context="public" />
     </main>
   );
 }

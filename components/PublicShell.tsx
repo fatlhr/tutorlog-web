@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
+import { AppFooter } from "@/components/AppFooter";
 
 type PublicShellProps = {
   eyebrow: string;
@@ -54,32 +54,7 @@ export function PublicShell({
       </header>
 
       <div className="tl-public-body">{children}</div>
-      <PublicFooter />
+      <AppFooter context="public" />
     </main>
-  );
-}
-
-export function PublicFooter() {
-  return (
-    <footer className="tl-footer">
-      <div className="tl-footer-identity">
-        <Link className="tl-brand" href="/" aria-label="Kembali ke beranda TutorLog">
-          <span className="tl-brand-mark">
-            <Image src="/tutorlog-logo.png" alt="" width={28} height={28} />
-          </span>
-          <span>TutorLog</span>
-        </Link>
-        <p>Teman kerja untuk catatan les, rekap, dan invoice tutor privat.</p>
-        <Link href="/kontak">Butuh bantuan?</Link>
-      </div>
-      <div className="tl-footer-meta">
-        <div className="tl-footer-links" aria-label="Tautan legal">
-          <Link href="/privacy">Privasi</Link>
-          <Link href="/terms">Syarat</Link>
-          <Link href="/account">Hapus Akun</Link>
-        </div>
-        <span className="tl-footer-copyright">© 2026 TutorLog untuk tutor Indonesia</span>
-      </div>
-    </footer>
   );
 }

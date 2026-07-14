@@ -77,14 +77,6 @@ html.bodyScrollLock body {
 
   .app-shell-h .mob-app-main { padding-top: 72px; }
 
-  .app-shell-footer {
-    width: 100%;
-    padding: 18px 20px calc(80px + env(safe-area-inset-bottom));
-    gap: 16px;
-    text-align: left;
-  }
-
-  .app-shell-footer div { gap: 14px; }
 }
 
 .mob-dialog-scrim {

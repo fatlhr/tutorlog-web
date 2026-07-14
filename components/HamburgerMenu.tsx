@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, X } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 interface HamburgerMenuProps {
   open: boolean;
@@ -22,6 +23,13 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    createClient().auth.getSession().then(({ data }) => {
+      if (data.session) setAuthed(true);
+    });
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -76,8 +84,8 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
           ))}
         </nav>
 
-        <Link className="tl-mobile-menu-login" href="/login" onClick={onClose}>
-          <span>Masuk lewat Email</span>
+        <Link className="tl-mobile-menu-login" href={authed ? "/app" : "/login"} onClick={onClose}>
+          <span>{authed ? "Dashboard" : "Masuk lewat Email"}</span>
           <ArrowRight size={18} aria-hidden="true" />
         </Link>
       </div>

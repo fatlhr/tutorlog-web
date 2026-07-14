@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
 import AppTopBar from "@/components/AppTopBar";
 import TabBar from "@/components/TabBar";
+import { AppShellFooter } from "@/components/app-ui/app-shell-footer";
 
 function displayNameOf(email: string, metaName?: unknown): string {
   if (typeof metaName === "string" && metaName.trim()) return metaName.trim();
@@ -45,14 +45,7 @@ export default async function AppLayout({
       <AppTopBar name={name} initials={initials} isPlus={isPlus} />
       {children}
 
-      <footer className="app-shell-footer">
-        <span>© 2026 TutorLog</span>
-        <div>
-          <Link href="/privacy">Privasi</Link>
-          <Link href="/terms">Syarat</Link>
-          <Link href="/kontak">Kontak</Link>
-        </div>
-      </footer>
+      <AppShellFooter />
 
       <TabBar />
     </div>

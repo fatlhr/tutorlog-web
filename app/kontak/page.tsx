@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { EnvelopeSimple } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
+import { KontakContent } from "@/components/content/kontak-content";
 
 export const metadata: Metadata = {
   title: "TutorLog - Kontak",
@@ -36,16 +36,7 @@ export default function KontakPage() {
       icon={null}
     >
       <section className="tl-article-layout tl-public-motion" aria-label="Kontak TutorLog">
-        <div className="tl-article-main">
-          <section className="tl-article-section">
-            <EnvelopeSimple size={30} weight="duotone" aria-hidden="true" />
-            <h2>Tulis lewat email</h2>
-            <p>
-              Gunakan satu alamat untuk semua pertanyaan tentang TutorLog. Sertakan konteks singkat bila kamu melaporkan masalah.
-            </p>
-            <a className="tl-contact-email" href="mailto:tutorlog.admin@gmail.com">tutorlog.admin@gmail.com</a>
-          </section>
-        </div>
+        <KontakContent />
         <aside className="tl-margin-notes" aria-label="Catatan respons">
           <p><strong>Waktu respons</strong></p>
           <p>Kami berusaha membalas dalam 1 sampai 2 hari kerja.</p>

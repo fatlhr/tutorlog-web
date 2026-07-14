@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
-import { PublicFooter } from "@/components/PublicShell";
+import { AppFooter } from "@/components/AppFooter";
 import { PublicProductRail } from "@/components/PublicProductRail";
 
 type PublicStoryLayoutProps = {
@@ -61,7 +61,7 @@ export function PublicStoryLayout({
         <div className="tls-story-row-list">{children}</div>
       )}
       {closing ? <div className="tls-story-closing">{closing}</div> : null}
-      <PublicFooter />
+      <AppFooter context="public" />
     </main>
   );
 }
