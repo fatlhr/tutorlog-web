@@ -984,6 +984,7 @@
   margin: 0 auto;
   padding: 32px 0 36px;
   border-top: 1px solid var(--app-line);
+  text-align: left;
 }
 
 .footerBrand {
@@ -1068,6 +1069,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  justify-content: flex-start;
   margin: 0;
 }
 
@@ -1115,6 +1117,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  justify-content: flex-start;
   margin: 0;
 }
 
