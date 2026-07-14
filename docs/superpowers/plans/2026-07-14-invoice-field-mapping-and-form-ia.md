@@ -806,3 +806,44 @@ rtk git commit -m "fix: preserve invoice billing integrity"
 ```
 
 After the task review approves this commit, repeat the focused audit and the whole-branch review before development integration.
+
+## Task 6: Preserve an Explicitly Cleared Draft Address
+
+**Files:**
+- Modify: `scripts/test-invoice-export-contract.mjs`
+- Modify: `app/app/invoice/page.tsx`
+
+**Interfaces:**
+- Consumes: the restored draft student name and the presence/value of `studentAddress` in that draft.
+- Produces: exact same-student draft address restoration, including an intentionally saved empty string.
+
+- [ ] **Step 1: Add a failing focused assertion**
+
+Extend the focused contract to require explicit draft-address presence tracking, a same-student identity check during initial hydration, and reset of that preservation marker when the user changes student.
+
+- [ ] **Step 2: Run the focused contract and confirm RED**
+
+Run `rtk node scripts/test-invoice-export-contract.mjs` and confirm it fails because an empty draft address is still collapsed with a missing value.
+
+- [ ] **Step 3: Preserve address presence separately from address truthiness**
+
+Track the restored draft student identity and whether `studentAddress` was explicitly present as a string. During the initial students hydration:
+
+- preserve the exact current draft address, including `""`, only when the restored draft belongs to the selected student and explicitly contained the field;
+- otherwise use the current non-empty value or the selected student's default address;
+- clear both preservation markers when the user explicitly changes student, so the new student's derived address remains authoritative.
+
+Do not change recipient, education, session, or persistence behavior.
+
+- [ ] **Step 4: Verify and commit**
+
+Run:
+
+```bash
+rtk node scripts/test-invoice-export-contract.mjs
+rtk git diff --check
+```
+
+Expected: focused contract PASS and clean diff check. Commit only the two listed files with `fix: preserve cleared invoice address`.
+
+After task review approval, repeat the final focused audit and whole-branch review.
