@@ -1068,10 +1068,13 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  margin: 0;
 }
 
 .footerNavLink {
+  display: inline-flex;
   padding: 0;
+  margin: 0;
   border: 0;
   background: none;
   color: #34413d;
@@ -1088,6 +1091,7 @@
 .footerNavDot {
   color: #b7d1c8;
   font-size: 13px;
+  margin: 0;
 }
 
 .footerDivider {
@@ -1111,10 +1115,13 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  margin: 0;
 }
 
 .footerLegalLink {
+  display: inline-flex;
   padding: 0;
+  margin: 0;
   border: 0;
   background: none;
   color: var(--app-action);
@@ -1132,6 +1139,7 @@
 .footerLegalDot {
   color: #34413d;
   font-size: 14px;
+  margin: 0;
 }
 
 @media (hover: hover) {
