@@ -44,13 +44,13 @@ export function AppFooter({ context }: AppFooterProps) {
           <>
             <Link className={styles.footerLegalLink} href="/privacy">Privasi</Link>
             <span className={styles.footerLegalDot} aria-hidden="true">·</span>
-            <Link className={styles.footerLegalLink} href="/terms">Syarat</Link>
+            <Link className={styles.footerLegalLink} href="/terms">Syarat &amp; Ketentuan</Link>
           </>
         ) : (
           <>
             <Link className={styles.footerLegalLink} href="/privacy">Privasi</Link>
             <span className={styles.footerLegalDot} aria-hidden="true">·</span>
-            <Link className={styles.footerLegalLink} href="/terms">Syarat</Link>
+            <Link className={styles.footerLegalLink} href="/terms">Syarat &amp; Ketentuan</Link>
           </>
         )}
       </div>
