@@ -473,7 +473,7 @@
 
 .sectionStack {
   display: grid;
-  gap: 28px;
+  gap: var(--space-5);
 }
 
 .summaryBand {
@@ -1009,7 +1009,7 @@
     font-size: 34px;
     line-height: 40px;
   }
-  .sectionStack { gap: var(--space-7); }
+  .sectionStack { gap: var(--space-6); }
 }
 
 @media (max-width: 850px) and (min-width: 768px) {
@@ -1053,7 +1053,7 @@
   .routeHome::before { background-size: 48px 48px; }
   .routeRecap::before { background-size: 42px 24px; }
   .pageMain { width: 100%; padding: 80px 20px 96px; gap: var(--space-7); }
-  .sectionStack { gap: var(--space-6); }
+  .sectionStack { gap: var(--space-5); }
   .homeDecoration { top: 80px; right: 12px; width: 13px; height: 50px; border-right: 0; border-radius: var(--radius-small) 0 0 var(--radius-small); background: var(--app-home-accent); }
   .homeDecoration .bookmarkFan { display: none; }
   .recapDecoration,
