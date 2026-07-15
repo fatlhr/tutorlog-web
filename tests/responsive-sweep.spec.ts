@@ -655,6 +655,61 @@ test.describe('Guide story hierarchy', () => {
       expect(phaseBoxes[1].top).toBeGreaterThanOrEqual(phaseBoxes[0].bottom);
     }
   });
+
+  test('keeps the guide artifacts compact and centers the invoice preview', async ({ page }) => {
+    await page.setViewportSize({ width: 651, height: 846 });
+    await page.goto('/panduan');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const session = document.querySelector<HTMLElement>('[data-guide-evidence="mobile"] [data-product-artifact="session"]');
+      const recap = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [data-product-artifact="recap"]');
+      const viewport = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [aria-label="Preview invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      if (!session || !recap || !viewport || !invoice) return null;
+
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        sessionHeight: session.getBoundingClientRect().height,
+        recapHeight: recap.getBoundingClientRect().height,
+        centerDelta: Math.abs(
+          (viewportBox.left + viewportBox.width / 2) - (invoiceBox.left + invoiceBox.width / 2),
+        ),
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.sessionHeight).toBeLessThanOrEqual(180);
+    expect(geometry?.recapHeight).toBeLessThanOrEqual(190);
+    expect(geometry?.centerDelta).toBeLessThanOrEqual(1);
+  });
+});
+
+test.describe('Public workflow artifact alignment', () => {
+  test('aligns all workflow stages on desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const stageTops = await page.locator('[data-workflow-canvas] > div').evaluateAll((elements) =>
+      elements.map((element) => element.firstElementChild?.getBoundingClientRect().top ?? -1),
+    );
+
+    expect(stageTops).toHaveLength(3);
+    expect(Math.max(...stageTops) - Math.min(...stageTops)).toBeLessThanOrEqual(1);
+  });
+
+  test('gives the recap proof enough width on a narrow feature viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 628, height: 846 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const width = await page.locator('[data-evidence-group="cross-device-recap"] .tls-rail-proof-recap')
+      .evaluate((element) => element.getBoundingClientRect().width);
+
+    expect(width).toBeGreaterThanOrEqual(440);
+  });
 });
 
 test.describe('Landing mobile story guardrails', () => {

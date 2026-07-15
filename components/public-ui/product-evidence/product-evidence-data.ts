@@ -26,11 +26,12 @@ const totals = getInvoiceTotals(publicProductInvoiceData.items);
 const firstSession = publicProductInvoiceData.items[0];
 
 export const publicSessionEvidence = {
+  studentName: "Bintang",
   date: firstSession.date,
-  description: firstSession.desc,
-  hours: firstSession.h,
+  timeRange: "18.00 - 19.30",
+  duration: "1j 30m",
   amount: firstSession.amount,
-  status: "Selesai" as const,
+  status: "Tersimpan" as const,
 };
 
 export const publicRecapEvidence = {

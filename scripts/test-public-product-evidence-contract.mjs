@@ -43,11 +43,12 @@ const {
 assert.equal(publicProductInvoiceData.no, "INV-2026-06-014");
 assert.equal(publicProductInvoiceData.items.length, 3);
 assert.deepEqual(publicSessionEvidence, {
+  studentName: "Bintang",
   date: "03 Jun",
-  description: "Matematika - Trigonometri",
-  hours: 1.5,
+  timeRange: "18.00 - 19.30",
+  duration: "1j 30m",
   amount: 180000,
-  status: "Selesai",
+  status: "Tersimpan",
 });
 assert.deepEqual(publicRecapEvidence, {
   period: "Juni 2026",
