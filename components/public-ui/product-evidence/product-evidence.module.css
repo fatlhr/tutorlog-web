@@ -147,6 +147,14 @@
   gap: 24px;
 }
 
+@media (min-width: 768px) {
+  .guideSequence > .connector {
+    right: auto;
+    left: calc(45% - 10.8px);
+    width: 24px;
+  }
+}
+
 @media (max-width: 767px) {
   .workflow,
   .guideSequence {
