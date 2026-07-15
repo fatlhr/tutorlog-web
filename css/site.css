@@ -3705,7 +3705,13 @@ html, body { overflow-x: hidden; }
     rgba(255, 255, 255, .56);
 }
 
-.tl-price-visual svg {
+.tl-price-visual[data-symbolic-evidence="pricing"] {
+  border-color: var(--tl-line);
+  border-radius: var(--tl-radius-surface);
+  background: #fff;
+}
+
+.tl-price-visual[data-symbolic-evidence="pricing"] svg {
   margin-bottom: auto;
   color: var(--tl-green);
 }
@@ -4180,7 +4186,7 @@ html, body { overflow-x: hidden; }
   max-width: 960px;
 }
 
-/* Guide phases — single-column numbered layout */
+/* Guide phases — instructional two-column layout */
 .tl-guide-phases {
   width: min(840px, 100%);
   margin-inline: auto;
@@ -4198,7 +4204,14 @@ html, body { overflow-x: hidden; }
 .tl-guide-phase {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+  gap: 64px;
+  align-items: start;
+}
+
+.tl-guide-phase-copy {
+  min-width: 0;
+  display: grid;
   gap: 32px;
 }
 
@@ -4277,9 +4290,13 @@ html, body { overflow-x: hidden; }
 
 .tl-guide-inline-proof {
   min-width: 0;
-  padding-top: 8px;
-  display: flex;
-  justify-content: center;
+}
+
+@media (max-width: 1023px) {
+  .tl-guide-phase {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
 }
 
 .tl-guide-closing {
@@ -5397,7 +5414,7 @@ html, body { overflow-x: hidden; }
   .tls-hover-quote blockquote > p { font-size: 24px; }
 
   /* Guide mobile fixes */
-  .tl-guide-phase { margin-top: 0; }
+  .tl-guide-phase { margin-top: 0; gap: 24px; }
   .tl-guide-phase + .tl-guide-phase { margin-top: 40px; padding-top: 40px; }
   .tl-guide-phase-header { margin-bottom: 8px; }
   .tl-guide-phase-header h2 { font-size: 28px; }
@@ -5406,6 +5423,7 @@ html, body { overflow-x: hidden; }
   .tl-guide-step-badge { font-size: 12px; }
   .tl-guide-step-body h3 { font-size: 16px; }
   .tl-guide-step-body p { font-size: 14px; }
+  .tl-guide-inline-proof { width: 100%; overflow: hidden; }
   .tl-guide-closing { margin-top: 32px; padding-top: 32px; }
   .tl-guide-closing h2 { font-size: 28px; }
 

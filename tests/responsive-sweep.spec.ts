@@ -559,15 +559,38 @@ test.describe('Guide story hierarchy', () => {
     await expect(page.locator('.tl-guide-phase')).toHaveCount(2);
     await expect(page.locator('.tl-guide-step')).toHaveCount(6);
     await expect(page.locator('.tl-guide-step-badge')).toHaveCount(6);
+    await expect(page.locator('[data-guide-evidence]')).toHaveCount(2);
+    await expect(page.locator('[data-guide-evidence="mobile"] [data-product-artifact="session"]')).toHaveCount(1);
+    await expect(page.locator('[data-guide-evidence="web"] [data-product-artifact="recap"]')).toHaveCount(1);
+    await expect(page.locator('[data-guide-evidence="web"] [data-product-artifact="invoice"]')).toHaveCount(1);
+    await expect(page.locator('.tl-public-guide [data-rail-proof], .tl-public-guide [data-proof-trigger]')).toHaveCount(0);
   });
 
   test('keeps guide steps readable on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/panduan');
-    await page.waitForLoadState('networkidle');
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/panduan');
+      await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.tl-guide-phase')).toHaveCount(2);
-    await expect(page.locator('.tl-guide-step')).toHaveCount(6);
+      const phases = page.locator('.tl-guide-phase');
+      const artifacts = page.locator('[data-guide-evidence] [data-product-artifact]');
+
+      await expect(phases).toHaveCount(2);
+      await expect(page.locator('.tl-guide-step')).toHaveCount(6);
+      await expect(artifacts).toHaveCount(3);
+
+      const phaseBoxes = await phases.evaluateAll((elements) =>
+        elements.map((element) => element.getBoundingClientRect()),
+      );
+      const artifactRightEdges = await artifacts.evaluateAll((elements) =>
+        elements.map((element) => element.getBoundingClientRect().right),
+      );
+
+      expect(artifactRightEdges[0]).toBeLessThanOrEqual(phaseBoxes[0].right + 0.5);
+      expect(artifactRightEdges[1]).toBeLessThanOrEqual(phaseBoxes[1].right + 0.5);
+      expect(artifactRightEdges[2]).toBeLessThanOrEqual(phaseBoxes[1].right + 0.5);
+      expect(phaseBoxes[1].top).toBeGreaterThanOrEqual(phaseBoxes[0].bottom);
+    }
   });
 });
 

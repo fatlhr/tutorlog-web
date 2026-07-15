@@ -65,7 +65,7 @@ const faqs = [
 
 function PriceVisual() {
   return (
-    <aside className="tl-price-visual tl-public-product" aria-label="Ilustrasi akses TutorLog">
+    <aside className="tl-price-visual tl-public-product" aria-label="Ilustrasi akses TutorLog" data-symbolic-evidence="pricing">
       <Receipt size={46} weight="duotone" aria-hidden="true" />
       <strong>Mulai dari catatan pertama.</strong>
       <p>Upgrade saat export dan invoice sudah benar-benar kamu butuhkan.</p>

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
-import { PublicProductProof } from "@/components/PublicProductRail";
 import { MarketingButton } from "@/components/public-ui/marketing-button";
+import { MobileGuideEvidence, WebGuideEvidence } from "@/components/public-ui/product-evidence/workflow-canvas";
 
 export const metadata: Metadata = {
   title: "TutorLog - Panduan",
@@ -26,34 +27,34 @@ function PhaseSection({
   description,
   steps,
   stepOffset = 0,
-  proofId,
+  evidence,
 }: {
   title: string;
   description: string;
   steps: readonly (readonly [string, string])[];
   stepOffset?: number;
-  proofId: "mobile" | "invoice";
+  evidence: ReactNode;
 }) {
   return (
     <section className="tl-guide-phase">
-      <div className="tl-guide-phase-header">
-        <h2>{title}</h2>
-        <p>{description}</p>
+      <div className="tl-guide-phase-copy">
+        <div className="tl-guide-phase-header">
+          <h2>{title}</h2>
+          <p>{description}</p>
+        </div>
+        <ol className="tl-guide-steps">
+          {steps.map(([stepTitle, stepBody], idx) => (
+            <li className="tl-guide-step" key={stepTitle}>
+              <span className="tl-guide-step-badge" aria-hidden="true">{String(idx + stepOffset + 1).padStart(2, "0")}</span>
+              <div className="tl-guide-step-body">
+                <h3>{stepTitle}</h3>
+                <p>{stepBody}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
-      <ol className="tl-guide-steps">
-        {steps.map(([stepTitle, stepBody], idx) => (
-          <li className="tl-guide-step" key={stepTitle}>
-            <span className="tl-guide-step-badge" aria-hidden="true">{String(idx + stepOffset + 1).padStart(2, "0")}</span>
-            <div className="tl-guide-step-body">
-              <h3>{stepTitle}</h3>
-              <p>{stepBody}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <div className="tl-guide-inline-proof">
-        <PublicProductProof id={proofId} />
-      </div>
+      <div className="tl-guide-inline-proof">{evidence}</div>
     </section>
   );
 }
@@ -74,14 +75,14 @@ export default function PanduanPage() {
           description="Mobile dipakai saat kamu dekat dengan sesi mengajar."
           steps={mobileSteps}
           stepOffset={0}
-          proofId="mobile"
+          evidence={<MobileGuideEvidence />}
         />
         <PhaseSection
           title="Di web."
           description="Web dipakai saat data yang sudah terkumpul perlu dibaca, dicek, atau dikirim."
           steps={webSteps}
           stepOffset={3}
-          proofId="invoice"
+          evidence={<WebGuideEvidence />}
         />
       </div>
 
