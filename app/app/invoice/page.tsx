@@ -211,32 +211,41 @@ export default function InvoicePage() {
   useEffect(() => {
     if (studentsLoading) return;
 
-    if (students.length === 0) {
-      setStudentName("");
-      setStudentInfo("");
-      setStudentAddress("");
-      setParentName("");
-      return;
-    }
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
 
-    const selectedStudent = students.find((student) => student.name === studentName);
-    if (!selectedStudent) {
-      const firstStudent = students[0];
-      setStudentName(firstStudent.name);
-      setStudentInfo(firstStudent.educationLevel ?? "");
-      setStudentAddress(firstStudent.address ?? "");
-      setParentName(getStudentRecipientName(firstStudent));
-      return;
-    }
+      if (students.length === 0) {
+        setStudentName("");
+        setStudentInfo("");
+        setStudentAddress("");
+        setParentName("");
+        return;
+      }
 
-    setStudentInfo(selectedStudent.educationLevel ?? "");
-    const shouldPreserveDraftStudentAddress =
-      restoredDraftStudentNameRef.current === selectedStudent.name &&
-      restoredDraftHasStudentAddressRef.current;
-    setStudentAddress((current) =>
-      shouldPreserveDraftStudentAddress ? current : current || selectedStudent.address || ""
-    );
-    setParentName((current) => current.trim() || getStudentRecipientName(selectedStudent));
+      const selectedStudent = students.find((student) => student.name === studentName);
+      if (!selectedStudent) {
+        const firstStudent = students[0];
+        setStudentName(firstStudent.name);
+        setStudentInfo(firstStudent.educationLevel ?? "");
+        setStudentAddress(firstStudent.address ?? "");
+        setParentName(getStudentRecipientName(firstStudent));
+        return;
+      }
+
+      setStudentInfo(selectedStudent.educationLevel ?? "");
+      const shouldPreserveDraftStudentAddress =
+        restoredDraftStudentNameRef.current === selectedStudent.name &&
+        restoredDraftHasStudentAddressRef.current;
+      setStudentAddress((current) =>
+        shouldPreserveDraftStudentAddress ? current : current || selectedStudent.address || ""
+      );
+      setParentName((current) => current.trim() || getStudentRecipientName(selectedStudent));
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [studentName, students, studentsLoading]);
 
   useEffect(() => {
@@ -247,10 +256,13 @@ export default function InvoicePage() {
       !cancelled && sessionsRequestSequence.current === requestSequence;
 
     if (!studentName || !periodStart || !periodEnd) {
-      setInvoiceSessions([]);
-      setSessionsError(false);
-      setSessionsLoading(false);
-      setLoadedSessionsQueryKey(null);
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setInvoiceSessions([]);
+        setSessionsError(false);
+        setSessionsLoading(false);
+        setLoadedSessionsQueryKey(null);
+      });
       return () => {
         cancelled = true;
       };
