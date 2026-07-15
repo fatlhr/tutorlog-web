@@ -103,7 +103,7 @@ test.describe('Homepage hero guardrails', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const proof = page.locator('.tl-landing-feature-rows .tls-rail-surface').first();
+    const proof = page.locator('.tl-landing-feature-rows [data-product-artifact]').first();
     await proof.scrollIntoViewIfNeeded();
     const opacity = Number.parseFloat(await proof.evaluate((element) => window.getComputedStyle(element).opacity));
 
@@ -177,7 +177,12 @@ test.describe('Homepage story structure', () => {
     await expect(page.locator('.tls-story-rail, .tls-story-grid')).toHaveCount(0);
     await expect(page.locator('.tl-landing-mobile-proof')).toHaveCount(1);
     await expect(page.locator('.tl-landing-transition')).toHaveCount(1);
-    await expect(page.locator('.tl-landing-proof-story')).toHaveCount(3);
+    await expect(page.locator('[data-workflow-canvas]')).toHaveCount(1);
+    await expect(page.locator('[data-workflow-stage]')).toHaveCount(3);
+    expect(await page.locator('[data-workflow-stage]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-workflow-stage')),
+    )).toEqual(['session', 'recap', 'invoice']);
+    await expect(page.locator('.tl-landing-feature-rows [data-rail-proof]')).toHaveCount(0);
     await expect(page.locator('.tl-landing-next')).toHaveCount(1);
     await expect(page.locator('.tl-landing-intro, .tl-landing-pricing, .tl-landing-explore')).toHaveCount(0);
     await expect(page.locator('.tl-landing-hero-mascot')).toHaveCount(0);
@@ -237,22 +242,29 @@ test.describe('Homepage story structure', () => {
     await expect(explore.locator('a[href="/panduan"]')).toBeVisible();
   });
 
-  test('stacks the three proof stories on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+  for (const width of [320, 390]) {
+    test(`stacks workflow stages without overflow at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
-    const positions = await page.locator('.tl-landing-proof-story').evaluateAll((elements) =>
-      elements.map((element) => {
-        const rect = element.getBoundingClientRect();
-        return { top: rect.top, bottom: rect.bottom };
-      }),
-    );
+      const positions = await page.locator('[data-workflow-stage]').evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const rect = node.getBoundingClientRect();
+          return { top: rect.top, bottom: rect.bottom };
+        }),
+      );
+      expect(positions).toHaveLength(3);
+      expect(positions[1].top).toBeGreaterThanOrEqual(positions[0].bottom);
+      expect(positions[2].top).toBeGreaterThanOrEqual(positions[1].bottom);
 
-    expect(positions).toHaveLength(3);
-    expect(positions[1].top).toBeGreaterThanOrEqual(positions[0].bottom);
-    expect(positions[2].top).toBeGreaterThanOrEqual(positions[1].bottom);
-  });
+      const widthMetrics = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        client: document.documentElement.clientWidth,
+      }));
+      expect(widthMetrics.scroll).toBeLessThanOrEqual(widthMetrics.client);
+    });
+  }
 });
 
 test.describe('Public navigation guardrails', () => {

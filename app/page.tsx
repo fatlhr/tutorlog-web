@@ -8,26 +8,9 @@ import PublicNav from "@/components/PublicNav";
 import { AppFooter } from "@/components/ui/footer";
 import { PublicProductProof } from "@/components/PublicProductRail";
 import { MarketingButton } from "@/components/public-ui/marketing-button";
+import { WorkflowCanvas } from "@/components/public-ui/product-evidence/workflow-canvas";
 
 const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog.app";
-
-const proofStories = [
-  {
-    id: "mobile" as const,
-    title: "Catat sesi setelah mengajar.",
-    body: "Simpan materi, durasi, murid, tarif, dan lokasi dari HP selagi detailnya masih dekat.",
-  },
-  {
-    id: "recap" as const,
-    title: "Buka rekap saat dibutuhkan.",
-    body: "Sesi, jam, pendapatan, dan murid sudah tersusun untuk dibaca atau diekspor dari mobile maupun web.",
-  },
-  {
-    id: "invoice" as const,
-    title: "Buat invoice dari sesi yang sama.",
-    body: "Pilih sesi dan periksa invoice di web sebelum disimpan atau dikirim.",
-  },
-];
 
 export default function Home() {
   return (
@@ -73,15 +56,7 @@ export default function Home() {
       </section>
 
       <section className="tl-landing-feature-rows" aria-label="Alur produk TutorLog">
-        {proofStories.map((story) => (
-          <article className="tl-landing-proof-story" key={story.id}>
-            <div className="tl-landing-proof-copy">
-              <h2>{story.title}</h2>
-              <p>{story.body}</p>
-            </div>
-            <PublicProductProof id={story.id} annotation />
-          </article>
-        ))}
+        <WorkflowCanvas />
       </section>
 
       <section className="tl-landing-next" aria-labelledby="landing-next-title">
