@@ -5,7 +5,9 @@ const root = process.cwd();
 const rootLayout = readFileSync(join(root, "app/layout.tsx"), "utf8");
 const legacyCss = readFileSync(join(root, "css/tutorlog-web.css"), "utf8");
 const uiDirectory = join(root, "components/app-ui");
+const sharedUiDirectory = join(root, "components/ui");
 const css = readFileSync(join(uiDirectory, "app-ui.module.css"), "utf8");
+const sharedCss = readFileSync(join(root, "css/tutorlog-foundation.css"), "utf8");
 const sources = readdirSync(uiDirectory)
   .filter((file) => file.endsWith(".ts") || file.endsWith(".tsx"))
   .map((file) => readFileSync(join(uiDirectory, file), "utf8"))
@@ -22,6 +24,8 @@ function contains(fragment, message) {
 
 const foundationFiles = [
   ...readdirSync(uiDirectory).map((file) => join(uiDirectory, file)),
+  ...readdirSync(sharedUiDirectory).map((file) => join(sharedUiDirectory, file)),
+  join(root, "css/tutorlog-foundation.css"),
   join(root, "scripts/audit-protected-app-system.mjs"),
 ];
 for (const file of foundationFiles) {
@@ -67,7 +71,7 @@ const clarifiedComponents = [
 
 for (const component of [...contractComponents, ...clarifiedComponents]) {
   check(
-    new RegExp(`export function ${component}\\b`).test(sources),
+    new RegExp(`export (?:function|const) ${component}\\b`).test(sources),
     `component inventory: missing ${component}`,
   );
 }
@@ -96,16 +100,16 @@ const colorTokens = {
   "--app-line": "#b7d1c8",
   "--app-line-strong": "#8eada3",
   "--app-overlay": "rgb(18 33 31 / 42%)",
-  "--app-action": "#006c53",
-  "--app-action-hover": "#00523f",
-  "--app-on-action": "#ffffff",
-  "--app-success": "#006c53",
-  "--app-warning": "#8a5a00",
-  "--app-warning-soft": "#ffe3a3",
-  "--app-error": "#d9706a",
+  "--app-action": "var(--tl-brand-action)",
+  "--app-action-hover": "var(--tl-brand-action-hover)",
+  "--app-on-action": "var(--tl-brand-on-action)",
+  "--app-success": "var(--tl-brand-success)",
+  "--app-warning": "var(--tl-brand-warning)",
+  "--app-warning-soft": "var(--tl-brand-warning-soft)",
+  "--app-error": "var(--tl-brand-error)",
   "--app-error-ink": "#7d302c",
-  "--app-info": "#235c8f",
-  "--app-info-soft": "#d7e9ff",
+  "--app-info": "var(--tl-brand-info)",
+  "--app-info-soft": "var(--tl-brand-info-soft)",
   "--app-home-accent": "#d8f1e7",
   "--app-home-accent-ink": "#006c53",
   "--app-recap-accent": "#e9e3fa",
@@ -116,44 +120,69 @@ const colorTokens = {
 
 const radii = {
   "--radius-0": "0",
-  "--radius-small": "6px",
-  "--radius-control": "10px",
-  "--radius-surface": "14px",
-  "--radius-overlay": "18px",
-  "--radius-round": "999px",
+  "--radius-small": "var(--tl-radius-small)",
+  "--radius-control": "var(--tl-radius-control)",
+  "--radius-surface": "var(--tl-radius-surface)",
+  "--radius-overlay": "var(--tl-radius-overlay)",
+  "--radius-round": "var(--tl-radius-round)",
 };
 
 const foundationTokens = {
-  "--space-0": "0",
-  "--space-1": "2px",
-  "--space-2": "4px",
-  "--space-3": "8px",
-  "--space-4": "12px",
-  "--space-5": "16px",
-  "--space-6": "20px",
-  "--space-7": "24px",
-  "--space-8": "32px",
-  "--space-9": "40px",
-  "--space-10": "48px",
-  "--space-11": "64px",
+  "--space-0": "var(--tl-space-0)",
+  "--space-1": "var(--tl-space-1)",
+  "--space-2": "var(--tl-space-2)",
+  "--space-3": "var(--tl-space-3)",
+  "--space-4": "var(--tl-space-4)",
+  "--space-5": "var(--tl-space-5)",
+  "--space-6": "var(--tl-space-6)",
+  "--space-7": "var(--tl-space-7)",
+  "--space-8": "var(--tl-space-8)",
+  "--space-9": "var(--tl-space-9)",
+  "--space-10": "var(--tl-space-10)",
+  "--space-11": "var(--tl-space-11)",
   "--elevation-flat": "none",
   "--elevation-menu": "0 8px 24px rgb(18 33 31 / 12%)",
   "--elevation-overlay": "0 20px 48px rgb(18 33 31 / 16%)",
   "--elevation-toast": "0 12px 32px rgb(18 33 31 / 14%)",
-  "--motion-instant": "0ms",
-  "--motion-fast": "120ms",
-  "--motion-standard": "180ms",
-  "--motion-slow": "240ms",
-  "--motion-overlay": "280ms",
-  "--ease-standard": "cubic-bezier(.2, 0, 0, 1)",
-  "--ease-out": "cubic-bezier(.16, 1, .3, 1)",
-  "--app-font-title": "var(--f-title, \"Courier Prime\", monospace)",
-  "--app-font-body": "var(--f-body, \"Source Serif 4\", serif)",
+  "--motion-instant": "var(--tl-motion-instant)",
+  "--motion-fast": "var(--tl-motion-fast)",
+  "--motion-standard": "var(--tl-motion-standard)",
+  "--motion-slow": "var(--tl-motion-slow)",
+  "--motion-overlay": "var(--tl-motion-overlay)",
+  "--ease-standard": "var(--tl-ease-standard)",
+  "--ease-out": "var(--tl-ease-out)",
+  "--app-font-title": "var(--tl-font-title)",
+  "--app-font-body": "var(--tl-font-body)",
+};
+
+const sharedTokens = {
+  "--tl-brand-action": "#006c53",
+  "--tl-brand-action-hover": "#00523f",
+  "--tl-brand-on-action": "#ffffff",
+  "--tl-brand-success": "#006c53",
+  "--tl-brand-warning": "#8a5a00",
+  "--tl-brand-warning-soft": "#ffe3a3",
+  "--tl-brand-error": "#d9706a",
+  "--tl-brand-info": "#235c8f",
+  "--tl-brand-info-soft": "#d7e9ff",
+  "--tl-radius-small": "6px",
+  "--tl-radius-control": "10px",
+  "--tl-radius-surface": "14px",
+  "--tl-radius-overlay": "18px",
+  "--tl-radius-round": "999px",
+  "--tl-focus-width": "2px",
+  "--tl-focus-offset": "2px",
 };
 
 const allTokens = { ...colorTokens, ...foundationTokens, ...radii };
 for (const [token, value] of Object.entries(allTokens)) {
   contains(`${token}: ${value};`, `token audit: ${token} must equal ${value}`);
+}
+for (const [token, value] of Object.entries(sharedTokens)) {
+  check(
+    sharedCss.includes(`${token}: ${value};`),
+    `shared token audit: ${token} must equal ${value}`,
+  );
 }
 
 for (const [token, value] of Object.entries(radii)) {
@@ -200,16 +229,16 @@ contains(
 );
 contains("gap: 28px;", "rhythm audit: desktop section gap must be 28px");
 contains(
-  ".sectionStack { gap: var(--space-7); }",
-  "rhythm audit: tablet section gap must be 24px",
+  ".sectionStack { gap: var(--space-6); }",
+  "rhythm audit: tablet section gap must be 20px",
 );
 contains(
-  ".sectionStack { gap: var(--space-6); }",
-  "rhythm audit: mobile section gap must be 20px",
+  ".sectionStack { gap: var(--space-5); }",
+  "rhythm audit: mobile section gap must be 16px",
 );
 
 contains(
-  "outline: 2px solid var(--app-action);",
+  "outline: var(--tl-focus-width) solid var(--tl-focus-color);",
   "focus audit: shared focus ring is missing",
 );
 contains(
@@ -246,9 +275,12 @@ const allowedProductionConsumers = new Set([
   join(root, "app/app/rekap/loading.tsx"),
   join(root, "app/app/invoice/page.tsx"),
   join(root, "app/app/invoice/loading.tsx"),
+  join(root, "app/app/layout.tsx"),
   join(root, "components/AppTopBar.tsx"),
   join(root, "components/HomeUpgradePrompt.tsx"),
+  join(root, "components/NamePromptDialog.tsx"),
   join(root, "components/PaywallDialog.tsx"),
+  join(root, "components/ProfileContent.tsx"),
   join(root, "components/RekapContent.tsx"),
   join(root, "components/TabBar.tsx"),
 ]);
@@ -300,7 +332,11 @@ const allowedPackages = new Set([
 ]);
 const packageImports = [...sources.matchAll(/from\s+["']([^"']+)["']/g)]
   .map((match) => match[1])
-  .filter((specifier) => !specifier.startsWith("."));
+  .filter(
+    (specifier) =>
+      !specifier.startsWith(".") &&
+      !specifier.startsWith("@/components/ui/"),
+  );
 for (const specifier of packageImports) {
   check(
     allowedPackages.has(specifier),

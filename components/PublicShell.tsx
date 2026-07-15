@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
-import { AppFooter } from "@/components/AppFooter";
+import { AppFooter } from "@/components/ui/footer";
 
 type PublicShellProps = {
   eyebrow: string;

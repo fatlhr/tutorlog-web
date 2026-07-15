@@ -3,6 +3,8 @@ import Link from "next/link";
 import { PaperPlaneTilt } from "@phosphor-icons/react/dist/ssr";
 import { redirect } from "next/navigation";
 import { PublicShell } from "@/components/PublicShell";
+import { MarketingButton } from "@/components/public-ui/marketing-button";
+import { PublicField } from "@/components/public-ui/public-field";
 import { createClient } from "@/lib/supabase/server";
 import { sendMagicLink } from "./actions";
 
@@ -42,9 +44,9 @@ export default async function LoginPage({
       <section className="tl-auth-layout tl-auth-login-layout" aria-label="Masuk ke TutorLog">
         <form className="tl-auth-form" action={sendMagicLink}>
           {errorMessage ? <p className="tl-auth-error" role="alert">{errorMessage}</p> : null}
-          <label htmlFor="login-email">Email</label>
-          <input
-            id="login-email"
+          <PublicField
+            controlId="login-email"
+            label="Email"
             name="email"
             type="email"
             inputMode="email"
@@ -52,12 +54,16 @@ export default async function LoginPage({
             defaultValue={email}
             placeholder="nama@email.com"
             required
+            helper="Link berlaku 1 jam. Belum punya akun? Kami akan membuatnya saat kamu masuk."
           />
-          <p className="tl-auth-form-help">Link berlaku 1 jam. Belum punya akun? Kami akan membuatnya saat kamu masuk.</p>
-          <button className="tl-button tl-button-primary tl-auth-submit" type="submit">
-            <PaperPlaneTilt size={18} weight="fill" aria-hidden="true" />
-            <span>Kirim Link Masuk</span>
-          </button>
+          <MarketingButton
+            type="submit"
+            size="large"
+            block
+            leadingIcon={<PaperPlaneTilt size={18} weight="fill" />}
+          >
+            Kirim Link Masuk
+          </MarketingButton>
           <p className="tl-auth-legal">Dengan masuk, kamu menyetujui <Link href="/privacy">Privasi</Link> dan <Link href="/terms">Syarat</Link> TutorLog.</p>
         </form>
       </section>

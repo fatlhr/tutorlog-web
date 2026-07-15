@@ -2,11 +2,8 @@
 
 import { X } from "@phosphor-icons/react";
 import {
-  createContext,
-  useContext,
   useEffect,
   useId,
-  useLayoutEffect,
   useRef,
   useState,
   type MouseEvent,
@@ -15,30 +12,13 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { IconButton } from "./controls";
+import {
+  DialogNestingContext,
+  useDialogBehavior,
+} from "@/components/ui/use-dialog-behavior";
 import styles from "./app-ui.module.css";
 
 type FocusReference = RefObject<HTMLElement | null>;
-
-interface OverlayBehaviorOptions {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  dismissible: boolean;
-  panelRef: RefObject<HTMLDivElement | null>;
-  initialFocusRef?: FocusReference;
-  returnFocusRef?: FocusReference;
-}
-
-const OverlayContext = createContext(false);
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
-
-let scrollbarWidthCache: number | null = null;
-function ensureScrollbarWidth(): number {
-  if (scrollbarWidthCache === null) {
-    if (typeof window === "undefined") return 0;
-    scrollbarWidthCache = window.innerWidth - document.documentElement.clientWidth;
-  }
-  return scrollbarWidthCache;
-}
 
 function getOverlayAvailability(kind: OverlayFrameProps["kind"]) {
   if (kind === "dialog") return true;
@@ -64,92 +44,6 @@ function useOverlayAvailability(kind: OverlayFrameProps["kind"]) {
   }, [kind]);
 
   return available;
-}
-
-function useOverlayBehavior({
-  open,
-  onOpenChange,
-  dismissible,
-  panelRef,
-  initialFocusRef,
-  returnFocusRef,
-}: OverlayBehaviorOptions) {
-  const nested = useContext(OverlayContext);
-  const onOpenChangeRef = useRef(onOpenChange);
-  useEffect(() => {
-    onOpenChangeRef.current = onOpenChange;
-  }, [onOpenChange]);
-
-  if (open && nested) {
-    throw new Error("Protected app overlays cannot be nested.");
-  }
-
-  useIsomorphicLayoutEffect(() => {
-    if (!open) return;
-
-    const previousActive = document.activeElement as HTMLElement | null;
-    const scrollbarWidth = ensureScrollbarWidth();
-
-    if (scrollbarWidth > 0) {
-      document.documentElement.style.setProperty("--scrollbar-compensation", `${scrollbarWidth}px`);
-    }
-    document.documentElement.classList.add("bodyScrollLock");
-
-    const focusableSelector = [
-      "button:not([disabled])",
-      "a[href]",
-      "input:not([disabled])",
-      "select:not([disabled])",
-      "textarea:not([disabled])",
-      "[tabindex]:not([tabindex='-1'])",
-    ].join(",");
-    const focusable = () =>
-      Array.from(
-        panelRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
-      );
-    const firstTarget = initialFocusRef?.current ?? focusable()[0] ?? panelRef.current;
-    firstTarget?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && dismissible) {
-        event.preventDefault();
-        onOpenChangeRef.current(false);
-        return;
-      }
-
-      if (event.key !== "Tab") return;
-      const targets = focusable();
-      if (targets.length === 0) {
-        event.preventDefault();
-        panelRef.current?.focus();
-        return;
-      }
-
-      const first = targets[0];
-      const last = targets[targets.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.documentElement.classList.remove("bodyScrollLock");
-      document.documentElement.style.removeProperty("--scrollbar-compensation");
-      (returnFocusRef?.current ?? previousActive)?.focus();
-    };
-  }, [
-    dismissible,
-    initialFocusRef,
-    open,
-    panelRef,
-    returnFocusRef,
-  ]);
 }
 
 interface OverlayFrameProps {
@@ -183,9 +77,9 @@ function OverlayFrame({
   const titleId = useId();
   const descriptionId = useId();
   const available = useOverlayAvailability(kind);
-  useOverlayBehavior({
+  useDialogBehavior({
     open: open && available,
-    onOpenChange,
+    onClose: () => onOpenChange(false),
     dismissible,
     panelRef,
     initialFocusRef,
@@ -201,7 +95,7 @@ function OverlayFrame({
   };
 
   const layer = (
-    <OverlayContext.Provider value>
+    <DialogNestingContext.Provider value>
       <div
         className={`${styles.overlayLayer} ${styles.themeScope} ${styles[`${kind}Layer`]}`}
         onMouseDown={closeFromScrim}
@@ -232,7 +126,7 @@ function OverlayFrame({
           {footer ? <footer className={styles.overlayFooter}>{footer}</footer> : null}
         </div>
       </div>
-    </OverlayContext.Provider>
+    </DialogNestingContext.Provider>
   );
 
   return createPortal(layer, document.body);

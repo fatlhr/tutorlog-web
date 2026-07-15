@@ -5,8 +5,9 @@ import LandingDemoDialog from "@/components/LandingDemoDialog";
 import LandingTimetableCanvas from "@/components/LandingTimetableCanvas";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
-import { AppFooter } from "@/components/AppFooter";
+import { AppFooter } from "@/components/ui/footer";
 import { PublicProductProof } from "@/components/PublicProductRail";
+import { MarketingButton } from "@/components/public-ui/marketing-button";
 
 const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog.app";
 
@@ -41,10 +42,14 @@ export default function Home() {
           <h1 id="landing-title">Rekap dan invoice untuk tutor privat.</h1>
           <p>Catat sesi di HP, rapikan rekap dan invoice di web dengan akun yang sama.</p>
           <div className="tl-landing-hero-actions">
-            <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
-              <Play size={18} weight="fill" />
-              <span>Mulai Gratis</span>
-            </a>
+            <MarketingButton
+              href={playStoreUrl}
+              target="_blank"
+              rel="noopener"
+              leadingIcon={<Play size={18} weight="fill" />}
+            >
+              Mulai Gratis
+            </MarketingButton>
             <LandingDemoDialog />
           </div>
         </div>
@@ -100,10 +105,14 @@ export default function Home() {
           <span>Mulai gratis</span>
           <h2 id="landing-action">Mulai dari satu sesi dulu.</h2>
           <p>Rekap dan invoice berikutnya mengikuti data yang sudah kamu catat.</p>
-          <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
-            <Play size={18} weight="fill" />
-            <span>Mulai Gratis</span>
-          </a>
+          <MarketingButton
+            href={playStoreUrl}
+            target="_blank"
+            rel="noopener"
+            leadingIcon={<Play size={18} weight="fill" />}
+          >
+            Mulai Gratis
+          </MarketingButton>
         </section>
       </div>
 

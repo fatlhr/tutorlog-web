@@ -1,20 +1,13 @@
 import type { ReactNode } from "react";
 
+export type {
+  SharedControlSize as ControlSize,
+  SharedNonVisualAttributes as NonVisualAttributes,
+} from "@/components/ui/control-types";
+
 export type AppRoute = "home" | "recap" | "invoice" | "settings";
 export type AppTone = "neutral" | AppRoute | "error";
-export type ControlSize = "compact" | "default" | "large";
 export type FieldSize = "compact" | "default";
-
-export interface NonVisualAttributes {
-  id?: string;
-  name?: string;
-  "aria-label"?: string;
-  "aria-labelledby"?: string;
-  "aria-describedby"?: string;
-  "aria-controls"?: string;
-  "aria-expanded"?: boolean;
-  "data-analytics-id"?: string;
-}
 
 export interface SelectOption {
   value: string;

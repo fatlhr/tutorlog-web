@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, EnvelopeOpen } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
+import { MarketingButton } from "@/components/public-ui/marketing-button";
 import { sendMagicLink } from "../actions";
 
 export const metadata: Metadata = {
@@ -40,10 +41,16 @@ export default async function LoginSentPage({
             <h2>Buka email, lalu kembali ke sini.</h2>
             <p>Kalau email belum terlihat, cek folder spam atau tunggu beberapa detik.</p>
           </div>
-          <a className="tl-button tl-button-primary tl-auth-submit" href="https://mail.google.com" target="_blank" rel="noopener">
-            <span>Buka Gmail</span>
-            <ArrowRight size={18} aria-hidden="true" />
-          </a>
+          <MarketingButton
+            href="https://mail.google.com"
+            target="_blank"
+            rel="noopener"
+            size="large"
+            block
+            trailingIcon={<ArrowRight size={18} />}
+          >
+            Buka Gmail
+          </MarketingButton>
           {email ? (
             <form action={sendMagicLink}>
               <input type="hidden" name="email" value={email} />

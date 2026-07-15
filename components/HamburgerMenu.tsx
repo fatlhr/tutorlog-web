@@ -6,6 +6,8 @@ import { ArrowRight, X } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { PublicIconButton } from "@/components/public-ui/public-icon-button";
+import { NavigationLinkPrimitive } from "@/components/ui/navigation-link-primitive";
 
 interface HamburgerMenuProps {
   open: boolean;
@@ -70,17 +72,27 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
             <span className="tl-brand-mark"><Image src="/tutorlog-logo.png" alt="" width={40} height={40} /></span>
             <span>TutorLog</span>
           </Link>
-          <button ref={closeButtonRef} className="tl-mobile-menu-close" aria-label="Tutup menu" onClick={onClose}>
-            <X size={24} weight="bold" aria-hidden="true" />
-          </button>
+          <PublicIconButton
+            buttonRef={closeButtonRef}
+            icon={<X size={24} weight="bold" />}
+            label="Tutup menu"
+            size="mobile"
+            onClick={onClose}
+          />
         </header>
 
         <nav className="tl-mobile-menu-links" aria-label="Halaman publik">
           {links.map((link) => (
-            <Link className="tl-mobile-menu-link" key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined} onClick={onClose}>
-              <span>{link.label}</span>
-              <ArrowRight size={22} aria-hidden="true" />
-            </Link>
+            <NavigationLinkPrimitive
+              className="tl-mobile-menu-link"
+              key={link.href}
+              href={link.href}
+              label={link.label}
+              active={pathname === link.href}
+              icon={<ArrowRight size={22} />}
+              iconPlacement="trailing"
+              onClick={onClose}
+            />
           ))}
         </nav>
 

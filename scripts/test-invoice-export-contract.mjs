@@ -334,7 +334,7 @@ assert.doesNotMatch(
   "Derived education data must not be restored from the draft",
 );
 const persistedDraftMatch = page.match(
-  /localStorage\.setItem\(DRAFT_KEY, JSON\.stringify\(\{([\s\S]*?)\}\)\);/,
+  /saveInvoiceDraft\(sessionStorage, \{([\s\S]*?)\}\);/,
 );
 assert.ok(persistedDraftMatch, "Invoice draft persistence block must remain present");
 const persistedDraftBody = persistedDraftMatch[1];

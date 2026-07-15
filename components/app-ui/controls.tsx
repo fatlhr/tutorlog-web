@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { CaretDown, SpinnerGap } from "@phosphor-icons/react";
 import {
   Children,
@@ -9,10 +8,17 @@ import {
   useMemo,
   type ChangeEvent,
   type InputHTMLAttributes,
-  type MouseEventHandler,
   type ReactElement,
-  type ReactNode,
 } from "react";
+import {
+  ButtonPrimitive,
+  IconButtonPrimitive,
+} from "@/components/ui/button-primitive";
+import type {
+  SharedButtonProps,
+  SharedIconButtonProps,
+} from "@/components/ui/control-types";
+import { getFieldDescription } from "@/components/ui/field-contract";
 import styles from "./app-ui.module.css";
 import type {
   ControlSize,
@@ -23,34 +29,10 @@ import type {
 
 type ButtonVariant = "primary" | "secondary" | "quiet";
 
-interface ButtonSharedProps extends NonVisualAttributes {
-  children: ReactNode;
+export type ButtonProps = SharedButtonProps & {
   variant?: ButtonVariant;
   size?: ControlSize;
-  leadingIcon?: ReactNode;
-  trailingIcon?: ReactNode;
-  block?: boolean;
-  loading?: boolean;
-  loadingLabel?: string;
-}
-
-interface NativeButtonProps extends ButtonSharedProps {
-  href?: never;
-  type?: "button" | "submit" | "reset";
-  onClick?: MouseEventHandler<HTMLButtonElement>;
-  disabled?: boolean;
-}
-
-interface LinkButtonProps extends ButtonSharedProps {
-  href: string;
-  type?: never;
-  onClick?: MouseEventHandler<HTMLAnchorElement>;
-  disabled?: never;
-  target?: "_blank";
-  rel?: string;
-}
-
-export type ButtonProps = NativeButtonProps | LinkButtonProps;
+};
 
 function buttonClasses(
   variant: ButtonVariant,
@@ -71,136 +53,38 @@ function capitalize(value: string) {
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
 
-function controlContent(
-  children: ReactNode,
-  leadingIcon: ReactNode,
-  trailingIcon: ReactNode,
-) {
-  return (
-    <>
-      {leadingIcon ? <span className={styles.controlIcon}>{leadingIcon}</span> : null}
-      <span>{children}</span>
-      {trailingIcon ? <span className={styles.controlIcon}>{trailingIcon}</span> : null}
-    </>
-  );
-}
-
 export function Button(props: ButtonProps) {
   const {
-    children,
     variant = "primary",
     size = "default",
-    leadingIcon,
-    trailingIcon,
     block = false,
-    loading = false,
-    loadingLabel = "Menyiapkan...",
-    id,
-    name,
-    "aria-label": ariaLabel,
-    "aria-labelledby": ariaLabelledBy,
-    "aria-describedby": ariaDescribedBy,
-    "aria-controls": ariaControls,
-    "aria-expanded": ariaExpanded,
-    "data-analytics-id": analyticsId,
   } = props;
-  const className = buttonClasses(variant, size, block);
-  const content = controlContent(
-    children,
-    leadingIcon,
-    trailingIcon,
-  );
-  const renderedContent = (
-    <>
-      <span className={styles.loadingPlaceholder} aria-hidden={loading}>
-        {content}
-      </span>
-      <span className={styles.loadingContent} aria-hidden={!loading}>
-        <SpinnerGap className={styles.spinner} aria-hidden="true" />
-        <span>{loadingLabel}</span>
-      </span>
-    </>
-  );
-
-  if ("href" in props && props.href) {
-    const linkProps = props as LinkButtonProps;
-    return (
-      <Link
-        id={id}
-        href={linkProps.href}
-        target={linkProps.target}
-        rel={linkProps.rel}
-        className={className}
-        onClick={(event) => {
-          if (loading) {
-            event.preventDefault();
-            return;
-          }
-          linkProps.onClick?.(event);
-        }}
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
-        aria-describedby={ariaDescribedBy}
-        aria-controls={ariaControls}
-        aria-expanded={ariaExpanded}
-        aria-disabled={loading || undefined}
-        aria-busy={loading || undefined}
-        data-analytics-id={analyticsId}
-      >
-        {renderedContent}
-      </Link>
-    );
-  }
-
-  const buttonProps = props as NativeButtonProps;
   return (
-    <button
-      id={id}
-      name={name}
-      type={buttonProps.type ?? "button"}
-      className={className}
-      onClick={loading ? undefined : buttonProps.onClick}
-      disabled={buttonProps.disabled || loading}
-      aria-label={ariaLabel}
-      aria-labelledby={ariaLabelledBy}
-      aria-describedby={ariaDescribedBy}
-      aria-controls={ariaControls}
-      aria-expanded={ariaExpanded}
-      aria-busy={loading || undefined}
-      data-analytics-id={analyticsId}
-    >
-      {renderedContent}
-    </button>
+    <ButtonPrimitive
+      {...props}
+      className={buttonClasses(variant, size, block)}
+      classes={{
+        icon: styles.controlIcon,
+        loadingPlaceholder: styles.loadingPlaceholder,
+        loadingContent: styles.loadingContent,
+        loadingIndicator: styles.spinner,
+      }}
+      loadingIndicator={<SpinnerGap aria-hidden="true" />}
+    />
   );
 }
 
-export interface IconButtonProps extends NonVisualAttributes {
-  icon: ReactNode;
-  label: string;
+export type IconButtonProps = SharedIconButtonProps & {
   variant?: "quiet" | "outline" | "primary";
   size?: ControlSize;
-  onClick?: MouseEventHandler<HTMLButtonElement>;
-  disabled?: boolean;
-  loading?: boolean;
-  pressed?: boolean;
-}
+};
 
 export function IconButton({
   icon,
   label,
   variant = "quiet",
   size = "default",
-  onClick,
-  disabled = false,
-  loading = false,
-  pressed,
-  id,
-  name,
-  "aria-labelledby": ariaLabelledBy,
-  "aria-describedby": ariaDescribedBy,
-  "aria-controls": ariaControls,
-  "aria-expanded": ariaExpanded,
-  "data-analytics-id": analyticsId,
+  ...props
 }: IconButtonProps) {
   const className = [
     styles.iconButton,
@@ -209,30 +93,15 @@ export function IconButton({
   ].join(" ");
 
   return (
-    <button
-      id={id}
-      name={name}
-      type="button"
+    <IconButtonPrimitive
+      {...props}
+      icon={icon}
+      label={label}
       className={className}
-      onClick={loading ? undefined : onClick}
-      disabled={disabled || loading}
-      aria-label={label}
-      aria-labelledby={ariaLabelledBy}
-      aria-describedby={ariaDescribedBy}
-      aria-controls={ariaControls}
-      aria-expanded={ariaExpanded}
-      aria-pressed={pressed}
-      aria-busy={loading || undefined}
-      data-analytics-id={analyticsId}
-    >
-      {loading ? (
-        <SpinnerGap className={styles.spinner} aria-hidden="true" />
-      ) : (
-        <span className={styles.controlIcon} aria-hidden="true">
-          {icon}
-        </span>
-      )}
-    </button>
+      iconClassName={styles.controlIcon}
+      loadingIndicator={<SpinnerGap aria-hidden="true" />}
+      loadingIndicatorClassName={styles.spinner}
+    />
   );
 }
 
@@ -267,18 +136,16 @@ export function Field({
   density = "default",
   children,
 }: FieldProps) {
-  const helperId = helper ? `${controlId}-helper` : undefined;
-  const errorId = error ? `${controlId}-error` : undefined;
-  const describedBy = [helperId, errorId].filter(Boolean).join(" ") || undefined;
+  const description = getFieldDescription(controlId, helper, error);
   const value = useMemo(
     () => ({
       controlId,
-      describedBy,
-      invalid: Boolean(error),
+      describedBy: description.describedBy,
+      invalid: description.invalid,
       required,
       density,
     }),
-    [controlId, describedBy, error, required, density],
+    [controlId, description.describedBy, description.invalid, required, density],
   );
 
   const control = Children.only(children);
@@ -305,12 +172,12 @@ export function Field({
         </label>
         {children}
         {helper ? (
-          <p id={helperId} className={styles.fieldHelper}>
+          <p id={description.helperId} className={styles.fieldHelper}>
             {helper}
           </p>
         ) : null}
         {error ? (
-          <p id={errorId} className={styles.fieldError} role="alert">
+          <p id={description.errorId} className={styles.fieldError} role="alert">
             {error}
           </p>
         ) : null}
