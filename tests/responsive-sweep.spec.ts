@@ -367,10 +367,11 @@ test.describe('Feature paired evidence groups', () => {
     });
   }
 
-  for (const width of [390, 516]) {
-    test(`places feature proof after copy at ${width}px`, async ({ page }) => {
+  for (const width of [390, 516, 768]) {
+    test(`places feature proof after copy without overflow at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 844 });
       await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
       const items = page.locator('.tls-feature-evidence-item');
       for (const item of await items.all()) {
         const placement = await item.evaluate((node) => {
@@ -382,6 +383,13 @@ test.describe('Feature paired evidence groups', () => {
         expect(placement).not.toBeNull();
         expect(placement?.proofTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
       }
+
+      const dimensions = await page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+      }));
+
+      expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
     });
   }
 
