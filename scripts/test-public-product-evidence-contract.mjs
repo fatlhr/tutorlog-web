@@ -75,19 +75,45 @@ const responsiveSweep = await readFile(
   "utf8",
 );
 
+function countJsxTag(source, tag) {
+  return (source.match(new RegExp(`<${tag}(?:\\s|/|>)`, "g")) ?? []).length;
+}
+
+function collectAttributeValues(source, attribute) {
+  return [...source.matchAll(new RegExp(`${attribute}="([^"]+)"`, "g"))]
+    .map((match) => match[1]);
+}
+
 assert.match(home, /<WorkflowCanvas\s*\/>/);
 assert.doesNotMatch(home, /proofStories/);
+assert.equal(countJsxTag(home, "PublicProductProof"), 1, "homepage should budget exactly one full product proof");
+assert.equal(countJsxTag(home, "WorkflowCanvas"), 1, "homepage should render exactly one lower workflow");
+assert.ok(
+  home.indexOf("<PublicProductProof") < home.indexOf("<WorkflowCanvas"),
+  "homepage full proof should remain in the hero before the lower workflow",
+);
 assert.equal(
   (home.match(/aria-label="Alur produk TutorLog"/g) ?? []).length
     + (workflow.match(/aria-label="Alur produk TutorLog"/g) ?? []).length,
   1,
   "the workflow should expose one named region",
 );
-assert.equal((features.match(/data-evidence-group=/g) ?? []).length, 3);
+assert.deepEqual(
+  collectAttributeValues(features, "data-evidence-group"),
+  ["mobile-workspace", "cross-device-recap", "invoice-output"],
+  "features should expose the three approved evidence groups in order",
+);
+assert.deepEqual(
+  [...features.matchAll(/<PublicProductProof\s+id="([^"]+)"/g)].map((match) => match[1]),
+  ["mobile", "history", "recap", "invoice"],
+  "features should own exactly the four approved full product proofs",
+);
 assert.doesNotMatch(guide, /PublicProductProof/);
+assert.equal(countJsxTag(guide, "PublicProductProof"), 0, "guide should contain zero full product proofs");
 assert.match(guide, /<MobileGuideEvidence\s*\/>/);
 assert.match(guide, /<WebGuideEvidence\s*\/>/);
 assert.doesNotMatch(pricing, /PublicProductProof/);
+assert.equal(countJsxTag(pricing, "PublicProductProof"), 0, "pricing should contain zero full product proofs");
 assert.doesNotMatch(publicMotion, /\.tl-landing-feature-rows \.tls-rail-surface/);
 assert.doesNotMatch(siteCss, /tl-landing-proof-(?:story|copy)/);
 assert.doesNotMatch(siteCss, /\.tl-landing-feature-rows \.tls-rail-proof/);

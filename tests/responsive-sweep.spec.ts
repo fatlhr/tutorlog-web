@@ -369,7 +369,7 @@ test.describe('Feature paired evidence groups', () => {
     });
   }
 
-  for (const width of [390, 516, 768]) {
+  for (const width of [390, 516, 768, 800, 820, 834, 899]) {
     test(`places feature proof after copy without overflow at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 844 });
       await page.goto('/fitur');
@@ -379,11 +379,30 @@ test.describe('Feature paired evidence groups', () => {
         const placement = await item.evaluate((node) => {
           const copy = node.querySelector<HTMLElement>('.tls-feature-evidence-copy');
           const proof = node.querySelector<HTMLElement>('.tls-feature-evidence-proof');
-          if (!copy || !proof) return null;
-          return { copyBottom: copy.getBoundingClientRect().bottom, proofTop: proof.getBoundingClientRect().top };
+          const group = node.closest<HTMLElement>('[data-evidence-group]');
+          const proofSurfaces = Array.from(node.querySelectorAll<HTMLElement>('[data-rail-proof]'));
+          if (!copy || !proof || !group || !proofSurfaces.length) return null;
+          const groupRect = group.getBoundingClientRect();
+          const proofRect = proof.getBoundingClientRect();
+          return {
+            copyBottom: copy.getBoundingClientRect().bottom,
+            proofTop: proofRect.top,
+            proofLeft: proofRect.left,
+            proofRight: proofRect.right,
+            proofEdges: proofSurfaces.map((surface) => {
+              const rect = surface.getBoundingClientRect();
+              return { left: rect.left, right: rect.right };
+            }),
+            groupLeft: groupRect.left,
+            groupRight: groupRect.right,
+          };
         });
         expect(placement).not.toBeNull();
         expect(placement?.proofTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
+        for (const edge of placement?.proofEdges ?? []) {
+          expect(edge.left).toBeGreaterThanOrEqual((placement?.groupLeft ?? 0) - 0.5);
+          expect(edge.right, JSON.stringify(placement)).toBeLessThanOrEqual((placement?.groupRight ?? 0) + 0.5);
+        }
       }
 
       const dimensions = await page.evaluate(() => ({
@@ -402,6 +421,44 @@ test.describe('Feature paired evidence groups', () => {
     const portraitWidths = await page.locator('[data-evidence-group="mobile-workspace"] [data-rail-proof]').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
     expect(recapWidth).toBeGreaterThan(Math.max(...portraitWidths));
   });
+
+  for (const width of [1024, 1440]) {
+    test(`keeps the invoice figure and focus trigger around the visible proof at ${width}px`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
+
+      const invoiceTrigger = page.locator('[data-evidence-group="invoice-output"] [data-proof-trigger]');
+      await invoiceTrigger.focus();
+      await expect(invoiceTrigger).toBeFocused();
+
+      const geometry = await page.locator('[data-evidence-group="invoice-output"]').evaluate((group) => {
+        const stage = group.querySelector<HTMLElement>('.tls-feature-evidence-proof');
+        const figure = group.querySelector<HTMLElement>('.tls-rail-proof-invoice');
+        const trigger = group.querySelector<HTMLElement>('[data-proof-trigger]');
+        const proof = group.querySelector<HTMLElement>('.tls-invoice-proof');
+        if (!stage || !figure || !trigger || !proof) return null;
+        const rect = (node: HTMLElement) => {
+          const box = node.getBoundingClientRect();
+          return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width };
+        };
+        return { stage: rect(stage), figure: rect(figure), trigger: rect(trigger), proof: rect(proof) };
+      });
+
+      expect(geometry).not.toBeNull();
+      expect(geometry?.figure.width).toBeCloseTo(geometry?.proof.width ?? 0, 0);
+      expect(geometry?.trigger.width).toBeCloseTo(geometry?.proof.width ?? 0, 0);
+      expect(geometry?.figure.left).toBeLessThanOrEqual((geometry?.proof.left ?? 0) + 0.5);
+      expect(geometry?.figure.right).toBeGreaterThanOrEqual((geometry?.proof.right ?? 0) - 0.5);
+      expect(geometry?.trigger.left).toBeLessThanOrEqual((geometry?.proof.left ?? 0) + 0.5);
+      expect(geometry?.trigger.right).toBeGreaterThanOrEqual((geometry?.proof.right ?? 0) - 0.5);
+      expect(Math.abs(
+        ((geometry?.stage.left ?? 0) + (geometry?.stage.right ?? 0)) / 2
+          - ((geometry?.figure.left ?? 0) + (geometry?.figure.right ?? 0)) / 2,
+      )).toBeLessThanOrEqual(1);
+    });
+  }
 
   test('keeps each feature proof legible when it enters the tablet viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
@@ -450,11 +507,15 @@ test.describe('Feature proof inspection', () => {
       await trigger.scrollIntoViewIfNeeded();
 
       const proofSelector = '.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern';
+      const triggerVisual = trigger.locator(proofSelector).first();
+      const triggerWidth = await triggerVisual.evaluate((element) => element.getBoundingClientRect().width);
       await trigger.click();
 
       const dialog = page.getByRole('dialog', { name: 'Perbesar tampilan TutorLog' });
       const dialogVisual = dialog.locator(proofSelector).first();
       await expect(dialogVisual).toBeVisible();
+      const dialogWidth = await dialogVisual.evaluate((element) => element.getBoundingClientRect().width);
+      expect(dialogWidth).toBeGreaterThan(triggerWidth * 1.08);
       const placement = await dialog.evaluate((element) => {
         const proof = element.querySelector<HTMLElement>('.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern');
         if (!proof) return null;
