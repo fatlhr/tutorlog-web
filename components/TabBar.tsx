@@ -4,8 +4,9 @@ import { usePathname } from "next/navigation";
 import { ChartBar, FileText, House } from "@phosphor-icons/react";
 import { NavigationItem } from "@/components/app-ui/navigation";
 import { APP_ROUTE_ITEMS, getActiveAppRoute } from "@/components/app-ui/routes";
+import type { AppRoute } from "@/components/app-ui/types";
 
-const routeIcons = {
+const routeIcons: Partial<Record<AppRoute, typeof House>> = {
   home: House,
   recap: ChartBar,
   invoice: FileText,

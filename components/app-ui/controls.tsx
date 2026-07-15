@@ -123,20 +123,20 @@ export function Button(props: ButtonProps) {
   );
 
   if ("href" in props && props.href) {
+    const linkProps = props as LinkButtonProps;
     return (
       <Link
         id={id}
-        href={props.href}
-        name={name}
-        target={props.target}
-        rel={props.rel}
+        href={linkProps.href}
+        target={linkProps.target}
+        rel={linkProps.rel}
         className={className}
         onClick={(event) => {
           if (loading) {
             event.preventDefault();
             return;
           }
-          props.onClick?.(event);
+          linkProps.onClick?.(event);
         }}
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
@@ -152,14 +152,15 @@ export function Button(props: ButtonProps) {
     );
   }
 
+  const buttonProps = props as NativeButtonProps;
   return (
     <button
       id={id}
       name={name}
-      type={props.type ?? "button"}
+      type={buttonProps.type ?? "button"}
       className={className}
-      onClick={loading ? undefined : props.onClick}
-      disabled={props.disabled || loading}
+      onClick={loading ? undefined : buttonProps.onClick}
+      disabled={buttonProps.disabled || loading}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}

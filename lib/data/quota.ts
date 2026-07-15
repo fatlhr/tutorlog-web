@@ -1,15 +1,15 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import {
+  canExportRecap,
+  normalizeQuotaPayload,
+  type ExportDecision,
+  type ExportFormat,
+  type QuotaInfo,
+} from "@/lib/data/quota-access";
 
-export interface QuotaInfo {
-  plan: string;
-  pdfExportCount30d: number;
-  csvExportCount30d: number;
-  pdfExportUnlimited: boolean;
-  exportWindowDays: number;
-  activeUntil: string | null;
-}
+export type { QuotaInfo } from "@/lib/data/quota-access";
 
 export async function checkQuota(): Promise<QuotaInfo> {
   const supabase = await createClient();
@@ -24,22 +24,18 @@ export async function checkQuota(): Promise<QuotaInfo> {
       pdfExportUnlimited: false,
       exportWindowDays: 30,
       activeUntil: null,
+      rekapExportLimit: 1,
+      rekapExportUnlimited: false,
+      rekapPdfExportCount: 0,
+      rekapCsvExportCount: 0,
     };
   }
 
-  const result = data as Record<string, unknown>;
-  return {
-    plan: (result.plan as string) ?? "free",
-    pdfExportCount30d: (result.pdf_export_count_30d as number) ?? 0,
-    csvExportCount30d: (result.csv_export_count_30d as number) ?? 0,
-    pdfExportUnlimited: (result.pdf_export_unlimited as boolean) ?? false,
-    exportWindowDays: (result.export_window_days as number) ?? 30,
-      activeUntil: (result.active_until as string) ?? null,
-  };
+  return normalizeQuotaPayload(data as Record<string, unknown>);
 }
 
 export async function recordExportEvent(
-  format: "pdf" | "csv",
+  format: ExportFormat,
 ): Promise<{ success: boolean; quotaExceeded: boolean }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("record_feature_usage_event", {
@@ -61,16 +57,8 @@ export async function recordExportEvent(
 }
 
 export async function canExport(
-  format: "pdf" | "csv",
-): Promise<{ allowed: boolean; quota: QuotaInfo }> {
+  format: ExportFormat,
+): Promise<ExportDecision> {
   const quota = await checkQuota();
-
-  if (quota.pdfExportUnlimited || quota.plan !== "free") {
-    return { allowed: true, quota };
-  }
-
-  const count = format === "pdf" ? quota.pdfExportCount30d : quota.csvExportCount30d;
-  const allowed = count < 1;
-
-  return { allowed, quota };
+  return canExportRecap(format, quota);
 }

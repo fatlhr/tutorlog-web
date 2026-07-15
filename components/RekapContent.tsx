@@ -18,12 +18,18 @@ import {
   SummaryBand,
   Surface,
 } from "@/components/app-ui/structure";
+import type { ExportFormat, PaywallReason, QuotaInfo } from "@/lib/data/quota-access";
+import {
+  getAvailableStudentFilterOptions,
+  hasUnappliedCustomRange,
+  type RekapRangeMode,
+} from "@/lib/data/rekap-filter";
 import type { RekapData, SessionItem } from "@/lib/data/rekap";
 import { formatCurrency } from "@/lib/format";
 
 const PAGE_SIZE = 20;
 
-type RangeMode = "current" | "previous" | "custom";
+type RangeMode = RekapRangeMode;
 
 interface RekapContentProps {
   rekapData: RekapData | null;
@@ -44,12 +50,21 @@ function monthDateRange(offset: number) {
   };
 }
 
+function inferRangeMode(rangeFrom: string, rangeTo: string): RangeMode {
+  const current = monthDateRange(0);
+  const previous = monthDateRange(-1);
+  if (rangeFrom === current.from && rangeTo === current.to) return "current";
+  if (rangeFrom === previous.from && rangeTo === previous.to) return "previous";
+  return "custom";
+}
+
 interface RecapFilterControlsProps {
   rangeMode: RangeMode;
   dateFrom: string;
   dateTo: string;
   students: string[];
   studentFilter: string | null;
+  customRangePending: boolean;
   onRangeMode: (mode: RangeMode) => void;
   onDateFromChange: (value: string) => void;
   onDateToChange: (value: string) => void;
@@ -63,6 +78,7 @@ function RecapFilterControls({
   dateTo,
   students,
   studentFilter,
+  customRangePending,
   onRangeMode,
   onDateFromChange,
   onDateToChange,
@@ -74,9 +90,10 @@ function RecapFilterControls({
     { value: "previous", label: "Bulan lalu" },
     { value: "custom", label: "Pilih tanggal" },
   ];
+  const availableStudents = getAvailableStudentFilterOptions({ students, customRangePending });
   const studentOptions = [
     { value: "", label: "Semua murid" },
-    ...students.map((student) => ({ value: student, label: student.split(" ")[0] })),
+    ...availableStudents.map((student) => ({ value: student, label: student.split(" ")[0] })),
   ];
 
   return (
@@ -102,12 +119,21 @@ function RecapFilterControls({
         </div>
       ) : null}
 
-      <ChoiceGroup
-        label="Filter murid"
-        options={studentOptions}
-        value={studentFilter ?? ""}
-        onChange={(value) => onStudentChange(value || null)}
-      />
+      {customRangePending ? (
+        <div>
+          <p style={{ margin: "0 0 8px", fontWeight: 700 }}>Filter murid</p>
+          <p className="tw-helper" style={{ margin: 0 }}>
+            Terapkan tanggal dulu untuk melihat filter murid pada periode ini.
+          </p>
+        </div>
+      ) : (
+        <ChoiceGroup
+          label="Filter murid"
+          options={studentOptions}
+          value={studentFilter ?? ""}
+          onChange={(value) => onStudentChange(value || null)}
+        />
+      )}
     </div>
   );
 }
@@ -200,6 +226,8 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const [csvLoading, setCsvLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<PaywallReason>("free-limit");
+  const [paywallUsage, setPaywallUsage] = useState<Partial<Record<ExportFormat, { used: number; limit: number }>>>();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<SessionItem | null>(null);
   const handleSessionClick = useCallback((row: SessionItem) => {
@@ -208,13 +236,8 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const [page, setPage] = useState(1);
   const [dateFrom, setDateFrom] = useState(from);
   const [dateTo, setDateTo] = useState(to);
-  const [rangeMode, setRangeMode] = useState<RangeMode>(() => {
-    const current = monthDateRange(0);
-    const previous = monthDateRange(-1);
-    if (from === current.from && to === current.to) return "current";
-    if (from === previous.from && to === previous.to) return "previous";
-    return "custom";
-  });
+  const appliedRangeMode = useMemo(() => inferRangeMode(from, to), [from, to]);
+  const [rangeMode, setRangeMode] = useState<RangeMode>(() => inferRangeMode(from, to));
 
   const allRows = useMemo(() => rekapData?.sessions ?? [], [rekapData]);
   const rows = useMemo(
@@ -235,6 +258,14 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     totalMurid: 0,
     students: [],
   }, [rekapData]);
+  const customRangePending = hasUnappliedCustomRange({
+    rangeMode,
+    appliedRangeMode,
+    dateFrom,
+    dateTo,
+    appliedFrom: from,
+    appliedTo: to,
+  });
   const filteredSummary = useMemo(() => {
     if (!studentFilter) return summary;
     const totalJam = Math.round(rows.reduce((total, row) => total + row.h, 0) * 10) / 10;
@@ -256,6 +287,7 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const handleRangeMode = useCallback((mode: RangeMode) => {
     setRangeMode(mode);
     setPage(1);
+    setStudentFilter(null);
     if (mode === "custom") return;
     const range = monthDateRange(mode === "current" ? 0 : -1);
     setDateFrom(range.from);
@@ -263,14 +295,33 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     openRange(range.from, range.to);
   }, [openRange]);
 
+  const handleDateFromChange = useCallback((value: string) => {
+    setDateFrom(value);
+    setStudentFilter(null);
+    setPage(1);
+  }, []);
+
+  const handleDateToChange = useCallback((value: string) => {
+    setDateTo(value);
+    setStudentFilter(null);
+    setPage(1);
+  }, []);
+
   const handleStudentChange = useCallback((student: string | null) => {
     setStudentFilter(student);
     setPage(1);
   }, []);
 
+  const quotaUsageFrom = useCallback((quota: QuotaInfo) => ({
+    pdf: { used: quota.rekapPdfExportCount, limit: quota.rekapExportLimit },
+    csv: { used: quota.rekapCsvExportCount, limit: quota.rekapExportLimit },
+  }), []);
+
   const handleExportCSV = useCallback(async () => {
-    const { allowed } = await canExport("csv");
-    if (!allowed) {
+    const decision = await canExport("csv");
+    if (!decision.allowed) {
+      setPaywallReason(decision.reason ?? "free-limit");
+      setPaywallUsage(quotaUsageFrom(decision.quota));
       setPaywallOpen(true);
       return;
     }
@@ -279,11 +330,13 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     downloadCSV(csv, "rekap-sesi.csv");
     await recordExportEvent("csv");
     setCsvLoading(false);
-  }, [rows]);
+  }, [quotaUsageFrom, rows]);
 
   const handleExportPDF = useCallback(async () => {
-    const { allowed } = await canExport("pdf");
-    if (!allowed) {
+    const decision = await canExport("pdf");
+    if (!decision.allowed) {
+      setPaywallReason(decision.reason ?? "free-limit");
+      setPaywallUsage(quotaUsageFrom(decision.quota));
       setPaywallOpen(true);
       return;
     }
@@ -320,7 +373,7 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     } finally {
       setPdfLoading(false);
     }
-  }, [dateFrom, dateTo, filteredSummary, rekapData, rows]);
+  }, [dateFrom, dateTo, filteredSummary, quotaUsageFrom, rekapData, rows]);
 
   return (
     <>
@@ -366,9 +419,10 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
               dateTo={dateTo}
               students={summary.students}
               studentFilter={studentFilter}
+              customRangePending={customRangePending}
               onRangeMode={handleRangeMode}
-              onDateFromChange={setDateFrom}
-              onDateToChange={setDateTo}
+              onDateFromChange={handleDateFromChange}
+              onDateToChange={handleDateToChange}
               onApplyRange={() => openRange(dateFrom, dateTo)}
               onStudentChange={handleStudentChange}
             />
@@ -456,9 +510,10 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
               dateTo={dateTo}
               students={summary.students}
               studentFilter={studentFilter}
+              customRangePending={customRangePending}
               onRangeMode={handleRangeMode}
-              onDateFromChange={setDateFrom}
-              onDateToChange={setDateTo}
+              onDateFromChange={handleDateFromChange}
+              onDateToChange={handleDateToChange}
               onApplyRange={() => openRange(dateFrom, dateTo)}
               onStudentChange={handleStudentChange}
             />
@@ -472,7 +527,12 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
         />
       ) : null}
 
-      <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} />
+      <PaywallDialog
+        open={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        reason={paywallReason}
+        quotaUsage={paywallUsage}
+      />
     </>
   );
 }

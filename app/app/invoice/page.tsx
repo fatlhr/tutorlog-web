@@ -11,6 +11,7 @@ import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
 import PaywallDialog from "@/components/PaywallDialog";
+import type { AccessState, PaywallReason } from "@/lib/data/quota-access";
 import {
   Button,
   DateField,
@@ -136,7 +137,8 @@ export default function InvoicePage() {
   const [exporting, setExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [quotaState, setQuotaState] = useState({ pdfExportUnlimited: false });
+  const [paywallReason, setPaywallReason] = useState<PaywallReason>("invoice-locked");
+  const [accessState, setAccessState] = useState<AccessState>("free");
   const [quotaReady, setQuotaReady] = useState(false);
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -150,7 +152,7 @@ export default function InvoicePage() {
   const restoredDraftStudentNameRef = useRef<string | null>(null);
   const restoredDraftHasStudentAddressRef = useRef(false);
   const currentSessionsQueryKey = JSON.stringify([studentName, periodStart, periodEnd]);
-  const invoiceDownloadLocked = quotaReady && !quotaState.pdfExportUnlimited;
+  const invoiceDownloadLocked = quotaReady && accessState !== "plus_active";
   const invoiceActionsDisabled =
     sessionsLoading ||
     sessionsError ||
@@ -209,32 +211,41 @@ export default function InvoicePage() {
   useEffect(() => {
     if (studentsLoading) return;
 
-    if (students.length === 0) {
-      setStudentName("");
-      setStudentInfo("");
-      setStudentAddress("");
-      setParentName("");
-      return;
-    }
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
 
-    const selectedStudent = students.find((student) => student.name === studentName);
-    if (!selectedStudent) {
-      const firstStudent = students[0];
-      setStudentName(firstStudent.name);
-      setStudentInfo(firstStudent.educationLevel ?? "");
-      setStudentAddress(firstStudent.address ?? "");
-      setParentName(getStudentRecipientName(firstStudent));
-      return;
-    }
+      if (students.length === 0) {
+        setStudentName("");
+        setStudentInfo("");
+        setStudentAddress("");
+        setParentName("");
+        return;
+      }
 
-    setStudentInfo(selectedStudent.educationLevel ?? "");
-    const shouldPreserveDraftStudentAddress =
-      restoredDraftStudentNameRef.current === selectedStudent.name &&
-      restoredDraftHasStudentAddressRef.current;
-    setStudentAddress((current) =>
-      shouldPreserveDraftStudentAddress ? current : current || selectedStudent.address || ""
-    );
-    setParentName((current) => current.trim() || getStudentRecipientName(selectedStudent));
+      const selectedStudent = students.find((student) => student.name === studentName);
+      if (!selectedStudent) {
+        const firstStudent = students[0];
+        setStudentName(firstStudent.name);
+        setStudentInfo(firstStudent.educationLevel ?? "");
+        setStudentAddress(firstStudent.address ?? "");
+        setParentName(getStudentRecipientName(firstStudent));
+        return;
+      }
+
+      setStudentInfo(selectedStudent.educationLevel ?? "");
+      const shouldPreserveDraftStudentAddress =
+        restoredDraftStudentNameRef.current === selectedStudent.name &&
+        restoredDraftHasStudentAddressRef.current;
+      setStudentAddress((current) =>
+        shouldPreserveDraftStudentAddress ? current : current || selectedStudent.address || ""
+      );
+      setParentName((current) => current.trim() || getStudentRecipientName(selectedStudent));
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [studentName, students, studentsLoading]);
 
   useEffect(() => {
@@ -245,10 +256,13 @@ export default function InvoicePage() {
       !cancelled && sessionsRequestSequence.current === requestSequence;
 
     if (!studentName || !periodStart || !periodEnd) {
-      setInvoiceSessions([]);
-      setSessionsError(false);
-      setSessionsLoading(false);
-      setLoadedSessionsQueryKey(null);
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setInvoiceSessions([]);
+        setSessionsError(false);
+        setSessionsLoading(false);
+        setLoadedSessionsQueryKey(null);
+      });
       return () => {
         cancelled = true;
       };
@@ -320,8 +334,10 @@ export default function InvoicePage() {
   }, [currentSessionsQueryKey, studentName, periodStart, periodEnd, supabase]);
 
   useEffect(() => {
-    const plan = document.querySelector<HTMLElement>(".app-shell-h")?.dataset.plan;
-    setQuotaState({ pdfExportUnlimited: plan === "plus" });
+    const access = document.querySelector<HTMLElement>(".app-shell-h")?.dataset.access;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    setAccessState(access === "plus-active" ? "plus_active" : access === "plus-expired" ? "plus_expired" : "free");
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setQuotaReady(true);
   }, []);
 
@@ -335,7 +351,8 @@ export default function InvoicePage() {
   }, [invoiceActionsDisabled]);
 
   const handleExportPDF = useCallback(async () => {
-    if (!quotaState.pdfExportUnlimited) {
+    if (accessState !== "plus_active") {
+      setPaywallReason(accessState === "plus_expired" ? "expired" : "invoice-locked");
       setPaywallOpen(true);
       return;
     }
@@ -375,7 +392,7 @@ export default function InvoicePage() {
     } finally {
       setExporting(false);
     }
-  }, [invoiceNo, quotaState.pdfExportUnlimited, supabase, validateInvoiceForm]);
+  }, [accessState, invoiceNo, supabase, validateInvoiceForm]);
 
   useEffect(() => {
     if (!exportSuccess) return;
@@ -802,7 +819,7 @@ export default function InvoicePage() {
       </div>
       {invoiceDownloadLocked ? (
         <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
-          Unduh PDF tersedia untuk TutorLog Plus.
+          Unduh PDF invoice tersedia untuk Plus aktif.
         </div>
       ) : null}
       </form>
@@ -887,7 +904,12 @@ export default function InvoicePage() {
 
       {renderPreviewDialog()}
 
-      <PaywallDialog open={paywallOpen} onClose={() => setPaywallOpen(false)} variant="invoice" />
+      <PaywallDialog
+        open={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        variant="invoice"
+        reason={paywallReason}
+      />
 
       {exportSuccess ? (
         <div className="app-success-toast" role="status">
