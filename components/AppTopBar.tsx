@@ -8,6 +8,7 @@ import { ChartBar, FileText, House, Lifebuoy, TelegramLogo, SignOut, User } from
 import { createClient } from "@/lib/supabase/client";
 import { NavigationItem } from "@/components/app-ui/navigation";
 import { APP_ROUTE_ITEMS, getActiveAppRoute } from "@/components/app-ui/routes";
+import { clearInvoiceFormCache } from "@/lib/invoice-form-cache";
 
 interface AppTopBarProps {
   name: string;
@@ -31,6 +32,7 @@ export default function AppTopBar({ name, initials, isPlus, isExpired, community
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = useCallback(async () => {
+    clearInvoiceFormCache({ localStorage, sessionStorage });
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/");

@@ -13,6 +13,14 @@ import A4Page from "@/components/invoice/A4Page";
 import PaywallDialog from "@/components/PaywallDialog";
 import type { AccessState, PaywallReason } from "@/lib/data/quota-access";
 import {
+  getInvoiceDraft,
+  getInvoiceSettings,
+  removeInvoiceSettings,
+  resolveInvoiceTutorName,
+  saveInvoiceDraft,
+  saveInvoiceSettings,
+} from "@/lib/invoice-form-cache";
+import {
   Button,
   DateField,
   Field,
@@ -27,7 +35,6 @@ import { SectionHeading, Surface } from "@/components/app-ui/structure";
 
 const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#B7950B"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
-const DRAFT_KEY = "tutorlog-invoice-draft:v1";
 type Template = (typeof TEMPLATES)[number];
 
 interface StudentOption {
@@ -144,6 +151,7 @@ export default function InvoicePage() {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [studentsError, setStudentsError] = useState(false);
   const [sessionsError, setSessionsError] = useState(false);
+  const [accountTutorName, setAccountTutorName] = useState("");
   const [loadedSessionsQueryKey, setLoadedSessionsQueryKey] = useState<string | null>(null);
   const [draftReady, setDraftReady] = useState(false);
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
@@ -207,6 +215,42 @@ export default function InvoicePage() {
     };
     doFetch();
   }, [supabase]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const doFetch = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+        const rawAccountName = user.user_metadata?.full_name ?? user.user_metadata?.name;
+        const accountName = typeof rawAccountName === "string" ? rawAccountName : "";
+        setAccountTutorName(resolveInvoiceTutorName({
+          draft: null,
+          settings: null,
+          accountName,
+          email: user.email ?? "",
+        }));
+      } catch {
+        /* ignore */
+      }
+    };
+    doFetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!draftReady || !accountTutorName) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setTutorName((current) => current.trim() || accountTutorName);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountTutorName, draftReady]);
 
   useEffect(() => {
     if (studentsLoading) return;
@@ -420,95 +464,85 @@ export default function InvoicePage() {
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("tutorlog-invoice-settings");
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      if (parsed.accent) setAccent(parsed.accent);
-      if (TEMPLATES.includes(parsed.template)) setTemplate(parsed.template);
-      if (parsed.bankAccount) setBankAccount(parsed.bankAccount);
-      if (parsed.bankName) setBankName(parsed.bankName);
-      if (parsed.lembaga) setLembaga(parsed.lembaga);
-      if (parsed.tutorName) setTutorName(parsed.tutorName);
-      if (parsed.tutorLocation) setTutorLocation(parsed.tutorLocation);
-      if (parsed.tutorContact) setTutorContact(parsed.tutorContact);
-      setSaveSettings(true);
-    } catch { /* ignore */ }
+    const parsed = getInvoiceSettings(localStorage);
+    if (!parsed) return;
+    if (typeof parsed.accent === "string") setAccent(parsed.accent);
+    if (TEMPLATES.includes(parsed.template as Template)) setTemplate(parsed.template as Template);
+    if (typeof parsed.bankAccount === "string") setBankAccount(parsed.bankAccount);
+    if (typeof parsed.bankName === "string") setBankName(parsed.bankName);
+    if (typeof parsed.lembaga === "string") setLembaga(parsed.lembaga);
+    if (typeof parsed.tutorName === "string") setTutorName(parsed.tutorName);
+    if (typeof parsed.tutorLocation === "string") setTutorLocation(parsed.tutorLocation);
+    if (typeof parsed.tutorContact === "string") setTutorContact(parsed.tutorContact);
+    setSaveSettings(true);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    try {
-      const savedDraft = localStorage.getItem(DRAFT_KEY);
-      if (!savedDraft) return;
-      const draft = JSON.parse(savedDraft) as Record<string, unknown>;
-      if (typeof draft.periodStart === "string") setPeriodStart(draft.periodStart);
-      if (typeof draft.periodEnd === "string") setPeriodEnd(draft.periodEnd);
-      if (typeof draft.studentName === "string") {
-        restoredDraftStudentNameRef.current = draft.studentName;
-        setStudentName(draft.studentName);
-      }
-      if (typeof draft.invoiceNo === "string") setInvoiceNo(draft.invoiceNo);
-      if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
-      if (typeof draft.tutorName === "string") setTutorName(draft.tutorName);
-      if (typeof draft.tutorLocation === "string") setTutorLocation(draft.tutorLocation);
-      if (typeof draft.tutorContact === "string") setTutorContact(draft.tutorContact);
-      if (typeof draft.parentName === "string") setParentName(draft.parentName);
-      if (typeof draft.studentAddress === "string") {
-        restoredDraftHasStudentAddressRef.current = true;
-        setStudentAddress(draft.studentAddress);
-      }
-      if (typeof draft.bankAccount === "string") setBankAccount(draft.bankAccount);
-      if (typeof draft.bankName === "string") setBankName(draft.bankName);
-      if (typeof draft.notes === "string") setNotes(draft.notes);
-      if (typeof draft.accent === "string") setAccent(draft.accent);
-      if (typeof draft.template === "string" && TEMPLATES.includes(draft.template as Template)) setTemplate(draft.template as Template);
-    } catch {
-      localStorage.removeItem(DRAFT_KEY);
-    } finally {
+    const draft = getInvoiceDraft(sessionStorage);
+    if (!draft) {
       setDraftReady(true);
+      return;
     }
+    if (typeof draft.periodStart === "string") setPeriodStart(draft.periodStart);
+    if (typeof draft.periodEnd === "string") setPeriodEnd(draft.periodEnd);
+    if (typeof draft.studentName === "string") {
+      restoredDraftStudentNameRef.current = draft.studentName;
+      setStudentName(draft.studentName);
+    }
+    if (typeof draft.invoiceNo === "string") setInvoiceNo(draft.invoiceNo);
+    if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
+    if (typeof draft.tutorName === "string") setTutorName(draft.tutorName);
+    if (typeof draft.tutorLocation === "string") setTutorLocation(draft.tutorLocation);
+    if (typeof draft.tutorContact === "string") setTutorContact(draft.tutorContact);
+    if (typeof draft.parentName === "string") setParentName(draft.parentName);
+    if (typeof draft.studentAddress === "string") {
+      restoredDraftHasStudentAddressRef.current = true;
+      setStudentAddress(draft.studentAddress);
+    }
+    if (typeof draft.bankAccount === "string") setBankAccount(draft.bankAccount);
+    if (typeof draft.bankName === "string") setBankName(draft.bankName);
+    if (typeof draft.notes === "string") setNotes(draft.notes);
+    if (typeof draft.accent === "string") setAccent(draft.accent);
+    if (typeof draft.template === "string" && TEMPLATES.includes(draft.template as Template)) setTemplate(draft.template as Template);
+    setDraftReady(true);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!draftReady) return;
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({
-        periodStart,
-        periodEnd,
-        studentName,
-        invoiceNo,
-        lembaga,
-        tutorName,
-        tutorLocation,
-        tutorContact,
-        parentName,
-        studentAddress,
-        bankAccount,
-        bankName,
-        notes,
-        accent,
-        template,
-      }));
-    } catch { /* localStorage not available */ }
+    saveInvoiceDraft(sessionStorage, {
+      periodStart,
+      periodEnd,
+      studentName,
+      invoiceNo,
+      lembaga,
+      tutorName,
+      tutorLocation,
+      tutorContact,
+      parentName,
+      studentAddress,
+      bankAccount,
+      bankName,
+      notes,
+      accent,
+      template,
+    });
   }, [draftReady, periodStart, periodEnd, studentName, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, studentAddress, bankAccount, bankName, notes, accent, template]);
 
   useEffect(() => {
     if (!saveSettings) return;
-    try {
-      localStorage.setItem("tutorlog-invoice-settings", JSON.stringify({
-        accent, template, bankAccount, bankName, lembaga,
-        tutorName, tutorLocation, tutorContact,
-      }));
-    } catch { /* localStorage not available */ }
+    saveInvoiceSettings(localStorage, {
+      accent, template, bankAccount, bankName, lembaga,
+      tutorName, tutorLocation, tutorContact,
+    });
   }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
 
   const handleToggleSave = (checked: boolean) => {
     setSaveSettings(checked);
     if (!checked) {
-      try { localStorage.removeItem("tutorlog-invoice-settings"); } catch { /* ignore */ }
+      removeInvoiceSettings(localStorage);
     }
   };
 
