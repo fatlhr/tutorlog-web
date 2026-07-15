@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
-import { AppFooter } from "@/components/AppFooter";
+import { AppFooter } from "@/components/ui/footer";
 import { PublicProductRail } from "@/components/PublicProductRail";
 
 type PublicStoryLayoutProps = {

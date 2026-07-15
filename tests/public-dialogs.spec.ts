@@ -20,7 +20,7 @@ test.describe('Public dialogs', () => {
     await expect(startGuard).not.toHaveAttribute('aria-hidden');
     await expect(endGuard).not.toHaveAttribute('aria-hidden');
     await expect(close).toBeFocused();
-    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden');
 
     await page.keyboard.press('Shift+Tab');
     await expect(frame).toBeFocused();
@@ -32,7 +32,7 @@ test.describe('Public dialogs', () => {
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
     await expect(trigger).toBeFocused();
-    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe('hidden');
   });
 
   test('product proof traps focus and restores the trigger', async ({ page }) => {
@@ -43,7 +43,7 @@ test.describe('Public dialogs', () => {
     const dialog = page.getByRole('dialog', { name: 'Perbesar tampilan TutorLog' });
     const close = dialog.getByRole('button', { name: 'Tutup tampilan' });
     await expect(close).toBeFocused();
-    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden');
 
     await page.keyboard.press('Tab');
     await expect(close).toBeFocused();
@@ -53,6 +53,6 @@ test.describe('Public dialogs', () => {
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
     await expect(trigger).toBeFocused();
-    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe('hidden');
   });
 });

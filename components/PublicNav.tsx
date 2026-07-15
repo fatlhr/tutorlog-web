@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import MenuToggle from "@/components/MenuToggle";
+import { NavigationLinkPrimitive } from "@/components/ui/navigation-link-primitive";
 
 const links = [
   { href: "/fitur", label: "Fitur" },
@@ -35,9 +36,12 @@ export default function PublicNav() {
       </div>
       <div className="tl-nav-links">
         {links.map((link) => (
-          <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
-            {link.label}
-          </Link>
+          <NavigationLinkPrimitive
+            key={link.href}
+            href={link.href}
+            label={link.label}
+            active={pathname === link.href}
+          />
         ))}
       </div>
       <Link className="tl-nav-login" href={authed ? "/app" : "/login"}>

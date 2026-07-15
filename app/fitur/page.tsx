@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
 import { PublicProductProof } from "@/components/PublicProductRail";
 import { PublicStoryLayout } from "@/components/PublicStoryLayout";
+import { MarketingButton } from "@/components/public-ui/marketing-button";
 
 export const metadata: Metadata = {
   title: "TutorLog - Fitur",
@@ -25,10 +26,14 @@ export default function FiturPage() {
           <span>Mulai gratis</span>
           <h2 id="feature-action">Lihat alurnya dari satu sesi.</h2>
           <p>Mulai dari mobile, lalu pakai web saat rekap atau invoice dibutuhkan.</p>
-          <a className="tl-button tl-button-primary" href={playStoreUrl} target="_blank" rel="noopener">
-            <Play size={18} weight="fill" />
-            <span>Mulai Gratis</span>
-          </a>
+          <MarketingButton
+            href={playStoreUrl}
+            target="_blank"
+            rel="noopener"
+            leadingIcon={<Play size={18} weight="fill" />}
+          >
+            Mulai Gratis
+          </MarketingButton>
           <Link className="tls-inline-link" href="/panduan">Baca panduan <ArrowRight size={16} aria-hidden="true" /></Link>
         </section>
       )}

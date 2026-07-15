@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import styles from "@/components/app-ui/app-ui.module.css";
+import styles from "./footer.module.css";
 
 type FooterContext = "public" | "protected";
 
@@ -12,7 +12,7 @@ export function AppFooter({ context }: AppFooterProps) {
   return (
     <footer
       data-footer={context}
-      className={`${styles.footer}${context === "protected" ? ` ${styles.footerTabBar}` : ""}${context === "public" ? ` ${styles.themeScope}` : ""}`}
+      className={`${styles.footer}${context === "protected" ? ` ${styles.footerTabBar}` : ""}`}
     >
       <div className={styles.footerCol}>
         <Link className={styles.footerBrand} href="/" aria-label="Kembali ke beranda TutorLog">

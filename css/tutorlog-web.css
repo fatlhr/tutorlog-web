@@ -5,8 +5,8 @@
 
 :root {
   /* Colors — Brand */
-  --tw-primary: #006C53;
-  --tw-primary-dark: #00523F;
+  --tw-primary: var(--tl-brand-action);
+  --tw-primary-dark: var(--tl-brand-action-hover);
   --tw-primary-soft: #8CF6D2;
   --tw-primary-container: #5EC9A7;
   --tw-secondary: #635880;
@@ -32,12 +32,12 @@
   --tw-overlay: rgba(22,29,31,0.4);
 
   /* Semantic */
-  --tw-error: #D9706A;
-  --tw-warning: #8A5A00;
-  --tw-warning-soft: #FFE3A3;
-  --tw-success: #006C53;
-  --tw-info: #235C8F;
-  --tw-info-soft: #D7E9FF;
+  --tw-error: var(--tl-brand-error);
+  --tw-warning: var(--tl-brand-warning);
+  --tw-warning-soft: var(--tl-brand-warning-soft);
+  --tw-success: var(--tl-brand-success);
+  --tw-info: var(--tl-brand-info);
+  --tw-info-soft: var(--tl-brand-info-soft);
 
   /* Radii */
   --r-xs: 8px;

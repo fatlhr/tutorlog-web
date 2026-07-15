@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   useId,
   useRef,
@@ -8,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import styles from "./app-ui.module.css";
+import { NavigationLinkPrimitive } from "@/components/ui/navigation-link-primitive";
 import type { AppRoute, AppTone, ChoiceOption } from "./types";
 
 function titleCase(value: string) {
@@ -32,16 +32,14 @@ export function NavigationItem({
   active,
 }: NavigationItemProps) {
   return (
-    <Link
+    <NavigationLinkPrimitive
       href={href}
+      label={label}
+      icon={icon}
+      active={active}
       className={`${styles.navigationItem} ${styles[`navigation${titleCase(mode)}`]} ${styles[`tone${titleCase(route)}`]} ${active ? styles.navigationActive : ""}`}
-      aria-current={active ? "page" : undefined}
-    >
-      <span className={styles.navigationIcon} aria-hidden="true">
-        {icon}
-      </span>
-      <span>{label}</span>
-    </Link>
+      iconClassName={styles.navigationIcon}
+    />
   );
 }
 

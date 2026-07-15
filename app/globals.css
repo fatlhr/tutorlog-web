@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../css/tutorlog-foundation.css";
 @import "../css/tutorlog-web.css";
 @import "../css/tutorlog-web-mobile.css";
 @import "../css/tutorlog-web-invoices.css";

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
 import { PublicProductProof } from "@/components/PublicProductRail";
+import { MarketingButton } from "@/components/public-ui/marketing-button";
 
 export const metadata: Metadata = {
   title: "TutorLog - Panduan",
@@ -90,10 +90,12 @@ export default function PanduanPage() {
         <h2 id="guide-action">Kami bisa bantu mulai dari alurnya.</h2>
         <p>Hubungi TutorLog kalau ada pertanyaan saat memasang aplikasi atau membuat invoice pertama.</p>
         <div className="tl-guide-closing-actions">
-          <Link className="tl-button tl-button-primary" href="/kontak">
-            <span>Buka pusat bantuan</span>
-            <ArrowRight size={18} aria-hidden="true" />
-          </Link>
+          <MarketingButton
+            href="/kontak"
+            trailingIcon={<ArrowRight size={18} />}
+          >
+            Buka pusat bantuan
+          </MarketingButton>
         </div>
       </section>
     </PublicShell>

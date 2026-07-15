@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   ArrowUpRight,
   CheckCircle,
   Receipt,
 } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
+import { MarketingButton } from "@/components/public-ui/marketing-button";
 
 export const metadata: Metadata = {
   title: "TutorLog - Harga",
@@ -100,15 +100,15 @@ export default function HargaPage() {
                 <li key={feature}><CheckCircle size={18} weight="fill" aria-hidden="true" />{feature}</li>
               ))}
             </ul>
-            {plan.action.external ? (
-              <a className="tl-public-button tl-price-action" href={plan.action.href} target="_blank" rel="noopener">
-                {plan.action.label}<ArrowUpRight size={17} aria-hidden="true" />
-              </a>
-            ) : (
-              <Link className="tl-public-button tl-price-action" href={plan.action.href}>
-                {plan.action.label}
-              </Link>
-            )}
+            <MarketingButton
+              href={plan.action.href}
+              size="compact"
+              target={plan.action.external ? "_blank" : undefined}
+              rel={plan.action.external ? "noopener" : undefined}
+              trailingIcon={plan.action.external ? <ArrowUpRight size={17} /> : undefined}
+            >
+              {plan.action.label}
+            </MarketingButton>
           </article>
         ))}
       </section>
