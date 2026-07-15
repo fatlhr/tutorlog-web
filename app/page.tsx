@@ -55,9 +55,9 @@ export default function Home() {
         <p>Catat sekali di HP. Data yang sama langsung siap dipakai untuk rekap dan membuat invoice di web.</p>
       </section>
 
-      <section className="tl-landing-feature-rows" aria-label="Alur produk TutorLog">
+      <div className="tl-landing-feature-rows">
         <WorkflowCanvas />
-      </section>
+      </div>
 
       <section className="tl-landing-next" aria-labelledby="landing-next-title">
         <p id="landing-next-title">Mulai gratis. Upgrade saat export dan invoice mulai rutin dipakai.</p>

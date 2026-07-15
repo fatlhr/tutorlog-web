@@ -28,10 +28,12 @@ test.describe('Responsive Sweep - Public Routes', () => {
 
         expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 
-        await page.screenshot({
-          path: test.info().outputPath(`${route.name}-${viewport}.png`),
-          fullPage: true,
-        });
+        if (process.env.SKIP_CAPTURE !== '1') {
+          await page.screenshot({
+            path: test.info().outputPath(`${route.name}-${viewport}.png`),
+            fullPage: true,
+          });
+        }
       });
     }
   }
@@ -103,7 +105,7 @@ test.describe('Homepage hero guardrails', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const proof = page.locator('.tl-landing-feature-rows [data-product-artifact]').first();
+    const proof = page.locator('[data-workflow-canvas] [data-product-artifact]').first();
     await proof.scrollIntoViewIfNeeded();
     const opacity = Number.parseFloat(await proof.evaluate((element) => window.getComputedStyle(element).opacity));
 
@@ -182,7 +184,7 @@ test.describe('Homepage story structure', () => {
     expect(await page.locator('[data-workflow-stage]').evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute('data-workflow-stage')),
     )).toEqual(['session', 'recap', 'invoice']);
-    await expect(page.locator('.tl-landing-feature-rows [data-rail-proof]')).toHaveCount(0);
+    await expect(page.locator('[data-workflow-canvas] [data-product-artifact]')).toHaveCount(3);
     await expect(page.locator('.tl-landing-next')).toHaveCount(1);
     await expect(page.locator('.tl-landing-intro, .tl-landing-pricing, .tl-landing-explore')).toHaveCount(0);
     await expect(page.locator('.tl-landing-hero-mascot')).toHaveCount(0);
