@@ -36,7 +36,7 @@ test.describe('Public dialogs', () => {
   });
 
   test('product proof traps focus and restores the trigger', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/fitur');
     const trigger = page.getByRole('button', { name: 'Perbesar Mobile' }).first();
     await trigger.click();
 

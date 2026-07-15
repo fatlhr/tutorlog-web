@@ -53,7 +53,7 @@ export default function PublicMotion() {
       );
     });
 
-    gsap.utils.toArray<HTMLElement>(".tls-feature-row .tls-rail-surface").forEach((element) => {
+    gsap.utils.toArray<HTMLElement>(".tls-feature-evidence-group .tls-rail-surface").forEach((element) => {
       gsap.fromTo(
         element,
         { scale: 0.96, opacity: 0.72 },

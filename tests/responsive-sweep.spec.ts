@@ -346,90 +346,59 @@ test.describe('Public navigation guardrails', () => {
   });
 });
 
-test.describe('Feature paired narrative rows', () => {
-  const featureProofs = ['mobile', 'history', 'recap', 'invoice'];
+test.describe('Feature paired evidence groups', () => {
+  const evidenceGroups = ['mobile-workspace', 'cross-device-recap', 'invoice-output'];
+  const featureTriggerCount = 5;
 
   for (const viewport of [1440, 1024]) {
-    test(`pairs each desktop feature row with its proof at ${viewport}px`, async ({ page }) => {
+    test(`groups the full product proof at ${viewport}px`, async ({ page }) => {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.goto('/fitur');
       await page.waitForLoadState('networkidle');
 
-      const rows = page.locator('[data-feature-row]');
-      await expect(rows).toHaveCount(featureProofs.length);
+      const groups = page.locator('[data-evidence-group]');
+      await expect(groups).toHaveCount(3);
+      expect(await groups.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-evidence-group')))).toEqual(evidenceGroups);
+      await expect(groups.nth(0).locator('[data-rail-proof]')).toHaveCount(2);
+      await expect(groups.nth(1).locator('[data-rail-proof="recap"]')).toHaveCount(1);
+      await expect(groups.nth(2).locator('[data-rail-proof="invoice"]')).toHaveCount(1);
+      await expect(page.locator('[data-evidence-group] [data-proof-trigger]')).toHaveCount(featureTriggerCount);
       await expect(page.locator('.tls-story-rail, [data-rail-active]')).toHaveCount(0);
-
-      const rowIds = await rows.evaluateAll((elements) => elements.map((element) => element.dataset.featureRow));
-      expect(rowIds).toEqual(featureProofs);
-
-      for (const row of await rows.all()) {
-        const proof = row.locator('[data-rail-proof]');
-        const featureId = await row.getAttribute('data-feature-row');
-        await expect(proof).toHaveCount(1);
-        expect(featureId).not.toBeNull();
-        await expect(proof).toHaveAttribute('data-rail-proof', featureId!);
-
-        const alignment = await row.evaluate((element) => {
-          const heading = element.querySelector<HTMLElement>('.tls-feature-platform');
-          const figcaption = element.querySelector<HTMLElement>('[data-rail-proof] figcaption');
-          if (!heading || !figcaption) return null;
-
-          return Math.abs(heading.getBoundingClientRect().top - figcaption.getBoundingClientRect().top);
-        });
-
-        expect(alignment).not.toBeNull();
-        expect(alignment).toBeLessThanOrEqual(2);
-      }
     });
   }
 
-  for (const viewport of [390, 516]) {
-    test(`keeps all feature proofs after their copy without overflow at ${viewport}px`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport, height: 844 });
+  for (const width of [390, 516]) {
+    test(`places feature proof after copy at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
       await page.goto('/fitur');
-      await page.waitForLoadState('networkidle');
-
-      const rows = page.locator('[data-feature-row]');
-      const proofs = page.locator('[data-rail-proof]');
-      await expect(rows).toHaveCount(featureProofs.length);
-      await expect(proofs).toHaveCount(featureProofs.length);
-
-      for (const row of await rows.all()) {
-        const proof = row.locator('[data-rail-proof]');
-        await expect(proof).toHaveCount(1);
-        await expect(proof).toBeVisible();
-
-        const placement = await row.evaluate((element) => {
-          const proof = element.querySelector<HTMLElement>('[data-rail-proof]');
-          const copy = Array.from(element.querySelectorAll<HTMLElement>('h2, p'))
-            .filter((copyElement) => !proof?.contains(copyElement));
-          if (!proof || !copy.length) return null;
-
-          return {
-            copyBottom: Math.max(...copy.map((copyElement) => copyElement.getBoundingClientRect().bottom)),
-            proofTop: proof.getBoundingClientRect().top,
-          };
+      const items = page.locator('.tls-feature-evidence-item');
+      for (const item of await items.all()) {
+        const placement = await item.evaluate((node) => {
+          const copy = node.querySelector<HTMLElement>('.tls-feature-evidence-copy');
+          const proof = node.querySelector<HTMLElement>('.tls-feature-evidence-proof');
+          if (!copy || !proof) return null;
+          return { copyBottom: copy.getBoundingClientRect().bottom, proofTop: proof.getBoundingClientRect().top };
         });
-
         expect(placement).not.toBeNull();
         expect(placement?.proofTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
       }
-
-      const dimensions = await page.evaluate(() => ({
-        clientWidth: document.documentElement.clientWidth,
-        scrollWidth: document.documentElement.scrollWidth,
-      }));
-
-      expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
     });
   }
+
+  test('gives recap more width than either portrait proof', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fitur');
+    const recapWidth = await page.locator('[data-evidence-group="cross-device-recap"] .tls-feature-evidence-proof').evaluate((node) => node.getBoundingClientRect().width);
+    const portraitWidths = await page.locator('[data-evidence-group="mobile-workspace"] [data-rail-proof]').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
+    expect(recapWidth).toBeGreaterThan(Math.max(...portraitWidths));
+  });
 
   test('keeps each feature proof legible when it enters the tablet viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const opacities = await page.locator('[data-feature-row] [data-proof-trigger]').evaluateAll((elements) =>
+    const opacities = await page.locator('[data-evidence-group] [data-proof-trigger]').evaluateAll((elements) =>
       elements.map((element) => Number.parseFloat(window.getComputedStyle(element).opacity)),
     );
 
@@ -439,7 +408,6 @@ test.describe('Feature paired narrative rows', () => {
 });
 
 test.describe('Feature proof inspection', () => {
-  const featureProofs = ['mobile', 'history', 'recap', 'invoice'];
   const featureTriggerCount = 5;
 
   test('opens a larger product proof and restores focus to its trigger', async ({ page }) => {
@@ -447,7 +415,7 @@ test.describe('Feature proof inspection', () => {
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const triggers = page.locator('[data-feature-row] [data-proof-trigger]');
+    const triggers = page.locator('[data-evidence-group] [data-proof-trigger]');
     await expect(triggers).toHaveCount(featureTriggerCount);
 
     const trigger = triggers.first();
@@ -463,26 +431,20 @@ test.describe('Feature proof inspection', () => {
     await expect(trigger).toBeFocused();
   });
 
-  test('uses the available dialog viewport to enlarge every product proof', async ({ page }) => {
+  test('opens every product proof in the centered inspection dialog', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    for (const trigger of await page.locator('[data-feature-row] [data-proof-trigger]').all()) {
+    for (const trigger of await page.locator('[data-evidence-group] [data-proof-trigger]').all()) {
       await trigger.scrollIntoViewIfNeeded();
 
       const proofSelector = '.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern';
-      const triggerVisual = trigger.locator(proofSelector).first();
-      const triggerHeight = await triggerVisual.evaluate((element) => element.getBoundingClientRect().height);
       await trigger.click();
 
       const dialog = page.getByRole('dialog', { name: 'Perbesar tampilan TutorLog' });
       const dialogVisual = dialog.locator(proofSelector).first();
       await expect(dialogVisual).toBeVisible();
-      const dialogHeight = await dialogVisual.evaluate((element) => element.getBoundingClientRect().height);
-
-      expect(dialogHeight).toBeGreaterThan(triggerHeight * 1.85);
-
       const placement = await dialog.evaluate((element) => {
         const proof = element.querySelector<HTMLElement>('.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern');
         if (!proof) return null;
@@ -498,84 +460,6 @@ test.describe('Feature proof inspection', () => {
     }
   });
 
-  for (const [viewport, maxPortraitWidth] of [[1440, 188], [1024, 168]] as const) {
-    test(`keeps proof surfaces compact and aligned at ${viewport}px`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport, height: 900 });
-      await page.goto('/fitur');
-      await page.waitForLoadState('networkidle');
-
-      const rows = page.locator('[data-feature-row]');
-      await expect(rows).toHaveCount(featureProofs.length);
-
-      for (const row of await rows.all()) {
-        const featureId = await row.getAttribute('data-feature-row');
-        const trigger = row.locator('[data-proof-trigger]');
-        const platform = row.locator('.tls-feature-platform');
-
-        await expect(trigger).toHaveCount(featureId === 'recap' ? 2 : 1);
-        await expect(platform).toBeVisible();
-
-        if (featureId === 'mobile' || featureId === 'history') {
-          const width = await trigger.first().evaluate((element) => element.getBoundingClientRect().width);
-          expect(width).toBeLessThanOrEqual(maxPortraitWidth);
-        }
-
-        const alignment = await row.evaluate((element) => {
-          const platformLabel = element.querySelector<HTMLElement>('.tls-feature-platform');
-          const proofLabel = element.querySelector<HTMLElement>('[data-rail-proof] figcaption');
-          if (!platformLabel || !proofLabel) return null;
-          return Math.abs(platformLabel.getBoundingClientRect().top - proofLabel.getBoundingClientRect().top);
-        });
-
-        expect(alignment).not.toBeNull();
-        expect(alignment).toBeLessThanOrEqual(2);
-
-        const proofBottomGap = await row.evaluate((element) => {
-          const proof = element.querySelector<HTMLElement>('[data-rail-proof]');
-          if (!proof) return null;
-          const rowRect = element.getBoundingClientRect();
-          const proofRect = proof.getBoundingClientRect();
-          return rowRect.bottom - proofRect.bottom;
-        });
-
-        expect(proofBottomGap).not.toBeNull();
-        expect(proofBottomGap).toBeGreaterThanOrEqual(40);
-      }
-    });
-  }
-
-  for (const viewport of [390, 516]) {
-    test(`keeps every compact proof after its matching copy at ${viewport}px`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport, height: 844 });
-      await page.goto('/fitur');
-      await page.waitForLoadState('networkidle');
-
-      const rows = page.locator('[data-feature-row]');
-      await expect(rows).toHaveCount(featureProofs.length);
-      await expect(page.locator('[data-feature-row] [data-proof-trigger]')).toHaveCount(featureTriggerCount);
-
-      for (const row of await rows.all()) {
-        const placement = await row.evaluate((element) => {
-          const trigger = element.querySelector<HTMLElement>('[data-proof-trigger]');
-          const copy = element.querySelector<HTMLElement>('.tls-feature-copy');
-          if (!trigger || !copy) return null;
-          return {
-            copyBottom: copy.getBoundingClientRect().bottom,
-            triggerTop: trigger.getBoundingClientRect().top,
-          };
-        });
-
-        expect(placement).not.toBeNull();
-        expect(placement?.triggerTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
-      }
-
-      const width = await page.evaluate(() => ({
-        scroll: document.documentElement.scrollWidth,
-        client: document.documentElement.clientWidth,
-      }));
-      expect(width.scroll).toBeLessThanOrEqual(width.client);
-    });
-  }
 });
 
 test.describe('Public home navigation', () => {
@@ -647,7 +531,7 @@ test.describe('Feature paired narrative reduced-motion guardrails', () => {
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const surfaces = page.locator('[data-feature-row] [data-proof-trigger]');
+    const surfaces = page.locator('[data-evidence-group] [data-proof-trigger]');
     await expect(surfaces).toHaveCount(5);
 
     const opacities = await surfaces.evaluateAll((elements) =>

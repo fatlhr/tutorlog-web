@@ -5027,25 +5027,62 @@ html, body { overflow-x: hidden; }
   padding: clamp(70px, 10vw, 116px) 0 clamp(56px, 8vw, 86px);
 }
 
-.tls-feature-row {
+.tls-feature-evidence-group {
+  padding: 72px 0;
+  border-bottom: 1px solid var(--tl-line);
+}
+
+.tls-feature-evidence-item {
+  min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 748px) 1px minmax(0, 435px);
-  column-gap: 48px;
+  grid-template-columns: minmax(280px, .85fr) minmax(0, 1.15fr);
+  gap: 56px;
   align-items: start;
-  border-top: 1px solid var(--tl-line);
 }
 
-.tls-features .tls-feature-row {
-  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 435px);
+.tls-feature-mobile-workspace {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 48px;
 }
 
-.tls-feature-copy {
+.tls-feature-mobile-workspace .tls-feature-evidence-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+.tls-feature-mobile-workspace .tls-feature-evidence-proof {
+  min-height: 500px;
+  display: grid;
+  place-items: center;
+}
+
+[data-evidence-group="cross-device-recap"] .tls-feature-evidence-proof {
+  min-height: 460px;
+  display: grid;
+  place-items: center;
+}
+
+[data-evidence-group="invoice-output"] .tls-feature-evidence-item {
+  grid-template-columns: minmax(260px, .7fr) minmax(480px, 1.3fr);
+}
+
+[data-evidence-group="invoice-output"] .tls-invoice-proof {
+  width: 520px;
+  height: 505px;
+}
+
+[data-evidence-group="invoice-output"] .tls-invoice-proof .tpl-modern {
+  transform: scale(.69);
+}
+
+.tls-feature-evidence-copy {
   min-width: 0;
   max-width: 640px;
-  padding: 72px 0;
 }
 
-.tls-feature-copy h2 {
+.tls-feature-evidence-copy h2 {
   max-width: 560px;
   margin: 0;
   color: #12211f;
@@ -5056,7 +5093,7 @@ html, body { overflow-x: hidden; }
   line-height: 1.12;
 }
 
-.tls-feature-copy p {
+.tls-feature-evidence-copy p {
   max-width: 510px;
   margin: 18px 0 0;
   color: #50645e;
@@ -5064,7 +5101,7 @@ html, body { overflow-x: hidden; }
   line-height: 1.55;
 }
 
-.tls-feature-copy .tls-feature-platform {
+.tls-feature-evidence-copy .tls-feature-platform {
   margin: 0 0 12px;
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
@@ -5073,30 +5110,6 @@ html, body { overflow-x: hidden; }
   letter-spacing: .08em;
   text-transform: uppercase;
 }
-
-.tls-feature-row-divider {
-  align-self: stretch;
-  background: var(--tl-line);
-}
-
-.tls-feature-row > .tls-rail-proof {
-  margin-top: 72px;
-}
-
-/* Fitur owns compact proofs so portrait screenshots do not set row height. */
-.tls-features .tls-feature-copy { padding: 52px 0 56px; }
-.tls-features .tls-feature-row > .tls-rail-proof { margin: 52px 0 48px; }
-.tls-features .tls-feature-row[data-feature-row="mobile"] > .tls-rail-proof,
-.tls-features .tls-feature-row[data-feature-row="history"] > .tls-rail-proof { width: 188px; }
-.tls-features .tls-feature-row[data-feature-row="mobile"] .tls-proof-image,
-.tls-features .tls-feature-row[data-feature-row="history"] .tls-proof-image { width: 188px; }
-.tls-features .tls-feature-row[data-feature-row="recap"] > .tls-rail-proof,
-.tls-features .tls-feature-row[data-feature-row="invoice"] > .tls-rail-proof { width: 280px; }
-.tls-features .tls-feature-row[data-feature-row="recap"] .tls-recap-proof-pair { width: 280px; }
-.tls-features .tls-feature-row[data-feature-row="recap"] .tls-recap-proof-web { width: 186px; }
-.tls-features .tls-feature-row[data-feature-row="recap"] .tls-recap-proof-mobile { width: 82px; }
-.tls-features .tls-feature-row[data-feature-row="invoice"] .tls-invoice-proof { width: 280px; height: 274px; }
-.tls-features .tls-feature-row[data-feature-row="invoice"] .tls-invoice-proof .tpl-modern { transform: scale(.37); }
 
 .tls-features .tl-proof-dialog-media[data-proof-dialog-media] .tls-proof-image { width: min(360px, 100%); }
 .tls-features .tl-proof-dialog-media[data-proof-dialog-media="recap-web"] .tls-proof-image { width: min(480px, 100%); }
@@ -5262,31 +5275,7 @@ html, body { overflow-x: hidden; }
     column-gap: 28px;
   }
 
-  .tls-feature-row {
-    grid-template-columns: minmax(0, 1fr) 1px 288px;
-    column-gap: 28px;
-  }
-
-  .tls-feature-copy,
-  .tls-feature-row > .tls-rail-proof { margin-top: 0; }
-
-  .tls-feature-copy { padding: 64px 0; }
-  .tls-feature-copy h2 { font-size: 34px; }
-  .tls-feature-row > .tls-rail-proof { margin-top: 64px; }
-
-  .tls-features .tls-feature-copy { padding: 48px 0 52px; }
-  .tls-features .tls-feature-row > .tls-rail-proof { margin: 48px 0 40px; }
-  .tls-features .tls-feature-row[data-feature-row="mobile"] > .tls-rail-proof,
-  .tls-features .tls-feature-row[data-feature-row="history"] > .tls-rail-proof { width: 168px; }
-  .tls-features .tls-feature-row[data-feature-row="mobile"] .tls-proof-image,
-  .tls-features .tls-feature-row[data-feature-row="history"] .tls-proof-image { width: 168px; }
-  .tls-features .tls-feature-row[data-feature-row="recap"] > .tls-rail-proof,
-  .tls-features .tls-feature-row[data-feature-row="invoice"] > .tls-rail-proof { width: 248px; }
-  .tls-features .tls-feature-row[data-feature-row="recap"] .tls-recap-proof-pair { width: 248px; }
-  .tls-features .tls-feature-row[data-feature-row="recap"] .tls-recap-proof-web { width: 166px; }
-  .tls-features .tls-feature-row[data-feature-row="recap"] .tls-recap-proof-mobile { width: 70px; }
-  .tls-features .tls-feature-row[data-feature-row="invoice"] .tls-invoice-proof { width: 248px; height: 242px; }
-  .tls-features .tls-feature-row[data-feature-row="invoice"] .tls-invoice-proof .tpl-modern { transform: scale(.325); }
+  .tls-feature-evidence-copy h2 { font-size: 34px; }
 
   .tls-story-rail > .tls-product-rail { top: 88px; }
   .tls-story-hero { padding: 72px 0 56px; }
@@ -5329,23 +5318,37 @@ html, body { overflow-x: hidden; }
   .tls-story-divider,
   .tls-story-rail { display: none; }
 
-  .tls-feature-row { display: block; }
-  .tls-feature-row-divider { display: none; }
-  .tls-feature-copy { max-width: none; padding: 56px 0 0; }
-  .tls-feature-copy h2 { font-size: 31px; line-height: 1.12; }
-  .tls-feature-copy p { font-size: 17px; }
-  .tls-feature-row > .tls-rail-proof { margin: 32px auto 56px; }
+  .tls-feature-evidence-group,
+  .tls-feature-mobile-workspace {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 48px 0;
+  }
+  .tls-feature-evidence-item,
+  [data-evidence-group="invoice-output"] .tls-feature-evidence-item {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .tls-feature-evidence-item + .tls-feature-evidence-item {
+    margin-top: 48px;
+    padding-top: 48px;
+    border-top: 1px solid var(--tl-line);
+  }
+  .tls-feature-evidence-proof {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .tls-feature-evidence-copy { max-width: none; }
+  .tls-feature-evidence-copy h2 { font-size: 31px; line-height: 1.12; }
+  .tls-feature-evidence-copy p { font-size: 17px; }
   .tls-feature-platform { margin-bottom: 10px; font-size: 11px; }
   .tls-feature-detail { display: none; }
-  .tls-features .tls-feature-copy { padding: 48px 0 0; }
-  .tls-features .tls-feature-row > .tls-rail-proof { margin: 26px auto 52px; }
-  .tls-features .tls-feature-row[data-feature-row="mobile"] > .tls-rail-proof,
-  .tls-features .tls-feature-row[data-feature-row="history"] > .tls-rail-proof { width: 208px; }
-  .tls-features .tls-feature-row[data-feature-row="mobile"] .tls-proof-image,
-  .tls-features .tls-feature-row[data-feature-row="history"] .tls-proof-image { width: 208px; }
-  .tls-features .tls-feature-row[data-feature-row="recap"] > .tls-rail-proof,
-  .tls-features .tls-feature-row[data-feature-row="invoice"] > .tls-rail-proof { width: min(280px, 100%); }
-  .tls-features .tls-feature-row[data-feature-row="invoice"] .tls-invoice-proof { width: min(232px, 100%); height: 228px; }
+  .tls-feature-evidence-proof > .tls-rail-proof { margin: 0 auto; }
+  .tls-feature-mobile-workspace .tls-feature-evidence-proof,
+  [data-evidence-group="cross-device-recap"] .tls-feature-evidence-proof { min-height: 0; }
+  [data-evidence-group="invoice-output"] .tls-invoice-proof { width: min(232px, 100%); height: 228px; }
+  [data-evidence-group="invoice-output"] .tls-invoice-proof .tpl-modern { transform: scale(.303); }
   .tls-features .tls-story-hero { padding: 52px 0 38px; }
   .tls-story-hero { padding: 48px 0 56px; }
   .tls-story-hero h1 { max-width: none; font-size: 43px; line-height: 1.06; }

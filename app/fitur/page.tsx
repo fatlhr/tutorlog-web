@@ -38,44 +38,45 @@ export default function FiturPage() {
         </section>
       )}
     >
-      <section className="tls-feature-row" data-feature-row="mobile" aria-labelledby="feature-catat">
-        <div className="tls-feature-copy">
-          <p className="tls-feature-platform">Mobile</p>
-          <h2 id="feature-catat">Catat sesi di HP.</h2>
-          <p>Simpan materi, durasi, murid, tarif, dan lokasi segera setelah kelas selesai.<span className="tls-feature-detail"> Data itu langsung siap dipakai lagi saat rekap.</span></p>
+      <section className="tls-feature-evidence-group tls-feature-mobile-workspace" data-evidence-group="mobile-workspace" aria-labelledby="feature-mobile-workspace">
+        <div className="tls-feature-evidence-item">
+          <div className="tls-feature-evidence-copy">
+            <p className="tls-feature-platform">Mobile</p>
+            <h2 id="feature-mobile-workspace">Catat sesi di HP.</h2>
+            <p>Simpan materi, durasi, murid, tarif, dan lokasi segera setelah kelas selesai.<span className="tls-feature-detail"> Data itu langsung siap dipakai lagi saat rekap.</span></p>
+          </div>
+          <div className="tls-feature-evidence-proof"><PublicProductProof id="mobile" annotation /></div>
         </div>
-        <div className="tls-feature-row-divider" aria-hidden="true" />
-        <PublicProductProof id="mobile" annotation />
+        <div className="tls-feature-evidence-item">
+          <div className="tls-feature-evidence-copy">
+            <p className="tls-feature-platform">Riwayat sesi</p>
+            <h2>Buka riwayat dan revisi catatan.</h2>
+            <p>Riwayat menyimpan sesi selesai beserta catatan pengajaran dan detail pembayarannya.<span className="tls-feature-detail"> Buka dari HP untuk meninjau atau memperbarui informasi saat ada revisi.</span></p>
+          </div>
+          <div className="tls-feature-evidence-proof"><PublicProductProof id="history" annotation /></div>
+        </div>
       </section>
 
-      <section className="tls-feature-row" data-feature-row="history" aria-labelledby="feature-riwayat">
-        <div className="tls-feature-copy">
-          <p className="tls-feature-platform">Mobile</p>
-          <h2 id="feature-riwayat">Buka riwayat dan revisi catatan.</h2>
-          <p>Riwayat menyimpan sesi selesai beserta catatan pengajaran dan detail pembayarannya.<span className="tls-feature-detail"> Buka dari HP untuk meninjau atau memperbarui informasi saat ada revisi.</span></p>
+      <section className="tls-feature-evidence-group" data-evidence-group="cross-device-recap" aria-labelledby="feature-rekap">
+        <div className="tls-feature-evidence-item">
+          <div className="tls-feature-evidence-copy">
+            <p className="tls-feature-platform">Mobile dan web</p>
+            <h2 id="feature-rekap">Rekap dan export dari perangkat yang kamu pakai.</h2>
+            <p>Rekap memperlihatkan sesi, jam, pendapatan, dan murid dalam satu tampilan.<span className="tls-feature-detail"> PDF atau CSV dapat diekspor dari mobile maupun web saat perlu dibagikan atau diarsipkan.</span></p>
+          </div>
+          <div className="tls-feature-evidence-proof"><PublicProductProof id="recap" annotation /></div>
         </div>
-        <div className="tls-feature-row-divider" aria-hidden="true" />
-        <PublicProductProof id="history" annotation />
       </section>
 
-      <section className="tls-feature-row" data-feature-row="recap" aria-labelledby="feature-rekap">
-        <div className="tls-feature-copy">
-          <p className="tls-feature-platform">Mobile dan web</p>
-          <h2 id="feature-rekap">Rekap dan export dari perangkat yang kamu pakai.</h2>
-          <p>Rekap memperlihatkan sesi, jam, pendapatan, dan murid dalam satu tampilan.<span className="tls-feature-detail"> PDF atau CSV dapat diekspor dari mobile maupun web saat perlu dibagikan atau diarsipkan.</span></p>
+      <section className="tls-feature-evidence-group" data-evidence-group="invoice-output" aria-labelledby="feature-invoice">
+        <div className="tls-feature-evidence-item">
+          <div className="tls-feature-evidence-copy">
+            <p className="tls-feature-platform">Web</p>
+            <h2 id="feature-invoice">Buat invoice di web.</h2>
+            <p>Pilih sesi yang akan ditagihkan, atur template dan warna, lalu cek preview sebelum dikirim.<span className="tls-feature-detail"> Invoice dibuat di web agar detailnya nyaman diperiksa.</span></p>
+          </div>
+          <div className="tls-feature-evidence-proof"><PublicProductProof id="invoice" annotation /></div>
         </div>
-        <div className="tls-feature-row-divider" aria-hidden="true" />
-        <PublicProductProof id="recap" annotation />
-      </section>
-
-      <section className="tls-feature-row" data-feature-row="invoice" aria-labelledby="feature-invoice">
-        <div className="tls-feature-copy">
-          <p className="tls-feature-platform">Web</p>
-          <h2 id="feature-invoice">Buat invoice di web.</h2>
-          <p>Pilih sesi yang akan ditagihkan, atur template dan warna, lalu cek preview sebelum dikirim.<span className="tls-feature-detail"> Invoice dibuat di web agar detailnya nyaman diperiksa.</span></p>
-        </div>
-        <div className="tls-feature-row-divider" aria-hidden="true" />
-        <PublicProductProof id="invoice" annotation />
       </section>
     </PublicStoryLayout>
   );
