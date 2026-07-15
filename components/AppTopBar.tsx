@@ -101,7 +101,7 @@ export default function AppTopBar({ name, initials, isPlus, isExpired, community
             <div className="app-account-menu" role="menu">
               <div className="app-account-summary">
                 <strong>{name}</strong>
-                <span>{isPlus ? (isExpired ? "Plus" : "Plus aktif") : "Paket Free"}</span>
+                <span>{isPlus ? (isExpired ? "Plus kedaluwarsa" : "Plus aktif") : "Paket Free"}</span>
               </div>
               <Link href="/app/profil" role="menuitem" onClick={() => setOpen(false)}>
                 <User size={17} aria-hidden="true" />

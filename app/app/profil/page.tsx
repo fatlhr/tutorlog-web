@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
+import { getAccessState } from "@/lib/data/quota-access";
 import ProfileContent from "@/components/ProfileContent";
 
 export const metadata: Metadata = {
@@ -31,15 +32,14 @@ export default async function SettingsPage() {
   const name = displayName(email, metaName);
   const initials = initialsOf(name);
   const quota = await checkQuota();
-
-  const isPlus = quota.pdfExportUnlimited || quota.plan !== "free";
+  const access = getAccessState(quota);
 
   return (
     <ProfileContent
       email={email}
       name={name}
       initials={initials}
-      isPlus={isPlus}
+      accessState={access.state}
       activeUntil={quota.activeUntil}
     />
   );

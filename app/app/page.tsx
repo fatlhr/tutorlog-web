@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
+import { canExportRecap, getAccessState } from "@/lib/data/quota-access";
 import { fetchRecentSessions, fetchRekapDataByRange } from "@/lib/data/rekap";
 import HomeUpgradePrompt from "@/components/HomeUpgradePrompt";
 import NamePromptDialog from "@/components/NamePromptDialog";
@@ -73,8 +74,12 @@ export default async function HomePage() {
   const monthLoadError = monthResult.status === "rejected";
   const recentLoadError = recentResult.status === "rejected";
   const hasSessions = recentSessions.length > 0 || (monthData?.summary.totalSesi ?? 0) > 0;
-  const isPaid = Boolean(quota && (quota.pdfExportUnlimited || quota.plan !== "free"));
-  const freeQuotaExhausted = Boolean(quota && quota.pdfExportCount30d >= 1 && quota.csvExportCount30d >= 1);
+  const access = quota ? getAccessState(quota) : null;
+  const quotaExhausted = Boolean(
+    quota &&
+    !canExportRecap("pdf", quota).allowed &&
+    !canExportRecap("csv", quota).allowed,
+  );
   const summaryItems: SummaryItem[] = monthData ? [
     { label: "Sesi selesai", value: monthData.summary.totalSesi },
     { label: "Waktu mengajar", value: monthData.summary.totalJam },
@@ -206,7 +211,9 @@ export default async function HomePage() {
                   </div>
                 </Surface>
 
-                {!isPaid && quota ? <HomeUpgradePrompt exhausted={freeQuotaExhausted} /> : null}
+                {access && !access.isPlusActive ? (
+                  <HomeUpgradePrompt accessState={access.state} exhausted={quotaExhausted} />
+                ) : null}
               </aside>
             </div>
           </Section>

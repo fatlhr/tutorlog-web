@@ -1,21 +1,33 @@
 import { Button } from "@/components/app-ui/controls";
 import { FeedbackMessage } from "@/components/app-ui/structure";
+import type { AccessState } from "@/lib/data/quota-access";
 
 interface HomeUpgradePromptProps {
+  accessState: AccessState;
   exhausted: boolean;
 }
 
-export default function HomeUpgradePrompt({ exhausted }: HomeUpgradePromptProps) {
+export default function HomeUpgradePrompt({ accessState, exhausted }: HomeUpgradePromptProps) {
+  const expired = accessState === "plus_expired";
+  const title = expired
+    ? "Plus sudah kedaluwarsa."
+    : exhausted
+      ? "Batas export rekap gratis sudah digunakan."
+      : "Export rekap gratis masih tersedia.";
+  const body = expired
+    ? "Perpanjang Plus untuk membuka invoice dan export rekap tanpa batas."
+    : "Plus membuka invoice dan export rekap PDF/CSV tanpa batas.";
+
   return (
     <aside aria-label="TutorLog Plus">
       <FeedbackMessage
         status="warning"
         density="compact"
-        title={exhausted ? "Batas unduhan gratis bulan ini sudah digunakan." : "Unduhan gratis masih tersedia bulan ini."}
-        body="Plus membuka unduhan rekap dan invoice tanpa batas."
+        title={title}
+        body={body}
         action={(
           <Button href="/harga" variant="quiet" size="compact">
-            {exhausted ? "Aktifkan Plus" : "Lihat Plus"}
+            {expired ? "Perpanjang Plus" : exhausted ? "Aktifkan Plus" : "Lihat Plus"}
           </Button>
         )}
       />

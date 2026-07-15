@@ -8,16 +8,17 @@ import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
 import { PageHeader, Surface } from "@/components/app-ui/structure";
 import styles from "@/components/app-ui/app-ui.module.css";
 import { updateName } from "@/app/app/actions";
+import type { AccessState } from "@/lib/data/quota-access";
 
 interface ProfileContentProps {
   email: string;
   name: string;
   initials: string;
-  isPlus: boolean;
+  accessState: AccessState;
   activeUntil: string | null;
 }
 
-export default function ProfileContent({ email, name: initialName, initials, isPlus, activeUntil }: ProfileContentProps) {
+export default function ProfileContent({ email, name: initialName, initials, accessState, activeUntil }: ProfileContentProps) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [editing, setEditing] = useState(false);
@@ -48,14 +49,14 @@ export default function ProfileContent({ email, name: initialName, initials, isP
     });
   }, [editValue, router]);
 
-  const END_OF_DAY_MS = 86400000;
   const activeUntilDate = activeUntil ? new Date(activeUntil) : null;
-  const isExpired = activeUntilDate ? activeUntilDate.getTime() + END_OF_DAY_MS < Date.now() : false;
+  const isPlus = accessState !== "free";
+  const isExpired = accessState === "plus_expired";
 
   return (
     <RouteCanvas route="settings">
       <PageMain>
-        <PageHeader route="settings" title="Profil" description="Nama dan informasi akun kamu." />
+        <PageHeader route="settings" eyebrow="Profil" title="Profil" description="Nama dan informasi akun kamu." />
 
         <Surface padding="compact">
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
@@ -171,52 +172,59 @@ export default function ProfileContent({ email, name: initialName, initials, isP
           </div>
         </Surface>
 
-        {isPlus ? (
-          <Surface padding="compact" style={{ marginTop: 16 }} variant={isExpired ? "paper" : "soft"}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
-              Status Akses
-            </div>
-            <div style={{ fontWeight: 600, fontSize: 14, color: isExpired ? "var(--app-error)" : undefined }}>
-              {isExpired ? "Plus — Kedaluwarsa" : "Plus"}
-            </div>
-            {activeUntilDate && !isExpired && (
-              <div style={{ fontSize: 13, color: "var(--app-ink-muted)", marginTop: 4 }}>
-                Aktif sampai {activeUntilDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+        <div style={{ marginTop: 16 }}>
+          {isPlus ? (
+            <Surface padding="compact" variant={isExpired ? "paper" : "soft"}>
+              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
+                Status Akses
               </div>
-            )}
-            {isExpired && (
-              <div style={{ marginTop: 10 }}>
-                <Button href="/harga" variant="primary" size="compact">Perpanjang Plus</Button>
+              <div style={{ fontWeight: 600, fontSize: 14, color: isExpired ? "var(--app-error)" : undefined }}>
+                {isExpired ? "Plus kedaluwarsa" : "Plus aktif"}
               </div>
-            )}
-          </Surface>
-        ) : (
-          <Surface padding="compact" style={{ marginTop: 16 }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
-              Status Akses
-            </div>
-            <div style={{ fontWeight: 600, fontSize: 14 }}>
-              Paket Free
-            </div>
-          </Surface>
-        )}
+              {activeUntilDate && !isExpired && (
+                <div style={{ fontSize: 13, color: "var(--app-ink-muted)", marginTop: 4 }}>
+                  Aktif sampai {activeUntilDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              )}
+              {isExpired && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 10 }}>
+                    Export rekap kembali mengikuti batas gratis dan invoice terkunci sampai Plus diperpanjang.
+                  </div>
+                  <Button href="/harga" variant="primary" size="compact">Perpanjang Plus</Button>
+                </div>
+              )}
+            </Surface>
+          ) : (
+            <Surface padding="compact">
+              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
+                Status Akses
+              </div>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>
+                Paket Free
+              </div>
+            </Surface>
+          )}
+        </div>
 
-        <Surface padding="compact" style={{ marginTop: 16 }}>
-          <div className={styles.profileCta}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
-              <DeviceMobile size={24} aria-hidden="true" />
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Catat sesi dari aplikasi TutorLog</div>
-                <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)" }}>Unduh aplikasi untuk mencatat sesi les di HP.</div>
+        <div style={{ marginTop: 16 }}>
+          <Surface padding="compact">
+            <div className={styles.profileCta}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
+                <DeviceMobile size={24} aria-hidden="true" />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Catat sesi dari aplikasi TutorLog</div>
+                  <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)" }}>Unduh aplikasi untuk mencatat sesi les di HP.</div>
+                </div>
+              </div>
+              <div className={styles.profileCtaButton}>
+                <Button href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" variant="primary" size="compact">
+                  Buka aplikasi
+                </Button>
               </div>
             </div>
-            <div className={styles.profileCtaButton}>
-              <Button href="https://play.google.com/store/apps/details?id=com.tutorlog.app" target="_blank" variant="primary" size="compact">
-                Buka aplikasi
-              </Button>
-            </div>
-          </div>
-        </Surface>
+          </Surface>
+        </div>
       </PageMain>
     </RouteCanvas>
   );
