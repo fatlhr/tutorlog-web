@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, EnvelopeOpen } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
 import { MarketingButton } from "@/components/public-ui/marketing-button";
+import { safeNextPath } from "@/lib/auth/safe-next";
 import { sendMagicLink } from "../actions";
 
 export const metadata: Metadata = {
@@ -13,9 +14,10 @@ export const metadata: Metadata = {
 export default async function LoginSentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; next?: string }>;
 }) {
-  const { email } = await searchParams;
+  const { email, next: requestedNext } = await searchParams;
+  const next = safeNextPath(requestedNext);
   const emailLabel = email || "alamat email kamu";
 
   return (
@@ -54,10 +56,11 @@ export default async function LoginSentPage({
           {email ? (
             <form action={sendMagicLink}>
               <input type="hidden" name="email" value={email} />
+              <input type="hidden" name="next" value={next} />
               <button className="tl-auth-text-button" type="submit">Kirim ulang link</button>
             </form>
           ) : null}
-          <p className="tl-auth-legal">Salah alamat? <Link href="/login">Ganti email</Link>.</p>
+          <p className="tl-auth-legal">Salah alamat? <Link href={`/login?next=${encodeURIComponent(next)}`}>Ganti email</Link>.</p>
         </div>
       </section>
     </PublicShell>

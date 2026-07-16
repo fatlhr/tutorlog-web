@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { PublicShell } from "@/components/PublicShell";
 import { MarketingButton } from "@/components/public-ui/marketing-button";
 import { PublicField } from "@/components/public-ui/public-field";
+import { safeNextPath } from "@/lib/auth/safe-next";
 import { createClient } from "@/lib/supabase/server";
 import { sendMagicLink } from "./actions";
 
@@ -22,13 +23,14 @@ const errorMessages: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; email?: string }>;
+  searchParams: Promise<{ error?: string; email?: string; next?: string }>;
 }) {
+  const { error, email = "", next: requestedNext } = await searchParams;
+  const next = safeNextPath(requestedNext);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (user) redirect("/app");
+  if (user) redirect(next);
 
-  const { error, email = "" } = await searchParams;
   const errorMessage = error ? errorMessages[error] : undefined;
 
   return (
@@ -43,6 +45,7 @@ export default async function LoginPage({
     >
       <section className="tl-auth-layout tl-auth-login-layout" aria-label="Masuk ke TutorLog">
         <form className="tl-auth-form" action={sendMagicLink}>
+          <input type="hidden" name="next" value={next} />
           {errorMessage ? <p className="tl-auth-error" role="alert">{errorMessage}</p> : null}
           <PublicField
             controlId="login-email"

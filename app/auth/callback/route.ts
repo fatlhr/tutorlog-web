@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
+import { safeNextPath } from "@/lib/auth/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/app";
+  const next = safeNextPath(searchParams.get("next"));
 
   const supabase = await createClient();
 
@@ -27,5 +28,7 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  return NextResponse.redirect(
+    `${origin}/login?error=auth&next=${encodeURIComponent(next)}`,
+  );
 }
