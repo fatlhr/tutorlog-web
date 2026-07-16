@@ -45,17 +45,17 @@ export default function AccountPage() {
               <li>Akun autentikasi TutorLog.</li>
               <li>Profil tutor.</li>
               <li>Data murid dan lokasi belajar.</li>
-              <li>Riwayat sesi dan attendance records.</li>
-              <li>Data akses premium, voucher, dan counter penggunaan fitur.</li>
-              <li>Catatan support terkait request, jika sudah tidak dibutuhkan.</li>
+              <li>Riwayat sesi dan kehadiran.</li>
+              <li>Data akses premium, voucher, dan jumlah penggunaan fitur.</li>
+              <li>Catatan dukungan terkait permintaan, jika sudah tidak dibutuhkan.</li>
             </ul>
-            <p>Jika ada data yang perlu disimpan untuk alasan keamanan, pencegahan penyalahgunaan, atau kewajiban hukum, TutorLog akan menyimpan data seminimal mungkin.</p>
+            <p>Jika ada data yang wajib disimpan untuk keamanan, pencegahan penyalahgunaan, atau kewajiban hukum, TutorLog hanya akan menyimpan data yang memang diperlukan.</p>
           </section>
 
           <section className="tl-article-section">
             <h2>Verifikasi dan estimasi proses</h2>
-            <p>Untuk menjaga keamanan akun, TutorLog akan memverifikasi bahwa request berasal dari email yang sama dengan akun TutorLog.</p>
-            <p>Request yang sudah terverifikasi diproses maksimal 7 hari setelah verifikasi selesai.</p>
+            <p>Untuk menjaga keamanan akun, TutorLog akan memverifikasi bahwa permintaan berasal dari email yang sama dengan akun TutorLog.</p>
+            <p>Permintaan yang sudah terverifikasi diproses maksimal 7 hari setelah verifikasi selesai.</p>
           </section>
         </article>
         <aside className="tl-margin-notes" aria-label="Catatan penghapusan akun">

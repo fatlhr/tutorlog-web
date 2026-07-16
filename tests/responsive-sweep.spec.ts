@@ -28,10 +28,12 @@ test.describe('Responsive Sweep - Public Routes', () => {
 
         expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 
-        await page.screenshot({
-          path: test.info().outputPath(`${route.name}-${viewport}.png`),
-          fullPage: true,
-        });
+        if (process.env.SKIP_CAPTURE !== '1') {
+          await page.screenshot({
+            path: test.info().outputPath(`${route.name}-${viewport}.png`),
+            fullPage: true,
+          });
+        }
       });
     }
   }
@@ -103,7 +105,7 @@ test.describe('Homepage hero guardrails', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const proof = page.locator('.tl-landing-feature-rows .tls-rail-surface').first();
+    const proof = page.locator('[data-workflow-canvas] [data-product-artifact]').first();
     await proof.scrollIntoViewIfNeeded();
     const opacity = Number.parseFloat(await proof.evaluate((element) => window.getComputedStyle(element).opacity));
 
@@ -153,11 +155,11 @@ test.describe('Homepage hero guardrails', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const demoTrigger = page.getByRole('button', { name: 'Lihat demo' });
+    const demoTrigger = page.getByRole('button', { name: 'Lihat contoh alur' });
     await expect(demoTrigger).toBeVisible();
     await demoTrigger.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Preview sementara TutorLog' });
+    const dialog = page.getByRole('dialog', { name: 'Contoh sementara TutorLog' });
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('iframe[title="Video contoh sementara"]')).toHaveAttribute('src', /youtube-nocookie/);
     await expect(dialog.getByRole('button', { name: 'Tutup demo', exact: true })).toBeFocused();
@@ -177,7 +179,12 @@ test.describe('Homepage story structure', () => {
     await expect(page.locator('.tls-story-rail, .tls-story-grid')).toHaveCount(0);
     await expect(page.locator('.tl-landing-mobile-proof')).toHaveCount(1);
     await expect(page.locator('.tl-landing-transition')).toHaveCount(1);
-    await expect(page.locator('.tl-landing-proof-story')).toHaveCount(3);
+    await expect(page.locator('[data-workflow-canvas]')).toHaveCount(1);
+    await expect(page.locator('[data-workflow-stage]')).toHaveCount(3);
+    expect(await page.locator('[data-workflow-stage]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-workflow-stage')),
+    )).toEqual(['session', 'recap', 'invoice']);
+    await expect(page.locator('[data-workflow-canvas] [data-product-artifact]')).toHaveCount(3);
     await expect(page.locator('.tl-landing-next')).toHaveCount(1);
     await expect(page.locator('.tl-landing-intro, .tl-landing-pricing, .tl-landing-explore')).toHaveCount(0);
     await expect(page.locator('.tl-landing-hero-mascot')).toHaveCount(0);
@@ -197,7 +204,7 @@ test.describe('Homepage story structure', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByRole('heading', { name: 'Catatan sesi tersebar. Rekap harus dihitung ulang.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Catatan sesi masih tersebar? Rekap jadi harus dihitung ulang.' })).toBeVisible();
     await expect(page.locator('.tl-landing-transition')).toContainText('Data yang sama langsung siap dipakai');
   });
 
@@ -237,22 +244,29 @@ test.describe('Homepage story structure', () => {
     await expect(explore.locator('a[href="/panduan"]')).toBeVisible();
   });
 
-  test('stacks the three proof stories on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+  for (const width of [320, 390]) {
+    test(`stacks workflow stages without overflow at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
-    const positions = await page.locator('.tl-landing-proof-story').evaluateAll((elements) =>
-      elements.map((element) => {
-        const rect = element.getBoundingClientRect();
-        return { top: rect.top, bottom: rect.bottom };
-      }),
-    );
+      const positions = await page.locator('[data-workflow-stage]').evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const rect = node.getBoundingClientRect();
+          return { top: rect.top, bottom: rect.bottom };
+        }),
+      );
+      expect(positions).toHaveLength(3);
+      expect(positions[1].top).toBeGreaterThanOrEqual(positions[0].bottom);
+      expect(positions[2].top).toBeGreaterThanOrEqual(positions[1].bottom);
 
-    expect(positions).toHaveLength(3);
-    expect(positions[1].top).toBeGreaterThanOrEqual(positions[0].bottom);
-    expect(positions[2].top).toBeGreaterThanOrEqual(positions[1].bottom);
-  });
+      const widthMetrics = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        client: document.documentElement.clientWidth,
+      }));
+      expect(widthMetrics.scroll).toBeLessThanOrEqual(widthMetrics.client);
+    });
+  }
 });
 
 test.describe('Public navigation guardrails', () => {
@@ -334,73 +348,61 @@ test.describe('Public navigation guardrails', () => {
   });
 });
 
-test.describe('Feature paired narrative rows', () => {
-  const featureProofs = ['mobile', 'history', 'recap', 'invoice'];
+test.describe('Feature paired evidence groups', () => {
+  const evidenceGroups = ['mobile-workspace', 'cross-device-recap', 'invoice-output'];
+  const featureTriggerCount = 5;
 
   for (const viewport of [1440, 1024]) {
-    test(`pairs each desktop feature row with its proof at ${viewport}px`, async ({ page }) => {
+    test(`groups the full product proof at ${viewport}px`, async ({ page }) => {
       await page.setViewportSize({ width: viewport, height: 900 });
       await page.goto('/fitur');
       await page.waitForLoadState('networkidle');
 
-      const rows = page.locator('[data-feature-row]');
-      await expect(rows).toHaveCount(featureProofs.length);
+      const groups = page.locator('[data-evidence-group]');
+      await expect(groups).toHaveCount(3);
+      expect(await groups.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-evidence-group')))).toEqual(evidenceGroups);
+      await expect(groups.nth(0).locator('[data-rail-proof]')).toHaveCount(2);
+      await expect(groups.nth(1).locator('[data-rail-proof="recap"]')).toHaveCount(1);
+      await expect(groups.nth(2).locator('[data-rail-proof="invoice"]')).toHaveCount(1);
+      await expect(page.locator('[data-evidence-group] [data-proof-trigger]')).toHaveCount(featureTriggerCount);
       await expect(page.locator('.tls-story-rail, [data-rail-active]')).toHaveCount(0);
-
-      const rowIds = await rows.evaluateAll((elements) => elements.map((element) => element.dataset.featureRow));
-      expect(rowIds).toEqual(featureProofs);
-
-      for (const row of await rows.all()) {
-        const proof = row.locator('[data-rail-proof]');
-        const featureId = await row.getAttribute('data-feature-row');
-        await expect(proof).toHaveCount(1);
-        expect(featureId).not.toBeNull();
-        await expect(proof).toHaveAttribute('data-rail-proof', featureId!);
-
-        const alignment = await row.evaluate((element) => {
-          const heading = element.querySelector<HTMLElement>('.tls-feature-platform');
-          const figcaption = element.querySelector<HTMLElement>('[data-rail-proof] figcaption');
-          if (!heading || !figcaption) return null;
-
-          return Math.abs(heading.getBoundingClientRect().top - figcaption.getBoundingClientRect().top);
-        });
-
-        expect(alignment).not.toBeNull();
-        expect(alignment).toBeLessThanOrEqual(2);
-      }
     });
   }
 
-  for (const viewport of [390, 516]) {
-    test(`keeps all feature proofs after their copy without overflow at ${viewport}px`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport, height: 844 });
+  for (const width of [390, 516, 768, 800, 820, 834, 899]) {
+    test(`places feature proof after copy without overflow at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
       await page.goto('/fitur');
       await page.waitForLoadState('networkidle');
-
-      const rows = page.locator('[data-feature-row]');
-      const proofs = page.locator('[data-rail-proof]');
-      await expect(rows).toHaveCount(featureProofs.length);
-      await expect(proofs).toHaveCount(featureProofs.length);
-
-      for (const row of await rows.all()) {
-        const proof = row.locator('[data-rail-proof]');
-        await expect(proof).toHaveCount(1);
-        await expect(proof).toBeVisible();
-
-        const placement = await row.evaluate((element) => {
-          const proof = element.querySelector<HTMLElement>('[data-rail-proof]');
-          const copy = Array.from(element.querySelectorAll<HTMLElement>('h2, p'))
-            .filter((copyElement) => !proof?.contains(copyElement));
-          if (!proof || !copy.length) return null;
-
+      const items = page.locator('.tls-feature-evidence-item');
+      for (const item of await items.all()) {
+        const placement = await item.evaluate((node) => {
+          const copy = node.querySelector<HTMLElement>('.tls-feature-evidence-copy');
+          const proof = node.querySelector<HTMLElement>('.tls-feature-evidence-proof');
+          const group = node.closest<HTMLElement>('[data-evidence-group]');
+          const proofSurfaces = Array.from(node.querySelectorAll<HTMLElement>('[data-rail-proof]'));
+          if (!copy || !proof || !group || !proofSurfaces.length) return null;
+          const groupRect = group.getBoundingClientRect();
+          const proofRect = proof.getBoundingClientRect();
           return {
-            copyBottom: Math.max(...copy.map((copyElement) => copyElement.getBoundingClientRect().bottom)),
-            proofTop: proof.getBoundingClientRect().top,
+            copyBottom: copy.getBoundingClientRect().bottom,
+            proofTop: proofRect.top,
+            proofLeft: proofRect.left,
+            proofRight: proofRect.right,
+            proofEdges: proofSurfaces.map((surface) => {
+              const rect = surface.getBoundingClientRect();
+              return { left: rect.left, right: rect.right };
+            }),
+            groupLeft: groupRect.left,
+            groupRight: groupRect.right,
           };
         });
-
         expect(placement).not.toBeNull();
         expect(placement?.proofTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
+        for (const edge of placement?.proofEdges ?? []) {
+          expect(edge.left).toBeGreaterThanOrEqual((placement?.groupLeft ?? 0) - 0.5);
+          expect(edge.right, JSON.stringify(placement)).toBeLessThanOrEqual((placement?.groupRight ?? 0) + 0.5);
+        }
       }
 
       const dimensions = await page.evaluate(() => ({
@@ -412,12 +414,58 @@ test.describe('Feature paired narrative rows', () => {
     });
   }
 
+  test('gives recap more width than either portrait proof', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fitur');
+    const recapWidth = await page.locator('[data-evidence-group="cross-device-recap"] .tls-feature-evidence-proof').evaluate((node) => node.getBoundingClientRect().width);
+    const portraitWidths = await page.locator('[data-evidence-group="mobile-workspace"] [data-rail-proof]').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
+    expect(recapWidth).toBeGreaterThan(Math.max(...portraitWidths));
+  });
+
+  for (const width of [1024, 1440]) {
+    test(`keeps the invoice figure and focus trigger around the visible proof at ${width}px`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/fitur');
+      await page.waitForLoadState('networkidle');
+
+      const invoiceTrigger = page.locator('[data-evidence-group="invoice-output"] [data-proof-trigger]');
+      await invoiceTrigger.focus();
+      await expect(invoiceTrigger).toBeFocused();
+
+      const geometry = await page.locator('[data-evidence-group="invoice-output"]').evaluate((group) => {
+        const stage = group.querySelector<HTMLElement>('.tls-feature-evidence-proof');
+        const figure = group.querySelector<HTMLElement>('.tls-rail-proof-invoice');
+        const trigger = group.querySelector<HTMLElement>('[data-proof-trigger]');
+        const proof = group.querySelector<HTMLElement>('.tls-invoice-proof');
+        if (!stage || !figure || !trigger || !proof) return null;
+        const rect = (node: HTMLElement) => {
+          const box = node.getBoundingClientRect();
+          return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width };
+        };
+        return { stage: rect(stage), figure: rect(figure), trigger: rect(trigger), proof: rect(proof) };
+      });
+
+      expect(geometry).not.toBeNull();
+      expect(geometry?.figure.width).toBeCloseTo(geometry?.proof.width ?? 0, 0);
+      expect(geometry?.trigger.width).toBeCloseTo(geometry?.proof.width ?? 0, 0);
+      expect(geometry?.figure.left).toBeLessThanOrEqual((geometry?.proof.left ?? 0) + 0.5);
+      expect(geometry?.figure.right).toBeGreaterThanOrEqual((geometry?.proof.right ?? 0) - 0.5);
+      expect(geometry?.trigger.left).toBeLessThanOrEqual((geometry?.proof.left ?? 0) + 0.5);
+      expect(geometry?.trigger.right).toBeGreaterThanOrEqual((geometry?.proof.right ?? 0) - 0.5);
+      expect(Math.abs(
+        ((geometry?.stage.left ?? 0) + (geometry?.stage.right ?? 0)) / 2
+          - ((geometry?.figure.left ?? 0) + (geometry?.figure.right ?? 0)) / 2,
+      )).toBeLessThanOrEqual(1);
+    });
+  }
+
   test('keeps each feature proof legible when it enters the tablet viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const opacities = await page.locator('[data-feature-row] [data-proof-trigger]').evaluateAll((elements) =>
+    const opacities = await page.locator('[data-evidence-group] [data-proof-trigger]').evaluateAll((elements) =>
       elements.map((element) => Number.parseFloat(window.getComputedStyle(element).opacity)),
     );
 
@@ -427,7 +475,6 @@ test.describe('Feature paired narrative rows', () => {
 });
 
 test.describe('Feature proof inspection', () => {
-  const featureProofs = ['mobile', 'history', 'recap', 'invoice'];
   const featureTriggerCount = 5;
 
   test('opens a larger product proof and restores focus to its trigger', async ({ page }) => {
@@ -435,7 +482,7 @@ test.describe('Feature proof inspection', () => {
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const triggers = page.locator('[data-feature-row] [data-proof-trigger]');
+    const triggers = page.locator('[data-evidence-group] [data-proof-trigger]');
     await expect(triggers).toHaveCount(featureTriggerCount);
 
     const trigger = triggers.first();
@@ -451,26 +498,24 @@ test.describe('Feature proof inspection', () => {
     await expect(trigger).toBeFocused();
   });
 
-  test('uses the available dialog viewport to enlarge every product proof', async ({ page }) => {
+  test('opens every product proof in the centered inspection dialog', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    for (const trigger of await page.locator('[data-feature-row] [data-proof-trigger]').all()) {
+    for (const trigger of await page.locator('[data-evidence-group] [data-proof-trigger]').all()) {
       await trigger.scrollIntoViewIfNeeded();
 
       const proofSelector = '.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern';
       const triggerVisual = trigger.locator(proofSelector).first();
-      const triggerHeight = await triggerVisual.evaluate((element) => element.getBoundingClientRect().height);
+      const triggerWidth = await triggerVisual.evaluate((element) => element.getBoundingClientRect().width);
       await trigger.click();
 
       const dialog = page.getByRole('dialog', { name: 'Perbesar tampilan TutorLog' });
       const dialogVisual = dialog.locator(proofSelector).first();
       await expect(dialogVisual).toBeVisible();
-      const dialogHeight = await dialogVisual.evaluate((element) => element.getBoundingClientRect().height);
-
-      expect(dialogHeight).toBeGreaterThan(triggerHeight * 1.85);
-
+      const dialogWidth = await dialogVisual.evaluate((element) => element.getBoundingClientRect().width);
+      expect(dialogWidth).toBeGreaterThan(triggerWidth * 1.08);
       const placement = await dialog.evaluate((element) => {
         const proof = element.querySelector<HTMLElement>('.tls-proof-image, .tls-recap-proof-web, .tls-recap-proof-mobile, .tpl-modern');
         if (!proof) return null;
@@ -486,84 +531,6 @@ test.describe('Feature proof inspection', () => {
     }
   });
 
-  for (const [viewport, maxPortraitWidth] of [[1440, 188], [1024, 168]] as const) {
-    test(`keeps proof surfaces compact and aligned at ${viewport}px`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport, height: 900 });
-      await page.goto('/fitur');
-      await page.waitForLoadState('networkidle');
-
-      const rows = page.locator('[data-feature-row]');
-      await expect(rows).toHaveCount(featureProofs.length);
-
-      for (const row of await rows.all()) {
-        const featureId = await row.getAttribute('data-feature-row');
-        const trigger = row.locator('[data-proof-trigger]');
-        const platform = row.locator('.tls-feature-platform');
-
-        await expect(trigger).toHaveCount(featureId === 'recap' ? 2 : 1);
-        await expect(platform).toBeVisible();
-
-        if (featureId === 'mobile' || featureId === 'history') {
-          const width = await trigger.first().evaluate((element) => element.getBoundingClientRect().width);
-          expect(width).toBeLessThanOrEqual(maxPortraitWidth);
-        }
-
-        const alignment = await row.evaluate((element) => {
-          const platformLabel = element.querySelector<HTMLElement>('.tls-feature-platform');
-          const proofLabel = element.querySelector<HTMLElement>('[data-rail-proof] figcaption');
-          if (!platformLabel || !proofLabel) return null;
-          return Math.abs(platformLabel.getBoundingClientRect().top - proofLabel.getBoundingClientRect().top);
-        });
-
-        expect(alignment).not.toBeNull();
-        expect(alignment).toBeLessThanOrEqual(2);
-
-        const proofBottomGap = await row.evaluate((element) => {
-          const proof = element.querySelector<HTMLElement>('[data-rail-proof]');
-          if (!proof) return null;
-          const rowRect = element.getBoundingClientRect();
-          const proofRect = proof.getBoundingClientRect();
-          return rowRect.bottom - proofRect.bottom;
-        });
-
-        expect(proofBottomGap).not.toBeNull();
-        expect(proofBottomGap).toBeGreaterThanOrEqual(40);
-      }
-    });
-  }
-
-  for (const viewport of [390, 516]) {
-    test(`keeps every compact proof after its matching copy at ${viewport}px`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport, height: 844 });
-      await page.goto('/fitur');
-      await page.waitForLoadState('networkidle');
-
-      const rows = page.locator('[data-feature-row]');
-      await expect(rows).toHaveCount(featureProofs.length);
-      await expect(page.locator('[data-feature-row] [data-proof-trigger]')).toHaveCount(featureTriggerCount);
-
-      for (const row of await rows.all()) {
-        const placement = await row.evaluate((element) => {
-          const trigger = element.querySelector<HTMLElement>('[data-proof-trigger]');
-          const copy = element.querySelector<HTMLElement>('.tls-feature-copy');
-          if (!trigger || !copy) return null;
-          return {
-            copyBottom: copy.getBoundingClientRect().bottom,
-            triggerTop: trigger.getBoundingClientRect().top,
-          };
-        });
-
-        expect(placement).not.toBeNull();
-        expect(placement?.triggerTop).toBeGreaterThanOrEqual(placement?.copyBottom ?? 0);
-      }
-
-      const width = await page.evaluate(() => ({
-        scroll: document.documentElement.scrollWidth,
-        client: document.documentElement.clientWidth,
-      }));
-      expect(width.scroll).toBeLessThanOrEqual(width.client);
-    });
-  }
 });
 
 test.describe('Public home navigation', () => {
@@ -635,7 +602,7 @@ test.describe('Feature paired narrative reduced-motion guardrails', () => {
     await page.goto('/fitur');
     await page.waitForLoadState('networkidle');
 
-    const surfaces = page.locator('[data-feature-row] [data-proof-trigger]');
+    const surfaces = page.locator('[data-evidence-group] [data-proof-trigger]');
     await expect(surfaces).toHaveCount(5);
 
     const opacities = await surfaces.evaluateAll((elements) =>
@@ -655,15 +622,349 @@ test.describe('Guide story hierarchy', () => {
     await expect(page.locator('.tl-guide-phase')).toHaveCount(2);
     await expect(page.locator('.tl-guide-step')).toHaveCount(6);
     await expect(page.locator('.tl-guide-step-badge')).toHaveCount(6);
+    await expect(page.locator('[data-guide-evidence]')).toHaveCount(2);
+    await expect(page.locator('[data-guide-evidence="mobile"] [data-product-artifact="session"]')).toHaveCount(1);
+    await expect(page.locator('[data-guide-evidence="web"] [data-product-artifact="recap"]')).toHaveCount(1);
+    await expect(page.locator('[data-guide-evidence="web"] [data-product-artifact="invoice"]')).toHaveCount(1);
+    await expect(page.locator('.tl-public-guide [data-rail-proof], .tl-public-guide [data-proof-trigger]')).toHaveCount(0);
   });
 
   test('keeps guide steps readable on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/panduan');
+      await page.waitForLoadState('networkidle');
+
+      const phases = page.locator('.tl-guide-phase');
+      const artifacts = page.locator('[data-guide-evidence] [data-product-artifact]');
+
+      await expect(phases).toHaveCount(2);
+      await expect(page.locator('.tl-guide-step')).toHaveCount(6);
+      await expect(artifacts).toHaveCount(3);
+
+      const phaseBoxes = await phases.evaluateAll((elements) =>
+        elements.map((element) => element.getBoundingClientRect()),
+      );
+      const artifactRightEdges = await artifacts.evaluateAll((elements) =>
+        elements.map((element) => element.getBoundingClientRect().right),
+      );
+
+      expect(artifactRightEdges[0]).toBeLessThanOrEqual(phaseBoxes[0].right + 0.5);
+      expect(artifactRightEdges[1]).toBeLessThanOrEqual(phaseBoxes[1].right + 0.5);
+      expect(artifactRightEdges[2]).toBeLessThanOrEqual(phaseBoxes[1].right + 0.5);
+      expect(phaseBoxes[1].top).toBeGreaterThanOrEqual(phaseBoxes[0].bottom);
+    }
+  });
+
+  test('keeps the guide artifacts compact and centers the invoice preview', async ({ page }) => {
+    await page.setViewportSize({ width: 628, height: 846 });
     await page.goto('/panduan');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('.tl-guide-phase')).toHaveCount(2);
-    await expect(page.locator('.tl-guide-step')).toHaveCount(6);
+    const geometry = await page.evaluate(() => {
+      const session = document.querySelector<HTMLElement>('[data-guide-evidence="mobile"] [data-product-artifact="session"]');
+      const recap = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [data-product-artifact="recap"]');
+      const viewport = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [aria-label="Pratinjau invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      const invoiceArtifact = viewport?.closest<HTMLElement>('[data-product-artifact="invoice"]');
+      const invoiceCaption = invoiceArtifact?.querySelector<HTMLElement>('figcaption');
+      if (!session || !recap || !viewport || !invoice || !invoiceCaption) return null;
+
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      const captionBox = invoiceCaption.getBoundingClientRect();
+      return {
+        sessionHeight: session.getBoundingClientRect().height,
+        recapHeight: recap.getBoundingClientRect().height,
+        centerDelta: Math.abs(
+          (viewportBox.left + viewportBox.width / 2) - (invoiceBox.left + invoiceBox.width / 2),
+        ),
+        invoiceWidthRatio: invoiceBox.width / viewportBox.width,
+        invoiceSideDelta: Math.abs(
+          (invoiceBox.left - viewportBox.left) - (viewportBox.right - invoiceBox.right),
+        ),
+        captionWidth: captionBox.width,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.sessionHeight).toBeLessThanOrEqual(180);
+    expect(geometry?.recapHeight).toBeLessThanOrEqual(190);
+    expect(geometry?.centerDelta).toBeLessThanOrEqual(1);
+    expect(geometry?.invoiceWidthRatio).toBeGreaterThanOrEqual(.94);
+    expect(geometry?.invoiceSideDelta).toBeLessThanOrEqual(1);
+    expect(geometry?.captionWidth).toBeLessThanOrEqual(1);
+  });
+
+  test('gives the web guide a proportional proof column on wide screens', async ({ page }) => {
+    await page.setViewportSize({ width: 1145, height: 905 });
+    await page.goto('/panduan');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const phases = document.querySelector<HTMLElement>('.tl-guide-phases');
+      const webPhase = document.querySelector<HTMLElement>('.tl-guide-phase:nth-of-type(2)');
+      const copy = webPhase?.querySelector<HTMLElement>('.tl-guide-phase-copy');
+      const proof = webPhase?.querySelector<HTMLElement>('.tl-guide-inline-proof');
+      const recap = webPhase?.querySelector<HTMLElement>('[data-product-artifact="recap"]');
+      const invoice = webPhase?.querySelector<HTMLElement>('[data-product-artifact="invoice"]');
+      if (!phases || !webPhase || !copy || !proof || !recap || !invoice) return null;
+
+      const phasesBox = phases.getBoundingClientRect();
+      const copyBox = copy.getBoundingClientRect();
+      const proofBox = proof.getBoundingClientRect();
+      const recapBox = recap.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        phasesWidth: phasesBox.width,
+        columnsAreHorizontal: proofBox.left > copyBox.right,
+        recapHeight: recapBox.height,
+        invoiceToRecapRatio: invoiceBox.width / recapBox.width,
+        centerDelta: Math.abs(
+          (recapBox.top + recapBox.height / 2) - (invoiceBox.top + invoiceBox.height / 2),
+        ),
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.phasesWidth).toBeGreaterThanOrEqual(1000);
+    expect(geometry?.columnsAreHorizontal).toBe(true);
+    expect(geometry?.recapHeight).toBeLessThanOrEqual(190);
+    expect(geometry?.invoiceToRecapRatio).toBeGreaterThanOrEqual(1.45);
+    expect(geometry?.centerDelta).toBeLessThanOrEqual(1);
+  });
+
+  test('stacks and spaces the web guide artifacts when horizontal space is narrow', async ({ page }) => {
+    for (const width of [733, 412]) {
+      await page.setViewportSize({ width, height: 915 });
+      await page.goto('/panduan');
+      await page.waitForLoadState('networkidle');
+
+      const geometry = await page.evaluate(() => {
+        const webPhase = document.querySelector<HTMLElement>('.tl-guide-phase:nth-of-type(2)');
+        const copy = webPhase?.querySelector<HTMLElement>('.tl-guide-phase-copy');
+        const proof = webPhase?.querySelector<HTMLElement>('.tl-guide-inline-proof');
+        const recap = webPhase?.querySelector<HTMLElement>('[data-product-artifact="recap"]');
+        const invoice = webPhase?.querySelector<HTMLElement>('[data-product-artifact="invoice"]');
+        const viewport = invoice?.querySelector<HTMLElement>('[aria-label="Pratinjau invoice TutorLog"]');
+        const paper = viewport?.querySelector<HTMLElement>('.tpl-modern');
+        if (!webPhase || !copy || !proof || !recap || !invoice || !viewport || !paper) return null;
+
+        const copyBox = copy.getBoundingClientRect();
+        const proofBox = proof.getBoundingClientRect();
+        const recapBox = recap.getBoundingClientRect();
+        const invoiceBox = invoice.getBoundingClientRect();
+        const viewportBox = viewport.getBoundingClientRect();
+        const paperBox = paper.getBoundingClientRect();
+        return {
+          phaseIsVertical: proofBox.top > copyBox.bottom,
+          artifactsAreVertical: invoiceBox.top > recapBox.bottom,
+          artifactGap: invoiceBox.top - recapBox.bottom,
+          invoiceWidthRatio: invoiceBox.width / proofBox.width,
+          paperContained: paperBox.left >= viewportBox.left - .5 && paperBox.right <= viewportBox.right + .5,
+        };
+      });
+
+      expect(geometry).not.toBeNull();
+      expect(geometry?.phaseIsVertical).toBe(true);
+      expect(geometry?.artifactsAreVertical).toBe(true);
+      expect(geometry?.artifactGap).toBeGreaterThanOrEqual(56);
+      expect(geometry?.artifactGap).toBeLessThanOrEqual(80);
+      expect(geometry?.invoiceWidthRatio).toBeGreaterThanOrEqual(.98);
+      expect(geometry?.paperContained).toBe(true);
+    }
+  });
+});
+
+test.describe('Public workflow artifact alignment', () => {
+  test('aligns workflow copy while centering and connecting its artifacts on desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const stages = [...document.querySelectorAll<HTMLElement>('[data-workflow-stage]')];
+      const copies = stages.map((stage) => stage.firstElementChild?.getBoundingClientRect());
+      const artifacts = stages.map((stage) => stage.querySelector<HTMLElement>('[data-product-artifact]')?.getBoundingClientRect());
+      const connectors = [...document.querySelectorAll<HTMLElement>('[data-workflow-connector]')]
+        .map((connector) => connector.getBoundingClientRect());
+      if (copies.some((box) => !box) || artifacts.some((box) => !box) || connectors.length !== 2) return null;
+
+      return {
+        copyTops: copies.map((box) => box!.top),
+        artifactCenters: artifacts.map((box) => box!.top + box!.height / 2),
+        artifactLefts: artifacts.map((box) => box!.left),
+        artifactRights: artifacts.map((box) => box!.right),
+        connectorLefts: connectors.map((box) => box.left),
+        connectorRights: connectors.map((box) => box.right),
+        connectorCenters: connectors.map((box) => box.top + box.height / 2),
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(Math.max(...geometry!.copyTops) - Math.min(...geometry!.copyTops)).toBeLessThanOrEqual(1);
+    expect(Math.max(...geometry!.artifactCenters) - Math.min(...geometry!.artifactCenters)).toBeLessThanOrEqual(1);
+    for (let index = 0; index < 2; index += 1) {
+      expect(Math.abs(geometry!.connectorCenters[index] - geometry!.artifactCenters[index])).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry!.connectorLefts[index] - geometry!.artifactRights[index])).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry!.connectorRights[index] - geometry!.artifactLefts[index + 1])).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('keeps vertical workflow connectors clear of dividers and copy on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const result = await page.evaluate(() => {
+      const stages = [...document.querySelectorAll<HTMLElement>('[data-workflow-stage]')];
+      const headingWeights = stages.map((stage) => {
+        const heading = stage.querySelector<HTMLElement>('h2');
+        return heading ? getComputedStyle(heading).fontWeight : null;
+      });
+      const clearances = stages.slice(0, -1).map((stage, index) => {
+        const connector = stage.querySelector<HTMLElement>('[data-workflow-connector]');
+        const artifact = stage.querySelector<HTMLElement>('[data-product-artifact]');
+        const nextCopy = stages[index + 1].firstElementChild;
+        if (!connector || !artifact || !nextCopy) return null;
+
+        const stageBox = stage.getBoundingClientRect();
+        const connectorBox = connector.getBoundingClientRect();
+        const artifactBox = artifact.getBoundingClientRect();
+        const nextCopyBox = nextCopy.getBoundingClientRect();
+        return {
+          afterArtifact: connectorBox.top - artifactBox.bottom,
+          beforeNextCopy: nextCopyBox.top - connectorBox.bottom,
+          connectorOverflow: connectorBox.bottom - stageBox.bottom,
+          nextStageBorderWidth: getComputedStyle(stages[index + 1]).borderTopWidth,
+        };
+      });
+      return { clearances, headingWeights };
+    });
+
+    expect(result.headingWeights).toEqual(['700', '700', '700']);
+    expect(result.clearances).toHaveLength(2);
+    for (const clearance of result.clearances) {
+      expect(clearance).not.toBeNull();
+      expect(clearance!.afterArtifact).toBeGreaterThanOrEqual(16);
+      expect(clearance!.afterArtifact).toBeLessThanOrEqual(24);
+      expect(clearance!.beforeNextCopy).toBeGreaterThanOrEqual(20);
+      expect(clearance!.beforeNextCopy).toBeLessThanOrEqual(32);
+      expect(clearance!.connectorOverflow).toBeLessThanOrEqual(0);
+      expect(clearance!.nextStageBorderWidth).toBe('0px');
+    }
+  });
+
+  test('lets the homepage invoice fill its artifact at the reviewed mobile width', async ({ page }) => {
+    await page.setViewportSize({ width: 571, height: 846 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Pratinjau invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      if (!viewport || !invoice) return null;
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        widthRatio: invoiceBox.width / viewportBox.width,
+        sideDelta: Math.abs(
+          (invoiceBox.left - viewportBox.left) - (viewportBox.right - invoiceBox.right),
+        ),
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.widthRatio).toBeGreaterThanOrEqual(.94);
+    expect(geometry?.sideDelta).toBeLessThanOrEqual(1);
+  });
+
+  test('contains the homepage invoice at the Pixel 8 width', async ({ page }) => {
+    await page.setViewportSize({ width: 374, height: 832 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Pratinjau invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      if (!viewport || !invoice) return null;
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        leftInset: invoiceBox.left - viewportBox.left,
+        rightInset: viewportBox.right - invoiceBox.right,
+        widthRatio: invoiceBox.width / viewportBox.width,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.leftInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.rightInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.widthRatio).toBeGreaterThanOrEqual(.9);
+    expect(geometry?.widthRatio).toBeLessThanOrEqual(.96);
+  });
+
+  test('enlarges and contains the feature invoice at the reviewed mobile width', async ({ page }) => {
+    await page.setViewportSize({ width: 571, height: 769 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const proof = document.querySelector<HTMLElement>('[data-evidence-group="invoice-output"] .tls-invoice-proof');
+      const invoice = proof?.querySelector<HTMLElement>('.tpl-modern');
+      if (!proof || !invoice) return null;
+      const proofBox = proof.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        proofWidth: proofBox.width,
+        leftInset: invoiceBox.left - proofBox.left,
+        rightInset: proofBox.right - invoiceBox.right,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.proofWidth).toBeGreaterThanOrEqual(400);
+    expect(geometry?.leftInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.rightInset).toBeGreaterThanOrEqual(0);
+  });
+
+  test('uses a white recap surface and contains the invoice at a narrow desktop width', async ({ page }) => {
+    await page.setViewportSize({ width: 916, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const recap = document.querySelector<HTMLElement>('[data-workflow-stage="recap"] [data-product-artifact="recap"]');
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Pratinjau invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      if (!recap || !viewport || !invoice) return null;
+
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        recapBackground: getComputedStyle(recap).backgroundColor,
+        leftInset: invoiceBox.left - viewportBox.left,
+        rightInset: viewportBox.right - invoiceBox.right,
+        widthRatio: invoiceBox.width / viewportBox.width,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.recapBackground).toBe('rgb(255, 255, 255)');
+    expect(geometry?.leftInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.rightInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.widthRatio).toBeGreaterThanOrEqual(.9);
+  });
+
+  test('gives the recap proof enough width on a narrow feature viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 628, height: 846 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const width = await page.locator('[data-evidence-group="cross-device-recap"] .tls-rail-proof-recap')
+      .evaluate((element) => element.getBoundingClientRect().width);
+
+    expect(width).toBeGreaterThanOrEqual(440);
   });
 });
 

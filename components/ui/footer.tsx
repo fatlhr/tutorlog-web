@@ -21,7 +21,7 @@ export function AppFooter({ context }: AppFooterProps) {
           </span>
           TutorLog
         </Link>
-        <p className={styles.footerDesc}>Teman kerja untuk catatan les, rekap, dan invoice tutor privat.</p>
+        <p className={styles.footerDesc}>Teman kerja tutor untuk mencatat sesi, membuat rekap, dan menyiapkan invoice.</p>
       </div>
       <div className={styles.footerCol}>
         <span className={styles.footerColHeading}>Jelajahi</span>

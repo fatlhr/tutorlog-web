@@ -53,7 +53,7 @@ export default function PublicMotion() {
       );
     });
 
-    gsap.utils.toArray<HTMLElement>(".tls-feature-row .tls-rail-surface").forEach((element) => {
+    gsap.utils.toArray<HTMLElement>(".tls-feature-evidence-group .tls-rail-surface").forEach((element) => {
       gsap.fromTo(
         element,
         { scale: 0.96, opacity: 0.72 },
@@ -71,22 +71,6 @@ export default function PublicMotion() {
       );
     });
 
-    gsap.utils.toArray<HTMLElement>(".tl-landing-feature-rows .tls-rail-surface").forEach((element) => {
-      gsap.fromTo(
-        element,
-        { scale: 0.98 },
-        {
-          scale: 1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: element,
-            start: "top 80%",
-            end: "bottom 28%",
-            scrub: true,
-          },
-        },
-      );
-    });
   }, []);
 
   return null;

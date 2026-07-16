@@ -1,0 +1,295 @@
+.artifact {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--tl-line);
+  border-radius: var(--tl-radius-surface);
+  background: #fff;
+}
+
+.artifact figcaption {
+  color: var(--tl-green);
+  font-family: var(--f-title), monospace;
+  font-weight: 700;
+}
+
+.session {
+  min-height: 0;
+  padding: 18px 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sessionSummary,
+.sessionStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sessionSummary strong {
+  font-family: var(--f-title), monospace;
+  font-size: 17px;
+}
+
+.sessionMeta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  color: var(--tl-muted);
+  font-size: 13px;
+}
+
+.sessionStatus {
+  padding-top: 10px;
+  border-top: 1px solid var(--tl-line);
+  color: var(--tl-green);
+}
+
+.status {
+  padding: 5px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: var(--tl-radius-round);
+  background: var(--tl-mint);
+  font-size: 13px;
+}
+
+.recap {
+  min-height: 0;
+  padding: 20px 22px;
+  display: grid;
+  gap: 5px;
+  background: #fff;
+}
+
+.recap > strong {
+  font-family: var(--f-title), monospace;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.recap > span { color: var(--tl-muted); }
+
+.invoice {
+  min-height: 340px;
+  padding: 20px;
+}
+
+.invoiceViewport {
+  width: 100%;
+  height: 290px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.invoiceViewport :global(.tpl-modern) {
+  flex: 0 0 760px;
+  width: 760px;
+  transform: scale(.48);
+  transform-origin: top center;
+}
+
+.workflow {
+  display: grid;
+  grid-template-columns: .82fr 1fr 1.18fr;
+  column-gap: 28px;
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 24px;
+}
+
+.artifactSlot {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  align-items: center;
+}
+
+.stageCopy h2 {
+  margin: 0;
+  font-family: var(--f-title), monospace;
+  font-weight: 700;
+}
+
+.stageCopy p {
+  margin: 10px 0 0;
+  color: var(--tl-muted);
+}
+
+.connector {
+  position: absolute;
+  top: 52%;
+  right: -28px;
+  width: 28px;
+  border-top: 1px solid var(--tl-green);
+}
+
+.artifactSlot > .connector { top: 50%; }
+
+.guideSingle,
+.guideSequence {
+  min-width: 0;
+}
+
+.guideSequence {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(180px, .62fr) 28px minmax(360px, 1.38fr);
+  gap: 0;
+  align-items: center;
+}
+
+.guideSequence > .connector {
+  position: static;
+  width: 100%;
+  border-top: 1px solid var(--tl-green);
+}
+
+.guideSequence > .invoice { padding: 12px; }
+
+@media (max-width: 1099px) {
+  .guideSequence {
+    width: min(680px, 100%);
+    margin-inline: auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .guideSequence > .recap {
+    width: min(420px, 100%);
+    justify-self: center;
+  }
+
+  .guideSequence > .invoice { width: 100%; }
+
+  .guideSequence > .connector {
+    width: 1px;
+    height: 28px;
+    margin: 20px auto;
+    border-top: 0;
+    border-left: 1px solid var(--tl-green);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.35); }
+  .guideSequence .invoiceViewport { height: 480px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.78); }
+}
+
+@media (max-width: 767px) {
+  .workflow,
+  .guideSequence {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .stage,
+  .stage:nth-child(2) {
+    grid-row: auto;
+    grid-template-rows: auto auto;
+    padding: 40px 0 0;
+  }
+
+  .stage + .stage { padding-top: 24px; }
+  .stage:last-child { padding-bottom: 40px; }
+
+  .connector {
+    position: static;
+    width: 1px;
+    height: 28px;
+    margin: 4px auto -28px;
+    border-top: 0;
+    border-left: 1px solid var(--tl-green);
+  }
+
+  .artifactSlot > .connector { margin: 16px auto 0; }
+
+  .guideSequence > .connector { margin: 20px auto; }
+
+  .invoiceViewport {
+    height: 420px;
+  }
+
+  .invoiceViewport :global(.tpl-modern) {
+    transform: scale(.7);
+  }
+}
+
+@media (min-width: 700px) and (max-width: 767px) {
+  .guideSequence .invoiceViewport { height: 480px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.78); }
+}
+
+@media (min-width: 620px) and (max-width: 699px) {
+  .guideSequence .invoiceViewport { height: 420px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.69); }
+}
+
+@media (max-width: 619px) {
+  .invoiceViewport { height: 370px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.6); }
+  .guideSequence .invoiceViewport { height: 375px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.61); }
+}
+
+@media (max-width: 559px) {
+  .invoiceViewport { height: 330px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.54); }
+  .guideSequence .invoiceViewport { height: 330px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.53); }
+}
+
+@media (max-width: 499px) {
+  .invoiceViewport { height: 300px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.49); }
+  .guideSequence .invoiceViewport { height: 300px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.49); }
+}
+
+@media (max-width: 479px) {
+  .invoiceViewport { height: 245px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.35); }
+  .guideSequence .invoiceViewport { height: 260px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.42); }
+}
+
+@media (max-width: 399px) {
+  .guideSequence .invoiceViewport { height: 230px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.36); }
+}
+
+@media (max-width: 359px) {
+  .guideSequence .invoiceViewport { height: 190px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.29); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artifact,
+  .connector {
+    opacity: 1;
+    transform: none;
+  }
+}
