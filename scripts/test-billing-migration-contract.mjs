@@ -394,6 +394,53 @@ assert.match(reservePurchaseFunction, /for update/i);
 assert.match(reservePurchaseFunction, /insert into public\.billing_purchases/i);
 assert.match(reservePurchaseFunction, /insert into public\.billing_payments/i);
 assert.match(reservePurchaseFunction, /'should_create_provider'/i);
+for (const snapshot of [
+  "price_id",
+  "base_amount",
+  "channel_fee",
+  "total_amount",
+  "currency",
+]) {
+  assert.match(
+    reservePurchaseFunction,
+    new RegExp(`'${snapshot}'`, "i"),
+    `reservation must return authoritative ${snapshot}`,
+  );
+}
+assert.match(
+  reservePurchaseFunction,
+  /raise exception using[\s\S]*message = 'PACKAGE_UNAVAILABLE'/i,
+);
+assert.match(
+  reservePurchaseFunction,
+  /raise exception using[\s\S]*message = 'PRICE_CHANGED'/i,
+);
+
+const finalizeProviderFunction = taskI5Function("finalize_billing_provider_payment");
+assert.match(finalizeProviderFunction, /payment\.user_id = p_user_id/i);
+assert.match(finalizeProviderFunction, /for update/i);
+assert.match(finalizeProviderFunction, /v_payment\.state not in \('created', 'superseded'\)/i);
+assert.match(finalizeProviderFunction, /v_payment\.state = 'superseded'/i);
+assert.match(finalizeProviderFunction, /provider_reference = p_provider_reference/i);
+assert.match(finalizeProviderFunction, /PROVIDER_REPORTED_FAILED/i);
+assert.match(finalizeProviderFunction, /'requires_cancellation'/i);
+assert.match(
+  finalizeProviderFunction,
+  /cancellation_error_code = case[\s\S]*when v_requires_cancellation then null/i,
+  "a late provider reference must clear the stale missing-reference cancellation error before retry",
+);
+
+const recordProviderFailureFunction = taskI5Function("record_billing_provider_failure");
+assert.match(recordProviderFailureFunction, /payment\.user_id = p_user_id/i);
+assert.match(recordProviderFailureFunction, /for update/i);
+assert.match(recordProviderFailureFunction, /provider_error_code = p_error_code/i);
+assert.match(recordProviderFailureFunction, /'recorded'/i);
+
+const recordCancellationFailureFunction = taskI5Function("record_billing_cancellation_failure");
+assert.match(recordCancellationFailureFunction, /payment\.user_id = p_user_id/i);
+assert.match(recordCancellationFailureFunction, /for update/i);
+assert.match(recordCancellationFailureFunction, /cancellation_error_code = p_error_code/i);
+assert.match(recordCancellationFailureFunction, /'recorded'/i);
 
 const claimInquiryFunction = taskI5Function("claim_billing_payment_inquiry");
 assert.match(claimInquiryFunction, /purchase\.user_id = p_user_id/i);
@@ -416,8 +463,11 @@ assert.match(supersedePaymentFunction, /cancellation_requested_at = now\(\)/i);
 
 for (const signature of [
   "reserve_billing_purchase(uuid, text, text, integer)",
+  "finalize_billing_provider_payment(uuid, uuid, text, text, text, integer, integer, timestamptz)",
+  "record_billing_provider_failure(uuid, uuid, text)",
   "claim_billing_payment_inquiry(uuid, uuid)",
   "supersede_billing_payment(uuid, uuid)",
+  "record_billing_cancellation_failure(uuid, uuid, text)",
 ]) {
   const escaped = signature.replace(/[()]/g, "\\$&");
   assert.match(

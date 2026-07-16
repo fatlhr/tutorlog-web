@@ -57,14 +57,49 @@ assert.ok(guardIndex !== -1 && guardIndex < reserveIndex, "disabled purchase mus
 assert.ok(reserveIndex < createProviderIndex, "provider factory is only reached by the reservation owner");
 assert.match(purchasesSource, /should_create_provider/);
 assert.match(purchasesSource, /isLifetime[\s\S]*LIFETIME_ALREADY_ACTIVE/);
-assert.match(purchasesSource, /state: "failed"[\s\S]*provider_error_code/);
+for (const snapshot of ["priceId", "baseAmount", "channelFee", "totalAmount", "currency"]) {
+  assert.match(purchasesSource, new RegExp(snapshot), `missing reservation snapshot: ${snapshot}`);
+}
+assert.match(purchasesSource, /amount: reservation\.baseAmount/);
+assert.doesNotMatch(purchasesSource, /amount: quote\.baseAmount/);
+const quoteMismatch = purchasesSource.indexOf("quoteDoesNotMatchReservation");
+const mismatchFailure = purchasesSource.indexOf(
+  'await recordProviderFailure(user.id, reservation.paymentId, "PRICE_CHANGED")',
+);
+const providerCreation = purchasesSource.indexOf("createPaymentProvider()");
+assert.ok(
+  quoteMismatch !== -1 && mismatchFailure > quoteMismatch && mismatchFailure < providerCreation,
+  "quote mismatch must be recorded and rejected before provider creation",
+);
+assert.match(purchasesSource, /rpc\(\s*"finalize_billing_provider_payment"/);
+assert.match(purchasesSource, /requires_cancellation/);
 assert.match(
   purchasesSource,
-  /const \{ error: failureUpdateError \} = await admin[\s\S]*provider_error_code[\s\S]*if \(failureUpdateError\)/,
-  "provider creation failure recording must be checked",
+  /value\.requires_cancellation === true[\s\S]*value\.state !== "superseded"/,
+  "requires_cancellation finalization must verify the preserved superseded state",
 );
-assert.match(purchasesSource, /\.eq\("user_id", userId\)/);
+assert.match(
+  purchasesSource,
+  /value\.requires_cancellation === false[\s\S]*value\.state !== expectedState/,
+  "ordinary finalization must verify the provider-normalized state",
+);
+assert.doesNotMatch(
+  purchasesSource,
+  /\.update\([\s\S]*provider_reference[\s\S]*\.eq\("state", "created"\)/,
+  "provider finalization must not use a fragile direct created-only update",
+);
+assert.match(
+  purchasesSource,
+  /rpc\("record_billing_provider_failure"[\s\S]*recorded !== true/,
+  "provider creation failure recording must verify the returned result",
+);
+assert.match(purchasesSource, /p_user_id: user\.id/);
 assert.doesNotMatch(purchasesSource, /raw|payload|responseBody|providerError/i);
+assert.match(
+  purchasesSource,
+  /error\.message === "PACKAGE_UNAVAILABLE"[\s\S]*error\.message === "PRICE_CHANGED"/,
+  "reservation may map only exact stable SQL billing codes",
+);
 
 assert.match(paymentsSource, /rpc\("claim_billing_payment_inquiry"/);
 assert.match(paymentsSource, /rpc\("supersede_billing_payment"/);
@@ -72,11 +107,10 @@ assert.match(paymentsSource, /BILLING_PAYMENT_PROVIDER_ENABLED !== "true"[\s\S]*
 const cancelGuard = paymentsSource.indexOf("assertPaymentProviderEnabled();");
 const supersedeCall = paymentsSource.indexOf('rpc("supersede_billing_payment"');
 assert.ok(cancelGuard !== -1 && cancelGuard < supersedeCall, "disabled cancellation must not supersede");
-assert.match(paymentsSource, /cancellation_error_code/);
 assert.match(
   paymentsSource,
-  /const \{ error: cancellationUpdateError \} = await admin[\s\S]*cancellation_error_code[\s\S]*if \(cancellationUpdateError\)/,
-  "provider cancellation failure recording must be checked",
+  /rpc\("record_billing_cancellation_failure"[\s\S]*recorded !== true/,
+  "provider cancellation failure recording must verify the returned result",
 );
 assert.match(paymentsSource, /\.eq\("user_id", userId\)/);
 assert.match(paymentsSource, /\.eq\("purchase_id", purchaseId\)/);

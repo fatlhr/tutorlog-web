@@ -89,7 +89,7 @@ export function isPackageCode(value: unknown): value is PackageCode {
 }
 
 const transitions: Record<PaymentState, readonly PaymentState[]> = {
-  created: ["pending", "failed", "canceled"],
+  created: ["pending", "superseded", "failed", "canceled"],
   pending: ["superseded", "paid", "expired", "failed", "canceled"],
   superseded: ["paid", "expired", "canceled"],
   paid: ["refunded"],

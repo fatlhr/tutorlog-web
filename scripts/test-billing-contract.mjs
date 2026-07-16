@@ -46,6 +46,7 @@ assert.equal(isPackageCode("plus_12m"), true);
 assert.equal(isPackageCode("founding_lifetime"), false);
 assert.ok(PAYMENT_STATES.includes("superseded"));
 assert.doesNotThrow(() => assertPaymentTransition("pending", "paid"));
+assert.doesNotThrow(() => assertPaymentTransition("created", "superseded"));
 assert.doesNotThrow(() => assertPaymentTransition("superseded", "paid"));
 assert.throws(() => assertPaymentTransition("paid", "pending"), BillingError);
 

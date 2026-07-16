@@ -181,6 +181,44 @@ function cancellationFailureCode(error: unknown): string {
   return "PROVIDER_UNAVAILABLE";
 }
 
+async function recordCancellationFailure(
+  userId: string,
+  paymentId: string,
+  errorCode: string,
+): Promise<void> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc("record_billing_cancellation_failure", {
+    p_user_id: userId,
+    p_payment_id: paymentId,
+    p_error_code: errorCode,
+  });
+  if (error) throw new Error("Failed to record cancellation failure");
+
+  const record = (data ?? {}) as Record<string, unknown>;
+  if (record.recorded !== true) {
+    throw new Error("Cancellation failure was not recorded");
+  }
+}
+
+export async function cancelProviderPaymentBestEffort(
+  userId: string,
+  paymentId: string,
+  providerReference: string,
+): Promise<void> {
+  let cancellationCode: string | null = null;
+  try {
+    const provider = createPaymentProvider();
+    const cancellation = await provider.cancelPayment(providerReference);
+    if (!cancellation.accepted) cancellationCode = "PROVIDER_CANCELLATION_REJECTED";
+  } catch (error) {
+    cancellationCode = cancellationFailureCode(error);
+  }
+
+  if (cancellationCode) {
+    await recordCancellationFailure(userId, paymentId, cancellationCode);
+  }
+}
+
 export async function cancelPendingPayment(
   userId: string,
   paymentId: string,
@@ -200,31 +238,10 @@ export async function cancelPendingPayment(
     throw new BillingError("PAYMENT_NOT_CANCELABLE", "Payment cannot be canceled");
   }
 
-  let cancellationCode: string | null = null;
   if (typeof result.provider_reference !== "string" || !result.provider_reference.trim()) {
-    cancellationCode = "PROVIDER_REFERENCE_MISSING";
+    await recordCancellationFailure(userId, paymentId, "PROVIDER_REFERENCE_MISSING");
   } else {
-    try {
-      const provider = createPaymentProvider();
-      const cancellation = await provider.cancelPayment(result.provider_reference);
-      if (!cancellation.accepted) cancellationCode = "PROVIDER_CANCELLATION_REJECTED";
-    } catch (error) {
-      cancellationCode = cancellationFailureCode(error);
-    }
-  }
-
-  if (cancellationCode) {
-    const { error: cancellationUpdateError } = await admin
-      .from("billing_payments")
-      .update({
-        cancellation_error_code: cancellationCode,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", paymentId)
-      .eq("user_id", userId)
-      .eq("state", "superseded");
-
-    if (cancellationUpdateError) throw new Error("Failed to record cancellation failure");
+    await cancelProviderPaymentBestEffort(userId, paymentId, result.provider_reference);
   }
 
   return readPurchase(userId, result.purchase_id);

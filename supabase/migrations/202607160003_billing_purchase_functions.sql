@@ -16,6 +16,7 @@ security definer
 set search_path = ''
 as $$
 declare
+  v_product public.billing_products%rowtype;
   v_catalog record;
   v_existing record;
   v_purchase_id uuid;
@@ -39,29 +40,41 @@ begin
     0
   ));
 
-  select
-    product.id as product_id,
-    product.code,
-    product.name,
-    product.duration_kind,
-    product.duration_value,
-    price.id as price_id,
-    price.amount,
-    price.currency
-  into v_catalog
+  select product.*
+  into v_product
   from public.billing_products as product
-  join public.billing_prices as price
-    on price.product_id = product.id
   where product.code = p_package_code
     and product.code <> 'free'
     and product.active
-    and price.active
     and (product.available_from is null or product.available_from <= now())
     and (product.available_until is null or product.available_until > now())
   limit 1;
 
   if not found then
-    raise exception 'Billing package is unavailable';
+    raise exception using
+      errcode = 'P0001',
+      message = 'PACKAGE_UNAVAILABLE';
+  end if;
+
+  select
+    v_product.id as product_id,
+    v_product.code,
+    v_product.name,
+    v_product.duration_kind,
+    v_product.duration_value,
+    price.id as price_id,
+    price.amount,
+    price.currency
+  into v_catalog
+  from public.billing_prices as price
+  where price.product_id = v_product.id
+    and price.active
+  limit 1;
+
+  if not found then
+    raise exception using
+      errcode = 'P0001',
+      message = 'PRICE_CHANGED';
   end if;
 
   v_total_amount := v_catalog.amount + p_channel_fee;
@@ -93,7 +106,12 @@ begin
     return jsonb_build_object(
       'purchase_id', v_existing.purchase_id,
       'payment_id', v_existing.payment_id,
-      'should_create_provider', false
+      'should_create_provider', false,
+      'price_id', v_catalog.price_id,
+      'base_amount', v_catalog.amount,
+      'channel_fee', p_channel_fee,
+      'total_amount', v_total_amount,
+      'currency', v_catalog.currency
     );
   end if;
 
@@ -159,7 +177,148 @@ begin
   return jsonb_build_object(
     'purchase_id', v_purchase_id,
     'payment_id', v_payment_id,
-    'should_create_provider', true
+    'should_create_provider', true,
+    'price_id', v_catalog.price_id,
+    'base_amount', v_catalog.amount,
+    'channel_fee', p_channel_fee,
+    'total_amount', v_total_amount,
+    'currency', v_catalog.currency
+  );
+end;
+$$;
+
+create function public.finalize_billing_provider_payment(
+  p_user_id uuid,
+  p_payment_id uuid,
+  p_provider_reference text,
+  p_state text,
+  p_redirect_url text,
+  p_channel_fee integer,
+  p_total_amount integer,
+  p_expires_at timestamptz
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_payment public.billing_payments%rowtype;
+  v_final_state text;
+  v_requires_cancellation boolean;
+begin
+  if p_user_id is null
+    or p_payment_id is null
+    or nullif(btrim(p_provider_reference), '') is null
+    or p_state not in ('pending', 'failed')
+    or p_channel_fee is null
+    or p_total_amount is null
+  then
+    raise exception 'Provider payment finalization input is invalid';
+  end if;
+
+  select payment.*
+  into v_payment
+  from public.billing_payments as payment
+  where payment.id = p_payment_id
+    and payment.user_id = p_user_id
+  for update;
+
+  if not found or v_payment.state not in ('created', 'superseded') then
+    return jsonb_build_object('finalized', false);
+  end if;
+
+  if p_channel_fee <> v_payment.channel_fee
+    or p_total_amount <> v_payment.total_amount
+    or p_total_amount <> v_payment.base_amount + p_channel_fee
+  then
+    raise exception 'Provider payment amount does not match reservation';
+  end if;
+
+  v_requires_cancellation := v_payment.state = 'superseded';
+  v_final_state := case
+    when v_payment.state = 'superseded' then 'superseded'
+    else p_state
+  end;
+
+  update public.billing_payments
+  set provider_reference = p_provider_reference,
+      state = v_final_state,
+      redirect_url = p_redirect_url,
+      expires_at = p_expires_at,
+      provider_error_code = case
+        when p_state = 'failed' then 'PROVIDER_REPORTED_FAILED'
+        else null
+      end,
+      cancellation_error_code = case
+        when v_requires_cancellation then null
+        else cancellation_error_code
+      end,
+      updated_at = now()
+  where id = v_payment.id
+    and user_id = p_user_id
+  returning * into v_payment;
+
+  if not found then
+    return jsonb_build_object('finalized', false);
+  end if;
+
+  return jsonb_build_object(
+    'finalized', true,
+    'state', v_payment.state,
+    'requires_cancellation', v_requires_cancellation
+  );
+end;
+$$;
+
+create function public.record_billing_provider_failure(
+  p_user_id uuid,
+  p_payment_id uuid,
+  p_error_code text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_payment public.billing_payments%rowtype;
+begin
+  if p_user_id is null
+    or p_payment_id is null
+    or p_error_code not in (
+      'PRICE_CHANGED',
+      'PAYMENT_PROVIDER_NOT_READY',
+      'PROVIDER_UNAVAILABLE',
+      'PROVIDER_RESPONSE_INVALID'
+    )
+  then
+    raise exception 'Provider failure code is invalid';
+  end if;
+
+  select payment.*
+  into v_payment
+  from public.billing_payments as payment
+  where payment.id = p_payment_id
+    and payment.user_id = p_user_id
+    and payment.state in ('created', 'superseded')
+  for update;
+
+  if not found then
+    return jsonb_build_object('recorded', false);
+  end if;
+
+  update public.billing_payments
+  set state = case when v_payment.state = 'created' then 'failed' else 'superseded' end,
+      provider_error_code = p_error_code,
+      updated_at = now()
+  where id = v_payment.id
+    and user_id = p_user_id
+  returning * into v_payment;
+
+  return jsonb_build_object(
+    'recorded', found,
+    'state', v_payment.state
   );
 end;
 $$;
@@ -256,16 +415,71 @@ begin
 end;
 $$;
 
+create function public.record_billing_cancellation_failure(
+  p_user_id uuid,
+  p_payment_id uuid,
+  p_error_code text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_payment public.billing_payments%rowtype;
+begin
+  if p_user_id is null
+    or p_payment_id is null
+    or nullif(btrim(p_error_code), '') is null
+  then
+    raise exception 'Cancellation failure code is invalid';
+  end if;
+
+  select payment.*
+  into v_payment
+  from public.billing_payments as payment
+  where payment.id = p_payment_id
+    and payment.user_id = p_user_id
+    and payment.state = 'superseded'
+  for update;
+
+  if not found then
+    return jsonb_build_object('recorded', false);
+  end if;
+
+  update public.billing_payments
+  set cancellation_error_code = p_error_code,
+      updated_at = now()
+  where id = v_payment.id
+    and user_id = p_user_id
+  returning * into v_payment;
+
+  return jsonb_build_object('recorded', found);
+end;
+$$;
+
 revoke all on function public.reserve_billing_purchase(uuid, text, text, integer)
+  from public, anon, authenticated;
+revoke all on function public.finalize_billing_provider_payment(uuid, uuid, text, text, text, integer, integer, timestamptz)
+  from public, anon, authenticated;
+revoke all on function public.record_billing_provider_failure(uuid, uuid, text)
   from public, anon, authenticated;
 revoke all on function public.claim_billing_payment_inquiry(uuid, uuid)
   from public, anon, authenticated;
 revoke all on function public.supersede_billing_payment(uuid, uuid)
   from public, anon, authenticated;
+revoke all on function public.record_billing_cancellation_failure(uuid, uuid, text)
+  from public, anon, authenticated;
 
 grant execute on function public.reserve_billing_purchase(uuid, text, text, integer)
+  to service_role;
+grant execute on function public.finalize_billing_provider_payment(uuid, uuid, text, text, text, integer, integer, timestamptz)
+  to service_role;
+grant execute on function public.record_billing_provider_failure(uuid, uuid, text)
   to service_role;
 grant execute on function public.claim_billing_payment_inquiry(uuid, uuid)
   to service_role;
 grant execute on function public.supersede_billing_payment(uuid, uuid)
+  to service_role;
+grant execute on function public.record_billing_cancellation_failure(uuid, uuid, text)
   to service_role;
