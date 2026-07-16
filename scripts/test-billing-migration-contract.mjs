@@ -211,10 +211,28 @@ assert.match(
 const paidEventFunction = functionsSql.match(
   /create (?:or replace )?function public\.apply_billing_paid_event[\s\S]*?\n\$\$;/i,
 )?.[0] ?? "";
+const i3ReviewFailures = [];
 assert.match(paidEventFunction, /from public\.billing_payments[\s\S]*for update/i);
 assert.match(paidEventFunction, /from public\.billing_purchases[\s\S]*for update/i);
 assert.match(paidEventFunction, /provider_reported_amount[\s\S]*total_amount_snapshot/i);
 assert.match(paidEventFunction, /state = 'refunded'/i);
+const paidUserLock = paidEventFunction.indexOf(
+  "perform pg_advisory_xact_lock(hashtextextended('billing-entitlement:' || v_payment.user_id::text, 0));",
+);
+const paidCompatibilityRead = paidEventFunction.indexOf("from public.user_entitlements");
+const paidGrantStateRead = paidEventFunction.indexOf("from public.billing_entitlement_grants");
+const paidExistingResultRead = paidEventFunction.indexOf(
+  "return public.billing_access_status_for_user(v_payment.user_id);",
+);
+if (paidUserLock === -1) {
+  i3ReviewFailures.push("paid entitlement application requires a per-user transaction lock");
+} else if (
+  paidUserLock > paidCompatibilityRead
+  || paidUserLock > paidGrantStateRead
+  || paidUserLock > paidExistingResultRead
+) {
+  i3ReviewFailures.push("the per-user transaction lock must precede compatibility and grant state reads");
+}
 assert.match(paidEventFunction, /on conflict \(purchase_id\) do nothing/i);
 assert.match(
   paidEventFunction,
@@ -245,7 +263,21 @@ const authorizeFunction = functionsSql.match(
   /create (?:or replace )?function public\.authorize_feature_export[\s\S]*?\n\$\$;/i,
 )?.[0] ?? "";
 assert.match(authorizeFunction, /p_feature[\s\S]*recap_pdf[\s\S]*recap_csv[\s\S]*invoice_pdf/i);
-assert.match(authorizeFunction, /user_feature_usage[\s\S]*for update/i);
+const exportFeatureLock = authorizeFunction.indexOf(
+  "perform pg_advisory_xact_lock(hashtextextended('billing-export:' || v_user_id::text || ':' || p_feature, 0));",
+);
+const exportAccessRead = authorizeFunction.indexOf(
+  "v_access := public.billing_access_status_for_user(v_user_id);",
+);
+const exportUsageCount = authorizeFunction.indexOf("select count(*)::integer");
+if (exportFeatureLock === -1) {
+  i3ReviewFailures.push("export authorization requires a deterministic per-user/per-feature transaction lock");
+} else if (exportFeatureLock > exportAccessRead || exportFeatureLock > exportUsageCount) {
+  i3ReviewFailures.push("the per-feature transaction lock must precede access and usage reads");
+}
+if (/from public\.user_feature_usage[\s\S]*for update/i.test(authorizeFunction)) {
+  i3ReviewFailures.push("different export features must not share one per-user row lock");
+}
 assert.match(authorizeFunction, /insert into public\.user_feature_usage_events/i);
 assert.match(
   authorizeFunction,
@@ -259,6 +291,13 @@ assert.match(authorizeFunction, /'allowed'/i);
 assert.match(authorizeFunction, /'reason'/i);
 assert.match(authorizeFunction, /'used'/i);
 assert.match(authorizeFunction, /'limit'/i);
+if (!/returning id into v_authorization_id;[\s\S]*if v_limit is not null then\s+v_used := v_used \+ 1;\s+end if;/i.test(authorizeFunction)) {
+  i3ReviewFailures.push("only limited Free recap returns the post-authorization usage count");
+}
+if ((authorizeFunction.match(/v_used := v_used \+ 1;/gi) ?? []).length !== 1) {
+  i3ReviewFailures.push("unlimited Plus exports must preserve the observed pre-authorization count");
+}
+assert.deepEqual(i3ReviewFailures, [], "Task I3 review findings must remain fixed");
 
 const adminGrantFunction = functionsSql.match(
   /create (?:or replace )?function public\.admin_grant_legacy_entitlement[\s\S]*?\n\$\$;/i,

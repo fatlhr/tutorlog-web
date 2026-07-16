@@ -220,6 +220,8 @@ begin
     raise exception 'A refunded billing payment cannot become paid';
   end if;
 
+  perform pg_advisory_xact_lock(hashtextextended('billing-entitlement:' || v_payment.user_id::text, 0));
+
   if v_payment.state = 'paid' then
     return public.billing_access_status_for_user(v_payment.user_id);
   end if;
@@ -363,7 +365,6 @@ set search_path = ''
 as $$
 declare
   v_user_id uuid := auth.uid();
-  v_usage_lock_id uuid;
   v_access jsonb;
   v_access_state text;
   v_feature_key text;
@@ -382,15 +383,7 @@ begin
     raise exception 'Export feature is not supported';
   end if;
 
-  insert into public.user_feature_usage (user_id)
-  values (v_user_id)
-  on conflict (user_id) do nothing;
-
-  select id
-  into v_usage_lock_id
-  from public.user_feature_usage
-  where user_id = v_user_id
-  for update;
+  perform pg_advisory_xact_lock(hashtextextended('billing-export:' || v_user_id::text || ':' || p_feature, 0));
 
   v_access := public.billing_access_status_for_user(v_user_id);
   v_access_state := v_access ->> 'state';
@@ -448,7 +441,9 @@ begin
     )
     returning id into v_authorization_id;
 
-    v_used := v_used + 1;
+    if v_limit is not null then
+      v_used := v_used + 1;
+    end if;
   end if;
 
   return jsonb_build_object(
