@@ -26,7 +26,8 @@ create table public.billing_prices (
   amount integer not null check (amount >= 0),
   currency text not null default 'IDR' check (currency = 'IDR'),
   active boolean not null default true,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (id, product_id)
 );
 
 create unique index billing_prices_one_active_per_product
@@ -37,7 +38,7 @@ create table public.billing_purchases (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   product_id uuid not null references public.billing_products(id),
-  price_id uuid not null references public.billing_prices(id),
+  price_id uuid not null,
   product_code_snapshot text not null,
   product_name_snapshot text not null,
   duration_kind_snapshot text not null
@@ -53,6 +54,7 @@ create table public.billing_purchases (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (id, user_id),
+  foreign key (price_id, product_id) references public.billing_prices(id, product_id),
   check (total_amount_snapshot = base_amount_snapshot + channel_fee_snapshot),
   check (
     (duration_kind_snapshot in ('free', 'lifetime') and duration_value_snapshot is null)
@@ -159,20 +161,6 @@ create table public.billing_entitlement_grants (
   check (entitlement_type <> 'term' or active_until is not null),
   check (active_until is null or active_until > active_from)
 );
-
-create function public.prevent_billing_entitlement_grant_mutation()
-returns trigger
-language plpgsql
-set search_path = ''
-as $$
-begin
-  raise exception 'Billing entitlement grants are immutable';
-end;
-$$;
-
-create trigger billing_entitlement_grants_immutable
-before update or delete on public.billing_entitlement_grants
-for each row execute function public.prevent_billing_entitlement_grant_mutation();
 
 create index billing_entitlement_grants_user_access_lookup
   on public.billing_entitlement_grants (user_id, active_until desc);
@@ -310,7 +298,6 @@ grant select on table public.billing_purchases to authenticated;
 grant select (
   id,
   purchase_id,
-  provider,
   method,
   state,
   base_amount,
