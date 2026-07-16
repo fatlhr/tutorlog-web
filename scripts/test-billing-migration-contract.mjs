@@ -7,6 +7,10 @@ const functionsSql = readFileSync(
   "supabase/migrations/202607160002_billing_functions.sql",
   "utf8",
 );
+const purchaseFunctionsSql = readFileSync(
+  "supabase/migrations/202607160003_billing_purchase_functions.sql",
+  "utf8",
+);
 const adminSource = readFileSync("lib/supabase/admin.ts", "utf8");
 const accessSource = readFileSync("lib/billing/server/access.ts", "utf8");
 const exportsSource = readFileSync("lib/billing/server/exports.ts", "utf8");
@@ -342,5 +346,90 @@ assert.equal(
 assert.match(exportRouteSource, /export async function POST/);
 assert.match(exportRouteSource, /recap_pdf[\s\S]*recap_csv[\s\S]*invoice_pdf/);
 assert.match(exportRouteSource, /auth\.getUser\(\)/);
+
+for (const column of [
+  "provider_last_checked_at timestamptz",
+  "provider_error_code text",
+  "cancellation_requested_at timestamptz",
+  "cancellation_error_code text",
+]) {
+  assert.match(
+    purchaseFunctionsSql,
+    new RegExp(`add column ${column}`, "i"),
+    `missing Task I5 payment column: ${column}`,
+  );
+}
+
+function taskI5Function(name) {
+  const functionSql = purchaseFunctionsSql.match(
+    new RegExp(`create (?:or replace )?function public\\.${name}\\b[\\s\\S]*?\\n\\$\\$;`, "i"),
+  )?.[0] ?? "";
+  assert.ok(functionSql, `missing Task I5 function: ${name}`);
+  assert.match(functionSql, /security definer/i);
+  assert.match(functionSql, /set search_path = ''/i);
+  return functionSql;
+}
+
+const reservePurchaseFunction = taskI5Function("reserve_billing_purchase");
+const reserveLock = reservePurchaseFunction.indexOf("pg_advisory_xact_lock");
+const reserveProductRead = reservePurchaseFunction.indexOf("from public.billing_products");
+assert.ok(reserveLock !== -1, "purchase reservation requires a transaction advisory lock");
+assert.ok(
+  reserveLock < reserveProductRead,
+  "purchase reservation lock must precede catalog and pending-attempt reads",
+);
+assert.match(
+  reservePurchaseFunction,
+  /billing-purchase:[\s\S]*p_user_id[\s\S]*p_package_code[\s\S]*p_method/i,
+);
+assert.match(reservePurchaseFunction, /p_method not in \('qris', 'va'\)/i);
+assert.match(reservePurchaseFunction, /product\.active[\s\S]*price\.active/i);
+assert.match(reservePurchaseFunction, /available_from[\s\S]*available_until/i);
+assert.match(
+  reservePurchaseFunction,
+  /payment\.state in \('created', 'pending'\)[\s\S]*payment\.method = p_method[\s\S]*payment\.expires_at is null[\s\S]*payment\.expires_at > now\(\)/i,
+);
+assert.match(reservePurchaseFunction, /order by payment\.created_at desc/i);
+assert.match(reservePurchaseFunction, /for update/i);
+assert.match(reservePurchaseFunction, /insert into public\.billing_purchases/i);
+assert.match(reservePurchaseFunction, /insert into public\.billing_payments/i);
+assert.match(reservePurchaseFunction, /'should_create_provider'/i);
+
+const claimInquiryFunction = taskI5Function("claim_billing_payment_inquiry");
+assert.match(claimInquiryFunction, /purchase\.user_id = p_user_id/i);
+assert.match(claimInquiryFunction, /payment\.state = 'pending'/i);
+assert.match(claimInquiryFunction, /provider_last_checked_at is null/i);
+assert.match(
+  claimInquiryFunction,
+  /provider_last_checked_at <= now\(\) - interval '30 seconds'/i,
+  "inquiry throttle must use an exact 30-second window",
+);
+assert.match(claimInquiryFunction, /for update/i);
+assert.match(claimInquiryFunction, /provider_last_checked_at = now\(\)/i);
+
+const supersedePaymentFunction = taskI5Function("supersede_billing_payment");
+assert.match(supersedePaymentFunction, /payment\.user_id = p_user_id/i);
+assert.match(supersedePaymentFunction, /payment\.state in \('created', 'pending'\)/i);
+assert.match(supersedePaymentFunction, /for update/i);
+assert.match(supersedePaymentFunction, /state = 'superseded'/i);
+assert.match(supersedePaymentFunction, /cancellation_requested_at = now\(\)/i);
+
+for (const signature of [
+  "reserve_billing_purchase(uuid, text, text, integer)",
+  "claim_billing_payment_inquiry(uuid, uuid)",
+  "supersede_billing_payment(uuid, uuid)",
+]) {
+  const escaped = signature.replace(/[()]/g, "\\$&");
+  assert.match(
+    purchaseFunctionsSql,
+    new RegExp(`revoke all on function public\\.${escaped}[\\s\\S]*from public, anon, authenticated`, "i"),
+  );
+  assert.match(
+    purchaseFunctionsSql,
+    new RegExp(`grant execute on function public\\.${escaped}[\\s\\S]*to service_role`, "i"),
+  );
+}
+
+assert.doesNotMatch(purchaseFunctionsSql, /service_role_key|ipaymu_api_key/i);
 
 console.log("billing migration contract valid");
