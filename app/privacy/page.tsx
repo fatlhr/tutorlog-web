@@ -20,9 +20,9 @@ export default function PrivacyPage() {
         <PrivacyContent />
         <aside className="tl-margin-notes" aria-label="Ringkasan privasi">
           <p><strong>Lokasi</strong></p>
-          <p>Hanya dipakai saat app digunakan untuk kebutuhan sesi.</p>
-          <p><strong>Export</strong></p>
-          <p>File dibuat hanya saat kamu memilih export atau share.</p>
+          <p>Hanya dipakai saat aplikasi digunakan untuk kebutuhan sesi.</p>
+          <p><strong>Ekspor</strong></p>
+          <p>File dibuat hanya saat kamu memilih ekspor atau membagikannya.</p>
         </aside>
       </section>
     </PublicShell>

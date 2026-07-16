@@ -9,7 +9,7 @@ import { MarketingButton } from "@/components/public-ui/marketing-button";
 
 export const metadata: Metadata = {
   title: "TutorLog - Harga",
-  description: "Mulai gratis, lalu pilih akses penuh saat export dan invoice menjadi bagian dari pekerjaan rutin.",
+  description: "Mulai gratis, lalu pilih Plus saat kamu sudah perlu mengekspor rekap dan mengunduh invoice.",
 };
 
 const lynkUrl = "https://lynk.id/tutorlog";
@@ -20,17 +20,17 @@ const plans = [
     price: "Rp0",
     period: "selamanya",
     description: "Untuk mencoba alur catat sesi dan melihat rekap dasar.",
-    features: ["Rekap bulanan", "Filter per murid", "1 export PDF dan CSV per bulan", "Preview invoice"],
-    action: { href: "/login", label: "Mulai Gratis", external: false },
+    features: ["Rekap bulanan", "Filter per murid", "Ekspor PDF dan CSV terbatas", "Pratinjau invoice"],
+    action: { href: "/login", label: "Mulai gratis", external: false },
   },
   {
     name: "Plus Beli Putus",
     price: "Rp79rb",
     previousPrice: "Rp149rb",
     period: "sekali bayar",
-    description: "Untuk tutor yang ingin export dan invoice tanpa memikirkan masa aktif.",
-    features: ["Export invoice tanpa batas", "Export rekap tanpa batas", "Template dan warna invoice", "Akses penuh selamanya"],
-    action: { href: lynkUrl, label: "Pilih Beli Putus", external: true },
+    description: "Untuk tutor yang ingin sekali bayar dan memakai Plus tanpa batas waktu.",
+    features: ["Unduh invoice PDF", "Ekspor rekap tanpa batas", "Template dan warna invoice", "Akses penuh selamanya"],
+    action: { href: lynkUrl, label: "Pilih beli putus", external: true },
     featured: true,
   },
   {
@@ -40,14 +40,14 @@ const plans = [
     period: "per bulan",
     description: "Untuk kebutuhan yang berubah dari bulan ke bulan.",
     features: ["Semua fitur Plus", "Bayar per bulan", "Berhenti kapan saja"],
-    action: { href: lynkUrl, label: "Pilih Bulanan", external: true },
+    action: { href: lynkUrl, label: "Pilih bulanan", external: true },
   },
 ];
 
 const faqs = [
   {
     question: "Apakah data tetap aman kalau tidak upgrade?",
-    answer: "Ya. Data sesi tetap tersimpan. Di paket Free, batasnya ada pada export dan invoice.",
+    answer: "Ya. Paket Free tetap bisa dipakai untuk mencatat sesi dan membuat rekap. Ekspor mengikuti batas paket, sedangkan invoice hanya bisa diunduh saat Plus aktif.",
   },
   {
     question: "Apa beda beli putus dan bulanan?",
@@ -55,7 +55,7 @@ const faqs = [
   },
   {
     question: "Bagaimana cara pembayaran?",
-    answer: "Pembayaran dilakukan melalui Lynk.id. Detail metode pembayaran tersedia saat membuka tautan pembelian.",
+    answer: "Informasi metode pembayaran akan ditampilkan sebelum kamu menyelesaikan pembelian.",
   },
   {
     question: "Apakah pembayaran bisa dikembalikan?",
@@ -68,7 +68,7 @@ function PriceVisual() {
     <aside className="tl-price-visual tl-public-product" aria-label="Ilustrasi akses TutorLog" data-symbolic-evidence="pricing">
       <Receipt size={46} weight="duotone" aria-hidden="true" />
       <strong>Mulai dari catatan pertama.</strong>
-      <p>Upgrade saat export dan invoice sudah benar-benar kamu butuhkan.</p>
+      <p>Pilih Plus saat kamu sudah rutin mengekspor rekap atau membuat invoice.</p>
     </aside>
   );
 }
@@ -77,8 +77,8 @@ export default function HargaPage() {
   return (
     <PublicShell
       eyebrow="Harga TutorLog"
-      title="Pilih akses dari cara kamu pakai rekap."
-      subtitle="Mulai gratis untuk mencoba. Upgrade saat export dan invoice sudah jadi bagian dari pekerjaan rutin."
+      title="Mulai gratis, pilih Plus saat sudah dibutuhkan."
+      subtitle="Coba alurnya lewat paket Free. Plus membuka ekspor tanpa batas dan unduh invoice."
       icon={null}
       aside={<PriceVisual />}
       showBackLink

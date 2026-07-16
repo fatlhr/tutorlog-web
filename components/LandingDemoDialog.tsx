@@ -36,7 +36,7 @@ export default function LandingDemoDialog() {
         leadingIcon={<PlayCircle size={18} weight="fill" />}
         onClick={() => setOpen(true)}
       >
-        Lihat demo
+        Lihat contoh alur
       </MarketingButton>
       {open ? (
         <DialogNestingContext.Provider value>
@@ -46,7 +46,7 @@ export default function LandingDemoDialog() {
               className="tl-demo-dialog"
               role="dialog"
               aria-modal="true"
-              aria-label="Preview sementara TutorLog"
+              aria-label="Contoh sementara TutorLog"
               onMouseDown={(event) => event.stopPropagation()}
             >
               <button
@@ -58,9 +58,9 @@ export default function LandingDemoDialog() {
               />
               <div className="tl-demo-dialog-header">
                 <div>
-                  <p className="tl-kicker">Video contoh sementara</p>
-                  <h2>Melihat format demo.</h2>
-                  <p>Video ini hanya contoh sementara, bukan rekaman TutorLog. Rekaman TutorLog sedang disiapkan.</p>
+                  <p className="tl-kicker">Contoh video sementara</p>
+                  <h2>Contoh format video.</h2>
+                  <p>Rekaman TutorLog sedang disiapkan. Video ini hanya menunjukkan format sementara.</p>
                 </div>
                 <PublicIconButton
                   buttonRef={closeRef}

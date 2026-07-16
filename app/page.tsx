@@ -23,7 +23,7 @@ export default function Home() {
         <div className="tl-landing-hero-copy">
           <p className="tl-kicker">Untuk tutor privat Indonesia</p>
           <h1 id="landing-title">Rekap dan invoice untuk tutor privat.</h1>
-          <p>Catat sesi di HP, rapikan rekap dan invoice di web dengan akun yang sama.</p>
+          <p>Catat sesi di HP, lalu cek rekap dan buat invoice di web dengan akun yang sama.</p>
           <div className="tl-landing-hero-actions">
             <MarketingButton
               href={playStoreUrl}
@@ -51,7 +51,7 @@ export default function Home() {
       </section>
 
       <section className="tl-landing-transition" aria-labelledby="landing-transition-title">
-        <h2 id="landing-transition-title">Catatan sesi tersebar. Rekap harus dihitung ulang.</h2>
+        <h2 id="landing-transition-title">Catatan sesi masih tersebar? Rekap jadi harus dihitung ulang.</h2>
         <p>Catat sekali di HP. Data yang sama langsung siap dipakai untuk rekap dan membuat invoice di web.</p>
       </section>
 
@@ -60,7 +60,7 @@ export default function Home() {
       </div>
 
       <section className="tl-landing-next" aria-labelledby="landing-next-title">
-        <p id="landing-next-title">Mulai gratis. Upgrade saat export dan invoice mulai rutin dipakai.</p>
+        <p id="landing-next-title">Mulai gratis. Pilih Plus saat kamu mulai rutin mengekspor rekap atau membuat invoice.</p>
         <nav aria-label="Jelajahi TutorLog">
           <Link href="/fitur">Lihat fitur <ArrowRight size={16} aria-hidden="true" /></Link>
           <Link href="/harga">Bandingkan paket <ArrowRight size={16} aria-hidden="true" /></Link>

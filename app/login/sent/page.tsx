@@ -24,7 +24,7 @@ export default async function LoginSentPage({
       className="tl-auth-page tl-auth-sent-page"
       eyebrow="Link masuk terkirim"
       title="Cek email kamu."
-      subtitle="Buka link yang baru kami kirim untuk melanjutkan ke TutorLog web."
+      subtitle="Klik link di email untuk masuk ke web TutorLog."
       icon={null}
       showBackLink
     >
@@ -38,7 +38,7 @@ export default async function LoginSentPage({
         <div className="tl-auth-divider" aria-hidden="true" />
         <div className="tl-auth-form tl-auth-sent-actions">
           <div className="tl-auth-form-heading">
-            <h2>Buka email, lalu kembali ke sini.</h2>
+            <h2>Buka email lalu klik link masuk.</h2>
             <p>Kalau email belum terlihat, cek folder spam atau tunggu beberapa detik.</p>
           </div>
           <MarketingButton

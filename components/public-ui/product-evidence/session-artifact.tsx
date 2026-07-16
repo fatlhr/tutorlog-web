@@ -8,7 +8,7 @@ export function SessionArtifact({ className = "" }: { className?: string }) {
 
   return (
     <figure className={`${styles.artifact} ${styles.session} ${className}`} data-product-artifact="session">
-      <figcaption className={styles.visuallyHidden}>Sesi tersimpan dari aplikasi mobile</figcaption>
+      <figcaption className={styles.visuallyHidden}>Sesi tersimpan dari aplikasi di HP</figcaption>
       <div className={styles.sessionSummary}>
         <strong>{session.studentName}</strong>
         <strong>{formatIDR(session.amount)}</strong>

@@ -7,13 +7,13 @@ const workflowCopy = [
   {
     id: "session",
     title: "Catat sesi setelah mengajar.",
-    body: "Simpan materi, durasi, murid, tarif, dan lokasi dari HP selagi detailnya masih dekat.",
+    body: "Pilih murid, lalu catat detail sesi selagi semuanya masih ingat.",
     artifact: <SessionArtifact />,
   },
   {
     id: "recap",
     title: "Buka rekap saat dibutuhkan.",
-    body: "Sesi, jam, pendapatan, dan murid sudah tersusun untuk dibaca atau diekspor dari mobile maupun web.",
+    body: "Sesi, jam mengajar, pendapatan, dan murid sudah tersusun. Tinggal cek atau ekspor dari HP maupun web.",
     artifact: <RecapArtifact />,
   },
   {

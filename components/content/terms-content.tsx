@@ -5,7 +5,7 @@ export function TermsContent() {
     <article className="tl-article-main">
       <div className="tl-article-intro">
         <FileText size={28} weight="duotone" aria-hidden="true" />
-        <p>TutorLog adalah aplikasi pencatat sesi les untuk tutor privat di Indonesia, tersedia melalui aplikasi mobile dan companion web.</p>
+        <p>TutorLog adalah aplikasi pencatat sesi les untuk tutor privat di Indonesia, tersedia melalui aplikasi di HP dan web TutorLog.</p>
       </div>
 
       <section className="tl-article-section">
@@ -15,7 +15,7 @@ export function TermsContent() {
 
       <section className="tl-article-section">
         <h2>Deskripsi layanan</h2>
-        <p>Layanan mencakup pencatatan sesi, rekap tagihan, export PDF atau CSV, dan invoice builder melalui aplikasi mobile dan companion web.</p>
+        <p>Layanan mencakup pencatatan sesi, rekap tagihan, ekspor PDF atau CSV, dan pembuatan invoice melalui aplikasi di HP dan web TutorLog.</p>
       </section>
 
       <section className="tl-article-section">
@@ -32,23 +32,24 @@ export function TermsContent() {
         <ul className="tl-article-list">
           <li>Mencatat dan mengelola sesi les privat.</li>
           <li>Membuat rekap dan tagihan untuk murid atau orang tua murid.</li>
-          <li>Mengexport data sesi dalam format PDF atau CSV.</li>
+          <li>Mengekspor data sesi dalam format PDF atau CSV.</li>
         </ul>
       </section>
 
       <section className="tl-article-section">
         <h2>Langganan dan pembayaran</h2>
         <ul className="tl-article-list">
-          <li>Beberapa fitur, seperti export PDF tanpa batas dan invoice builder, memerlukan langganan TutorLog Plus.</li>
-          <li>Pembayaran diproses melalui Lynk.id atau transfer manual.</li>
-          <li>Langganan berlaku per bulan dan tidak diperpanjang otomatis.</li>
+          <li>Beberapa fitur, seperti ekspor rekap tanpa batas dan unduh invoice, memerlukan akses TutorLog Plus yang aktif.</li>
+          <li>TutorLog menyediakan Plus Bulanan dan Plus Beli Putus. Masa akses mengikuti paket yang dipilih.</li>
+          <li>Informasi pembayaran akan ditampilkan sebelum pengguna menyelesaikan pembelian.</li>
+          <li>Paket Plus Bulanan tidak diperpanjang otomatis.</li>
           <li>Pembayaran yang sudah dilakukan tidak dapat dikembalikan.</li>
         </ul>
       </section>
 
       <section className="tl-article-section">
         <h2>Batasan tanggung jawab</h2>
-        <p>TutorLog disediakan sebagaimana adanya. Kami tidak menjamin Layanan selalu tersedia, bebas error, atau memenuhi semua kebutuhan spesifik kamu. TutorLog tidak bertanggung jawab atas kerugian tidak langsung yang timbul dari penggunaan Layanan.</p>
+        <p>TutorLog disediakan sebagaimana adanya. Kami tidak menjamin Layanan selalu tersedia, bebas gangguan, atau memenuhi semua kebutuhan spesifik kamu. TutorLog tidak bertanggung jawab atas kerugian tidak langsung yang timbul dari penggunaan Layanan.</p>
       </section>
 
       <section className="tl-article-section">

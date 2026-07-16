@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     default: "TutorLog - Kelola Les Lebih Mudah",
     template: "%s | TutorLog",
   },
-  description: "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
+  description: "TutorLog membantu tutor privat mencatat sesi, melihat rekap, dan membuat invoice.",
   icons: {
     icon: [
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "TutorLog - Kelola Les Lebih Mudah",
-    description: "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
+    title: "TutorLog - Catat Sesi, Rekap, dan Invoice Tutor Privat",
+    description: "TutorLog membantu tutor privat mencatat sesi, melihat rekap, dan membuat invoice.",
     url: "https://tutorlog.id",
     siteName: "TutorLog",
     locale: "id_ID",
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TutorLog - Kelola Les Lebih Mudah",
-    description: "Aplikasi untuk tutor privat mengelola jadwal, rekap sesi, dan tagihan murid.",
+    title: "TutorLog - Catat Sesi, Rekap, dan Invoice Tutor Privat",
+    description: "TutorLog membantu tutor privat mencatat sesi, melihat rekap, dan membuat invoice.",
     images: ["/icon.png"],
   },
   themeColor: "#006C53",

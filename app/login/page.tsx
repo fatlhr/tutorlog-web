@@ -37,7 +37,7 @@ export default async function LoginPage({
       className="tl-auth-page"
       eyebrow="Masuk"
       title="Masuk ke TutorLog."
-      subtitle="Masukkan email yang kamu pakai di aplikasi mobile. Kami kirim link masuk tanpa password."
+      subtitle="Masukkan email yang kamu pakai di aplikasi. Kami akan mengirim link masuk ke emailmu. Kamu tidak perlu password."
       icon={null}
       showBackLink
     >
@@ -54,7 +54,7 @@ export default async function LoginPage({
             defaultValue={email}
             placeholder="nama@email.com"
             required
-            helper="Link berlaku 1 jam. Belum punya akun? Kami akan membuatnya saat kamu masuk."
+            helper="Link berlaku 1 jam. Kalau email belum terdaftar, akun baru akan dibuat otomatis."
           />
           <MarketingButton
             type="submit"
@@ -62,9 +62,9 @@ export default async function LoginPage({
             block
             leadingIcon={<PaperPlaneTilt size={18} weight="fill" />}
           >
-            Kirim Link Masuk
+            Kirim link masuk
           </MarketingButton>
-          <p className="tl-auth-legal">Dengan masuk, kamu menyetujui <Link href="/privacy">Privasi</Link> dan <Link href="/terms">Syarat</Link> TutorLog.</p>
+          <p className="tl-auth-legal">Dengan masuk, kamu menyetujui <Link href="/privacy">Kebijakan Privasi</Link> dan <Link href="/terms">Syarat &amp; Ketentuan</Link> TutorLog.</p>
         </form>
       </section>
     </PublicShell>
