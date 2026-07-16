@@ -1,9 +1,13 @@
+import type { EntitlementType } from "../billing/contracts";
+
 export type ExportFormat = "pdf" | "csv";
 export type AccessState = "free" | "plus_active" | "plus_expired";
 export type PaywallReason = "free-limit" | "expired" | "invoice-locked";
 
 export interface QuotaInfo {
   plan: string;
+  entitlementType: EntitlementType;
+  isLifetime: boolean;
   pdfExportCount30d: number;
   csvExportCount30d: number;
   pdfExportUnlimited: boolean;
@@ -52,6 +56,10 @@ function asStringOrNull(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function asEntitlementType(value: unknown): EntitlementType {
+  return value === "term" || value === "lifetime" ? value : null;
+}
+
 export function normalizeQuotaPayload(payload: Record<string, unknown> | null | undefined): QuotaInfo {
   const result = payload ?? {};
   const pdfExportCount30d = asNumber(result.pdf_export_count_30d, 0);
@@ -60,14 +68,29 @@ export function normalizeQuotaPayload(payload: Record<string, unknown> | null | 
   const legacyPdfLimit = asNumber(result.pdf_export_free_limit, 1);
   const rekapExportLimit = asNumber(result.rekap_export_limit, legacyPdfLimit);
   const rekapExportUnlimited = asBoolean(result.rekap_export_unlimited, pdfExportUnlimited);
+  const plan = typeof result.plan === "string" && result.plan.trim() ? result.plan : "free";
+  const activeUntil = asStringOrNull(result.active_until);
+  const normalizedEntitlementType = asEntitlementType(result.entitlement_type);
+  const legacyUnlimited = normalizedEntitlementType === null
+    && activeUntil === null
+    && (pdfExportUnlimited || rekapExportUnlimited);
+  const legacyTerm = normalizedEntitlementType === null
+    && activeUntil !== null
+    && plan.toLowerCase() !== "free";
+  const entitlementType = normalizedEntitlementType
+    ?? (legacyUnlimited ? "lifetime" : legacyTerm ? "term" : null);
+  const isLifetime = entitlementType === "lifetime"
+    && (asBoolean(result.is_lifetime, false) || legacyUnlimited);
 
   return {
-    plan: typeof result.plan === "string" && result.plan.trim() ? result.plan : "free",
+    plan,
+    entitlementType,
+    isLifetime,
     pdfExportCount30d,
     csvExportCount30d,
     pdfExportUnlimited,
     exportWindowDays: asNumber(result.export_window_days, 30),
-    activeUntil: asStringOrNull(result.active_until),
+    activeUntil,
     rekapExportLimit,
     rekapExportUnlimited,
     rekapPdfExportCount: asNumber(result.rekap_pdf_export_count, pdfExportCount30d),
@@ -76,10 +99,18 @@ export function normalizeQuotaPayload(payload: Record<string, unknown> | null | 
 }
 
 export function getAccessState(quota: QuotaInfo, now: Date = new Date()): AccessInfo {
-  const paidPlan = quota.plan.toLowerCase() !== "free" || quota.rekapExportUnlimited || quota.pdfExportUnlimited;
-  const expiresAt = quota.activeUntil ? new Date(quota.activeUntil).getTime() + 86400000 : null;
-  const isExpired = Boolean(paidPlan && expiresAt !== null && expiresAt < now.getTime());
-  const isPlusActive = paidPlan && !isExpired;
+  const paidPlan = quota.entitlementType !== null
+    || quota.plan.toLowerCase() !== "free"
+    || quota.rekapExportUnlimited
+    || quota.pdfExportUnlimited;
+  const expiresAt = quota.activeUntil ? new Date(quota.activeUntil).getTime() : Number.NaN;
+  const isPlusActive = paidPlan && (
+    (quota.entitlementType === "lifetime" && quota.isLifetime)
+    || (quota.entitlementType === "term"
+      && Number.isFinite(expiresAt)
+      && expiresAt > now.getTime())
+  );
+  const isExpired = paidPlan && !isPlusActive;
 
   return {
     state: isPlusActive ? "plus_active" : isExpired ? "plus_expired" : "free",

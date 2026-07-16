@@ -13,12 +13,14 @@ export type { QuotaInfo } from "@/lib/data/quota-access";
 
 export async function checkQuota(): Promise<QuotaInfo> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_user_access_status");
+  const { data, error } = await supabase.rpc("get_billing_access_status");
 
   if (error) {
     console.error("Failed to check quota:", error);
     return {
       plan: "free",
+      entitlementType: null,
+      isLifetime: false,
       pdfExportCount30d: 0,
       csvExportCount30d: 0,
       pdfExportUnlimited: false,

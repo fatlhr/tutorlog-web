@@ -3,7 +3,14 @@ import { readFileSync } from "node:fs";
 
 const migrationPath = "supabase/migrations/202607160001_billing_foundation.sql";
 const sql = readFileSync(migrationPath, "utf8");
+const functionsSql = readFileSync(
+  "supabase/migrations/202607160002_billing_functions.sql",
+  "utf8",
+);
 const adminSource = readFileSync("lib/supabase/admin.ts", "utf8");
+const accessSource = readFileSync("lib/billing/server/access.ts", "utf8");
+const exportsSource = readFileSync("lib/billing/server/exports.ts", "utf8");
+const exportRouteSource = readFileSync("app/api/exports/authorize/route.ts", "utf8");
 
 const tables = [
   "billing_products",
@@ -182,5 +189,119 @@ for (const legacyObject of [
 }
 
 assert.match(adminSource, /^import "server-only";/);
+
+for (const functionName of [
+  "apply_billing_paid_event",
+  "get_billing_access_status",
+  "authorize_feature_export",
+  "admin_grant_legacy_entitlement",
+]) {
+  assert.match(
+    functionsSql,
+    new RegExp(`create (?:or replace )?function public\\.${functionName}\\b`, "i"),
+    `missing billing function: ${functionName}`,
+  );
+}
+
+assert.match(
+  functionsSql,
+  /drop constraint user_entitlements_source_check[\s\S]*add constraint user_entitlements_source_check[\s\S]*'voucher'[\s\S]*'manual'[\s\S]*'billing'[\s\S]*'legacy_verified'/i,
+);
+
+const paidEventFunction = functionsSql.match(
+  /create (?:or replace )?function public\.apply_billing_paid_event[\s\S]*?\n\$\$;/i,
+)?.[0] ?? "";
+assert.match(paidEventFunction, /from public\.billing_payments[\s\S]*for update/i);
+assert.match(paidEventFunction, /from public\.billing_purchases[\s\S]*for update/i);
+assert.match(paidEventFunction, /provider_reported_amount[\s\S]*total_amount_snapshot/i);
+assert.match(paidEventFunction, /state = 'refunded'/i);
+assert.match(paidEventFunction, /on conflict \(purchase_id\) do nothing/i);
+assert.match(
+  paidEventFunction,
+  /on conflict \(purchase_id\) do nothing[\s\S]*returning id into v_grant_id;[\s\S]*if v_grant_id is null then[\s\S]*return public\.billing_access_status_for_user\(v_payment\.user_id\)/i,
+  "a purchase that already issued its unique grant must not extend access again",
+);
+assert.match(paidEventFunction, /greatest\(p_paid_at, v_current_active_until\)/i);
+assert.match(paidEventFunction, /interval '30 days'/i);
+assert.match(paidEventFunction, /interval '12 months'/i);
+assert.match(paidEventFunction, /'plus_lifetime'[\s\S]*'lifetime'/i);
+assert.match(paidEventFunction, /update public\.billing_purchases[\s\S]*state = 'completed'/i);
+
+const accessFunction = functionsSql.match(
+  /create (?:or replace )?function public\.get_billing_access_status[\s\S]*?\n\$\$;/i,
+)?.[0] ?? "";
+const accessHelperFunction = functionsSql.match(
+  /create (?:or replace )?function public\.billing_access_status_for_user[\s\S]*?\n\$\$;/i,
+)?.[0] ?? "";
+assert.match(accessFunction, /billing_access_status_for_user\(auth\.uid\(\)\)/i);
+assert.match(accessHelperFunction, /billing_entitlement_grants/i);
+assert.match(accessHelperFunction, /user_entitlements/i);
+assert.match(accessHelperFunction, /'entitlement_type'/i);
+assert.match(accessHelperFunction, /'is_lifetime'/i);
+assert.match(accessHelperFunction, /'active_from'/i);
+assert.match(accessHelperFunction, /'active_until'/i);
+
+const authorizeFunction = functionsSql.match(
+  /create (?:or replace )?function public\.authorize_feature_export[\s\S]*?\n\$\$;/i,
+)?.[0] ?? "";
+assert.match(authorizeFunction, /p_feature[\s\S]*recap_pdf[\s\S]*recap_csv[\s\S]*invoice_pdf/i);
+assert.match(authorizeFunction, /user_feature_usage[\s\S]*for update/i);
+assert.match(authorizeFunction, /insert into public\.user_feature_usage_events/i);
+assert.match(
+  authorizeFunction,
+  /if v_allowed then[\s\S]*insert into public\.user_feature_usage_events/i,
+  "rejected export authorization must not insert a usage event",
+);
+assert.match(authorizeFunction, /feature_key[\s\S]*recap_export/i);
+assert.match(authorizeFunction, /feature_key[\s\S]*invoice_export/i);
+assert.match(authorizeFunction, /'authorization_id'/i);
+assert.match(authorizeFunction, /'allowed'/i);
+assert.match(authorizeFunction, /'reason'/i);
+assert.match(authorizeFunction, /'used'/i);
+assert.match(authorizeFunction, /'limit'/i);
+
+const adminGrantFunction = functionsSql.match(
+  /create (?:or replace )?function public\.admin_grant_legacy_entitlement[\s\S]*?\n\$\$;/i,
+)?.[0] ?? "";
+assert.match(adminGrantFunction, /p_evidence_reference/i);
+assert.match(adminGrantFunction, /source[\s\S]*legacy_verified/i);
+assert.match(adminGrantFunction, /insert into public\.billing_entitlement_grants[\s\S]*insert into public\.user_entitlements/i);
+
+assert.match(
+  functionsSql,
+  /revoke all on function public\.admin_grant_legacy_entitlement\([^;]+\) from public, anon, authenticated/i,
+);
+assert.match(
+  functionsSql,
+  /grant execute on function public\.admin_grant_legacy_entitlement\([^;]+\) to service_role/i,
+);
+assert.match(
+  functionsSql,
+  /grant execute on function public\.authorize_feature_export\(text\)\s+to authenticated/i,
+);
+assert.match(
+  functionsSql,
+  /revoke all on function public\.apply_billing_paid_event\(uuid, timestamptz\)\s+from public, anon, authenticated/i,
+);
+assert.match(
+  functionsSql,
+  /grant execute on function public\.apply_billing_paid_event\(uuid, timestamptz\)\s+to service_role/i,
+);
+assert.match(
+  functionsSql,
+  /revoke all on function public\.billing_access_status_for_user\(uuid\)\s+from public, anon, authenticated, service_role/i,
+);
+assert.doesNotMatch(functionsSql, /service_role_key|ipaymu_api_key/i);
+
+assert.match(accessSource, /rpc\("get_billing_access_status"\)/);
+assert.match(exportsSource, /rpc\("authorize_feature_export"/);
+assert.equal(
+  (exportsSource.match(/rpc\("authorize_feature_export"/g) ?? []).length,
+  1,
+  "authorizeExport must call the atomic authorization RPC exactly once",
+);
+assert.match(exportRouteSource, /export async function POST/);
+assert.match(exportRouteSource, /recap_pdf[\s\S]*recap_csv[\s\S]*invoice_pdf/);
+assert.match(exportRouteSource, /auth\.getUser\(\)/);
 
 console.log("billing migration contract valid");
