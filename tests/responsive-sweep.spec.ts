@@ -657,7 +657,7 @@ test.describe('Guide story hierarchy', () => {
   });
 
   test('keeps the guide artifacts compact and centers the invoice preview', async ({ page }) => {
-    await page.setViewportSize({ width: 651, height: 846 });
+    await page.setViewportSize({ width: 628, height: 846 });
     await page.goto('/panduan');
     await page.waitForLoadState('networkidle');
 
@@ -666,16 +666,24 @@ test.describe('Guide story hierarchy', () => {
       const recap = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [data-product-artifact="recap"]');
       const viewport = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [aria-label="Preview invoice TutorLog"]');
       const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
-      if (!session || !recap || !viewport || !invoice) return null;
+      const invoiceArtifact = viewport?.closest<HTMLElement>('[data-product-artifact="invoice"]');
+      const invoiceCaption = invoiceArtifact?.querySelector<HTMLElement>('figcaption');
+      if (!session || !recap || !viewport || !invoice || !invoiceCaption) return null;
 
       const viewportBox = viewport.getBoundingClientRect();
       const invoiceBox = invoice.getBoundingClientRect();
+      const captionBox = invoiceCaption.getBoundingClientRect();
       return {
         sessionHeight: session.getBoundingClientRect().height,
         recapHeight: recap.getBoundingClientRect().height,
         centerDelta: Math.abs(
           (viewportBox.left + viewportBox.width / 2) - (invoiceBox.left + invoiceBox.width / 2),
         ),
+        invoiceWidthRatio: invoiceBox.width / viewportBox.width,
+        invoiceSideDelta: Math.abs(
+          (invoiceBox.left - viewportBox.left) - (viewportBox.right - invoiceBox.right),
+        ),
+        captionWidth: captionBox.width,
       };
     });
 
@@ -683,21 +691,269 @@ test.describe('Guide story hierarchy', () => {
     expect(geometry?.sessionHeight).toBeLessThanOrEqual(180);
     expect(geometry?.recapHeight).toBeLessThanOrEqual(190);
     expect(geometry?.centerDelta).toBeLessThanOrEqual(1);
+    expect(geometry?.invoiceWidthRatio).toBeGreaterThanOrEqual(.94);
+    expect(geometry?.invoiceSideDelta).toBeLessThanOrEqual(1);
+    expect(geometry?.captionWidth).toBeLessThanOrEqual(1);
+  });
+
+  test('gives the web guide a proportional proof column on wide screens', async ({ page }) => {
+    await page.setViewportSize({ width: 1145, height: 905 });
+    await page.goto('/panduan');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const phases = document.querySelector<HTMLElement>('.tl-guide-phases');
+      const webPhase = document.querySelector<HTMLElement>('.tl-guide-phase:nth-of-type(2)');
+      const copy = webPhase?.querySelector<HTMLElement>('.tl-guide-phase-copy');
+      const proof = webPhase?.querySelector<HTMLElement>('.tl-guide-inline-proof');
+      const recap = webPhase?.querySelector<HTMLElement>('[data-product-artifact="recap"]');
+      const invoice = webPhase?.querySelector<HTMLElement>('[data-product-artifact="invoice"]');
+      if (!phases || !webPhase || !copy || !proof || !recap || !invoice) return null;
+
+      const phasesBox = phases.getBoundingClientRect();
+      const copyBox = copy.getBoundingClientRect();
+      const proofBox = proof.getBoundingClientRect();
+      const recapBox = recap.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        phasesWidth: phasesBox.width,
+        columnsAreHorizontal: proofBox.left > copyBox.right,
+        recapHeight: recapBox.height,
+        invoiceToRecapRatio: invoiceBox.width / recapBox.width,
+        centerDelta: Math.abs(
+          (recapBox.top + recapBox.height / 2) - (invoiceBox.top + invoiceBox.height / 2),
+        ),
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.phasesWidth).toBeGreaterThanOrEqual(1000);
+    expect(geometry?.columnsAreHorizontal).toBe(true);
+    expect(geometry?.recapHeight).toBeLessThanOrEqual(190);
+    expect(geometry?.invoiceToRecapRatio).toBeGreaterThanOrEqual(1.45);
+    expect(geometry?.centerDelta).toBeLessThanOrEqual(1);
+  });
+
+  test('stacks and spaces the web guide artifacts when horizontal space is narrow', async ({ page }) => {
+    for (const width of [733, 412]) {
+      await page.setViewportSize({ width, height: 915 });
+      await page.goto('/panduan');
+      await page.waitForLoadState('networkidle');
+
+      const geometry = await page.evaluate(() => {
+        const webPhase = document.querySelector<HTMLElement>('.tl-guide-phase:nth-of-type(2)');
+        const copy = webPhase?.querySelector<HTMLElement>('.tl-guide-phase-copy');
+        const proof = webPhase?.querySelector<HTMLElement>('.tl-guide-inline-proof');
+        const recap = webPhase?.querySelector<HTMLElement>('[data-product-artifact="recap"]');
+        const invoice = webPhase?.querySelector<HTMLElement>('[data-product-artifact="invoice"]');
+        const viewport = invoice?.querySelector<HTMLElement>('[aria-label="Preview invoice TutorLog"]');
+        const paper = viewport?.querySelector<HTMLElement>('.tpl-modern');
+        if (!webPhase || !copy || !proof || !recap || !invoice || !viewport || !paper) return null;
+
+        const copyBox = copy.getBoundingClientRect();
+        const proofBox = proof.getBoundingClientRect();
+        const recapBox = recap.getBoundingClientRect();
+        const invoiceBox = invoice.getBoundingClientRect();
+        const viewportBox = viewport.getBoundingClientRect();
+        const paperBox = paper.getBoundingClientRect();
+        return {
+          phaseIsVertical: proofBox.top > copyBox.bottom,
+          artifactsAreVertical: invoiceBox.top > recapBox.bottom,
+          artifactGap: invoiceBox.top - recapBox.bottom,
+          invoiceWidthRatio: invoiceBox.width / proofBox.width,
+          paperContained: paperBox.left >= viewportBox.left - .5 && paperBox.right <= viewportBox.right + .5,
+        };
+      });
+
+      expect(geometry).not.toBeNull();
+      expect(geometry?.phaseIsVertical).toBe(true);
+      expect(geometry?.artifactsAreVertical).toBe(true);
+      expect(geometry?.artifactGap).toBeGreaterThanOrEqual(56);
+      expect(geometry?.artifactGap).toBeLessThanOrEqual(80);
+      expect(geometry?.invoiceWidthRatio).toBeGreaterThanOrEqual(.98);
+      expect(geometry?.paperContained).toBe(true);
+    }
   });
 });
 
 test.describe('Public workflow artifact alignment', () => {
-  test('aligns all workflow stages on desktop', async ({ page }) => {
+  test('aligns workflow copy while centering and connecting its artifacts on desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const stageTops = await page.locator('[data-workflow-canvas] > div').evaluateAll((elements) =>
-      elements.map((element) => element.firstElementChild?.getBoundingClientRect().top ?? -1),
-    );
+    const geometry = await page.evaluate(() => {
+      const stages = [...document.querySelectorAll<HTMLElement>('[data-workflow-stage]')];
+      const copies = stages.map((stage) => stage.firstElementChild?.getBoundingClientRect());
+      const artifacts = stages.map((stage) => stage.querySelector<HTMLElement>('[data-product-artifact]')?.getBoundingClientRect());
+      const connectors = [...document.querySelectorAll<HTMLElement>('[data-workflow-connector]')]
+        .map((connector) => connector.getBoundingClientRect());
+      if (copies.some((box) => !box) || artifacts.some((box) => !box) || connectors.length !== 2) return null;
 
-    expect(stageTops).toHaveLength(3);
-    expect(Math.max(...stageTops) - Math.min(...stageTops)).toBeLessThanOrEqual(1);
+      return {
+        copyTops: copies.map((box) => box!.top),
+        artifactCenters: artifacts.map((box) => box!.top + box!.height / 2),
+        artifactLefts: artifacts.map((box) => box!.left),
+        artifactRights: artifacts.map((box) => box!.right),
+        connectorLefts: connectors.map((box) => box.left),
+        connectorRights: connectors.map((box) => box.right),
+        connectorCenters: connectors.map((box) => box.top + box.height / 2),
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(Math.max(...geometry!.copyTops) - Math.min(...geometry!.copyTops)).toBeLessThanOrEqual(1);
+    expect(Math.max(...geometry!.artifactCenters) - Math.min(...geometry!.artifactCenters)).toBeLessThanOrEqual(1);
+    for (let index = 0; index < 2; index += 1) {
+      expect(Math.abs(geometry!.connectorCenters[index] - geometry!.artifactCenters[index])).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry!.connectorLefts[index] - geometry!.artifactRights[index])).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry!.connectorRights[index] - geometry!.artifactLefts[index + 1])).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('keeps vertical workflow connectors clear of dividers and copy on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const result = await page.evaluate(() => {
+      const stages = [...document.querySelectorAll<HTMLElement>('[data-workflow-stage]')];
+      const headingWeights = stages.map((stage) => {
+        const heading = stage.querySelector<HTMLElement>('h2');
+        return heading ? getComputedStyle(heading).fontWeight : null;
+      });
+      const clearances = stages.slice(0, -1).map((stage, index) => {
+        const connector = stage.querySelector<HTMLElement>('[data-workflow-connector]');
+        const artifact = stage.querySelector<HTMLElement>('[data-product-artifact]');
+        const nextCopy = stages[index + 1].firstElementChild;
+        if (!connector || !artifact || !nextCopy) return null;
+
+        const stageBox = stage.getBoundingClientRect();
+        const connectorBox = connector.getBoundingClientRect();
+        const artifactBox = artifact.getBoundingClientRect();
+        const nextCopyBox = nextCopy.getBoundingClientRect();
+        return {
+          afterArtifact: connectorBox.top - artifactBox.bottom,
+          beforeNextCopy: nextCopyBox.top - connectorBox.bottom,
+          connectorOverflow: connectorBox.bottom - stageBox.bottom,
+          nextStageBorderWidth: getComputedStyle(stages[index + 1]).borderTopWidth,
+        };
+      });
+      return { clearances, headingWeights };
+    });
+
+    expect(result.headingWeights).toEqual(['700', '700', '700']);
+    expect(result.clearances).toHaveLength(2);
+    for (const clearance of result.clearances) {
+      expect(clearance).not.toBeNull();
+      expect(clearance!.afterArtifact).toBeGreaterThanOrEqual(16);
+      expect(clearance!.afterArtifact).toBeLessThanOrEqual(24);
+      expect(clearance!.beforeNextCopy).toBeGreaterThanOrEqual(20);
+      expect(clearance!.beforeNextCopy).toBeLessThanOrEqual(32);
+      expect(clearance!.connectorOverflow).toBeLessThanOrEqual(0);
+      expect(clearance!.nextStageBorderWidth).toBe('0px');
+    }
+  });
+
+  test('lets the homepage invoice fill its artifact at the reviewed mobile width', async ({ page }) => {
+    await page.setViewportSize({ width: 571, height: 846 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Preview invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      if (!viewport || !invoice) return null;
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        widthRatio: invoiceBox.width / viewportBox.width,
+        sideDelta: Math.abs(
+          (invoiceBox.left - viewportBox.left) - (viewportBox.right - invoiceBox.right),
+        ),
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.widthRatio).toBeGreaterThanOrEqual(.94);
+    expect(geometry?.sideDelta).toBeLessThanOrEqual(1);
+  });
+
+  test('contains the homepage invoice at the Pixel 8 width', async ({ page }) => {
+    await page.setViewportSize({ width: 374, height: 832 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Preview invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      if (!viewport || !invoice) return null;
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        leftInset: invoiceBox.left - viewportBox.left,
+        rightInset: viewportBox.right - invoiceBox.right,
+        widthRatio: invoiceBox.width / viewportBox.width,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.leftInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.rightInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.widthRatio).toBeGreaterThanOrEqual(.9);
+    expect(geometry?.widthRatio).toBeLessThanOrEqual(.96);
+  });
+
+  test('enlarges and contains the feature invoice at the reviewed mobile width', async ({ page }) => {
+    await page.setViewportSize({ width: 571, height: 769 });
+    await page.goto('/fitur');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const proof = document.querySelector<HTMLElement>('[data-evidence-group="invoice-output"] .tls-invoice-proof');
+      const invoice = proof?.querySelector<HTMLElement>('.tpl-modern');
+      if (!proof || !invoice) return null;
+      const proofBox = proof.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        proofWidth: proofBox.width,
+        leftInset: invoiceBox.left - proofBox.left,
+        rightInset: proofBox.right - invoiceBox.right,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.proofWidth).toBeGreaterThanOrEqual(400);
+    expect(geometry?.leftInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.rightInset).toBeGreaterThanOrEqual(0);
+  });
+
+  test('uses a white recap surface and contains the invoice at a narrow desktop width', async ({ page }) => {
+    await page.setViewportSize({ width: 916, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    const geometry = await page.evaluate(() => {
+      const recap = document.querySelector<HTMLElement>('[data-workflow-stage="recap"] [data-product-artifact="recap"]');
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Preview invoice TutorLog"]');
+      const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
+      if (!recap || !viewport || !invoice) return null;
+
+      const viewportBox = viewport.getBoundingClientRect();
+      const invoiceBox = invoice.getBoundingClientRect();
+      return {
+        recapBackground: getComputedStyle(recap).backgroundColor,
+        leftInset: invoiceBox.left - viewportBox.left,
+        rightInset: viewportBox.right - invoiceBox.right,
+        widthRatio: invoiceBox.width / viewportBox.width,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.recapBackground).toBe('rgb(255, 255, 255)');
+    expect(geometry?.leftInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.rightInset).toBeGreaterThanOrEqual(0);
+    expect(geometry?.widthRatio).toBeGreaterThanOrEqual(.9);
   });
 
   test('gives the recap proof enough width on a narrow feature viewport', async ({ page }) => {

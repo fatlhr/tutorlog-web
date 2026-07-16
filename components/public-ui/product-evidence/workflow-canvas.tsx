@@ -24,8 +24,14 @@ const workflowCopy = [
   },
 ] as const;
 
-function Connector() {
-  return <span className={styles.connector} aria-hidden="true" />;
+function Connector({ workflow = false }: { workflow?: boolean }) {
+  return (
+    <span
+      className={styles.connector}
+      data-workflow-connector={workflow || undefined}
+      aria-hidden="true"
+    />
+  );
 }
 
 export function WorkflowCanvas() {
@@ -37,8 +43,10 @@ export function WorkflowCanvas() {
             <h2>{stage.title}</h2>
             <p>{stage.body}</p>
           </div>
-          {stage.artifact}
-          {index < workflowCopy.length - 1 ? <Connector /> : null}
+          <div className={styles.artifactSlot}>
+            {stage.artifact}
+            {index < workflowCopy.length - 1 ? <Connector workflow /> : null}
+          </div>
         </div>
       ))}
     </section>

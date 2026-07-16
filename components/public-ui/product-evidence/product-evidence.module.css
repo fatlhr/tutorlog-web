@@ -74,7 +74,7 @@
   padding: 20px 22px;
   display: grid;
   gap: 5px;
-  background: var(--tl-mint);
+  background: #fff;
 }
 
 .recap > strong {
@@ -108,20 +108,29 @@
 .workflow {
   display: grid;
   grid-template-columns: .82fr 1fr 1.18fr;
-  gap: 28px;
+  column-gap: 28px;
 }
 
 .stage {
   position: relative;
   min-width: 0;
   display: grid;
-  align-content: start;
-  gap: 24px;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 24px;
+}
+
+.artifactSlot {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  align-items: center;
 }
 
 .stageCopy h2 {
   margin: 0;
   font-family: var(--f-title), monospace;
+  font-weight: 700;
 }
 
 .stageCopy p {
@@ -137,6 +146,8 @@
   border-top: 1px solid var(--tl-green);
 }
 
+.artifactSlot > .connector { top: 50%; }
+
 .guideSingle,
 .guideSequence {
   min-width: 0;
@@ -145,16 +156,46 @@
 .guideSequence {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-  gap: 24px;
+  grid-template-columns: minmax(180px, .62fr) 28px minmax(360px, 1.38fr);
+  gap: 0;
+  align-items: center;
 }
 
-@media (min-width: 768px) {
-  .guideSequence > .connector {
-    right: auto;
-    left: calc(45% - 10.8px);
-    width: 24px;
+.guideSequence > .connector {
+  position: static;
+  width: 100%;
+  border-top: 1px solid var(--tl-green);
+}
+
+.guideSequence > .invoice { padding: 12px; }
+
+@media (max-width: 1099px) {
+  .guideSequence {
+    width: min(680px, 100%);
+    margin-inline: auto;
+    grid-template-columns: minmax(0, 1fr);
   }
+
+  .guideSequence > .recap {
+    width: min(420px, 100%);
+    justify-self: center;
+  }
+
+  .guideSequence > .invoice { width: 100%; }
+
+  .guideSequence > .connector {
+    width: 1px;
+    height: 28px;
+    margin: 20px auto;
+    border-top: 0;
+    border-left: 1px solid var(--tl-green);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.35); }
+  .guideSequence .invoiceViewport { height: 480px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.78); }
 }
 
 @media (max-width: 767px) {
@@ -167,12 +208,13 @@
 
   .stage,
   .stage:nth-child(2) {
-    padding: 40px 0;
+    grid-row: auto;
+    grid-template-rows: auto auto;
+    padding: 40px 0 0;
   }
 
-  .stage + .stage {
-    border-top: 1px solid var(--tl-line);
-  }
+  .stage + .stage { padding-top: 24px; }
+  .stage:last-child { padding-bottom: 40px; }
 
   .connector {
     position: static;
@@ -183,13 +225,65 @@
     border-left: 1px solid var(--tl-green);
   }
 
+  .artifactSlot > .connector { margin: 16px auto 0; }
+
+  .guideSequence > .connector { margin: 20px auto; }
+
   .invoiceViewport {
-    height: 245px;
+    height: 420px;
   }
 
   .invoiceViewport :global(.tpl-modern) {
-    transform: scale(.38);
+    transform: scale(.7);
   }
+}
+
+@media (min-width: 700px) and (max-width: 767px) {
+  .guideSequence .invoiceViewport { height: 480px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.78); }
+}
+
+@media (min-width: 620px) and (max-width: 699px) {
+  .guideSequence .invoiceViewport { height: 420px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.68); }
+}
+
+@media (max-width: 619px) {
+  .invoiceViewport { height: 370px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.6); }
+  .guideSequence .invoiceViewport { height: 375px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.61); }
+}
+
+@media (max-width: 559px) {
+  .invoiceViewport { height: 330px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.54); }
+  .guideSequence .invoiceViewport { height: 330px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.53); }
+}
+
+@media (max-width: 499px) {
+  .invoiceViewport { height: 300px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.49); }
+  .guideSequence .invoiceViewport { height: 300px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.49); }
+}
+
+@media (max-width: 479px) {
+  .invoiceViewport { height: 245px; }
+  .invoiceViewport :global(.tpl-modern) { transform: scale(.35); }
+  .guideSequence .invoiceViewport { height: 260px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.42); }
+}
+
+@media (max-width: 399px) {
+  .guideSequence .invoiceViewport { height: 230px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.36); }
+}
+
+@media (max-width: 359px) {
+  .guideSequence .invoiceViewport { height: 190px; }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.29); }
 }
 
 @media (prefers-reduced-motion: reduce) {

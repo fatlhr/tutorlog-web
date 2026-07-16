@@ -4188,7 +4188,7 @@ html, body { overflow-x: hidden; }
 
 /* Guide phases — instructional two-column layout */
 .tl-guide-phases {
-  width: min(840px, 100%);
+  width: min(1080px, 100%);
   margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -4204,8 +4204,8 @@ html, body { overflow-x: hidden; }
 .tl-guide-phase {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
-  gap: 64px;
+  grid-template-columns: minmax(300px, .72fr) minmax(600px, 1.28fr);
+  gap: 56px;
   align-items: start;
 }
 
@@ -4292,7 +4292,11 @@ html, body { overflow-x: hidden; }
   min-width: 0;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1099px) {
+  .tl-guide-phases {
+    width: min(760px, 100%);
+  }
+
   .tl-guide-phase {
     grid-template-columns: 1fr;
     gap: 36px;
@@ -5424,13 +5428,13 @@ html, body { overflow-x: hidden; }
   [data-evidence-group="cross-device-recap"] .tls-recap-proof-mobile {
     width: 100%;
   }
-  [data-evidence-group="invoice-output"] .tls-invoice-proof { width: min(232px, 100%); height: 228px; }
+  [data-evidence-group="invoice-output"] .tls-invoice-proof { width: min(440px, 100%); height: 427px; }
   [data-evidence-group="invoice-output"] .tls-rail-proof-invoice {
-    width: min(232px, 100%);
+    width: min(440px, 100%);
     margin: 0;
     justify-self: center;
   }
-  [data-evidence-group="invoice-output"] .tls-invoice-proof .tpl-modern { transform: scale(.303); }
+  [data-evidence-group="invoice-output"] .tls-invoice-proof .tpl-modern { transform: scale(.58); }
   .tls-features .tls-story-hero { padding: 52px 0 38px; }
   .tls-story-hero { padding: 48px 0 56px; }
   .tls-story-hero h1 { max-width: none; font-size: 43px; line-height: 1.06; }
@@ -5475,6 +5479,18 @@ html, body { overflow-x: hidden; }
   .tls-features .tl-proof-dialog-media[data-proof-dialog-media="recap-mobile"] .tls-proof-image { width: min(180px, 100%); }
   .tls-features .tl-proof-dialog-media[data-proof-dialog-media] .tls-invoice-proof { width: min(336px, 100%); height: 326px; }
   .tls-features .tl-proof-dialog-media[data-proof-dialog-media] .tls-invoice-proof .tpl-modern { transform: scale(.45); }
+}
+
+@media (max-width: 479px) {
+  [data-evidence-group="invoice-output"] .tls-invoice-proof { width: min(300px, 100%); height: 292px; }
+  [data-evidence-group="invoice-output"] .tls-rail-proof-invoice { width: min(300px, 100%); }
+  [data-evidence-group="invoice-output"] .tls-invoice-proof .tpl-modern { transform: scale(.4); }
+}
+
+@media (max-width: 359px) {
+  [data-evidence-group="invoice-output"] .tls-invoice-proof { width: min(252px, 100%); height: 245px; }
+  [data-evidence-group="invoice-output"] .tls-rail-proof-invoice { width: min(252px, 100%); }
+  [data-evidence-group="invoice-output"] .tls-invoice-proof .tpl-modern { transform: scale(.34); }
 }
 
 /* Standard landing composition: product proof supports the story without becoming a rail. */
