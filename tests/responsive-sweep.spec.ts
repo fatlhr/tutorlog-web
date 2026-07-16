@@ -155,11 +155,11 @@ test.describe('Homepage hero guardrails', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const demoTrigger = page.getByRole('button', { name: 'Lihat demo' });
+    const demoTrigger = page.getByRole('button', { name: 'Lihat contoh alur' });
     await expect(demoTrigger).toBeVisible();
     await demoTrigger.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Preview sementara TutorLog' });
+    const dialog = page.getByRole('dialog', { name: 'Contoh sementara TutorLog' });
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('iframe[title="Video contoh sementara"]')).toHaveAttribute('src', /youtube-nocookie/);
     await expect(dialog.getByRole('button', { name: 'Tutup demo', exact: true })).toBeFocused();
@@ -204,7 +204,7 @@ test.describe('Homepage story structure', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByRole('heading', { name: 'Catatan sesi tersebar. Rekap harus dihitung ulang.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Catatan sesi masih tersebar? Rekap jadi harus dihitung ulang.' })).toBeVisible();
     await expect(page.locator('.tl-landing-transition')).toContainText('Data yang sama langsung siap dipakai');
   });
 
@@ -664,7 +664,7 @@ test.describe('Guide story hierarchy', () => {
     const geometry = await page.evaluate(() => {
       const session = document.querySelector<HTMLElement>('[data-guide-evidence="mobile"] [data-product-artifact="session"]');
       const recap = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [data-product-artifact="recap"]');
-      const viewport = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [aria-label="Preview invoice TutorLog"]');
+      const viewport = document.querySelector<HTMLElement>('[data-guide-evidence="web"] [aria-label="Pratinjau invoice TutorLog"]');
       const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
       const invoiceArtifact = viewport?.closest<HTMLElement>('[data-product-artifact="invoice"]');
       const invoiceCaption = invoiceArtifact?.querySelector<HTMLElement>('figcaption');
@@ -746,7 +746,7 @@ test.describe('Guide story hierarchy', () => {
         const proof = webPhase?.querySelector<HTMLElement>('.tl-guide-inline-proof');
         const recap = webPhase?.querySelector<HTMLElement>('[data-product-artifact="recap"]');
         const invoice = webPhase?.querySelector<HTMLElement>('[data-product-artifact="invoice"]');
-        const viewport = invoice?.querySelector<HTMLElement>('[aria-label="Preview invoice TutorLog"]');
+        const viewport = invoice?.querySelector<HTMLElement>('[aria-label="Pratinjau invoice TutorLog"]');
         const paper = viewport?.querySelector<HTMLElement>('.tpl-modern');
         if (!webPhase || !copy || !proof || !recap || !invoice || !viewport || !paper) return null;
 
@@ -861,7 +861,7 @@ test.describe('Public workflow artifact alignment', () => {
     await page.waitForLoadState('networkidle');
 
     const geometry = await page.evaluate(() => {
-      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Preview invoice TutorLog"]');
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Pratinjau invoice TutorLog"]');
       const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
       if (!viewport || !invoice) return null;
       const viewportBox = viewport.getBoundingClientRect();
@@ -885,7 +885,7 @@ test.describe('Public workflow artifact alignment', () => {
     await page.waitForLoadState('networkidle');
 
     const geometry = await page.evaluate(() => {
-      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Preview invoice TutorLog"]');
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Pratinjau invoice TutorLog"]');
       const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
       if (!viewport || !invoice) return null;
       const viewportBox = viewport.getBoundingClientRect();
@@ -935,7 +935,7 @@ test.describe('Public workflow artifact alignment', () => {
 
     const geometry = await page.evaluate(() => {
       const recap = document.querySelector<HTMLElement>('[data-workflow-stage="recap"] [data-product-artifact="recap"]');
-      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Preview invoice TutorLog"]');
+      const viewport = document.querySelector<HTMLElement>('[data-workflow-stage="invoice"] [aria-label="Pratinjau invoice TutorLog"]');
       const invoice = viewport?.querySelector<HTMLElement>('.tpl-modern');
       if (!recap || !viewport || !invoice) return null;
 

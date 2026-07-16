@@ -245,7 +245,7 @@
 
 @media (min-width: 620px) and (max-width: 699px) {
   .guideSequence .invoiceViewport { height: 420px; }
-  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.68); }
+  .guideSequence .invoiceViewport :global(.tpl-modern) { transform: scale(.69); }
 }
 
 @media (max-width: 619px) {
