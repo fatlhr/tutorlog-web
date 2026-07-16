@@ -135,6 +135,37 @@ function readRequiredHeader(headers: Headers, name: string): string {
   return value;
 }
 
+function isLeapYear(year: number): boolean {
+  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+}
+
+function parseIsoTimestamp(timestamp: string): number {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|([+-])(\d{2}):(\d{2}))$/.exec(timestamp);
+  if (!match) throw invalidProviderData();
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const offsetHour = match[9] === undefined ? 0 : Number(match[9]);
+  const offsetMinute = match[10] === undefined ? 0 : Number(match[10]);
+  const daysByMonth = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  if (month < 1 || month > 12
+    || day < 1 || day > daysByMonth[month - 1]
+    || hour > 23 || minute > 59 || second > 59
+    || offsetHour > 23 || offsetMinute > 59) {
+    throw invalidProviderData();
+  }
+
+  const parsed = Date.parse(timestamp);
+  if (!Number.isFinite(parsed)) throw invalidProviderData();
+  return parsed;
+}
+
 function callbackState(payload: Record<string, unknown>): VerifiedProviderEvent["state"] {
   const status = payload.status;
   const statusCode = payload.status_code;
@@ -154,11 +185,7 @@ export function verifyIpaymuCallback(input: {
     const suppliedSignature = readRequiredHeader(input.headers, "X-Signature");
     const eventReference = readRequiredHeader(input.headers, "X-External-ID");
     const timestamp = readRequiredHeader(input.headers, "X-Timestamp");
-    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/.test(timestamp)) {
-      throw invalidProviderData();
-    }
-    const timestampValue = Date.parse(timestamp);
-    if (!Number.isFinite(timestampValue)) throw invalidProviderData();
+    const timestampValue = parseIsoTimestamp(timestamp);
 
     const parsed = asObject(JSON.parse(input.rawBody));
     const payload = normalizeCallbackPayload(parsed);
@@ -166,7 +193,7 @@ export function verifyIpaymuCallback(input: {
       .update(stringifyCanonicalPayload(payload))
       .digest("hex");
 
-    if (!/^[a-fA-F0-9]+$/.test(suppliedSignature)) throw invalidProviderData();
+    if (!/^[a-fA-F0-9]{64}$/.test(suppliedSignature)) throw invalidProviderData();
     const expectedBytes = Buffer.from(expectedSignature, "hex");
     const suppliedBytes = Buffer.from(suppliedSignature, "hex");
     if (expectedBytes.length !== suppliedBytes.length) throw invalidProviderData();

@@ -13,13 +13,21 @@ import type {
   VerifiedProviderEvent,
 } from "./provider";
 
-export interface IpaymuProviderConfig {
+interface IpaymuProviderConfig {
   baseUrl: string;
   va: string;
   apiKey: string;
   callbackUrl: string;
   returnUrl: string;
 }
+
+const REQUIRED_CONFIG = {
+  baseUrl: "IPAYMU_BASE_URL",
+  va: "IPAYMU_VA",
+  apiKey: "IPAYMU_API_KEY",
+  callbackUrl: "IPAYMU_CALLBACK_URL",
+  returnUrl: "IPAYMU_RETURN_URL",
+} as const;
 
 function providerNotReady(): BillingError {
   return new BillingError(
@@ -36,10 +44,46 @@ function providerResponseInvalid(): BillingError {
   return new BillingError("PROVIDER_RESPONSE_INVALID", "Payment provider response is invalid");
 }
 
-export class IpaymuProvider implements PaymentProvider {
+function readEnabledConfig(): IpaymuProviderConfig {
+  if (!(process.env.BILLING_PAYMENT_PROVIDER_ENABLED === "true")) {
+    throw providerNotReady();
+  }
+
+  const config = Object.fromEntries(
+    Object.entries(REQUIRED_CONFIG).map(([key, envName]) => [key, process.env[envName]?.trim()]),
+  ) as Record<keyof IpaymuProviderConfig, string | undefined>;
+  if (Object.values(config).some((value) => !value)) throw providerNotReady();
+
+  try {
+    for (const key of ["baseUrl", "callbackUrl", "returnUrl"] as const) {
+      const url = new URL(config[key] as string);
+      if (url.protocol !== "https:") throw providerNotReady();
+    }
+  } catch {
+    throw providerNotReady();
+  }
+
+  return {
+    baseUrl: (config.baseUrl as string).replace(/\/$/, ""),
+    va: config.va as string,
+    apiKey: config.apiKey as string,
+    callbackUrl: config.callbackUrl as string,
+    returnUrl: config.returnUrl as string,
+  };
+}
+
+function assertNetworkReady(expected: IpaymuProviderConfig): void {
+  const current = readEnabledConfig();
+  for (const key of Object.keys(expected) as (keyof IpaymuProviderConfig)[]) {
+    if (current[key] !== expected[key]) throw providerNotReady();
+  }
+}
+
+class IpaymuProvider implements PaymentProvider {
   constructor(private readonly config: IpaymuProviderConfig) {}
 
   async createPayment(input: CreateProviderPaymentInput): Promise<ProviderPaymentResult> {
+    assertNetworkReady(this.config);
     if (!Number.isSafeInteger(input.amount) || input.amount <= 0) {
       throw providerResponseInvalid();
     }
@@ -57,6 +101,7 @@ export class IpaymuProvider implements PaymentProvider {
       buyerName: input.customer.name,
       buyerEmail: input.customer.email,
     };
+    // cancelUrl is intentionally omitted; Task I9 must provide the absent contract and merchant evidence.
     if (input.customer.phone) requestPayload.buyerPhone = input.customer.phone;
 
     const rawBody = JSON.stringify(requestPayload);
@@ -104,4 +149,8 @@ export class IpaymuProvider implements PaymentProvider {
   verifyCallback(input: { rawBody: string; headers: Headers }): VerifiedProviderEvent {
     return verifyIpaymuCallback({ ...input, va: this.config.va });
   }
+}
+
+export function createPaymentProvider(): PaymentProvider {
+  return new IpaymuProvider(readEnabledConfig());
 }

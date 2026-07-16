@@ -28,6 +28,7 @@ assert.match(ipaymuSource, /\/api\/v2\/payment/);
 assert.match(ipaymuSource, /const rawBody = JSON\.stringify\(requestPayload\)/);
 assert.doesNotMatch(ipaymuSource, /paymentMethod\s*:/);
 assert.doesNotMatch(ipaymuSource, /paymentChannel\s*:/);
+assert.doesNotMatch(ipaymuSource, /cancelUrl\s*:/);
 for (const envName of [
   "BILLING_PAYMENT_PROVIDER_ENABLED",
   "IPAYMU_BASE_URL",
@@ -36,9 +37,17 @@ for (const envName of [
   "IPAYMU_CALLBACK_URL",
   "IPAYMU_RETURN_URL",
 ]) {
-  assert.ok(indexSource.includes(envName), `missing readiness input ${envName}`);
+  assert.ok(`${indexSource}\n${ipaymuSource}`.includes(envName), `missing readiness input ${envName}`);
 }
-assert.match(indexSource, /BILLING_PAYMENT_PROVIDER_ENABLED\s*===\s*"true"/);
+assert.match(`${indexSource}\n${ipaymuSource}`, /BILLING_PAYMENT_PROVIDER_ENABLED\s*===\s*"true"/);
+
+const reviewFindings = [];
+if (/export\s+(?:class|interface)\s+IpaymuProvider/.test(ipaymuSource)) {
+  reviewFindings.push("the provider class or constructor contract remains publicly deep-importable");
+}
+if (!/cancelUrl[^\n]*intentionally omitted[^\n]*Task I9/i.test(ipaymuSource)) {
+  reviewFindings.push("the cancelUrl omission lacks the required Task I9 controller gate");
+}
 
 function transpile(source, fileName) {
   return ts.transpileModule(source, {
@@ -87,8 +96,22 @@ const requestBody = JSON.stringify({
   notifyUrl: "https://example.test/api/callback",
   referenceId: "purchase_test_001",
 });
+const expectedRequestBody =
+  '{"product":["TutorLog Plus"],"qty":[1],"price":[19000],"returnUrl":"https://example.test/billing/return","notifyUrl":"https://example.test/api/callback","referenceId":"purchase_test_001"}';
+const expectedCanonicalRequest =
+  "POST:0000001171111111:312a52654fc6db442983f11a40389ce863c5f942eda02e9f23c810ae824e0217:test-api-key-do-not-use";
 const expectedRequestSignature =
   "ceb1220dd66981367a727c40a306d524cdd90a92cd3eec6755004486ff1c9278";
+
+assert.equal(requestBody, expectedRequestBody);
+assert.equal(
+  expectedCanonicalRequest,
+  `POST:${va}:312a52654fc6db442983f11a40389ce863c5f942eda02e9f23c810ae824e0217:${apiKey}`,
+);
+
+// Independent fixture derivation (documentation only; never executed by this test):
+// printf '%s' '{"product":["TutorLog Plus"],"qty":[1],"price":[19000],"returnUrl":"https://example.test/billing/return","notifyUrl":"https://example.test/api/callback","referenceId":"purchase_test_001"}' | openssl dgst -sha256
+// printf '%s' 'POST:0000001171111111:312a52654fc6db442983f11a40389ce863c5f942eda02e9f23c810ae824e0217:test-api-key-do-not-use' | openssl dgst -sha256 -hmac 'test-api-key-do-not-use'
 
 assert.deepEqual(
   signature.createIpaymuRequestHeaders({
@@ -149,6 +172,9 @@ const expectedCanonicalCallback =
 const expectedCallbackSignature =
   "fd537a430a503de64b98753de4dced8d3fd6324c269831dd9071014bcf0f4d0f";
 
+// Independent fixture derivation (documentation only; never executed by this test):
+// printf '%s' '{"additional_info":[],"amount":"19000","buyer_note":"https:\/\/example.test\/receipt","fee":"0","is_escrow":false,"paid_off":19000,"payment_method":"qris","reference_id":"purchase_test_001","status":"berhasil","status_code":1,"transaction_status_code":1,"trx_id":123456789}' | openssl dgst -sha256 -hmac '0000001171111111'
+
 assert.equal(
   signature.canonicalizeIpaymuCallback(callbackPayload),
   expectedCanonicalCallback,
@@ -182,6 +208,31 @@ assert.deepEqual(verified, {
   occurredAt: "2026-07-16T05:31:00.000Z",
   raw: JSON.parse(expectedCanonicalCallback.replaceAll("\\/", "/")),
 });
+
+function callbackWasAccepted(headers) {
+  try {
+    signature.verifyIpaymuCallback({ rawBody: JSON.stringify(callbackPayload), headers, va });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+if (callbackWasAccepted(headersFor(callbackPayload, {
+  "X-Signature": `${expectedCallbackSignature}f`,
+}))) {
+  reviewFindings.push("a valid callback signature plus one trailing hex nibble is accepted");
+}
+if (callbackWasAccepted(headersFor(callbackPayload, {
+  "X-Timestamp": "2026-02-30T05:31:00.000Z",
+}))) {
+  reviewFindings.push("a syntactically shaped but impossible callback calendar date is accepted");
+}
+assert.equal(signature.verifyIpaymuCallback({
+  rawBody: JSON.stringify(callbackPayload),
+  headers: headersFor(callbackPayload, { "X-Timestamp": "2026-07-16T12:31:00+07:00" }),
+  va,
+}).occurredAt, "2026-07-16T05:31:00.000Z");
 
 for (const [status, statusCode, expectedState] of [
   ["pending", "0", "pending"],
@@ -238,27 +289,114 @@ const envNames = [
   "IPAYMU_RETURN_URL",
 ];
 const originalEnv = Object.fromEntries(envNames.map((name) => [name, process.env[name]]));
+const completeFakeEnv = {
+  BILLING_PAYMENT_PROVIDER_ENABLED: "true",
+  IPAYMU_BASE_URL: "https://sandbox.example.test",
+  IPAYMU_VA: va,
+  IPAYMU_API_KEY: apiKey,
+  IPAYMU_CALLBACK_URL: "https://example.test/api/callback",
+  IPAYMU_RETURN_URL: "https://example.test/billing/return",
+};
+const paymentInput = {
+  purchaseId: "purchase_test_001",
+  amount: 19000,
+  method: "qris",
+  customer: { name: "Test Buyer", email: "buyer@example.test" },
+  callbackUrl: completeFakeEnv.IPAYMU_CALLBACK_URL,
+  returnUrl: completeFakeEnv.IPAYMU_RETURN_URL,
+};
 let fetchCalls = 0;
 const originalFetch = globalThis.fetch;
 try {
-  const adapter = new ipaymu.IpaymuProvider({
-    baseUrl: "https://sandbox.example.test",
-    va,
-    apiKey,
-    callbackUrl: "https://example.test/api/callback",
-    returnUrl: "https://example.test/billing/return",
+  Object.assign(process.env, completeFakeEnv, {
+    BILLING_PAYMENT_PROVIDER_ENABLED: "false",
   });
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    return { ok: true, json: async () => ({}) };
+  };
+
+  if (typeof ipaymu.IpaymuProvider === "function") {
+    const bypassableAdapter = new ipaymu.IpaymuProvider({
+      baseUrl: completeFakeEnv.IPAYMU_BASE_URL,
+      va,
+      apiKey,
+      callbackUrl: completeFakeEnv.IPAYMU_CALLBACK_URL,
+      returnUrl: completeFakeEnv.IPAYMU_RETURN_URL,
+    });
+    await assert.rejects(bypassableAdapter.createPayment(paymentInput));
+    if (fetchCalls > 0) {
+      reviewFindings.push("direct construction can reach fetch while provider readiness is disabled");
+    }
+  }
+
+  assert.deepEqual(reviewFindings, [], "Task I4 reviewer findings must remain fixed");
+
+  assert.deepEqual(Object.keys(ipaymu), ["createPaymentProvider"]);
+  assert.deepEqual(Object.keys(providers), ["createPaymentProvider"]);
+  for (const publicModule of [ipaymu, providers]) {
+    assert.throws(
+      () => publicModule.createPaymentProvider(),
+      (error) => error instanceof BillingError
+        && error.code === "PAYMENT_PROVIDER_NOT_READY"
+        && !error.message.includes(apiKey)
+        && !error.message.includes(va),
+    );
+  }
+  assert.equal(fetchCalls, 0);
+
+  process.env.BILLING_PAYMENT_PROVIDER_ENABLED = "true";
+  delete process.env.IPAYMU_RETURN_URL;
+  for (const publicModule of [ipaymu, providers]) {
+    assert.throws(
+      () => publicModule.createPaymentProvider(),
+      (error) => error instanceof BillingError && error.code === "PAYMENT_PROVIDER_NOT_READY",
+    );
+  }
+  assert.equal(fetchCalls, 0);
+
+  Object.assign(process.env, completeFakeEnv);
+  const adapter = providers.createPaymentProvider();
+  process.env.BILLING_PAYMENT_PROVIDER_ENABLED = "false";
+  fetchCalls = 0;
   await assert.rejects(
-    adapter.createPayment({
-      purchaseId: "purchase_test_001",
-      amount: 19000,
-      method: "qris",
-      customer: { name: "Test Buyer", email: "buyer@example.test" },
-      callbackUrl: "https://untrusted.example.test/callback",
-      returnUrl: "https://example.test/billing/return",
-    }),
+    adapter.createPayment(paymentInput),
     (error) => error instanceof BillingError && error.code === "PAYMENT_PROVIDER_NOT_READY",
   );
+  assert.equal(fetchCalls, 0);
+
+  Object.assign(process.env, completeFakeEnv);
+  delete process.env.IPAYMU_API_KEY;
+  await assert.rejects(
+    adapter.createPayment(paymentInput),
+    (error) => error instanceof BillingError && error.code === "PAYMENT_PROVIDER_NOT_READY",
+  );
+  assert.equal(fetchCalls, 0);
+
+  Object.assign(process.env, completeFakeEnv);
+  let capturedRequest;
+  globalThis.fetch = async (url, init) => {
+    fetchCalls += 1;
+    capturedRequest = { url, init };
+    return { ok: true, json: async () => ({}) };
+  };
+  await assert.rejects(
+    adapter.createPayment(paymentInput),
+    (error) => error instanceof BillingError && error.code === "PAYMENT_PROVIDER_NOT_READY",
+  );
+  assert.equal(fetchCalls, 1);
+  assert.equal(capturedRequest.url, "https://sandbox.example.test/api/v2/payment");
+  assert.equal(capturedRequest.init.body, JSON.stringify({
+    product: ["TutorLog Plus"],
+    qty: [1],
+    price: [19000],
+    returnUrl: completeFakeEnv.IPAYMU_RETURN_URL,
+    notifyUrl: completeFakeEnv.IPAYMU_CALLBACK_URL,
+    referenceId: "purchase_test_001",
+    buyerName: "Test Buyer",
+    buyerEmail: "buyer@example.test",
+  }));
+  assert.equal(capturedRequest.init.signal instanceof AbortSignal, true);
   await assert.rejects(
     adapter.getPaymentStatus("provider_test_001"),
     (error) => error instanceof BillingError && error.code === "PAYMENT_PROVIDER_NOT_READY",
@@ -267,35 +405,6 @@ try {
     adapter.cancelPayment("provider_test_001"),
     (error) => error instanceof BillingError && error.code === "PAYMENT_PROVIDER_NOT_READY",
   );
-
-  Object.assign(process.env, {
-    BILLING_PAYMENT_PROVIDER_ENABLED: "false",
-    IPAYMU_BASE_URL: "https://sandbox.example.test",
-    IPAYMU_VA: va,
-    IPAYMU_API_KEY: apiKey,
-    IPAYMU_CALLBACK_URL: "https://example.test/api/callback",
-    IPAYMU_RETURN_URL: "https://example.test/billing/return",
-  });
-  globalThis.fetch = async () => {
-    fetchCalls += 1;
-    throw new Error("fetch must remain unreachable");
-  };
-  assert.throws(
-    () => providers.createPaymentProvider(),
-    (error) => error instanceof BillingError
-      && error.code === "PAYMENT_PROVIDER_NOT_READY"
-      && !error.message.includes(apiKey)
-      && !error.message.includes(va),
-  );
-  assert.equal(fetchCalls, 0);
-
-  process.env.BILLING_PAYMENT_PROVIDER_ENABLED = "true";
-  delete process.env.IPAYMU_RETURN_URL;
-  assert.throws(
-    () => providers.createPaymentProvider(),
-    (error) => error instanceof BillingError && error.code === "PAYMENT_PROVIDER_NOT_READY",
-  );
-  assert.equal(fetchCalls, 0);
 } finally {
   globalThis.fetch = originalFetch;
   for (const name of envNames) {
