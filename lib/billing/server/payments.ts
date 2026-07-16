@@ -246,3 +246,57 @@ export async function cancelPendingPayment(
 
   return readPurchase(userId, result.purchase_id);
 }
+
+type ProviderEventOutcome =
+  | "processed"
+  | "duplicate"
+  | "amount_mismatch"
+  | "ignored"
+  | "unknown_reference";
+
+export async function processIpaymuCallback(
+  rawBody: string,
+  headers: Headers,
+  now: Date = new Date(),
+): Promise<void> {
+  if (process.env.BILLING_PAYMENT_PROVIDER_ENABLED !== "true") {
+    throw new BillingError("PAYMENT_PROVIDER_NOT_READY", "Payment provider is not ready");
+  }
+
+  const provider = createPaymentProvider();
+  const verified = provider.verifyCallback({ rawBody, headers });
+  const occurredAt = Date.parse(verified.occurredAt);
+  const receivedAt = now.getTime();
+  if (
+    !Number.isFinite(occurredAt)
+    || !Number.isFinite(receivedAt)
+    || occurredAt < receivedAt - 10 * 60 * 1000
+    || occurredAt > receivedAt + 2 * 60 * 1000
+  ) {
+    throw new BillingError("PROVIDER_RESPONSE_INVALID", "Payment callback is invalid");
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc("process_billing_provider_event", {
+    p_provider: "ipaymu",
+    p_event_key: verified.eventReference,
+    p_provider_reference: verified.providerReference,
+    p_event_type: verified.state,
+    p_amount: verified.amount,
+    p_channel_fee: verified.channelFee,
+    p_occurred_at: verified.occurredAt,
+    p_payload: verified.raw,
+  });
+  if (error) {
+    throw new BillingError("PROVIDER_UNAVAILABLE", "Payment callback is unavailable");
+  }
+
+  const result = (data ?? {}) as Record<string, unknown>;
+  const outcome = result.status as ProviderEventOutcome | undefined;
+  if (outcome === "unknown_reference") {
+    throw new BillingError("PROVIDER_UNAVAILABLE", "Payment callback is unavailable");
+  }
+  if (!["processed", "duplicate", "amount_mismatch", "ignored"].includes(outcome ?? "")) {
+    throw new BillingError("PROVIDER_UNAVAILABLE", "Payment callback is unavailable");
+  }
+}

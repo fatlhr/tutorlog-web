@@ -11,6 +11,10 @@ const purchaseFunctionsSql = readFileSync(
   "supabase/migrations/202607160003_billing_purchase_functions.sql",
   "utf8",
 );
+const webhookFunctionsSql = readFileSync(
+  "supabase/migrations/202607160004_billing_webhook_functions.sql",
+  "utf8",
+);
 const adminSource = readFileSync("lib/supabase/admin.ts", "utf8");
 const accessSource = readFileSync("lib/billing/server/access.ts", "utf8");
 const exportsSource = readFileSync("lib/billing/server/exports.ts", "utf8");
@@ -481,5 +485,72 @@ for (const signature of [
 }
 
 assert.doesNotMatch(purchaseFunctionsSql, /service_role_key|ipaymu_api_key/i);
+
+const processProviderEventFunction = webhookFunctionsSql.match(
+  /create (?:or replace )?function public\.process_billing_provider_event[\s\S]*?\n\$\$;/i,
+)?.[0] ?? "";
+assert.ok(processProviderEventFunction, "missing provider event transaction");
+assert.match(processProviderEventFunction, /security definer/i);
+assert.match(processProviderEventFunction, /set search_path = ''/i);
+assert.match(processProviderEventFunction, /p_provider <> 'ipaymu'/i);
+assert.match(processProviderEventFunction, /p_event_type not in \('pending', 'paid', 'expired', 'failed', 'canceled'\)/i);
+assert.match(processProviderEventFunction, /jsonb_typeof\(p_payload\) <> 'object'/i);
+
+const unknownReference = processProviderEventFunction.indexOf("'unknown_reference'");
+const eventInsert = processProviderEventFunction.indexOf("insert into public.billing_provider_events");
+assert.ok(unknownReference !== -1 && unknownReference < eventInsert, "unknown references must not insert events");
+assert.match(processProviderEventFunction, /on conflict \(provider, provider_event_key\) do nothing/i);
+assert.match(
+  processProviderEventFunction,
+  /from public\.billing_provider_events[\s\S]*provider_event_key = p_event_key[\s\S]*for update/i,
+);
+assert.match(processProviderEventFunction, /processed_at is not null[\s\S]*'duplicate'/i);
+assert.match(
+  processProviderEventFunction,
+  /from public\.billing_payments[\s\S]*provider_reference = v_event\.provider_reference[\s\S]*for update/i,
+);
+assert.match(processProviderEventFunction, /from public\.billing_purchases[\s\S]*for update/i);
+
+assert.match(
+  processProviderEventFunction,
+  /p_amount <> v_payment\.total_amount[\s\S]*p_channel_fee <> v_payment\.channel_fee[\s\S]*v_payment\.total_amount <> v_purchase\.total_amount_snapshot/i,
+);
+assert.match(processProviderEventFunction, /processing_error = 'AMOUNT_MISMATCH'/i);
+assert.match(processProviderEventFunction, /'status', 'amount_mismatch'/i);
+const mismatchBranch = processProviderEventFunction.match(
+  /if p_amount <>[\s\S]*?return jsonb_build_object\('status', 'amount_mismatch'\);[\s\S]*?end if;/i,
+)?.[0] ?? "";
+assert.ok(mismatchBranch, "missing amount mismatch branch");
+assert.doesNotMatch(mismatchBranch, /apply_billing_paid_event|billing_entitlement_grants/);
+
+assert.match(processProviderEventFunction, /p_event_type = 'pending' and v_payment\.state = 'created'/i);
+assert.match(processProviderEventFunction, /p_event_type = 'paid'[\s\S]*v_payment\.state in \('pending', 'superseded', 'paid'\)/i);
+assert.match(
+  processProviderEventFunction,
+  /perform public\.apply_billing_paid_event\(v_payment\.id, p_occurred_at\)/i,
+);
+assert.match(
+  processProviderEventFunction,
+  /update public\.billing_payments as duplicate_payment[\s\S]*duplicate_review = true[\s\S]*duplicate_payment\.purchase_id = v_purchase\.id[\s\S]*duplicate_payment\.id <> v_payment\.id[\s\S]*duplicate_payment\.state = 'paid'/i,
+);
+assert.match(processProviderEventFunction, /p_event_type = 'expired'[\s\S]*v_payment\.state in \('pending', 'superseded'\)/i);
+assert.match(processProviderEventFunction, /p_event_type = 'failed' and v_payment\.state = 'pending'/i);
+assert.match(processProviderEventFunction, /p_event_type = 'canceled'[\s\S]*v_payment\.state in \('created', 'pending', 'superseded'\)/i);
+assert.match(processProviderEventFunction, /v_outcome := 'ignored'/i);
+assert.match(
+  processProviderEventFunction,
+  /update public\.billing_provider_events[\s\S]*processed_at = now\(\)[\s\S]*processing_error = null/i,
+);
+
+assert.match(
+  webhookFunctionsSql,
+  /revoke all on function public\.process_billing_provider_event\([^;]+\)[\s\S]*from public, anon, authenticated/i,
+);
+assert.match(
+  webhookFunctionsSql,
+  /grant execute on function public\.process_billing_provider_event\([^;]+\)[\s\S]*to service_role/i,
+);
+assert.doesNotMatch(webhookFunctionsSql, /grant execute[\s\S]*to authenticated/i);
+assert.doesNotMatch(webhookFunctionsSql, /service_role_key|ipaymu_api_key/i);
 
 console.log("billing migration contract valid");

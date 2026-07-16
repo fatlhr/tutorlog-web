@@ -12,6 +12,8 @@ const quoteRoute = read("app/api/quotes/route.ts");
 const purchaseRoute = read("app/api/purchases/route.ts");
 const statusRoute = read("app/api/purchases/[purchaseId]/route.ts");
 const cancelRoute = read("app/api/payments/[paymentId]/cancel/route.ts");
+const webhookRoute = read("app/api/webhooks/ipaymu/route.ts");
+const signatureSource = read("lib/billing/providers/ipaymu-signature.ts");
 
 assert.match(authSource, /^import "server-only";/);
 assert.match(authSource, /auth\.getUser\(\)/);
@@ -114,6 +116,64 @@ assert.match(
 );
 assert.match(paymentsSource, /\.eq\("user_id", userId\)/);
 assert.match(paymentsSource, /\.eq\("purchase_id", purchaseId\)/);
-assert.doesNotMatch(paymentsSource, /raw|payload|responseBody|providerError/i);
+assert.doesNotMatch(
+  paymentsSource.slice(0, paymentsSource.indexOf("export async function processIpaymuCallback")),
+  /raw|payload|responseBody|providerError/i,
+);
+
+assert.match(webhookRoute, /export async function POST\(request: Request\)/);
+assert.equal(
+  (webhookRoute.match(/request\.text\(\)/g) ?? []).length,
+  1,
+  "the webhook route must read the raw body exactly once",
+);
+assert.doesNotMatch(webhookRoute, /request\.json\(\)|JSON\.parse/);
+assert.match(webhookRoute, /processIpaymuCallback\(rawBody, request\.headers\)/);
+assert.match(webhookRoute, /\{ status: "ok" \}[\s\S]*status: 200/);
+assert.match(webhookRoute, /PROVIDER_RESPONSE_INVALID[\s\S]*status: 400/);
+assert.match(
+  webhookRoute,
+  /PAYMENT_PROVIDER_NOT_READY[\s\S]*PROVIDER_UNAVAILABLE[\s\S]*status: 503/,
+);
+assert.doesNotMatch(webhookRoute, /console\.|providerReference|eventReference|verified\.raw/);
+
+const callbackService = paymentsSource.match(
+  /export async function processIpaymuCallback[\s\S]*?\n}/,
+)?.[0] ?? "";
+assert.ok(callbackService, "missing verified callback service");
+const enabledGuard = callbackService.indexOf('BILLING_PAYMENT_PROVIDER_ENABLED !== "true"');
+const adminCreation = callbackService.indexOf("createAdminClient()");
+const processingRpc = callbackService.indexOf('rpc("process_billing_provider_event"');
+assert.ok(enabledGuard !== -1, "disabled callback must fail closed");
+assert.ok(
+  adminCreation !== -1 && enabledGuard < adminCreation,
+  "disabled callback must return before creating a database client",
+);
+assert.ok(
+  processingRpc !== -1 && enabledGuard < processingRpc,
+  "disabled callback must return before database mutation",
+);
+assert.match(callbackService, /verifyCallback\(\{ rawBody, headers \}\)/);
+assert.match(callbackService, /10 \* 60 \* 1000/);
+assert.match(callbackService, /2 \* 60 \* 1000/);
+assert.match(callbackService, /p_provider: "ipaymu"/);
+assert.match(callbackService, /p_event_key: verified\.eventReference/);
+assert.match(callbackService, /p_provider_reference: verified\.providerReference/);
+assert.match(callbackService, /p_event_type: verified\.state/);
+assert.match(callbackService, /p_amount: verified\.amount/);
+assert.match(callbackService, /p_channel_fee: verified\.channelFee/);
+assert.match(callbackService, /p_occurred_at: verified\.occurredAt/);
+assert.match(callbackService, /p_payload: verified\.raw/);
+assert.match(callbackService, /unknown_reference[\s\S]*PROVIDER_UNAVAILABLE/);
+for (const acknowledged of ["processed", "duplicate", "amount_mismatch", "ignored"]) {
+  assert.ok(callbackService.includes(`"${acknowledged}"`), `missing callback outcome: ${acknowledged}`);
+}
+assert.doesNotMatch(callbackService, /console\.|JSON\.parse|error\.message/);
+
+assert.match(signatureSource, /readRequiredHeader\(input\.headers, "X-Signature"\)/);
+assert.match(signatureSource, /readRequiredHeader\(input\.headers, "X-External-ID"\)/);
+assert.match(signatureSource, /readRequiredHeader\(input\.headers, "X-Timestamp"\)/);
+assert.match(signatureSource, /JSON\.parse\(input\.rawBody\)/);
+assert.match(signatureSource, /timingSafeEqual/);
 
 console.log("billing route contract valid");
