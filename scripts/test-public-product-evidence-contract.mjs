@@ -13,14 +13,18 @@ function evaluateTypeScript(source, imports = {}) {
 
   assert.equal(diagnostics.length, 0, "TypeScript fixture should transpile without diagnostics");
 
-  const module = { exports: {} };
+  const fixtureModule = { exports: {} };
   const requireFixture = (specifier) => {
     assert.ok(specifier in imports, `Unexpected fixture import: ${specifier}`);
     return imports[specifier];
   };
 
-  Function("require", "module", "exports", outputText)(requireFixture, module, module.exports);
-  return module.exports;
+  Function("require", "module", "exports", outputText)(
+    requireFixture,
+    fixtureModule,
+    fixtureModule.exports,
+  );
+  return fixtureModule.exports;
 }
 
 const invoiceDataSource = await readFile(
