@@ -14,6 +14,9 @@ const statusRoute = read("app/api/purchases/[purchaseId]/route.ts");
 const cancelRoute = read("app/api/payments/[paymentId]/cancel/route.ts");
 const webhookRoute = read("app/api/webhooks/ipaymu/route.ts");
 const signatureSource = read("lib/billing/providers/ipaymu-signature.ts");
+const purchaseFunctionsSql = read(
+  "supabase/migrations/202607160003_billing_purchase_functions.sql",
+);
 
 assert.match(authSource, /^import "server-only";/);
 assert.match(authSource, /auth\.getUser\(\)/);
@@ -58,6 +61,16 @@ const createProviderIndex = purchasesSource.indexOf("createPaymentProvider()");
 assert.ok(guardIndex !== -1 && guardIndex < reserveIndex, "disabled purchase must fail before reservation");
 assert.ok(reserveIndex < createProviderIndex, "provider factory is only reached by the reservation owner");
 assert.match(purchasesSource, /should_create_provider/);
+assert.match(
+  purchaseFunctionsSql,
+  /payment\.state = 'created'[\s\S]*payment\.verification_deadline is not null[\s\S]*payment\.verification_deadline > now\(\)/i,
+  "created reservations must only be reused within a bounded creation lease",
+);
+assert.match(
+  purchaseFunctionsSql,
+  /insert into public\.billing_payments[\s\S]*verification_deadline[\s\S]*now\(\) \+ interval '2 minutes'/i,
+  "reservation creation must set the two-minute creation lease",
+);
 assert.match(purchasesSource, /isLifetime[\s\S]*LIFETIME_ALREADY_ACTIVE/);
 for (const snapshot of ["priceId", "baseAmount", "channelFee", "totalAmount", "currency"]) {
   assert.match(purchasesSource, new RegExp(snapshot), `missing reservation snapshot: ${snapshot}`);

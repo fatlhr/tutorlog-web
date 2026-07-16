@@ -48,6 +48,10 @@ assert.ok(PAYMENT_STATES.includes("superseded"));
 assert.doesNotThrow(() => assertPaymentTransition("pending", "paid"));
 assert.doesNotThrow(() => assertPaymentTransition("created", "superseded"));
 assert.doesNotThrow(() => assertPaymentTransition("superseded", "paid"));
+assert.doesNotThrow(() => assertPaymentTransition("expired", "paid"));
+assert.doesNotThrow(() => assertPaymentTransition("failed", "paid"));
+assert.doesNotThrow(() => assertPaymentTransition("canceled", "paid"));
+assert.throws(() => assertPaymentTransition("refunded", "paid"), BillingError);
 assert.throws(() => assertPaymentTransition("paid", "pending"), BillingError);
 
 console.log("billing contract valid");

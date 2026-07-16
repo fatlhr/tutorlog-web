@@ -226,7 +226,7 @@ begin
     return public.billing_access_status_for_user(v_payment.user_id);
   end if;
 
-  if v_payment.state not in ('pending', 'superseded') then
+  if v_payment.state not in ('pending', 'superseded', 'expired', 'failed', 'canceled') then
     raise exception 'Billing payment cannot transition to paid from %', v_payment.state;
   end if;
 

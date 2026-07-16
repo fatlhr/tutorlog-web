@@ -93,9 +93,9 @@ const transitions: Record<PaymentState, readonly PaymentState[]> = {
   pending: ["superseded", "paid", "expired", "failed", "canceled"],
   superseded: ["paid", "expired", "canceled"],
   paid: ["refunded"],
-  expired: [],
-  failed: [],
-  canceled: [],
+  expired: ["paid"],
+  failed: ["paid"],
+  canceled: ["paid"],
   refunded: [],
 };
 

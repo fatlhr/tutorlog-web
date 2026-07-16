@@ -224,6 +224,11 @@ assert.match(paidEventFunction, /from public\.billing_payments[\s\S]*for update/
 assert.match(paidEventFunction, /from public\.billing_purchases[\s\S]*for update/i);
 assert.match(paidEventFunction, /provider_reported_amount[\s\S]*total_amount_snapshot/i);
 assert.match(paidEventFunction, /state = 'refunded'/i);
+assert.match(
+  paidEventFunction,
+  /state not in \('pending', 'superseded', 'expired', 'failed', 'canceled'\)/i,
+  "verified late paid events must recover terminal provider states except refunded",
+);
 const paidUserLock = paidEventFunction.indexOf(
   "perform pg_advisory_xact_lock(hashtextextended('billing-entitlement:' || v_payment.user_id::text, 0));",
 );
@@ -391,12 +396,18 @@ assert.match(reservePurchaseFunction, /product\.active[\s\S]*price\.active/i);
 assert.match(reservePurchaseFunction, /available_from[\s\S]*available_until/i);
 assert.match(
   reservePurchaseFunction,
-  /payment\.state in \('created', 'pending'\)[\s\S]*payment\.method = p_method[\s\S]*payment\.expires_at is null[\s\S]*payment\.expires_at > now\(\)/i,
+  /payment\.method = p_method[\s\S]*payment\.state = 'created'[\s\S]*payment\.verification_deadline is not null[\s\S]*payment\.verification_deadline > now\(\)[\s\S]*payment\.state = 'pending'[\s\S]*payment\.expires_at is null[\s\S]*payment\.expires_at > now\(\)/i,
+  "created attempts require a bounded creation lease while pending attempts use provider expiry",
 );
 assert.match(reservePurchaseFunction, /order by payment\.created_at desc/i);
 assert.match(reservePurchaseFunction, /for update/i);
 assert.match(reservePurchaseFunction, /insert into public\.billing_purchases/i);
 assert.match(reservePurchaseFunction, /insert into public\.billing_payments/i);
+assert.match(
+  reservePurchaseFunction,
+  /insert into public\.billing_payments[\s\S]*verification_deadline[\s\S]*now\(\) \+ interval '2 minutes'/i,
+  "new created attempts require a two-minute creation lease",
+);
 assert.match(reservePurchaseFunction, /'should_create_provider'/i);
 for (const snapshot of [
   "price_id",
@@ -524,7 +535,11 @@ assert.ok(mismatchBranch, "missing amount mismatch branch");
 assert.doesNotMatch(mismatchBranch, /apply_billing_paid_event|billing_entitlement_grants/);
 
 assert.match(processProviderEventFunction, /p_event_type = 'pending' and v_payment\.state = 'created'/i);
-assert.match(processProviderEventFunction, /p_event_type = 'paid'[\s\S]*v_payment\.state in \('pending', 'superseded', 'paid'\)/i);
+assert.match(
+  processProviderEventFunction,
+  /p_event_type = 'paid'[\s\S]*v_payment\.state in \('pending', 'superseded', 'paid', 'expired', 'failed', 'canceled'\)/i,
+  "verified paid callbacks must activate recoverable provider states",
+);
 assert.match(
   processProviderEventFunction,
   /perform public\.apply_billing_paid_event\(v_payment\.id, p_occurred_at\)/i,

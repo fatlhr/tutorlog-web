@@ -95,9 +95,18 @@ begin
     and purchase.channel_fee_snapshot = p_channel_fee
     and purchase.total_amount_snapshot = v_total_amount
     and purchase.currency_snapshot = v_catalog.currency
-    and payment.state in ('created', 'pending')
     and payment.method = p_method
-    and (payment.expires_at is null or payment.expires_at > now())
+    and (
+      (
+        payment.state = 'created'
+        and payment.verification_deadline is not null
+        and payment.verification_deadline > now()
+      )
+      or (
+        payment.state = 'pending'
+        and (payment.expires_at is null or payment.expires_at > now())
+      )
+    )
   order by payment.created_at desc
   limit 1
   for update of payment, purchase;
@@ -158,7 +167,8 @@ begin
     channel_fee,
     total_amount,
     currency,
-    safe_reference
+    safe_reference,
+    verification_deadline
   )
   values (
     v_payment_id,
@@ -171,7 +181,8 @@ begin
     p_channel_fee,
     v_total_amount,
     v_catalog.currency,
-    'TL-' || upper(substr(replace(v_payment_id::text, '-', ''), 1, 12))
+    'TL-' || upper(substr(replace(v_payment_id::text, '-', ''), 1, 12)),
+    now() + interval '2 minutes'
   );
 
   return jsonb_build_object(

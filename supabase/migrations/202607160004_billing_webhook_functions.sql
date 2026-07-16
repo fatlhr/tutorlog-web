@@ -123,7 +123,7 @@ begin
         updated_at = now()
     where id = v_payment.id;
   elsif p_event_type = 'paid'
-    and v_payment.state in ('pending', 'superseded', 'paid')
+    and v_payment.state in ('pending', 'superseded', 'paid', 'expired', 'failed', 'canceled')
   then
     perform public.apply_billing_paid_event(v_payment.id, p_occurred_at);
 
