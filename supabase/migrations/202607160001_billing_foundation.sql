@@ -149,14 +149,27 @@ create index billing_provider_events_processing_lookup
 
 create table public.billing_entitlement_grants (
   id uuid primary key default gen_random_uuid(),
-  purchase_id uuid not null unique references public.billing_purchases(id),
+  purchase_id uuid unique references public.billing_purchases(id),
   user_id uuid not null references auth.users(id) on delete cascade,
+  source text not null
+    check (source in ('purchase', 'legacy_verified')),
+  evidence_reference text,
   product_code text not null,
   entitlement_type text not null check (entitlement_type in ('term', 'lifetime')),
   active_from timestamptz not null,
   active_until timestamptz,
   granted_at timestamptz not null default now(),
   foreign key (purchase_id, user_id) references public.billing_purchases(id, user_id),
+  check (
+    (source = 'purchase'
+      and purchase_id is not null
+      and evidence_reference is null)
+    or (
+      source = 'legacy_verified'
+      and purchase_id is null
+      and nullif(btrim(evidence_reference), '') is not null
+    )
+  ),
   check ((entitlement_type = 'lifetime' and active_until is null) or entitlement_type = 'term'),
   check (entitlement_type <> 'term' or active_until is not null),
   check (active_until is null or active_until > active_from)

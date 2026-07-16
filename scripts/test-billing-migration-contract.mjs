@@ -55,7 +55,16 @@ assert.match(tableSql.billing_payments, /unique \(provider, provider_reference\)
 assert.match(tableSql.billing_provider_events, /unique \(provider, provider_event_key\)/);
 assert.match(
   tableSql.billing_entitlement_grants,
-  /purchase_id uuid not null unique references public\.billing_purchases\(id\)/,
+  /purchase_id uuid unique references public\.billing_purchases\(id\)/,
+);
+assert.match(
+  tableSql.billing_entitlement_grants,
+  /source text not null\s+check \(source in \('purchase', 'legacy_verified'\)\)/,
+);
+assert.match(tableSql.billing_entitlement_grants, /evidence_reference text/);
+assert.match(
+  tableSql.billing_entitlement_grants,
+  /check \(\s*\(source = 'purchase'\s+and purchase_id is not null\s+and evidence_reference is null\)\s+or \(\s*source = 'legacy_verified'\s+and purchase_id is null\s+and nullif\(btrim\(evidence_reference\), ''\) is not null\s*\)\s*\)/,
 );
 assert.match(tableSql.billing_prices, /unique \(id, product_id\)/);
 assert.match(
