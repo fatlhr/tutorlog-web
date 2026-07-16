@@ -8,6 +8,7 @@ import {
 
 const future = new Date(Date.now() + 7 * 86400000).toISOString();
 const past = new Date(Date.now() - 7 * 86400000).toISOString();
+const exactExpiry = "2026-07-16T12:00:00.000Z";
 
 function quota(overrides = {}) {
   return normalizeQuotaPayload({
@@ -23,8 +24,62 @@ function quota(overrides = {}) {
 }
 
 assert.equal(getAccessState(quota()).state, "free");
-assert.equal(getAccessState(quota({ plan: "plus", active_until: future })).state, "plus_active");
-assert.equal(getAccessState(quota({ plan: "plus", active_until: past })).state, "plus_expired");
+assert.equal(
+  getAccessState(quota({
+    plan: "plus",
+    entitlement_type: "term",
+    is_lifetime: false,
+    active_until: future,
+  })).state,
+  "plus_active",
+);
+assert.equal(
+  getAccessState(quota({
+    plan: "plus",
+    entitlement_type: "term",
+    is_lifetime: false,
+    active_until: past,
+  })).state,
+  "plus_expired",
+);
+
+const lifetime = quota({
+  plan: "full_access",
+  entitlement_type: "lifetime",
+  is_lifetime: true,
+  active_until: null,
+});
+assert.equal(lifetime.entitlementType, "lifetime");
+assert.equal(lifetime.isLifetime, true);
+assert.equal(getAccessState(lifetime).state, "plus_active");
+assert.notEqual(
+  getAccessState(quota({ plan: "full_access", active_until: null })).state,
+  "plus_active",
+  "a missing expiry alone must not imply lifetime access",
+);
+assert.equal(
+  getAccessState(quota({
+    plan: "plus",
+    entitlement_type: "term",
+    is_lifetime: false,
+    active_until: "not-a-date",
+  })).state,
+  "plus_expired",
+  "an invalid term expiry must never become active",
+);
+assert.equal(
+  getAccessState(
+    quota({
+      plan: "plus",
+      entitlement_type: "term",
+      is_lifetime: false,
+      active_until: exactExpiry,
+    }),
+    new Date(exactExpiry),
+  ).state,
+  "plus_expired",
+  "term access expires at the exact server timestamp",
+);
 
 assert.equal(canExportRecap("pdf", quota({ rekap_pdf_export_count: 1 })).allowed, true);
 assert.equal(canExportRecap("pdf", quota({ rekap_pdf_export_count: 2 })).allowed, false);
@@ -32,17 +87,39 @@ assert.equal(canExportRecap("csv", quota({ rekap_csv_export_count: 1 })).allowed
 assert.equal(canExportRecap("csv", quota({ rekap_csv_export_count: 2 })).allowed, false);
 
 assert.equal(
-  canExportRecap("pdf", quota({ plan: "plus", active_until: future, rekap_pdf_export_count: 99 })).allowed,
+  canExportRecap("pdf", quota({
+    plan: "plus",
+    entitlement_type: "term",
+    is_lifetime: false,
+    active_until: future,
+    rekap_pdf_export_count: 99,
+  })).allowed,
   true,
 );
 assert.equal(
-  canExportRecap("csv", quota({ plan: "plus", active_until: past, rekap_csv_export_count: 2 })).allowed,
+  canExportRecap("csv", quota({
+    plan: "plus",
+    entitlement_type: "term",
+    is_lifetime: false,
+    active_until: past,
+    rekap_csv_export_count: 2,
+  })).allowed,
   false,
 );
 
 assert.equal(canExportInvoice(quota()).allowed, false);
-assert.equal(canExportInvoice(quota({ plan: "plus", active_until: past })).allowed, false);
-assert.equal(canExportInvoice(quota({ plan: "plus", active_until: future })).allowed, true);
+assert.equal(canExportInvoice(quota({
+  plan: "plus",
+  entitlement_type: "term",
+  is_lifetime: false,
+  active_until: past,
+})).allowed, false);
+assert.equal(canExportInvoice(quota({
+  plan: "plus",
+  entitlement_type: "term",
+  is_lifetime: false,
+  active_until: future,
+})).allowed, true);
 
 const legacy = normalizeQuotaPayload({
   plan: "free",
