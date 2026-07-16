@@ -1,4 +1,4 @@
-import { BillingError } from "./errors.ts";
+import { BillingError } from "./errors";
 
 export const PACKAGE_CODES = ["free", "plus_30d", "plus_12m", "plus_lifetime"] as const;
 export type PackageCode = (typeof PACKAGE_CODES)[number];
