@@ -10,6 +10,10 @@ import {
 } from "react";
 import { Button } from "@/components/app-ui/controls";
 import {
+  type BillingAnalyticsEventName,
+  trackBillingEvent,
+} from "@/lib/billing/analytics-client";
+import {
   BillingClientError,
   cancelPendingPayment,
   getPurchaseStatus,
@@ -33,6 +37,15 @@ export interface PaymentStatusPanelProps {
 
 function isPollingPayment(payment: PaymentStatusView): boolean {
   return payment.state === "created" || payment.state === "pending";
+}
+
+function paymentStateEvent(
+  state: PaymentStatusView["state"],
+): BillingAnalyticsEventName {
+  if (state === "created" || state === "pending") return "payment_pending";
+  if (state === "paid") return "payment_paid";
+  if (state === "expired") return "payment_expired";
+  return "payment_failed";
 }
 
 function formatDeadline(value: string | null): string | null {
@@ -83,6 +96,23 @@ export function PaymentStatusPanel({
 
   const payment = purchase.payment;
   const isVerifying = payment?.state === "pending" && Boolean(payment.verificationDeadline);
+
+  useEffect(() => {
+    if (!payment) return;
+
+    trackBillingEvent(paymentStateEvent(payment.state), {
+      packageCode: purchase.packageCode,
+      paymentState: payment.state,
+      surface: "payment_status",
+    });
+
+    if (payment.state === "paid") {
+      trackBillingEvent("entitlement_activated", {
+        packageCode: purchase.packageCode,
+        surface: "payment_status",
+      });
+    }
+  }, [payment?.id, payment?.state, purchase.packageCode]);
 
   useEffect(() => {
     verificationStartedAtRef.current = Date.now();

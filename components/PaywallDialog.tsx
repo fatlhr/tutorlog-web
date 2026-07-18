@@ -1,8 +1,10 @@
 "use client";
 
 import { ArrowRight, Check, LockKey } from "@phosphor-icons/react";
+import { useEffect } from "react";
 import { Button } from "@/components/app-ui/controls";
 import { Dialog } from "@/components/app-ui/overlays";
+import { trackBillingEvent } from "@/lib/billing/analytics-client";
 import type { ExportFormat, PaywallReason } from "@/lib/data/quota-access";
 
 interface PaywallDialogProps {
@@ -33,6 +35,14 @@ export default function PaywallDialog({
       ? "Akses Plus kamu sudah berakhir, jadi export rekap kembali mengikuti batas gratis. Perpanjang Plus untuk export tanpa batas."
       : "Paket Free memiliki batas export rekap untuk tiap format. Plus aktif membuka export PDF dan CSV tanpa batas.";
   const primaryCta = expired ? "Perpanjang Plus" : "Lihat paket Plus";
+
+  useEffect(() => {
+    if (!open) return;
+    trackBillingEvent("paywall_opened", {
+      paywallReason: reason ?? (isInvoice ? "invoice-locked" : "free-limit"),
+      surface: isInvoice ? "invoice" : "recap",
+    });
+  }, [isInvoice, open, reason]);
 
   return (
     <Dialog

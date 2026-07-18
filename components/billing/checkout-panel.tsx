@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/app-ui/controls";
 import { ChoiceGroup } from "@/components/app-ui/navigation";
+import { trackBillingEvent } from "@/lib/billing/analytics-client";
 import {
   BillingClientError,
   createOrResumePurchase,
@@ -111,10 +112,22 @@ export function CheckoutPanel({
         : "Respons pembayaran tidak dapat diproses. Coba lagi.",
   );
 
+  useEffect(() => {
+    trackBillingEvent("checkout_started", {
+      packageCode: product.code,
+      surface: "checkout",
+    });
+  }, [product.code]);
+
   async function handleMethodChange(value: string) {
     if ((value !== "qris" && value !== "va") || value === method) return;
 
     const nextMethod: PaymentMethod = value;
+    trackBillingEvent("payment_method_selected", {
+      packageCode: product.code,
+      paymentMethod: nextMethod,
+      surface: "checkout",
+    });
     setMethod(nextMethod);
     setQuote(null);
     setQuoteLoading(true);

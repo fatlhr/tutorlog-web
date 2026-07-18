@@ -7,6 +7,7 @@ import type {
   PurchaseSummary,
 } from "./contracts";
 import type { BillingErrorCode } from "./errors";
+import { trackBillingEvent } from "./analytics-client";
 
 const ERROR_MESSAGES: Record<BillingErrorCode, string> = {
   AUTH_REQUIRED: "Login diperlukan",
@@ -105,8 +106,16 @@ export function cancelPendingPayment(paymentId: string): Promise<PurchaseSummary
   );
 }
 
-export function authorizeExport(
+export async function authorizeExport(
   feature: "recap_pdf" | "recap_csv" | "invoice_pdf",
 ): Promise<ExportAuthorizationResult> {
-  return requestJson("/api/exports/authorize", jsonBody({ feature }));
+  const result = await requestJson<ExportAuthorizationResult>(
+    "/api/exports/authorize",
+    jsonBody({ feature }),
+  );
+  trackBillingEvent(result.allowed ? "export_allowed" : "export_blocked", {
+    feature,
+    surface: "export",
+  });
+  return result;
 }

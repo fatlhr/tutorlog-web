@@ -327,4 +327,118 @@ assert.match(profilePageSource, /safe_reference/);
 assert.match(profilePageSource, /latestPayment=/);
 assert.match(profilePageSource, /access=\{access\}/);
 
+const pricingPagePath = fileURLToPath(
+  new URL("../app/harga/page.tsx", import.meta.url),
+);
+const pricingPageSource = readFileSync(pricingPagePath, "utf8");
+assert.match(pricingPageSource, /getCatalog\(\)/);
+assert.match(pricingPageSource, /createClient\(\)/);
+assert.match(pricingPageSource, /auth\.getUser\(\)/);
+assert.match(pricingPageSource, /<PricingCatalog products=\{products\} authenticated=\{authenticated\} \/>/);
+assert.match(pricingPageSource, /role="alert"/);
+assert.doesNotMatch(pricingPageSource.toLowerCase(), /lynk\.id|lynkurl/);
+assert.doesNotMatch(pricingPageSource, /fetch\(/, "pricing must query the server catalog directly");
+
+const checkoutPagePath = fileURLToPath(
+  new URL("../app/checkout/page.tsx", import.meta.url),
+);
+assert.equal(existsSync(checkoutPagePath), true, "checkout route has not been wired");
+const checkoutPageSource = readFileSync(checkoutPagePath, "utf8");
+assert.match(checkoutPageSource, /requireUser\(\)/);
+assert.match(checkoutPageSource, /isPackageCode\(requestedPackage\)/);
+assert.match(checkoutPageSource, /packageCode === "free"/);
+assert.match(checkoutPageSource, /getCatalog\(\)/);
+assert.match(checkoutPageSource, /getAccessSummary\(\)/);
+assert.match(checkoutPageSource, /access\.isLifetime/);
+assert.match(checkoutPageSource, /!product\.available/);
+assert.match(checkoutPageSource, /getQuote\(packageCode, "qris"\)/);
+assert.match(checkoutPageSource, /redirect\("\/harga\?reason=/);
+assert.match(checkoutPageSource, /<CheckoutPanel product=\{product\} initialQuote=\{initialQuote\} \/>/);
+assert.doesNotMatch(checkoutPageSource, /fetch\(/);
+
+const paymentPagePath = fileURLToPath(
+  new URL("../app/pembayaran/[purchaseId]/page.tsx", import.meta.url),
+);
+assert.equal(existsSync(paymentPagePath), true, "payment status route has not been wired");
+const paymentPageSource = readFileSync(paymentPagePath, "utf8");
+assert.match(paymentPageSource, /requireUser\(\)/);
+assert.match(paymentPageSource, /isUuid\(purchaseId\)/);
+assert.match(paymentPageSource, /getPurchaseStatus\(user\.id, purchaseId\)/);
+assert.match(paymentPageSource, /error instanceof BillingError/);
+assert.match(paymentPageSource, /error\.code === "PURCHASE_NOT_FOUND"/);
+assert.match(paymentPageSource, /notFound\(\)/);
+assert.match(paymentPageSource, /<PaymentStatusPanel initialPurchase=\{purchase\} \/>/);
+assert.doesNotMatch(
+  paymentPageSource,
+  /searchParams[\s\S]*(?:update|insert|rpc|createOrResumePurchase|cancelPendingPayment)/,
+  "provider return query parameters must never mutate billing state",
+);
+
+for (const loadingPath of [
+  "../app/checkout/loading.tsx",
+  "../app/pembayaran/[purchaseId]/loading.tsx",
+]) {
+  const absoluteLoadingPath = fileURLToPath(new URL(loadingPath, import.meta.url));
+  assert.equal(existsSync(absoluteLoadingPath), true, `${loadingPath} has not been implemented`);
+  const loadingSource = readFileSync(absoluteLoadingPath, "utf8");
+  assert.match(loadingSource, /LoadingState/);
+}
+
+const proxySource = readFileSync(
+  fileURLToPath(new URL("../proxy.ts", import.meta.url)),
+  "utf8",
+);
+assert.match(
+  proxySource,
+  /matcher: \["\/app\/:path\*", "\/checkout", "\/pembayaran\/:path\*"\]/,
+);
+assert.match(proxySource, /`\$\{request\.nextUrl\.pathname\}\$\{request\.nextUrl\.search\}`/);
+assert.match(proxySource, /url\.searchParams\.set\("next", returnPath\)/);
+
+const analyticsClientPath = fileURLToPath(
+  new URL("../lib/billing/analytics-client.ts", import.meta.url),
+);
+assert.equal(existsSync(analyticsClientPath), true, "billing analytics client has not been implemented");
+const analyticsClientSource = readFileSync(analyticsClientPath, "utf8");
+for (const eventName of [
+  "pricing_viewed",
+  "package_selected",
+  "paywall_opened",
+  "checkout_started",
+  "payment_method_selected",
+  "payment_pending",
+  "payment_paid",
+  "payment_expired",
+  "payment_failed",
+  "entitlement_activated",
+  "export_allowed",
+  "export_blocked",
+]) {
+  assert.match(analyticsClientSource, new RegExp(`"${eventName}"`));
+}
+assert.match(analyticsClientSource, /ALLOWED_EVENT_NAMES\.has\(eventName\)/);
+assert.match(analyticsClientSource, /void fetch\("\/api\/analytics"/);
+assert.match(analyticsClientSource, /\.catch\(\(\) => undefined\)/);
+assert.doesNotMatch(
+  analyticsClientSource.toLowerCase(),
+  /ipaymu|provider|signature|qrpayload|vanumber|secret|token/,
+);
+
+assert.match(pricingCatalogSource, /trackBillingEvent\("pricing_viewed"/);
+assert.match(pricingCatalogSource, /trackBillingEvent\("package_selected"/);
+assert.match(checkoutPanelSource, /trackBillingEvent\("checkout_started"/);
+assert.match(checkoutPanelSource, /trackBillingEvent\("payment_method_selected"/);
+assert.match(paymentStatusPanelSource, /payment_pending/);
+assert.match(paymentStatusPanelSource, /payment_paid/);
+assert.match(paymentStatusPanelSource, /payment_expired/);
+assert.match(paymentStatusPanelSource, /payment_failed/);
+assert.match(paymentStatusPanelSource, /entitlement_activated/);
+assert.match(paywallDialogSource, /trackBillingEvent\("paywall_opened"/);
+
+const billingClientSource = readFileSync(
+  fileURLToPath(new URL("../lib/billing/client.ts", import.meta.url)),
+  "utf8",
+);
+assert.match(billingClientSource, /result\.allowed \? "export_allowed" : "export_blocked"/);
+
 console.log("billing UI contract valid");

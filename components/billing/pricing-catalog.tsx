@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect } from "react";
 import type { ProductSummary } from "@/lib/billing/contracts";
+import { trackBillingEvent } from "@/lib/billing/analytics-client";
 import {
   annualSavings,
   formatIdr,
@@ -14,6 +18,10 @@ type PricingCatalogProps = {
 
 export function PricingCatalog({ products, authenticated }: PricingCatalogProps) {
   const savings = annualSavings(products);
+
+  useEffect(() => {
+    trackBillingEvent("pricing_viewed", { surface: "pricing" });
+  }, []);
 
   return (
     <section className={styles.catalog} aria-label="Pilihan paket TutorLog">
@@ -58,7 +66,14 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
                   Belum tersedia
                 </MarketingButton>
               ) : (
-                <MarketingButton href={href} size="compact">
+                <MarketingButton
+                  href={href}
+                  size="compact"
+                  onClick={() => trackBillingEvent("package_selected", {
+                    packageCode: product.code,
+                    surface: "pricing",
+                  })}
+                >
                   {isFree ? (authenticated ? "Buka TutorLog" : "Mulai gratis") : "Pilih paket"}
                 </MarketingButton>
               )}

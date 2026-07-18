@@ -33,8 +33,10 @@ export async function proxy(request: NextRequest) {
 
   if (!user) {
     const url = request.nextUrl.clone();
+    const returnPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
     url.pathname = "/login";
     url.search = "";
+    url.searchParams.set("next", returnPath);
     return NextResponse.redirect(url);
   }
 
@@ -42,5 +44,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*"],
+  matcher: ["/app/:path*", "/checkout", "/pembayaran/:path*"],
 };
