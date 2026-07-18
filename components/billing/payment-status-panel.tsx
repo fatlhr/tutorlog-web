@@ -151,6 +151,12 @@ export function PaymentStatusPanel({
         return;
       }
 
+      const elapsed = Date.now() - verificationStartedAtRef.current;
+      if (elapsed >= VERIFY_WINDOW_MS) {
+        setVerificationWindowExpired(true);
+        return;
+      }
+
       void refreshStatus();
     };
 

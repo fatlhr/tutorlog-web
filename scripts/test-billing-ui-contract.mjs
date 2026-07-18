@@ -175,6 +175,10 @@ assert.match(
   /window\.setTimeout\(async \(\) => \{\s*if \(Date\.now\(\) - verificationStartedAtRef\.current >= VERIFY_WINDOW_MS\) \{\s*setVerificationWindowExpired\(true\);\s*return;\s*\}[\s\S]*?await refreshStatus\(\);/,
 );
 assert.match(paymentStatusPanelSource, /\|\| verificationWindowExpired/);
+assert.match(
+  paymentStatusPanelSource,
+  /const refreshOnVisible = \(\) => \{[\s\S]*?const elapsed = Date\.now\(\) - verificationStartedAtRef\.current;[\s\S]*?if \(elapsed >= VERIFY_WINDOW_MS\) \{\s*setVerificationWindowExpired\(true\);\s*return;\s*\}[\s\S]*?void refreshStatus\(\);/,
+);
 assert.match(paymentStatusPanelSource, /error instanceof BillingClientError/);
 assert.match(paymentStatusPanelSource, /error\.code/);
 assert.doesNotMatch(paymentStatusPanelSource, /error\.message/);
