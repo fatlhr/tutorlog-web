@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CheckCircle, Desktop, DownloadSimple, Eye, LockKey, Minus, Plus } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
+import { authorizeExport } from "@/lib/billing/client";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import TplKlasik from "@/components/invoice/TplKlasik";
@@ -395,14 +396,16 @@ export default function InvoicePage() {
   }, [invoiceActionsDisabled]);
 
   const handleExportPDF = useCallback(async () => {
-    if (accessState !== "plus_active") {
-      setPaywallReason(accessState === "plus_expired" ? "expired" : "invoice-locked");
-      setPaywallOpen(true);
-      return;
-    }
     if (!validateInvoiceForm()) return;
     setExporting(true);
     try {
+      const decision = await authorizeExport("invoice_pdf");
+      if (!decision.allowed) {
+        setPaywallReason(decision.reason ?? "invoice-locked");
+        setPaywallOpen(true);
+        return;
+      }
+
       const container = exportRef.current;
       if (!container) return;
 
@@ -422,21 +425,12 @@ export default function InvoicePage() {
 
       pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
       setExportSuccess(true);
-
-      void supabase.rpc("record_feature_usage_event", {
-        p_feature_key: "invoice_export",
-        p_event_type: "success",
-        p_metadata: { format: "pdf" },
-      }).then(
-        () => undefined,
-        () => undefined,
-      );
     } catch (err) {
       console.error("PDF export failed:", err);
     } finally {
       setExporting(false);
     }
-  }, [accessState, invoiceNo, supabase, validateInvoiceForm]);
+  }, [invoiceNo, validateInvoiceForm]);
 
   useEffect(() => {
     if (!exportSuccess) return;

@@ -77,13 +77,8 @@ assert.match(
 );
 assert.doesNotMatch(
   page,
-  /await supabase\.rpc\("record_feature_usage_event"/,
-  "Usage tracking must not keep the Invoice export action loading",
-);
-assert.match(
-  page,
-  /void supabase\.rpc\("record_feature_usage_event"/,
-  "Invoice export should record usage without blocking the download flow",
+  /record_feature_usage_event/,
+  "Invoice export must not record usage after atomic authorization",
 );
 assert.match(
   page,

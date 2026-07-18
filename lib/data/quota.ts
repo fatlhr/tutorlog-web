@@ -36,28 +36,6 @@ export async function checkQuota(): Promise<QuotaInfo> {
   return normalizeQuotaPayload(data as Record<string, unknown>);
 }
 
-export async function recordExportEvent(
-  format: ExportFormat,
-): Promise<{ success: boolean; quotaExceeded: boolean }> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("record_feature_usage_event", {
-    p_feature_key: "recap_export",
-    p_event_type: "success",
-    p_metadata: { format },
-  });
-
-  if (error) {
-    console.error("Failed to record export event:", error);
-    return { success: false, quotaExceeded: false };
-  }
-
-  const result = data as Record<string, unknown>;
-  return {
-    success: (result.success as boolean) ?? false,
-    quotaExceeded: false,
-  };
-}
-
 export async function canExport(
   format: ExportFormat,
 ): Promise<ExportDecision> {

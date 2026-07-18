@@ -2,8 +2,8 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { CaretRight, FileCsv, FilePdf, Funnel } from "@phosphor-icons/react";
+import { authorizeExport } from "@/lib/billing/client";
 import { sessionsToCSV, downloadCSV } from "@/lib/csv";
-import { canExport, recordExportEvent } from "@/lib/data/quota";
 import PaywallDialog from "@/components/PaywallDialog";
 import { Button, DateField, Field } from "@/components/app-ui/controls";
 import { DataRow } from "@/components/app-ui/data-row";
@@ -18,7 +18,7 @@ import {
   SummaryBand,
   Surface,
 } from "@/components/app-ui/structure";
-import type { ExportFormat, PaywallReason, QuotaInfo } from "@/lib/data/quota-access";
+import type { ExportFormat, PaywallReason } from "@/lib/data/quota-access";
 import {
   getAvailableStudentFilterOptions,
   hasUnappliedCustomRange,
@@ -312,36 +312,41 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
     setPage(1);
   }, []);
 
-  const quotaUsageFrom = useCallback((quota: QuotaInfo) => ({
-    pdf: { used: quota.rekapPdfExportCount, limit: quota.rekapExportLimit },
-    csv: { used: quota.rekapCsvExportCount, limit: quota.rekapExportLimit },
-  }), []);
-
   const handleExportCSV = useCallback(async () => {
-    const decision = await canExport("csv");
-    if (!decision.allowed) {
-      setPaywallReason(decision.reason ?? "free-limit");
-      setPaywallUsage(quotaUsageFrom(decision.quota));
-      setPaywallOpen(true);
-      return;
-    }
     setCsvLoading(true);
-    const csv = sessionsToCSV(rows.map(({ d, m, s, h, t }) => ({ d, m, s, h, t })));
-    downloadCSV(csv, "rekap-sesi.csv");
-    await recordExportEvent("csv");
-    setCsvLoading(false);
-  }, [quotaUsageFrom, rows]);
+    try {
+      const decision = await authorizeExport("recap_csv");
+      if (!decision.allowed) {
+        setPaywallReason(decision.reason ?? "free-limit");
+        setPaywallUsage(
+          decision.used !== null && decision.limit !== null
+            ? { csv: { used: decision.used, limit: decision.limit } }
+            : undefined,
+        );
+        setPaywallOpen(true);
+        return;
+      }
+      const csv = sessionsToCSV(rows.map(({ d, m, s, h, t }) => ({ d, m, s, h, t })));
+      downloadCSV(csv, "rekap-sesi.csv");
+    } finally {
+      setCsvLoading(false);
+    }
+  }, [rows]);
 
   const handleExportPDF = useCallback(async () => {
-    const decision = await canExport("pdf");
-    if (!decision.allowed) {
-      setPaywallReason(decision.reason ?? "free-limit");
-      setPaywallUsage(quotaUsageFrom(decision.quota));
-      setPaywallOpen(true);
-      return;
-    }
     setPdfLoading(true);
     try {
+      const decision = await authorizeExport("recap_pdf");
+      if (!decision.allowed) {
+        setPaywallReason(decision.reason ?? "free-limit");
+        setPaywallUsage(
+          decision.used !== null && decision.limit !== null
+            ? { pdf: { used: decision.used, limit: decision.limit } }
+            : undefined,
+        );
+        setPaywallOpen(true);
+        return;
+      }
       const { jsPDF } = await import("jspdf");
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const margin = 18;
@@ -369,11 +374,10 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
         y += 14;
       });
       pdf.save("rekap-sesi.pdf");
-      await recordExportEvent("pdf");
     } finally {
       setPdfLoading(false);
     }
-  }, [dateFrom, dateTo, filteredSummary, quotaUsageFrom, rekapData, rows]);
+  }, [dateFrom, dateTo, filteredSummary, rekapData, rows]);
 
   return (
     <>
