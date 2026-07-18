@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
 
 const read = (path) => readFileSync(path, "utf8");
 
@@ -132,6 +133,43 @@ assert.match(paymentsSource, /\.eq\("purchase_id", purchaseId\)/);
 assert.doesNotMatch(
   paymentsSource.slice(0, paymentsSource.indexOf("export async function processIpaymuCallback")),
   /raw|payload|responseBody|providerError/i,
+);
+
+const purchaseDuplicateReviewProjection = paymentsSource.match(
+  /function applyPurchaseDuplicateReview\([\s\S]*?\n}\n\nasync function readPurchase/,
+);
+assert.ok(
+  purchaseDuplicateReviewProjection,
+  "missing purchase-level duplicate-review projection",
+);
+const applyPurchaseDuplicateReview = new Function(
+  `${stripTypeScriptTypes(
+    purchaseDuplicateReviewProjection[0]
+      .replace("\n\nasync function readPurchase", "")
+      .replace(/^function /, "function "),
+    { mode: "strip" },
+  )}\nreturn applyPurchaseDuplicateReview;`,
+)();
+const latestPayment = {
+  id: "payment-newest",
+  state: "paid",
+  duplicateReview: false,
+};
+assert.deepEqual(
+  applyPurchaseDuplicateReview(latestPayment, [
+    { state: "paid", duplicate_review: false },
+    { state: "paid", duplicate_review: true },
+  ]),
+  { ...latestPayment, duplicateReview: true },
+  "a later callback that flags an older paid attempt must still mark the newest payment for review",
+);
+assert.deepEqual(
+  applyPurchaseDuplicateReview(latestPayment, [
+    { state: "paid", duplicate_review: true },
+    { state: "paid", duplicate_review: false },
+  ]),
+  { ...latestPayment, duplicateReview: true },
+  "a later callback that flags the newest paid attempt must remain marked for review",
 );
 
 assert.match(webhookRoute, /export async function POST\(request: Request\)/);

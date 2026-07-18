@@ -56,7 +56,7 @@ export function paymentStatusCopy(payment: PaymentStatusView): PaymentStatusCopy
   if (payment.duplicateReview) {
     return {
       title: "Pembayaran sedang ditinjau",
-      body: "Pembayaran ganda sedang diperiksa. Akses akan diperbarui setelah peninjauan.",
+      body: "Pembayaran ganda sedang diperiksa. Akses Plus yang sudah aktif tetap aktif selama peninjauan.",
       tone: "warning",
     };
   }

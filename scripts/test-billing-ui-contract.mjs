@@ -26,6 +26,11 @@ assert.equal(
   "Memverifikasi pembayaran",
 );
 assert.equal(paymentStatusCopy(billingFixtures.payments.paid).title, "Plus sudah aktif");
+assert.deepEqual(paymentStatusCopy(billingFixtures.payments.duplicateReview), {
+  title: "Pembayaran sedang ditinjau",
+  body: "Pembayaran ganda sedang diperiksa. Akses Plus yang sudah aktif tetap aktif selama peninjauan.",
+  tone: "warning",
+});
 for (const state of PAYMENT_STATES) {
   assert.equal(
     typeof paymentStatusCopy({

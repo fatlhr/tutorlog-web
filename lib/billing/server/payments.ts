@@ -77,6 +77,20 @@ function toPaymentStatus(row: PaymentRow): PaymentStatusView {
   };
 }
 
+function applyPurchaseDuplicateReview(
+  latestPayment: PaymentStatusView | null,
+  paymentAttempts: readonly Pick<PaymentRow, "state" | "duplicate_review">[],
+): PaymentStatusView | null {
+  if (!latestPayment) return null;
+
+  return {
+    ...latestPayment,
+    duplicateReview: paymentAttempts.some(
+      (paymentAttempt) => paymentAttempt.state === "paid" && paymentAttempt.duplicate_review,
+    ),
+  };
+}
+
 async function readPurchase(userId: string, purchaseId: string): Promise<PurchaseSummary> {
   const admin = createAdminClient();
   const { data: purchaseData, error: purchaseError } = await admin
@@ -119,7 +133,18 @@ async function readPurchase(userId: string, purchaseId: string): Promise<Purchas
     .maybeSingle();
 
   if (paymentError) throw new Error("Failed to load billing payment");
-  const payment = paymentData ? toPaymentStatus(paymentData as PaymentRow) : null;
+  const { data: paidPaymentAttempts, error: paidPaymentAttemptsError } = await admin
+    .from("billing_payments")
+    .select("state, duplicate_review")
+    .eq("user_id", userId)
+    .eq("purchase_id", purchaseId)
+    .eq("state", "paid");
+
+  if (paidPaymentAttemptsError) throw new Error("Failed to load billing payment attempts");
+  const payment = applyPurchaseDuplicateReview(
+    paymentData ? toPaymentStatus(paymentData as PaymentRow) : null,
+    (paidPaymentAttempts ?? []) as Pick<PaymentRow, "state" | "duplicate_review">[],
+  );
   if (payment) payment.packageName = purchase.product_name_snapshot;
 
   return {
