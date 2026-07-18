@@ -11,6 +11,16 @@ import {
 } from "../lib/billing/ui-model.ts";
 import { billingFixtures } from "../lib/billing/fixtures.ts";
 
+const fallbackCatalogPath = fileURLToPath(
+  new URL("../lib/billing/fallback-catalog.ts", import.meta.url),
+);
+assert.equal(
+  existsSync(fallbackCatalogPath),
+  true,
+  "fallback billing catalog has not been implemented",
+);
+const { FALLBACK_BILLING_CATALOG } = await import("../lib/billing/fallback-catalog.ts");
+
 const PAYMENT_STATES = [
   "created", "pending", "superseded", "paid", "expired", "failed", "canceled", "refunded",
 ];
@@ -58,6 +68,16 @@ assert.equal(
   249000,
   "lifetime fixture must match the production catalog",
 );
+assert.deepEqual(
+  FALLBACK_BILLING_CATALOG.map(({ code, amount }) => ({ code, amount })),
+  [
+    { code: "free", amount: 0 },
+    { code: "plus_30d", amount: 19000 },
+    { code: "plus_12m", amount: 149000 },
+    { code: "plus_lifetime", amount: 249000 },
+  ],
+);
+assert.equal(FALLBACK_BILLING_CATALOG.every((product) => product.available), true);
 assert.equal(billingFixtures.quotes.qris.package.code, "plus_30d");
 assert.equal(billingFixtures.quotes.va.package.code, "plus_30d");
 assert.equal(billingFixtures.quotes.qris.baseAmount, 19000);
@@ -89,6 +109,25 @@ assert.match(pricingCatalogSource, /annualSavings\(products\)/);
 assert.match(pricingCatalogSource, /formatIdr\(savings\)/);
 assert.match(pricingCatalogSource, /productPeriodLabel\(product\)/);
 assert.match(pricingCatalogSource, /Paling hemat/);
+assert.match(pricingCatalogSource, /product\.code === "plus_12m"/);
+assert.match(pricingCatalogSource, /product\.code === "plus_lifetime"/);
+assert.match(pricingCatalogSource, /Sekali bayar/);
+assert.match(
+  pricingCatalogSource,
+  /Bayar sekali untuk akses Plus selamanya\./,
+);
+assert.match(pricingCatalogSource, /styles\.savings/);
+assert.match(pricingCatalogSource, /styles\.lifetime/);
+assert.match(pricingCatalogSource, /styles\.lifetimeBadge/);
+
+const pricingStylesPath = fileURLToPath(
+  new URL("../components/billing/pricing.module.css", import.meta.url),
+);
+const pricingStylesSource = readFileSync(pricingStylesPath, "utf8");
+
+assert.match(pricingStylesSource, /\.savings\s*\{/);
+assert.match(pricingStylesSource, /\.lifetime\s*\{/);
+assert.match(pricingStylesSource, /var\(--tl-lavender\)/);
 assert.match(
   pricingCatalogSource,
   /const checkoutPath = `\/checkout\?package=\$\{encodeURIComponent\(product\.code\)\}`/,
@@ -355,10 +394,14 @@ const pricingPagePath = fileURLToPath(
 );
 const pricingPageSource = readFileSync(pricingPagePath, "utf8");
 assert.match(pricingPageSource, /getCatalog\(\)/);
+assert.match(pricingPageSource, /FALLBACK_BILLING_CATALOG/);
 assert.match(pricingPageSource, /createClient\(\)/);
 assert.match(pricingPageSource, /auth\.getUser\(\)/);
 assert.match(pricingPageSource, /<PricingCatalog products=\{products\} authenticated=\{authenticated\} \/>/);
-assert.match(pricingPageSource, /role="alert"/);
+assert.doesNotMatch(
+  pricingPageSource,
+  /catalogUnavailable\s*\?\s*\([\s\S]*Daftar paket belum dapat dimuat/,
+);
 assert.doesNotMatch(pricingPageSource.toLowerCase(), /lynk\.id|lynkurl/);
 assert.doesNotMatch(pricingPageSource, /fetch\(/, "pricing must query the server catalog directly");
 
@@ -375,9 +418,25 @@ assert.match(checkoutPageSource, /getAccessSummary\(\)/);
 assert.match(checkoutPageSource, /access\.isLifetime/);
 assert.match(checkoutPageSource, /!product\.available/);
 assert.match(checkoutPageSource, /getQuote\(packageCode, "qris"\)/);
+assert.match(checkoutPageSource, /paymentReady/);
+assert.match(checkoutPageSource, /createDisplayQuote/);
 assert.match(checkoutPageSource, /redirect\("\/harga\?reason=/);
-assert.match(checkoutPageSource, /<CheckoutPanel product=\{product\} initialQuote=\{initialQuote\} \/>/);
+assert.match(
+  checkoutPageSource,
+  /<Link href="\/harga"[\s\S]*Kembali ke harga[\s\S]*<\/Link>/,
+  "checkout must provide an in-page route back to pricing",
+);
+assert.match(
+  checkoutPageSource,
+  /<CheckoutPanel[\s\S]*product=\{product\}[\s\S]*initialQuote=\{initialQuote\}[\s\S]*paymentReady=\{paymentReady\}[\s\S]*\/>/,
+);
 assert.doesNotMatch(checkoutPageSource, /fetch\(/);
+
+assert.match(checkoutPanelSource, /paymentReady\s*&&[\s\S]*termsAccepted/);
+assert.match(
+  checkoutPanelSource,
+  /paymentReady \? "Lanjutkan pembayaran" : "Pembayaran segera tersedia"/,
+);
 
 const paymentPagePath = fileURLToPath(
   new URL("../app/pembayaran/[purchaseId]/page.tsx", import.meta.url),

@@ -11,6 +11,7 @@ import {
   createOrResumePurchase,
   getCheckoutQuote,
 } from "@/lib/billing/client";
+import { createDisplayQuote } from "@/lib/billing/fallback-catalog";
 import type {
   CheckoutQuote,
   PaymentMethod,
@@ -38,6 +39,7 @@ type PurchaseClient = typeof createOrResumePurchase;
 export interface CheckoutPanelProps {
   product: ProductSummary;
   initialQuote: CheckoutQuote;
+  paymentReady: boolean;
   quoteClient?: QuoteClient;
   purchaseClient?: PurchaseClient;
 }
@@ -91,6 +93,7 @@ function quoteMatches(
 export function CheckoutPanel({
   product,
   initialQuote,
+  paymentReady,
   quoteClient = getCheckoutQuote,
   purchaseClient = createOrResumePurchase,
 }: CheckoutPanelProps) {
@@ -129,11 +132,17 @@ export function CheckoutPanel({
       surface: "checkout",
     });
     setMethod(nextMethod);
-    setQuote(null);
-    setQuoteLoading(true);
     setError(null);
 
     const requestId = quoteRequestId.current += 1;
+    if (!paymentReady) {
+      setQuote(createDisplayQuote(product, nextMethod));
+      setQuoteLoading(false);
+      return;
+    }
+
+    setQuote(null);
+    setQuoteLoading(true);
 
     try {
       const nextQuote = await quoteClient(product.code, nextMethod);
@@ -152,7 +161,8 @@ export function CheckoutPanel({
     }
   }
 
-  const canCreatePayment = product.available
+  const canCreatePayment = paymentReady
+    && product.available
     && quote !== null
     && quote.method === method
     && termsAccepted
@@ -261,7 +271,7 @@ export function CheckoutPanel({
         loadingLabel="Menyiapkan pembayaran..."
         onClick={handleCreatePayment}
       >
-        Lanjutkan pembayaran
+        {paymentReady ? "Lanjutkan pembayaran" : "Pembayaran segera tersedia"}
       </Button>
     </section>
   );

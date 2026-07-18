@@ -11,11 +11,22 @@
   border-bottom: 2px solid var(--tl-line);
 }
 
-.featured {
+.savings {
   margin: 0 calc(var(--tl-space-7) * -1);
   padding: var(--tl-space-9) var(--tl-space-7);
   border-left: 4px solid var(--tl-green);
   background: rgba(140, 246, 210, .13);
+}
+
+.lifetime {
+  margin: 0 calc(var(--tl-space-7) * -1);
+  padding: var(--tl-space-9) var(--tl-space-7);
+  border-left: 4px solid var(--tl-ink);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tl-lavender) 42%, transparent),
+    transparent
+  );
 }
 
 .name h2 {
@@ -47,6 +58,11 @@
   font-weight: 700;
   letter-spacing: .04em;
   text-transform: uppercase;
+}
+
+.lifetimeBadge {
+  background: var(--tl-lavender);
+  color: var(--tl-ink);
 }
 
 .amount {
@@ -94,7 +110,8 @@
     padding: var(--tl-space-8) 0;
   }
 
-  .featured {
+  .savings,
+  .lifetime {
     margin: 0 calc(var(--tl-space-5) * -1);
     padding: var(--tl-space-8) var(--tl-space-5);
   }

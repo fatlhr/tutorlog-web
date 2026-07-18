@@ -27,6 +27,13 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
     <section className={styles.catalog} aria-label="Pilihan paket TutorLog">
       {products.map((product) => {
         const isFree = product.code === "free";
+        const isSavings = product.code === "plus_12m";
+        const isLifetime = product.code === "plus_lifetime";
+        const badgeLabel = isSavings
+          ? "Paling hemat"
+          : isLifetime
+            ? "Sekali bayar"
+            : null;
         const isUnavailable = !isFree && !product.available;
         const checkoutPath = `/checkout?package=${encodeURIComponent(product.code)}`;
         const href = isFree
@@ -37,12 +44,16 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
 
         return (
           <article
-            className={`${styles.row} ${product.featured ? styles.featured : ""}`}
+            className={`${styles.row} ${isSavings ? styles.savings : ""} ${isLifetime ? styles.lifetime : ""}`}
             data-package={product.code}
             key={product.code}
           >
             <div className={styles.name}>
-              {product.featured ? <span className={styles.badge}>Paling hemat</span> : null}
+              {badgeLabel ? (
+                <span className={`${styles.badge} ${isLifetime ? styles.lifetimeBadge : ""}`}>
+                  {badgeLabel}
+                </span>
+              ) : null}
               <h2>{product.name}</h2>
               <p>{product.description}</p>
             </div>
@@ -53,8 +64,10 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
             </div>
 
             <div className={styles.note}>
-              {product.code === "plus_12m" && savings > 0 ? (
+              {isSavings && savings > 0 ? (
                 <p>Hemat {formatIdr(savings)} dibanding membeli paket 30 hari selama 12 bulan.</p>
+              ) : isLifetime ? (
+                <p>Bayar sekali untuk akses Plus selamanya.</p>
               ) : (
                 <p>{isFree ? "Mulai tanpa biaya." : "Seluruh fitur Plus termasuk dalam paket ini."}</p>
               )}

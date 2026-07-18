@@ -33,8 +33,12 @@ export function isPaymentMethod(value: unknown): value is PaymentMethod {
   return value === "qris" || value === "va";
 }
 
+export function isPaymentProviderEnabled(): boolean {
+  return process.env.BILLING_PAYMENT_PROVIDER_ENABLED === "true";
+}
+
 export function assertPaymentProviderEnabled(): void {
-  if (!(process.env.BILLING_PAYMENT_PROVIDER_ENABLED === "true")) {
+  if (!isPaymentProviderEnabled()) {
     throw new BillingError(
       "PAYMENT_PROVIDER_NOT_READY",
       "Payment provider is not ready",
@@ -60,7 +64,6 @@ function toProductSummary(row: CatalogRow): ProductSummary {
     throw new BillingError("PROVIDER_RESPONSE_INVALID", "Catalog price is invalid");
   }
 
-  const providerEnabled = process.env.BILLING_PAYMENT_PROVIDER_ENABLED === "true";
   return {
     code: row.code,
     name: row.name,
@@ -71,7 +74,7 @@ function toProductSummary(row: CatalogRow): ProductSummary {
     durationKind: row.duration_kind,
     durationValue: row.duration_value,
     featured: row.featured,
-    available: isWithinAvailability(row) && (row.code === "free" || providerEnabled),
+    available: isWithinAvailability(row),
   };
 }
 

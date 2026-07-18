@@ -34,6 +34,7 @@ assert.match(catalogSource, /\.eq\("active", true\)/);
 assert.match(catalogSource, /free[\s\S]*plus_30d[\s\S]*plus_12m[\s\S]*plus_lifetime/);
 assert.match(catalogSource, /code:[\s\S]*name:[\s\S]*description:[\s\S]*priceId:[\s\S]*amount:[\s\S]*currency:[\s\S]*durationKind:[\s\S]*durationValue:[\s\S]*featured:[\s\S]*available:/);
 assert.match(catalogSource, /BILLING_PAYMENT_PROVIDER_ENABLED === "true"/);
+assert.match(catalogSource, /export function isPaymentProviderEnabled\(\): boolean/);
 assert.match(catalogSource, /isPackageCode\(row\.code\)/);
 assert.match(catalogSource, /packageCode === "free"/);
 assert.match(catalogSource, /method === "va"[\s\S]*PAYMENT_PROVIDER_NOT_READY/);

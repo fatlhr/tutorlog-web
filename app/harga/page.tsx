@@ -3,6 +3,7 @@ import { Receipt } from "@phosphor-icons/react/dist/ssr";
 import { PricingCatalog } from "@/components/billing/pricing-catalog";
 import { PublicShell } from "@/components/PublicShell";
 import type { ProductSummary } from "@/lib/billing/contracts";
+import { FALLBACK_BILLING_CATALOG } from "@/lib/billing/fallback-catalog";
 import { getCatalog } from "@/lib/billing/server/catalog";
 import { createClient } from "@/lib/supabase/server";
 
@@ -47,13 +48,10 @@ export default async function HargaPage() {
   } = await supabase.auth.getUser();
   const authenticated = Boolean(user);
 
-  let products: ProductSummary[] = [];
-  let catalogUnavailable = false;
+  let products: ProductSummary[] = [...FALLBACK_BILLING_CATALOG];
   try {
     products = await getCatalog();
-  } catch {
-    catalogUnavailable = true;
-  }
+  } catch {}
 
   return (
     <PublicShell
@@ -64,14 +62,7 @@ export default async function HargaPage() {
       aside={<PriceVisual />}
       showBackLink
     >
-      {catalogUnavailable ? (
-        <section className="tl-price-ledger" role="alert">
-          <h2>Daftar paket belum dapat dimuat.</h2>
-          <p>Coba lagi beberapa saat. Harga tidak ditampilkan sampai katalog terbaru tersedia.</p>
-        </section>
-      ) : (
-        <PricingCatalog products={products} authenticated={authenticated} />
-      )}
+      <PricingCatalog products={products} authenticated={authenticated} />
 
       <section className="tl-price-faq tl-public-motion" aria-labelledby="price-faq-title">
         <h2 id="price-faq-title">Pertanyaan umum</h2>

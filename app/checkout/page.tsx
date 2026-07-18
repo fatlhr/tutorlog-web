@@ -1,11 +1,23 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CheckoutPanel } from "@/components/billing/checkout-panel";
-import { isPackageCode } from "@/lib/billing/contracts";
+import {
+  isPackageCode,
+  type ProductSummary,
+} from "@/lib/billing/contracts";
+import {
+  createDisplayQuote,
+  FALLBACK_BILLING_CATALOG,
+} from "@/lib/billing/fallback-catalog";
 import { getAccessSummary } from "@/lib/billing/server/access";
 import { requireUser } from "@/lib/billing/server/auth";
-import { getCatalog, getQuote } from "@/lib/billing/server/catalog";
+import {
+  getCatalog,
+  getQuote,
+  isPaymentProviderEnabled,
+} from "@/lib/billing/server/catalog";
 
 export const metadata: Metadata = {
   title: "TutorLog - Checkout",
@@ -19,6 +31,20 @@ const flowLayout: CSSProperties = {
   padding: "clamp(24px, 6vw, 72px)",
   placeItems: "center",
   background: "var(--tl-bg)",
+};
+
+const checkoutContentLayout: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  width: "min(100%, 680px)",
+};
+
+const backLinkStyle: CSSProperties = {
+  alignSelf: "flex-start",
+  color: "var(--tl-ink)",
+  fontSize: "0.9375rem",
+  fontWeight: 600,
 };
 
 export default async function CheckoutPage({
@@ -39,13 +65,19 @@ export default async function CheckoutPage({
     redirect("/harga?reason=free-package");
   }
 
-  let products: Awaited<ReturnType<typeof getCatalog>>;
   let access: Awaited<ReturnType<typeof getAccessSummary>>;
   try {
-    [products, access] = await Promise.all([getCatalog(), getAccessSummary()]);
+    access = await getAccessSummary();
   } catch {
     redirect("/harga?reason=checkout-unavailable");
   }
+
+  let products: ProductSummary[] = [...FALLBACK_BILLING_CATALOG];
+  let liveCatalogLoaded = false;
+  try {
+    products = await getCatalog();
+    liveCatalogLoaded = true;
+  } catch {}
 
   const product = products.find((item) => item.code === packageCode);
   if (!product || !product.available) {
@@ -55,16 +87,28 @@ export default async function CheckoutPage({
     redirect("/harga?reason=lifetime-active");
   }
 
-  let initialQuote: Awaited<ReturnType<typeof getQuote>>;
-  try {
-    initialQuote = await getQuote(packageCode, "qris");
-  } catch {
-    redirect("/harga?reason=checkout-unavailable");
+  let initialQuote = createDisplayQuote(product, "qris");
+  let paymentReady = isPaymentProviderEnabled() && liveCatalogLoaded;
+  if (paymentReady) {
+    try {
+      initialQuote = await getQuote(packageCode, "qris");
+    } catch {
+      paymentReady = false;
+    }
   }
 
   return (
     <div style={flowLayout}>
-      <CheckoutPanel product={product} initialQuote={initialQuote} />
+      <div style={checkoutContentLayout}>
+        <Link href="/harga" style={backLinkStyle}>
+          ← Kembali ke harga
+        </Link>
+        <CheckoutPanel
+          product={product}
+          initialQuote={initialQuote}
+          paymentReady={paymentReady}
+        />
+      </div>
     </div>
   );
 }
