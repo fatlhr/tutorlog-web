@@ -11,6 +11,10 @@ import {
 } from "../lib/billing/ui-model.ts";
 import { billingFixtures } from "../lib/billing/fixtures.ts";
 
+const PAYMENT_STATES = [
+  "created", "pending", "superseded", "paid", "expired", "failed", "canceled", "refunded",
+];
+
 assert.equal(formatIdr(149000), "Rp149.000");
 assert.equal(productPeriodLabel(billingFixtures.products[1]), "30 hari");
 assert.equal(productPeriodLabel(billingFixtures.products[2]), "12 bulan");
@@ -22,6 +26,18 @@ assert.equal(
   "Memverifikasi pembayaran",
 );
 assert.equal(paymentStatusCopy(billingFixtures.payments.paid).title, "Plus sudah aktif");
+for (const state of PAYMENT_STATES) {
+  assert.equal(
+    typeof paymentStatusCopy({
+      ...billingFixtures.payments.pending,
+      state,
+      verificationDeadline: null,
+      duplicateReview: false,
+    }).title,
+    "string",
+    `${state} must normalize to status copy`,
+  );
+}
 
 assert.deepEqual(
   billingFixtures.products.map((product) => product.code),
@@ -110,5 +126,49 @@ assert.match(checkoutPanelSource, /AbortError|TimeoutError/);
 assert.match(checkoutPanelSource, /url\.protocol !== "https:"/);
 assert.doesNotMatch(normalizedCheckoutSource, /ipaymu/);
 assert.doesNotMatch(normalizedCheckoutSource, /provider_reference|providerreference/);
+
+const paymentStatusPanelPath = fileURLToPath(
+  new URL("../components/billing/payment-status-panel.tsx", import.meta.url),
+);
+assert.equal(
+  existsSync(paymentStatusPanelPath),
+  true,
+  "PaymentStatusPanel has not been implemented",
+);
+
+const paymentStatusPanelSource = readFileSync(paymentStatusPanelPath, "utf8");
+const normalizedPaymentStatusSource = paymentStatusPanelSource.toLowerCase();
+
+assert.match(paymentStatusPanelSource, /PaymentStatusView/);
+assert.match(
+  paymentStatusPanelSource,
+  /const POLL_DELAYS_MS = \[2000, 3000, 5000, 10000, 15000, 30000\] as const/,
+);
+assert.match(paymentStatusPanelSource, /const VERIFY_WINDOW_MS = 10 \* 60 \* 1000/);
+assert.match(paymentStatusPanelSource, /role="status"/);
+assert.match(paymentStatusPanelSource, /role="alert"/);
+assert.match(paymentStatusPanelSource, /payment\.verificationDeadline/);
+assert.match(paymentStatusPanelSource, /payment\.instructions/);
+assert.match(paymentStatusPanelSource, /payment\.safeReference/);
+assert.match(
+  paymentStatusPanelSource,
+  /`\/kontak\?reference=\$\{encodeURIComponent\(payment\.safeReference\)\}`/,
+);
+assert.match(paymentStatusPanelSource, /payment\.duplicateReview/);
+assert.match(paymentStatusPanelSource, /cancelClient\(payment\.id\)/);
+assert.match(paymentStatusPanelSource, /window\.confirm/);
+assert.match(
+  paymentStatusPanelSource,
+  /`\/checkout\?package=\$\{encodeURIComponent\(purchase\.packageCode\)\}`/,
+);
+assert.match(paymentStatusPanelSource, /href="\/app"/);
+assert.match(paymentStatusPanelSource, /visibilitychange/);
+assert.match(paymentStatusPanelSource, /clearTimeout/);
+assert.match(paymentStatusPanelSource, /POLL_DELAYS_MS/);
+assert.doesNotMatch(normalizedPaymentStatusSource, /ipaymu/);
+assert.doesNotMatch(
+  normalizedPaymentStatusSource,
+  /provider_reference|providerreference/,
+);
 
 console.log("billing UI contract valid");
