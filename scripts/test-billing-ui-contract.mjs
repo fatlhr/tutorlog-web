@@ -227,6 +227,11 @@ assert.match(accessSummaryCardSource, /Aktif sampai/);
 assert.match(accessSummaryCardSource, /Berakhir pada/);
 assert.match(
   accessSummaryCardSource,
+  /Intl\.DateTimeFormat\("id-ID", \{[\s\S]*timeZone: "Asia\/Jakarta"/,
+  "access dates must render in the product timezone",
+);
+assert.match(
+  accessSummaryCardSource,
   /const canRenew = access\.entitlementType === "term"/,
   "only term access may expose renewal",
 );
@@ -258,6 +263,11 @@ assert.match(latestPaymentCardSource, /payment\.totalAmount/);
 assert.match(latestPaymentCardSource, /payment\.safeReference/);
 assert.match(latestPaymentCardSource, /payment\.createdAt/);
 assert.match(latestPaymentCardSource, /payment\.paidAt/);
+assert.match(
+  latestPaymentCardSource,
+  /Intl\.DateTimeFormat\("id-ID", \{[\s\S]*timeZone: "Asia\/Jakarta"/,
+  "payment dates must render in the product timezone",
+);
 assert.doesNotMatch(normalizedLatestPaymentSource, /ipaymu|provider_reference|providerreference/);
 
 const appTopBarPath = fileURLToPath(

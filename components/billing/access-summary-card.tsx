@@ -9,6 +9,7 @@ interface AccessSummaryCardProps {
 
 function formatAccessDate(value: string): string {
   return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
     day: "numeric",
     month: "long",
     year: "numeric",
