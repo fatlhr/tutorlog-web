@@ -9,6 +9,8 @@ import type {
 import type { BillingErrorCode } from "./errors";
 import { trackBillingEvent } from "./analytics-client";
 
+const BROWSER_REQUEST_TIMEOUT_MS = 15000;
+
 const ERROR_MESSAGES: Record<BillingErrorCode, string> = {
   AUTH_REQUIRED: "Login diperlukan",
   PAYMENT_PROVIDER_NOT_READY: "Penyedia pembayaran belum siap",
@@ -37,40 +39,65 @@ function isBillingErrorCode(value: unknown): value is BillingErrorCode {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  let response: Response;
+  const requestController = new AbortController();
+  const callerSignal = init?.signal;
+  const timeoutError = new Error("Billing request timed out");
+  timeoutError.name = "TimeoutError";
+  let timedOut = false;
+  const abortFromCaller = () => requestController.abort(callerSignal?.reason);
+
+  if (callerSignal?.aborted) {
+    abortFromCaller();
+  } else if (callerSignal) {
+    callerSignal.addEventListener("abort", abortFromCaller, { once: true });
+  }
+
+  const timeoutId = setTimeout(() => {
+    if (requestController.signal.aborted) return;
+    timedOut = true;
+    requestController.abort(timeoutError);
+  }, BROWSER_REQUEST_TIMEOUT_MS);
 
   try {
-    response = await fetch(path, {
+    const response = await fetch(path, {
       ...init,
       credentials: "same-origin",
       headers: init?.body
         ? { "content-type": "application/json", ...init.headers }
         : init?.headers,
+      signal: requestController.signal,
     });
-  } catch {
+
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      throw new BillingClientError("PROVIDER_RESPONSE_INVALID");
+    }
+
+    let body: unknown;
+    try {
+      body = await response.json();
+    } catch (error) {
+      if (requestController.signal.aborted) throw error;
+      throw new BillingClientError("PROVIDER_RESPONSE_INVALID");
+    }
+
+    if (!response.ok) {
+      const code = (body as { error?: { code?: unknown } } | null)?.error?.code;
+      throw new BillingClientError(
+        isBillingErrorCode(code) ? code : "PROVIDER_RESPONSE_INVALID",
+      );
+    }
+
+    return body as T;
+  } catch (error) {
+    if (error instanceof BillingClientError) throw error;
+    if (timedOut) throw timeoutError;
+    if (callerSignal?.aborted) throw requestController.signal.reason ?? error;
     throw new BillingClientError("PROVIDER_UNAVAILABLE");
+  } finally {
+    clearTimeout(timeoutId);
+    callerSignal?.removeEventListener("abort", abortFromCaller);
   }
-
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().includes("application/json")) {
-    throw new BillingClientError("PROVIDER_RESPONSE_INVALID");
-  }
-
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    throw new BillingClientError("PROVIDER_RESPONSE_INVALID");
-  }
-
-  if (!response.ok) {
-    const code = (body as { error?: { code?: unknown } } | null)?.error?.code;
-    throw new BillingClientError(
-      isBillingErrorCode(code) ? code : "PROVIDER_RESPONSE_INVALID",
-    );
-  }
-
-  return body as T;
 }
 
 function jsonBody(value: unknown): Pick<RequestInit, "body" | "method"> {

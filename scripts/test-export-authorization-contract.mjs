@@ -28,14 +28,15 @@ assert.equal(
 );
 assert.match(
   recap,
-  /setCsvLoading\(true\);[\s\S]*await authorizeExport\("recap_csv"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "free-limit"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*downloadCSV\([\s\S]*\} finally \{[\s\S]*setCsvLoading\(false\);/,
-  "CSV export must authorize while loading, open its contextual paywall when blocked, and always clear loading",
+  /setCsvLoading\(true\);[\s\S]*await authorizeExport\("recap_csv"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "free-limit"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*downloadCSV\([\s\S]*\} catch \{[\s\S]*setExportError\("Ekspor belum dapat diselesaikan\. Coba lagi\."\);[\s\S]*\} finally \{[\s\S]*setCsvLoading\(false\);/,
+  "CSV export must authorize while loading, normalize failures, open its contextual paywall when blocked, and always clear loading",
 );
 assert.match(
   recap,
-  /setPdfLoading\(true\);[\s\S]*await authorizeExport\("recap_pdf"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "free-limit"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*pdf\.save\("rekap-sesi\.pdf"\);[\s\S]*\} finally \{[\s\S]*setPdfLoading\(false\);/,
-  "Recap PDF export must authorize while loading, open its contextual paywall when blocked, and always clear loading",
+  /setPdfLoading\(true\);[\s\S]*await authorizeExport\("recap_pdf"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "free-limit"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*pdf\.save\("rekap-sesi\.pdf"\);[\s\S]*\} catch \{[\s\S]*setExportError\("Ekspor belum dapat diselesaikan\. Coba lagi\."\);[\s\S]*\} finally \{[\s\S]*setPdfLoading\(false\);/,
+  "Recap PDF export must authorize while loading, normalize failures, open its contextual paywall when blocked, and always clear loading",
 );
+assert.match(recap, /\{exportError \? <p className="app-export-error" role="alert">\{exportError\}<\/p> : null\}/);
 
 assert.match(
   invoice,
@@ -49,9 +50,12 @@ assert.equal(
 );
 assert.match(
   invoice,
-  /if \(!validateInvoiceForm\(\)\) return;[\s\S]*setExporting\(true\);[\s\S]*await authorizeExport\("invoice_pdf"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "invoice-locked"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*html2canvas\([\s\S]*pdf\.save\([\s\S]*\} finally \{[\s\S]*setExporting\(false\);/,
-  "Invoice export must preserve validation, authorize while loading, block into its contextual paywall, and always clear loading",
+  /if \(!validateInvoiceForm\(\)\) return;[\s\S]*setExporting\(true\);[\s\S]*await authorizeExport\("invoice_pdf"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "invoice-locked"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*html2canvas\([\s\S]*pdf\.save\([\s\S]*\} catch \{[\s\S]*setExportError\("Ekspor belum dapat diselesaikan\. Coba lagi\."\);[\s\S]*\} finally \{[\s\S]*setExporting\(false\);/,
+  "Invoice export must preserve validation, authorize while loading, normalize failures, block into its contextual paywall, and always clear loading",
 );
+assert.match(invoice, /\{exportError \? <p className="app-export-error" role="alert">\{exportError\}<\/p> : null\}/);
+assert.doesNotMatch(`${recap}\n${invoice}`, /setExportError\([^\n]*(?:error|err)\.(?:message|toString)/i);
+assert.doesNotMatch(invoice, /console\.error\("PDF export failed:/);
 
 assert.doesNotMatch(
   `${recap}\n${invoice}`,

@@ -1459,6 +1459,18 @@ input.input {
   font-weight: 700;
 }
 
+.app-export-error {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  background: var(--app-paper);
+  color: var(--tw-error);
+  font-family: var(--f-body);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 @media (max-width: 767px) {
   .app-success-toast { right: 16px; bottom: 80px; left: 16px; justify-content: center; }
 }

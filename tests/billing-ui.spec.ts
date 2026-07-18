@@ -45,6 +45,7 @@ test.describe("Billing fixture and browser-boundary contracts", () => {
       "plus_lifetime",
     ]);
     expect(billingFixtures.products.find((product) => product.featured)?.code).toBe("plus_12m");
+    expect(billingFixtures.products.find((product) => product.code === "plus_lifetime")?.amount).toBe(249000);
     expect(billingFixtures.products.every((product) => product.currency === "IDR")).toBe(true);
   });
 
@@ -85,8 +86,10 @@ test.describe("Billing fixture and browser-boundary contracts", () => {
       })));
     }, quoteRequests);
 
-    expect(quotes[0].quote).toMatchObject({ method: "qris", channelFee: 1000, totalAmount: 20000 });
-    expect(quotes[1].quote).toMatchObject({ method: "va", channelFee: 4000, totalAmount: 153000 });
+    expect(quotes[0].quote).toMatchObject({ method: "qris", baseAmount: 19000, channelFee: 0, totalAmount: 19000 });
+    expect(quotes[1].quote).toMatchObject({ method: "va", baseAmount: 19000, channelFee: 4000, totalAmount: 23000 });
+    expect(quotes[0].quote.package.code).toBe("plus_30d");
+    expect(quotes[1].quote.package.code).toBe("plus_30d");
     for (const { requested, quote } of quotes) {
       expect(quote.package.code).toBe(requested.packageCode);
     }

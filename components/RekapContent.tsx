@@ -225,6 +225,7 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const [studentFilter, setStudentFilter] = useState<string | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<PaywallReason>("free-limit");
   const [paywallUsage, setPaywallUsage] = useState<Partial<Record<ExportFormat, { used: number; limit: number }>>>();
@@ -314,6 +315,7 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
 
   const handleExportCSV = useCallback(async () => {
     setCsvLoading(true);
+    setExportError(null);
     try {
       const decision = await authorizeExport("recap_csv");
       if (!decision.allowed) {
@@ -328,6 +330,8 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
       }
       const csv = sessionsToCSV(rows.map(({ d, m, s, h, t }) => ({ d, m, s, h, t })));
       downloadCSV(csv, "rekap-sesi.csv");
+    } catch {
+      setExportError("Ekspor belum dapat diselesaikan. Coba lagi.");
     } finally {
       setCsvLoading(false);
     }
@@ -335,6 +339,7 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
 
   const handleExportPDF = useCallback(async () => {
     setPdfLoading(true);
+    setExportError(null);
     try {
       const decision = await authorizeExport("recap_pdf");
       if (!decision.allowed) {
@@ -374,6 +379,8 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
         y += 14;
       });
       pdf.save("rekap-sesi.pdf");
+    } catch {
+      setExportError("Ekspor belum dapat diselesaikan. Coba lagi.");
     } finally {
       setPdfLoading(false);
     }
@@ -415,6 +422,8 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
               </Button>,
             ]}
           />
+
+          {exportError ? <p className="app-export-error" role="alert">{exportError}</p> : null}
 
           <section className="app-recap-controls app-recap-controls-desktop" aria-label="Filter rekap">
             <RecapFilterControls

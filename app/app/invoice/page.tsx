@@ -144,6 +144,7 @@ export default function InvoicePage() {
   const [invoiceNo, setInvoiceNo] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<PaywallReason>("invoice-locked");
   const [accessState, setAccessState] = useState<AccessState>("free");
@@ -398,6 +399,7 @@ export default function InvoicePage() {
   const handleExportPDF = useCallback(async () => {
     if (!validateInvoiceForm()) return;
     setExporting(true);
+    setExportError(null);
     try {
       const decision = await authorizeExport("invoice_pdf");
       if (!decision.allowed) {
@@ -407,7 +409,7 @@ export default function InvoicePage() {
       }
 
       const container = exportRef.current;
-      if (!container) return;
+      if (!container) throw new Error("EXPORT_TARGET_UNAVAILABLE");
 
       const canvas = await html2canvas(container, {
         scale: 2,
@@ -425,8 +427,8 @@ export default function InvoicePage() {
 
       pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
       setExportSuccess(true);
-    } catch (err) {
-      console.error("PDF export failed:", err);
+    } catch {
+      setExportError("Ekspor belum dapat diselesaikan. Coba lagi.");
     } finally {
       setExporting(false);
     }
@@ -915,6 +917,8 @@ export default function InvoicePage() {
                 </Button>
               </div>
                 </header>
+
+                {exportError ? <p className="app-export-error" role="alert">{exportError}</p> : null}
 
                 <div className="invoice-layout">
                   {renderForm()}

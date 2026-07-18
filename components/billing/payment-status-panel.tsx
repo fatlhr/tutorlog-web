@@ -93,6 +93,7 @@ export function PaymentStatusPanel({
   const pollIndexRef = useRef(0);
   const verificationStartedAtRef = useRef(Date.now());
   const lastCheckedAtRef = useRef(Date.now());
+  const refreshRequestSequenceRef = useRef(0);
 
   const payment = purchase.payment;
   const isVerifying = payment?.state === "pending" && Boolean(payment.verificationDeadline);
@@ -121,17 +122,21 @@ export function PaymentStatusPanel({
   }, [payment?.id, isVerifying]);
 
   const refreshStatus = useCallback(async () => {
+    const requestSequence = ++refreshRequestSequenceRef.current;
+    const ownsLatestRequest = () => refreshRequestSequenceRef.current === requestSequence;
     setChecking(true);
     setLoadError(null);
 
     try {
       const nextPurchase = await statusClient(purchase.id);
+      if (!ownsLatestRequest()) return;
       setPurchase(nextPurchase);
       lastCheckedAtRef.current = Date.now();
     } catch (error) {
+      if (!ownsLatestRequest()) return;
       setLoadError(errorMessage(error));
     } finally {
-      setChecking(false);
+      if (ownsLatestRequest()) setChecking(false);
     }
   }, [purchase.id, statusClient]);
 

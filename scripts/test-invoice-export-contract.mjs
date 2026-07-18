@@ -549,5 +549,20 @@ assert.match(
   /const validateInvoiceForm = useCallback\(\(\) => \{[\s\S]*reportValidity\(\)[\s\S]*!invoiceActionsDisabled[\s\S]*\}, \[invoiceActionsDisabled\]\);/,
   "Programmatic preview and export must retain the same session guard",
 );
+assert.match(
+  page,
+  /const \[exportError, setExportError\] = useState<string \| null>\(null\);/,
+  "Invoice generation failures need a visible normalized feedback state",
+);
+assert.match(
+  page,
+  /catch \{\s*setExportError\("Ekspor belum dapat diselesaikan\. Coba lagi\."\);\s*\} finally \{\s*setExporting\(false\);/,
+  "Invoice authorization and generation failures must normalize feedback and clear loading",
+);
+assert.match(
+  page,
+  /\{exportError \? <p className="app-export-error" role="alert">\{exportError\}<\/p> : null\}/,
+  "Invoice export feedback must be announced as an alert",
+);
 
 console.log("Invoice export contract: validation, safe colors, single-page compression, and legible type present");

@@ -48,6 +48,24 @@ assert.equal(
   billingFixtures.products.find((product) => product.featured)?.code,
   "plus_12m",
 );
+assert.equal(
+  billingFixtures.products.find((product) => product.code === "plus_lifetime")?.amount,
+  249000,
+  "lifetime fixture must match the production catalog",
+);
+assert.equal(billingFixtures.quotes.qris.package.code, "plus_30d");
+assert.equal(billingFixtures.quotes.va.package.code, "plus_30d");
+assert.equal(billingFixtures.quotes.qris.baseAmount, 19000);
+assert.equal(billingFixtures.quotes.qris.channelFee, 0);
+assert.equal(billingFixtures.quotes.qris.totalAmount, 19000);
+assert.equal(billingFixtures.quotes.va.baseAmount, 19000);
+assert.equal(billingFixtures.quotes.va.channelFee, 4000);
+assert.equal(billingFixtures.quotes.va.totalAmount, 23000);
+assert.equal(billingFixtures.payments.pending.channelFee, 0);
+assert.equal(
+  billingFixtures.payments.pending.totalAmount,
+  billingFixtures.payments.pending.baseAmount,
+);
 
 const pricingCatalogPath = fileURLToPath(
   new URL("../components/billing/pricing-catalog.tsx", import.meta.url),
@@ -440,5 +458,36 @@ const billingClientSource = readFileSync(
   "utf8",
 );
 assert.match(billingClientSource, /result\.allowed \? "export_allowed" : "export_blocked"/);
+assert.match(billingClientSource, /const BROWSER_REQUEST_TIMEOUT_MS = \d+;/);
+assert.match(billingClientSource, /const requestController = new AbortController\(\);/);
+assert.match(billingClientSource, /const callerSignal = init\?\.signal;/);
+assert.match(billingClientSource, /callerSignal\.addEventListener\("abort", abortFromCaller, \{ once: true \}\);/);
+assert.match(billingClientSource, /callerSignal\?\.removeEventListener\("abort", abortFromCaller\);/);
+assert.match(billingClientSource, /timeoutError\.name = "TimeoutError";/);
+assert.match(billingClientSource, /signal: requestController\.signal/);
+assert.match(
+  billingClientSource,
+  /body = await response\.json\(\);\s*\} catch \(error\) \{\s*if \(requestController\.signal\.aborted\) throw error;\s*throw new BillingClientError\("PROVIDER_RESPONSE_INVALID"\);/,
+  "timeout and caller aborts during JSON parsing must retain their abort identity",
+);
+assert.match(billingClientSource, /if \(timedOut\) throw timeoutError;/);
+assert.match(billingClientSource, /clearTimeout\(timeoutId\);/);
+
+assert.match(paymentStatusPanelSource, /const refreshRequestSequenceRef = useRef\(0\);/);
+assert.match(
+  paymentStatusPanelSource,
+  /const requestSequence = \+\+refreshRequestSequenceRef\.current;\s*const ownsLatestRequest = \(\) => refreshRequestSequenceRef\.current === requestSequence;/,
+  "each payment refresh must capture monotonic latest-request ownership",
+);
+assert.match(
+  paymentStatusPanelSource,
+  /const nextPurchase = await statusClient\(purchase\.id\);\s*if \(!ownsLatestRequest\(\)\) return;\s*setPurchase\(nextPurchase\);/,
+  "stale payment successes must not replace the latest purchase",
+);
+assert.match(
+  paymentStatusPanelSource,
+  /catch \(error\) \{\s*if \(!ownsLatestRequest\(\)\) return;\s*setLoadError\(errorMessage\(error\)\);\s*\} finally \{\s*if \(ownsLatestRequest\(\)\) setChecking\(false\);/,
+  "stale payment errors and finally blocks must not replace current UI state",
+);
 
 console.log("billing UI contract valid");
