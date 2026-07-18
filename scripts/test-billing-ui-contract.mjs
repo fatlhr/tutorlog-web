@@ -73,4 +73,42 @@ assert.doesNotMatch(
 assert.doesNotMatch(normalizedPricingSource, /<s(?:\s|>)/);
 assert.doesNotMatch(normalizedPricingSource, /berhenti kapan saja/);
 
+const checkoutPanelPath = fileURLToPath(
+  new URL("../components/billing/checkout-panel.tsx", import.meta.url),
+);
+assert.equal(
+  existsSync(checkoutPanelPath),
+  true,
+  "CheckoutPanel has not been implemented",
+);
+
+const checkoutPanelSource = readFileSync(checkoutPanelPath, "utf8");
+const normalizedCheckoutSource = checkoutPanelSource.toLowerCase();
+
+assert.match(checkoutPanelSource, /useState<PaymentMethod>\("qris"\)/);
+assert.match(checkoutPanelSource, /value: "qris"/);
+assert.match(checkoutPanelSource, /value: "va"/);
+assert.match(checkoutPanelSource, /Harga paket/);
+assert.match(checkoutPanelSource, /Biaya kanal/);
+assert.match(checkoutPanelSource, /Total pembayaran/);
+assert.match(normalizedCheckoutSource, /tidak diperpanjang otomatis/);
+assert.match(checkoutPanelSource, /type="checkbox"/);
+assert.match(checkoutPanelSource, /required/);
+assert.match(checkoutPanelSource, /quoteRequestId\.current \+= 1/);
+assert.match(checkoutPanelSource, /requestId !== quoteRequestId\.current/);
+assert.match(
+  checkoutPanelSource,
+  /disabled=\{!canCreatePayment\}/,
+  "payment action must stay disabled until the quote and terms are ready",
+);
+assert.match(checkoutPanelSource, /PACKAGE_UNAVAILABLE/);
+assert.match(checkoutPanelSource, /PRICE_CHANGED/);
+assert.match(checkoutPanelSource, /LIFETIME_ALREADY_ACTIVE/);
+assert.match(checkoutPanelSource, /PROVIDER_UNAVAILABLE/);
+assert.match(checkoutPanelSource, /PROVIDER_RESPONSE_INVALID/);
+assert.match(checkoutPanelSource, /AbortError|TimeoutError/);
+assert.match(checkoutPanelSource, /url\.protocol !== "https:"/);
+assert.doesNotMatch(normalizedCheckoutSource, /ipaymu/);
+assert.doesNotMatch(normalizedCheckoutSource, /provider_reference|providerreference/);
+
 console.log("billing UI contract valid");
