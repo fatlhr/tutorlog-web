@@ -8,17 +8,28 @@ import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
 import { PageHeader, Surface } from "@/components/app-ui/structure";
 import styles from "@/components/app-ui/app-ui.module.css";
 import { updateName } from "@/app/app/actions";
-import type { AccessState } from "@/lib/data/quota-access";
+import { AccessSummaryCard } from "@/components/billing/access-summary-card";
+import { LatestPaymentCard } from "@/components/billing/latest-payment-card";
+import type {
+  AccessSummary,
+  LatestPaymentSummary,
+} from "@/lib/billing/contracts";
 
 interface ProfileContentProps {
   email: string;
   name: string;
   initials: string;
-  accessState: AccessState;
-  activeUntil: string | null;
+  access: AccessSummary;
+  latestPayment: LatestPaymentSummary | null;
 }
 
-export default function ProfileContent({ email, name: initialName, initials, accessState, activeUntil }: ProfileContentProps) {
+export default function ProfileContent({
+  email,
+  name: initialName,
+  initials,
+  access,
+  latestPayment,
+}: ProfileContentProps) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [editing, setEditing] = useState(false);
@@ -48,10 +59,6 @@ export default function ProfileContent({ email, name: initialName, initials, acc
       }
     });
   }, [editValue, router]);
-
-  const activeUntilDate = activeUntil ? new Date(activeUntil) : null;
-  const isPlus = accessState !== "free";
-  const isExpired = accessState === "plus_expired";
 
   return (
     <RouteCanvas route="settings">
@@ -173,38 +180,11 @@ export default function ProfileContent({ email, name: initialName, initials, acc
         </Surface>
 
         <div style={{ marginTop: 16 }}>
-          {isPlus ? (
-            <Surface padding="compact" variant={isExpired ? "paper" : "soft"}>
-              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
-                Status Akses
-              </div>
-              <div style={{ fontWeight: 600, fontSize: 14, color: isExpired ? "var(--app-error)" : undefined }}>
-                {isExpired ? "Plus kedaluwarsa" : "Plus aktif"}
-              </div>
-              {activeUntilDate && !isExpired && (
-                <div style={{ fontSize: 13, color: "var(--app-ink-muted)", marginTop: 4 }}>
-                  Aktif sampai {activeUntilDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-                </div>
-              )}
-              {isExpired && (
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 10 }}>
-                    Export rekap kembali mengikuti batas gratis dan invoice terkunci sampai Plus diperpanjang.
-                  </div>
-                  <Button href="/harga" variant="primary" size="compact">Perpanjang Plus</Button>
-                </div>
-              )}
-            </Surface>
-          ) : (
-            <Surface padding="compact">
-              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--app-ink-muted)", marginBottom: 8 }}>
-                Status Akses
-              </div>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>
-                Paket Free
-              </div>
-            </Surface>
-          )}
+          <AccessSummaryCard access={access} />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <LatestPaymentCard payment={latestPayment} />
         </div>
 
         <div style={{ marginTop: 16 }}>

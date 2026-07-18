@@ -57,7 +57,7 @@ export default function PaywallDialog({
         </div>
       )}
     >
-      <div className="paywall-content">
+      <div className="paywall-content" data-analytics-id="billing-paywall">
         <div className="lock" style={{ color: "var(--tw-primary)" }}>
           <LockKey size={30} aria-hidden="true" />
         </div>

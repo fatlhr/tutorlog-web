@@ -19,7 +19,7 @@ export default function HomeUpgradePrompt({ accessState, exhausted }: HomeUpgrad
     : "Plus membuka invoice dan export rekap PDF/CSV tanpa batas.";
 
   return (
-    <aside aria-label="TutorLog Plus">
+    <aside aria-label="TutorLog Plus" data-analytics-id="billing-dashboard-prompt">
       <FeedbackMessage
         status="warning"
         density="compact"

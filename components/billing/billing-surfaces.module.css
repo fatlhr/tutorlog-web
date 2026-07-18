@@ -1,0 +1,87 @@
+.card {
+  display: grid;
+  gap: var(--space-3, 12px);
+  color: var(--app-ink, #15201d);
+  font-family: var(--app-font-body, sans-serif);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3, 12px);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-1, 4px);
+  color: var(--app-ink-muted, #5f6b68);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--app-ink, #15201d);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.expiredTitle {
+  color: var(--app-error, #a33636);
+}
+
+.description {
+  margin: 0;
+  color: var(--app-ink-muted, #5f6b68);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.cardAction {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.paymentDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3, 12px) var(--space-5, 20px);
+  margin: 0;
+}
+
+.paymentDetails > div {
+  min-width: 0;
+}
+
+.paymentDetails dt {
+  margin-bottom: var(--space-1, 4px);
+  color: var(--app-ink-muted, #5f6b68);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 17px;
+}
+
+.paymentDetails dd {
+  margin: 0;
+  color: var(--app-ink, #15201d);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 19px;
+}
+
+.reference {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .cardHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .paymentDetails {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -209,4 +209,112 @@ assert.match(paymentStatusStyles, /--motion-fast:/);
 assert.match(paymentStatusStyles, /--motion-overlay:/);
 assert.match(paymentStatusStyles, /--ease-standard:/);
 
+const accessSummaryCardPath = fileURLToPath(
+  new URL("../components/billing/access-summary-card.tsx", import.meta.url),
+);
+assert.equal(
+  existsSync(accessSummaryCardPath),
+  true,
+  "AccessSummaryCard has not been implemented",
+);
+
+const accessSummaryCardSource = readFileSync(accessSummaryCardPath, "utf8");
+assert.match(accessSummaryCardSource, /access: AccessSummary/);
+assert.match(accessSummaryCardSource, /access\.isLifetime/);
+assert.match(accessSummaryCardSource, /Plus Selamanya/);
+assert.match(accessSummaryCardSource, /access\.activeUntil/);
+assert.match(accessSummaryCardSource, /Aktif sampai/);
+assert.match(accessSummaryCardSource, /Berakhir pada/);
+assert.match(
+  accessSummaryCardSource,
+  /const canRenew = access\.entitlementType === "term"/,
+  "only term access may expose renewal",
+);
+assert.match(
+  accessSummaryCardSource,
+  /\{canRenew \? \([\s\S]*href="\/harga"[\s\S]*Perpanjang Plus[\s\S]*\) : null\}/,
+  "active-term and expired access must expose the renewal action",
+);
+assert.doesNotMatch(accessSummaryCardSource, /new Date\(\)/);
+
+const latestPaymentCardPath = fileURLToPath(
+  new URL("../components/billing/latest-payment-card.tsx", import.meta.url),
+);
+assert.equal(
+  existsSync(latestPaymentCardPath),
+  true,
+  "LatestPaymentCard has not been implemented",
+);
+
+const latestPaymentCardSource = readFileSync(latestPaymentCardPath, "utf8");
+const normalizedLatestPaymentSource = latestPaymentCardSource.toLowerCase();
+assert.match(latestPaymentCardSource, /payment: LatestPaymentSummary \| null/);
+assert.match(latestPaymentCardSource, /payment\.packageName/);
+assert.match(latestPaymentCardSource, /payment\.method/);
+assert.match(latestPaymentCardSource, /payment\.state/);
+assert.match(latestPaymentCardSource, /payment\.baseAmount/);
+assert.match(latestPaymentCardSource, /payment\.channelFee/);
+assert.match(latestPaymentCardSource, /payment\.totalAmount/);
+assert.match(latestPaymentCardSource, /payment\.safeReference/);
+assert.match(latestPaymentCardSource, /payment\.createdAt/);
+assert.match(latestPaymentCardSource, /payment\.paidAt/);
+assert.doesNotMatch(normalizedLatestPaymentSource, /ipaymu|provider_reference|providerreference/);
+
+const appTopBarPath = fileURLToPath(
+  new URL("../components/AppTopBar.tsx", import.meta.url),
+);
+const appTopBarSource = readFileSync(appTopBarPath, "utf8");
+assert.match(appTopBarSource, /access: AccessSummary/);
+assert.match(appTopBarSource, /accessLabel\(access\)/);
+assert.doesNotMatch(appTopBarSource, /isPlus: boolean|isExpired: boolean/);
+assert.match(appTopBarSource, /event\.key === "Escape"/);
+assert.match(appTopBarSource, /document\.addEventListener\("mousedown", handleOutsideClick\)/);
+assert.match(appTopBarSource, /clearInvoiceFormCache/);
+
+const profileContentPath = fileURLToPath(
+  new URL("../components/ProfileContent.tsx", import.meta.url),
+);
+const profileContentSource = readFileSync(profileContentPath, "utf8");
+assert.match(profileContentSource, /access: AccessSummary/);
+assert.match(profileContentSource, /latestPayment: LatestPaymentSummary \| null/);
+assert.match(profileContentSource, /<AccessSummaryCard access=\{access\} \/>/);
+assert.match(profileContentSource, /<LatestPaymentCard payment=\{latestPayment\} \/>/);
+assert.match(profileContentSource, /updateName\(formData\)/);
+assert.match(profileContentSource, /com\.tutorlog\.app/);
+
+const homeUpgradePromptPath = fileURLToPath(
+  new URL("../components/HomeUpgradePrompt.tsx", import.meta.url),
+);
+const homeUpgradePromptSource = readFileSync(homeUpgradePromptPath, "utf8");
+assert.match(homeUpgradePromptSource, /href="\/harga"/);
+assert.doesNotMatch(homeUpgradePromptSource, /useState|PaywallDialog|\/checkout/);
+
+const paywallDialogPath = fileURLToPath(
+  new URL("../components/PaywallDialog.tsx", import.meta.url),
+);
+const paywallDialogSource = readFileSync(paywallDialogPath, "utf8");
+assert.match(paywallDialogSource, /<Dialog/);
+assert.match(paywallDialogSource, /open=\{open\}/);
+assert.match(paywallDialogSource, /onOpenChange=/);
+assert.match(paywallDialogSource, /data-analytics-id="billing-paywall"/);
+assert.match(paywallDialogSource, /href="\/harga"/);
+assert.doesNotMatch(paywallDialogSource, /PricingCatalog|CheckoutPanel|\/checkout/);
+
+const appLayoutPath = fileURLToPath(
+  new URL("../app/app/layout.tsx", import.meta.url),
+);
+const appLayoutSource = readFileSync(appLayoutPath, "utf8");
+assert.match(appLayoutSource, /getAccessSummary\(\)/);
+assert.match(appLayoutSource, /<AppTopBar[\s\S]*access=\{access\}/);
+
+const profilePagePath = fileURLToPath(
+  new URL("../app/app/profil/page.tsx", import.meta.url),
+);
+const profilePageSource = readFileSync(profilePagePath, "utf8");
+assert.match(profilePageSource, /getAccessSummary\(\)/);
+assert.match(profilePageSource, /\.from\("billing_payments"\)/);
+assert.match(profilePageSource, /safe_reference/);
+assert.match(profilePageSource, /latestPayment=/);
+assert.match(profilePageSource, /access=\{access\}/);
+
 console.log("billing UI contract valid");

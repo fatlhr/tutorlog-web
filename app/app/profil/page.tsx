@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { checkQuota } from "@/lib/data/quota";
-import { getAccessState } from "@/lib/data/quota-access";
+import type { LatestPaymentSummary } from "@/lib/billing/contracts";
+import { getAccessSummary } from "@/lib/billing/server/access";
 import ProfileContent from "@/components/ProfileContent";
 
 export const metadata: Metadata = {
@@ -21,6 +21,58 @@ function initialsOf(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+async function getLatestPayment(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<LatestPaymentSummary | null> {
+  const { data: payment, error: paymentError } = await supabase
+    .from("billing_payments")
+    .select(`
+      id,
+      purchase_id,
+      method,
+      state,
+      base_amount,
+      channel_fee,
+      total_amount,
+      currency,
+      safe_reference,
+      paid_at,
+      created_at
+    `)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (paymentError || !payment || payment.currency !== "IDR") {
+    if (paymentError) console.error("Failed to load latest billing payment", paymentError);
+    return null;
+  }
+
+  const { data: purchase, error: purchaseError } = await supabase
+    .from("billing_purchases")
+    .select("product_name_snapshot")
+    .eq("id", payment.purchase_id)
+    .maybeSingle();
+
+  if (purchaseError) {
+    console.error("Failed to load latest billing purchase", purchaseError);
+  }
+
+  return {
+    id: payment.id,
+    packageName: purchase?.product_name_snapshot ?? "Paket Plus",
+    method: payment.method,
+    state: payment.state,
+    baseAmount: payment.base_amount,
+    channelFee: payment.channel_fee,
+    totalAmount: payment.total_amount,
+    currency: "IDR",
+    safeReference: payment.safe_reference,
+    createdAt: payment.created_at,
+    paidAt: payment.paid_at,
+  };
+}
+
 export default async function SettingsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -31,16 +83,18 @@ export default async function SettingsPage() {
   const metaName = user.user_metadata?.full_name ?? user.user_metadata?.name;
   const name = displayName(email, metaName);
   const initials = initialsOf(name);
-  const quota = await checkQuota();
-  const access = getAccessState(quota);
+  const [access, latestPayment] = await Promise.all([
+    getAccessSummary(),
+    getLatestPayment(supabase),
+  ]);
 
   return (
     <ProfileContent
       email={email}
       name={name}
       initials={initials}
-      accessState={access.state}
-      activeUntil={quota.activeUntil}
+      access={access}
+      latestPayment={latestPayment}
     />
   );
 }

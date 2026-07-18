@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { checkQuota } from "@/lib/data/quota";
-import { getAccessState } from "@/lib/data/quota-access";
+import { getAccessSummary } from "@/lib/billing/server/access";
 import { getCommunityLink } from "@/lib/data/app-config";
 import AppTopBar from "@/components/AppTopBar";
 import TabBar from "@/components/TabBar";
@@ -35,18 +34,17 @@ export default async function AppLayout({
   const email = user.email ?? "";
   const name = displayNameOf(email, user.user_metadata?.full_name ?? user.user_metadata?.name);
   const initials = initialsOf(name);
-  const quota = await checkQuota();
-  const access = getAccessState(quota);
+  const access = await getAccessSummary();
   const communityLink = await getCommunityLink();
 
   return (
     <div
       className="app-shell-h"
-      data-plan={access.isPlus ? "plus" : "free"}
+      data-plan={access.state === "free" ? "free" : "plus"}
       data-access={access.state.replace("_", "-")}
       style={{ minHeight: "100svh" }}
     >
-      <AppTopBar name={name} initials={initials} isPlus={access.isPlus} isExpired={access.isPlusExpired} communityLink={communityLink} />
+      <AppTopBar name={name} initials={initials} access={access} communityLink={communityLink} />
       {children}
 
       <AppShellFooter />

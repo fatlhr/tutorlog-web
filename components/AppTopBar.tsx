@@ -9,12 +9,13 @@ import { createClient } from "@/lib/supabase/client";
 import { NavigationItem } from "@/components/app-ui/navigation";
 import { APP_ROUTE_ITEMS, getActiveAppRoute } from "@/components/app-ui/routes";
 import { clearInvoiceFormCache } from "@/lib/invoice-form-cache";
+import type { AccessSummary } from "@/lib/billing/contracts";
+import { accessLabel } from "@/lib/billing/ui-model";
 
 interface AppTopBarProps {
   name: string;
   initials: string;
-  isPlus: boolean;
-  isExpired: boolean;
+  access: AccessSummary;
   communityLink?: string | null;
 }
 
@@ -24,7 +25,7 @@ const routeIcons: Record<string, typeof House> = {
   invoice: FileText,
 };
 
-export default function AppTopBar({ name, initials, isPlus, isExpired, communityLink }: AppTopBarProps) {
+export default function AppTopBar({ name, initials, access, communityLink }: AppTopBarProps) {
   const pathname = usePathname();
   const activeRoute = getActiveAppRoute(pathname);
   const router = useRouter();
@@ -103,7 +104,7 @@ export default function AppTopBar({ name, initials, isPlus, isExpired, community
             <div className="app-account-menu" role="menu">
               <div className="app-account-summary">
                 <strong>{name}</strong>
-                <span>{isPlus ? (isExpired ? "Plus kedaluwarsa" : "Plus aktif") : "Paket Free"}</span>
+                <span>{accessLabel(access)}</span>
               </div>
               <Link href="/app/profil" role="menuitem" onClick={() => setOpen(false)}>
                 <User size={17} aria-hidden="true" />
