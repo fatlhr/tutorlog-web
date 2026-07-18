@@ -27,14 +27,17 @@ async function mockJson(page: Page, url: string, body: unknown) {
   });
 }
 
-test.describe("Billing UI fixture contracts", () => {
+const RENDERED_FIXTURE_PREREQUISITE =
+  "Incomplete without an approved fixture auth/catalog harness or non-live test credentials; U10 forbids adding test-only production routes or secrets.";
+
+test.describe("Billing fixture and browser-boundary contracts", () => {
   test("preserves the protected checkout path through login", async ({ page }) => {
     await page.goto("/checkout?package=plus_12m");
 
     await expect(page).toHaveURL(/\/login\?next=%2Fcheckout%3Fpackage%3Dplus_12m$/);
   });
 
-  test("covers public packages with the shared product DTO inventory", async () => {
+  test("validates the public package inventory DTO contract", async () => {
     expect(billingFixtures.products.map((product) => product.code)).toEqual([
       "free",
       "plus_30d",
@@ -45,7 +48,7 @@ test.describe("Billing UI fixture contracts", () => {
     expect(billingFixtures.products.every((product) => product.currency === "IDR")).toBe(true);
   });
 
-  test("uses fixture-backed QRIS and VA quotes without provider responses", async ({ page }) => {
+  test("validates QRIS and VA browser API mock DTO contracts", async ({ page }) => {
     await page.route("**/api/quotes", async (route) => {
       const request = route.request();
       const body = request.postDataJSON() as { method?: string };
@@ -60,20 +63,36 @@ test.describe("Billing UI fixture contracts", () => {
     });
     await openBrowserOrigin(page);
 
-    const quotes = await page.evaluate(async () => {
-      const request = (method: "qris" | "va") => fetch("/api/quotes", {
+    const quoteRequests = [
+      {
+        packageCode: billingFixtures.quotes.qris.package.code,
+        method: billingFixtures.quotes.qris.method,
+      },
+      {
+        packageCode: billingFixtures.quotes.va.package.code,
+        method: billingFixtures.quotes.va.method,
+      },
+    ];
+    const quotes = await page.evaluate(async (requests) => {
+      const request = (packageCode: string, method: "qris" | "va") => fetch("/api/quotes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ packageCode: "plus_12m", method }),
+        body: JSON.stringify({ packageCode, method }),
       }).then((response) => response.json());
-      return Promise.all([request("qris"), request("va")]);
-    });
+      return Promise.all(requests.map(async (requested) => ({
+        requested,
+        quote: await request(requested.packageCode, requested.method),
+      })));
+    }, quoteRequests);
 
-    expect(quotes[0]).toMatchObject({ method: "qris", channelFee: 1000, totalAmount: 20000 });
-    expect(quotes[1]).toMatchObject({ method: "va", channelFee: 4000, totalAmount: 153000 });
+    expect(quotes[0].quote).toMatchObject({ method: "qris", channelFee: 1000, totalAmount: 20000 });
+    expect(quotes[1].quote).toMatchObject({ method: "va", channelFee: 4000, totalAmount: 153000 });
+    for (const { requested, quote } of quotes) {
+      expect(quote.package.code).toBe(requested.packageCode);
+    }
   });
 
-  test("covers pending resume and replacement with shared purchase DTOs", async ({ page }) => {
+  test("validates pending-resume and replacement browser API mock DTO contracts", async ({ page }) => {
     const pending = purchaseFor(billingFixtures.payments.pending);
     const replaced = purchaseFor({
       ...billingFixtures.payments.pending,
@@ -103,7 +122,7 @@ test.describe("Billing UI fixture contracts", () => {
     expect(result.replacement.payment.redirectUrl).toBeNull();
   });
 
-  test("covers verifying, paid, expired retry, and duplicate-review state copies", async ({ page }) => {
+  test("validates payment-state browser API mock and view-model contracts", async ({ page }) => {
     const scenarios = [
       billingFixtures.payments.verifying,
       billingFixtures.payments.paid,
@@ -140,14 +159,14 @@ test.describe("Billing UI fixture contracts", () => {
     expect(billingFixtures.payments.duplicateReview.duplicateReview).toBe(true);
   });
 
-  test("covers all four Profile access fixture states", async () => {
+  test("validates four Profile access DTO view-model contracts", async () => {
     expect(accessLabel(billingFixtures.access.free)).toBe("Free");
     expect(accessLabel(billingFixtures.access.active)).toBe("Plus Aktif");
     expect(accessLabel(billingFixtures.access.expired)).toBe("Plus Berakhir");
     expect(accessLabel(billingFixtures.access.lifetime)).toBe("Plus Selamanya");
   });
 
-  test("uses a blocked export DTO for the action-triggered paywall decision", async ({ page }) => {
+  test("validates the blocked-export browser API mock DTO contract", async ({ page }) => {
     await mockJson(page, "**/api/exports/authorize", billingFixtures.exports.blocked);
     await openBrowserOrigin(page);
 
@@ -160,10 +179,23 @@ test.describe("Billing UI fixture contracts", () => {
     expect(decision).toEqual(billingFixtures.exports.blocked);
   });
 
-  test("renders authenticated checkout, payment, Profile, and paywall interactions", async () => {
-    test.skip(
-      true,
-      "Unavailable without a fixture auth/catalog server or test credentials; U10 forbids adding test-only production routes or secrets.",
-    );
+  test("renders the public package catalog from a fixture-backed catalog service", async () => {
+    test.skip(true, RENDERED_FIXTURE_PREREQUISITE);
+  });
+
+  test("renders authenticated checkout defaults, VA fee, and terms acknowledgement", async () => {
+    test.skip(true, RENDERED_FIXTURE_PREREQUISITE);
+  });
+
+  test("renders authenticated payment states and actions", async () => {
+    test.skip(true, RENDERED_FIXTURE_PREREQUISITE);
+  });
+
+  test("renders authenticated Profile access states", async () => {
+    test.skip(true, RENDERED_FIXTURE_PREREQUISITE);
+  });
+
+  test("opens the rendered paywall only after a blocked export action", async () => {
+    test.skip(true, RENDERED_FIXTURE_PREREQUISITE);
   });
 });
