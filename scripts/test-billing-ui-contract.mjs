@@ -165,10 +165,44 @@ assert.match(paymentStatusPanelSource, /href="\/app"/);
 assert.match(paymentStatusPanelSource, /visibilitychange/);
 assert.match(paymentStatusPanelSource, /clearTimeout/);
 assert.match(paymentStatusPanelSource, /POLL_DELAYS_MS/);
+assert.match(paymentStatusPanelSource, /const remaining = VERIFY_WINDOW_MS - elapsed/);
+assert.match(
+  paymentStatusPanelSource,
+  /const delay = Math\.min\(POLL_DELAYS_MS\[Math\.min\(pollIndexRef\.current, POLL_DELAYS_MS\.length - 1\)\], remaining\)/,
+);
+assert.match(
+  paymentStatusPanelSource,
+  /window\.setTimeout\(async \(\) => \{\s*if \(Date\.now\(\) - verificationStartedAtRef\.current >= VERIFY_WINDOW_MS\) \{\s*setVerificationWindowExpired\(true\);\s*return;\s*\}[\s\S]*?await refreshStatus\(\);/,
+);
+assert.match(paymentStatusPanelSource, /\|\| verificationWindowExpired/);
+assert.match(paymentStatusPanelSource, /error instanceof BillingClientError/);
+assert.match(paymentStatusPanelSource, /error\.code/);
+assert.doesNotMatch(paymentStatusPanelSource, /error\.message/);
+assert.doesNotMatch(paymentStatusPanelSource, /payment\.redirectUrl/);
 assert.doesNotMatch(normalizedPaymentStatusSource, /ipaymu/);
 assert.doesNotMatch(
   normalizedPaymentStatusSource,
   /provider_reference|providerreference/,
 );
+
+const paymentStatusStylesPath = fileURLToPath(
+  new URL("../components/billing/payment-status.module.css", import.meta.url),
+);
+const paymentStatusStyles = readFileSync(paymentStatusStylesPath, "utf8");
+assert.match(paymentStatusStyles, /box-sizing: border-box/);
+assert.match(paymentStatusStyles, /--app-paper:/);
+assert.match(paymentStatusStyles, /--app-paper-muted:/);
+assert.match(paymentStatusStyles, /--app-ink-disabled:/);
+assert.match(paymentStatusStyles, /--app-line:/);
+assert.match(paymentStatusStyles, /--app-action:/);
+assert.match(paymentStatusStyles, /--app-action-hover:/);
+assert.match(paymentStatusStyles, /--app-on-action:/);
+assert.match(paymentStatusStyles, /--app-font-body:/);
+assert.match(paymentStatusStyles, /--space-0:/);
+assert.match(paymentStatusStyles, /--space-3:/);
+assert.match(paymentStatusStyles, /--radius-round:/);
+assert.match(paymentStatusStyles, /--motion-fast:/);
+assert.match(paymentStatusStyles, /--motion-overlay:/);
+assert.match(paymentStatusStyles, /--ease-standard:/);
 
 console.log("billing UI contract valid");

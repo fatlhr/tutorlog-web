@@ -1,4 +1,19 @@
 .panel {
+  --app-paper: #fff;
+  --app-paper-muted: var(--tl-soft-2);
+  --app-ink-disabled: #72827d;
+  --app-line: var(--tl-line);
+  --app-action: var(--tl-green);
+  --app-action-hover: var(--tl-dark);
+  --app-on-action: #fff;
+  --app-font-body: var(--tl-font-body);
+  --space-0: var(--tl-space-0);
+  --space-3: var(--tl-space-3);
+  --radius-round: var(--tl-radius-round);
+  --motion-fast: var(--tl-motion-fast);
+  --motion-overlay: var(--tl-motion-overlay);
+  --ease-standard: var(--tl-ease-standard);
+  box-sizing: border-box;
   display: grid;
   width: min(100%, 620px);
   gap: var(--tl-space-6);
@@ -133,23 +148,6 @@
   flex-wrap: wrap;
   gap: var(--tl-space-3);
   align-items: center;
-}
-
-.paymentLink {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 var(--tl-space-5);
-  border-radius: var(--tl-radius-control);
-  background: var(--tl-green);
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.paymentLink:hover {
-  background: var(--tl-dark);
 }
 
 @media (max-width: 767px) {

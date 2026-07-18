@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useCallback,
@@ -11,6 +10,7 @@ import {
 } from "react";
 import { Button } from "@/components/app-ui/controls";
 import {
+  BillingClientError,
   cancelPendingPayment,
   getPurchaseStatus,
 } from "@/lib/billing/client";
@@ -48,7 +48,20 @@ function formatDeadline(value: string | null): string | null {
 }
 
 function errorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
+  if (error instanceof BillingClientError) {
+    switch (error.code) {
+      case "AUTH_REQUIRED":
+        return "Login diperlukan untuk memeriksa pembayaran.";
+      case "PAYMENT_NOT_CANCELABLE":
+        return "Pembayaran ini tidak dapat diganti lagi.";
+      case "PAYMENT_NOT_FOUND":
+      case "PURCHASE_NOT_FOUND":
+        return "Pembayaran tidak ditemukan. Coba mulai dari checkout.";
+      default:
+        return "Status pembayaran belum dapat dimuat. Coba lagi.";
+    }
+  }
+
   return "Status pembayaran belum dapat dimuat. Coba lagi.";
 }
 
@@ -104,8 +117,14 @@ export function PaymentStatusPanel({
         return;
       }
 
-      const delay = POLL_DELAYS_MS[Math.min(pollIndexRef.current, POLL_DELAYS_MS.length - 1)];
+      const remaining = VERIFY_WINDOW_MS - elapsed;
+      const delay = Math.min(POLL_DELAYS_MS[Math.min(pollIndexRef.current, POLL_DELAYS_MS.length - 1)], remaining);
       pollTimerRef.current = window.setTimeout(async () => {
+        if (Date.now() - verificationStartedAtRef.current >= VERIFY_WINDOW_MS) {
+          setVerificationWindowExpired(true);
+          return;
+        }
+
         pollIndexRef.current += 1;
         await refreshStatus();
         if (!cancelled) scheduleNextPoll();
@@ -126,6 +145,7 @@ export function PaymentStatusPanel({
         document.visibilityState !== "visible"
         || !payment
         || !isPollingPayment(payment)
+        || verificationWindowExpired
         || Date.now() - lastCheckedAtRef.current < VISIBILITY_REFRESH_STALE_MS
       ) {
         return;
@@ -136,7 +156,7 @@ export function PaymentStatusPanel({
 
     document.addEventListener("visibilitychange", refreshOnVisible);
     return () => document.removeEventListener("visibilitychange", refreshOnVisible);
-  }, [payment, refreshStatus]);
+  }, [payment, refreshStatus, verificationWindowExpired]);
 
   const status = useMemo(
     () => payment ? paymentStatusCopy(payment) : null,
@@ -238,11 +258,6 @@ export function PaymentStatusPanel({
           </ol>
           <p>Jika Anda mengganti metode, pembayaran yang selesai pada metode sebelumnya tetap akan ditinjau dan dihormati.</p>
           <div className={styles.actions}>
-            {payment.redirectUrl ? (
-              <a className={styles.paymentLink} href={payment.redirectUrl} target="_blank" rel="noreferrer">
-                Lanjutkan pembayaran
-              </a>
-            ) : null}
             <Button type="button" variant="secondary" onClick={() => void refreshStatus()}>
               Perbarui status
             </Button>
