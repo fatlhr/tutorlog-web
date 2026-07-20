@@ -89,7 +89,7 @@ export function PaymentStatusPanel({
   const [checking, setChecking] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const [verificationWindowExpired, setVerificationWindowExpired] = useState(false);
-  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollTimerRef = useRef<number | null>(null);
   const pollIndexRef = useRef(0);
   const verificationStartedAtRef = useRef(Date.now());
   const lastCheckedAtRef = useRef(Date.now());
@@ -170,7 +170,7 @@ export function PaymentStatusPanel({
 
     return () => {
       cancelled = true;
-      if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+      if (pollTimerRef.current) window.clearTimeout(pollTimerRef.current);
     };
   }, [payment, refreshStatus, verificationWindowExpired]);
 
