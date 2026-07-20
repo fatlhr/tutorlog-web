@@ -40,6 +40,8 @@
 | 11 | `/app` (home) | ⬜ | ⬜ | Protected |
 | 12 | `/app/rekap` | ✅ | ✅ | Protected |
 | 13 | `/app/invoice` | ✅ | ⬜ | Protected |
+| 14 | `/checkout` | ✅ | ✅ | Protected |
+| 15 | `/pembayaran/[purchaseId]` | ✅ | ✅ | Protected |
 
 ---
 
@@ -295,23 +297,152 @@
 
 ---
 
-## Phase 7 — QA & Ship
+## Phase 7 — Payment Integration & Provider Activation
 
-- [x] **7.1 Responsive sweep** — semua routes di 320/390/768/1024/1440
+> Payment provider aktif setelah Duitku terverifikasi. Semua payment call sudah ada di codebase
+> tapi di-gate oleh `BILLING_PAYMENT_PROVIDER_ENABLED=false`. DB schema, RPC functions, dan
+> provider factory sudah live di Supabase. Duitku sandbox memerlukan IP whitelisting untuk
+> callbacks (production: `182.23.85.8`-`103.177.101.190`).
+>
+> Lihat `docs/superpowers/specs/2026-07-20-duitku-migration-design.md` untuk detail Duitku.
+> Lihat `docs/superpowers/specs/2026-07-16-pricing-paywall-payment-design.md` untuk design spec.
+
+### 7.1 Integration/Data — DONE ✓
+
+> Semua tasks ini sudah di-apply ke live Supabase. Schema verified via API (error code 42501 =
+> "must be owner of table" = table exists but RLS blocks anon). Legacy tables `user_entitlements`
+> dan `user_feature_usage` exist tapi kosong (0 rows). `user_profiles` tidak ada.
+
+- [x] **I0** Capture live DB & merchant evidence — verifikasi schema mobile + sandbox
+  - _DoD: DB live verified, screenshot evidence tersimpan_ ✓
+- [x] **I1** Freeze shared billing contract — `lib/billing/contracts.ts`, `lib/billing/errors.ts`
+  - _DoD: Contract test pass, `lib/billing/contracts.test.ts` green_ ✓ (commit `9bb02f4`)
+- [x] **I2** Billing schema, catalog, RLS — 4 Supabase migrations
+  - `202607160001_billing_schema`: billing_products, billing_purchases, billing_payments, billing_entitlements, billing_feature_usage_events, billing_quotes (schema+RLS+seed)
+  - `202607160002_billing_functions`: 10 RPC functions (billing_status, start_purchase, record_payment, grant_access, etc.)
+  - `202607160003_billing_purchase_functions`: purchase flow functions
+  - `202607160004_billing_webhook_functions`: webhook processing + authorization functions
+  - _DoD: Migrations applied ke live Supabase_ ✓ (verified via API)
+- [x] **I2A** Entitlement grant provenance — legacy + billing grant coexistence
+  - _DoD: Legacy grants preserved_ ✓ (commit `d91d459`)
+- [x] **I3** Atomic billing authorization — `billing_access_status_for_user`, `authorize_feature_export`
+  - _DoD: Authorization functions live_ ✓ (commit `c2c1eca`, verified via API)
+- [x] **I4** iPaymu provider adapter — `lib/billing/providers/ipaymu.ts`, `ipaymu-signature.ts`
+  - _DoD: Provider implements PaymentProvider interface_ ✓ (commit `aa7159f`, stub throws `providerNotReady()`)
+- [x] **I5** Billing purchase APIs — 6 route handlers + 6 RPC functions
+  - `/api/products`, `/api/quotes`, `/api/purchases`, `/api/payments`, `/api/billing/status`
+  - RPC functions: `billing_status_for_user`, `billing_start_purchase`, `billing_record_payment`, `billing_grant_access`, `billing_list_user_purchases`, `billing_user_access_status`
+  - _DoD: All endpoints functional_ ✓ (commit `36bf713`, verified via API)
+- [x] **I6** Webhook processing — `process_billing_provider_event` + callback route
+  - `app/api/webhooks/ipaymu/route.ts` (to be replaced with Duitku)
+  - _DoD: Webhook processing live_ ✓ (commit `d3592d9`)
+
+### 7.2 UI/Product — DONE ✓
+
+> Semua UI components sudah ter-wire ke halaman. Checkout flow complete dari catalog →
+> checkout → payment status. Provider gates: pricing catalog visible, checkout disabled,
+> payment status UI berfungsi.
+
+- [x] **U1** View models, fixtures, browser client — `ui-model.ts`, `fixtures.ts`, `client.ts`
+  - _DoD: Billing UI data layer ready_ ✓ (commit `caaf985`)
+- [x] **U2** Pricing catalog UI — `components/billing/pricing-catalog.tsx`
+  - 2 product cards (Plus bulanan + Plus sekali bayar), bank transfer fallback
+  - _DoD: Catalog renders, "Coming Soon" badge visible_ ✓ (commit `1072c42`)
+- [x] **U3** Safe login return — `lib/auth/safe-next.ts` + auth callback update
+  - _DoD: Login preserves return URL_ ✓ (commit `dd995a9`)
+- [x] **U4** Checkout panel UI — `components/billing/checkout-panel.tsx`
+  - Bank transfer info, WhatsApp confirmation link, `checkoutStatus="coming_soon"`
+  - _DoD: Checkout renders with disabled state_ ✓ (commit `96a1a79`)
+- [x] **U5** Payment status & recovery — `components/billing/payment-status-panel.tsx`
+  - Auto-polling (5s intervals, 120 max attempts), `useRef` cleanup, `paymentReady` flag
+  - _DoD: Payment status UI berfungsi_ ✓ (commits `fec810f`+`df5983e`+`8d7086a`)
+- [x] **U6** Access, latest payment, paywall — `AccessSummaryCard`, `LatestPaymentCard`, `PaywallDialog`
+  - _DoD: Access surfaces wired_ ✓ (commit `3a48e39`)
+- [x] **U7** Server export authorization — `authorizeFeatureExport` wiring (di integration branch)
+  - _DoD: Export gated via server-side authorization_ ✓ (commit `c2c1eca`)
+- [x] **U8** Route wiring — `/harga`, `/checkout`, `/pembayaran/[purchaseId]`, analytics
+  - `app/harga/page.tsx`, `app/checkout/page.tsx`, `app/pembayaran/[purchaseId]/page.tsx`
+  - `lib/billing/analytics-client.ts` (funnel events: paywall_shown, paywall_cta_clicked, checkout_started, checkout_completed)
+  - _DoD: All routes functional_ ✓ (commit `8636b07`)
+  - _Test: billing UI test fixtures aligned_ ✓ (commits `c86051c`+`c703f09`+`6b07065`)
+
+### 7.3 Fallback Catalog & Gateway Gate — DONE ✓
+
+> Pricing catalog visible untuk semua user. Checkout button disabled dengan badge "Coming Soon".
+> Payment status UI berfungsi untuk yang sudah punya purchase. Provider dipilih berdasarkan
+> env var `DUITKU_MERCHANT_CODE`.
+
+- [x] **FG1** Fallback catalog — `lib/billing/fallback-catalog.ts`
+  - _DoD: Catalog renders tanpa provider_ ✓ (commit `4ae1e7b`)
+- [x] **FG2** Payment gateway gate — `isPaymentProviderEnabled()`
+  - _DoD: Checkout disabled, pricing visible_ ✓
+- [x] **FG3** Checkout `paymentReady` flag — `CheckoutPanelProps.checkoutStatus`
+  - _DoD: Checkout shows "Coming Soon" state_ ✓
+
+### 7.4 Duitku Provider Migration — ⬜ BELUM
+
+> Duitku (PT Kharisma Catur Mandala) menggantikan iPaymu. BI licensed, ISO 9001:2015,
+> Kominfo PSE registered. QRIS fee 0.7%. Tidak ada cancel API — rely on expiry.
+> Callback format: `x-www-form-urlencoded` (bukan JSON).
+> Lihat `docs/superpowers/plans/2026-07-20-duitku-migration-plan.md` untuk detail.
+
+- [ ] **D1** Duitku signature module — `lib/billing/providers/duitku-signature.ts`
+  - HMAC-SHA256 signing: `merchantCode + merchantOrderId + paymentAmount` (inquiry), `merchantCode + merchantOrderId` (status)
+  - _DoD: Signature tests pass_
+- [ ] **D2** Duitku provider adapter — `lib/billing/providers/duitku.ts`
+  - Implements `PaymentProvider` interface, handles `x-www-form-urlencoded` callbacks
+  - _DoD: Adapter functional, signature verified_
+- [ ] **D3** Duitku webhook route — `app/api/webhooks/duitku/route.ts`
+  - Parse `x-www-form-urlencoded` body, validate signature, process callback
+  - _DoD: Webhook route functional_
+- [ ] **D4** Update provider factory + contracts — `providers/index.ts`, `contracts.ts`
+  - Conditional Duitku/iPaymu selection based on `DUITKU_MERCHANT_CODE` env var
+  - _DoD: Provider selection functional_
+- [ ] **D5** Server payment processing updates — `server/payments.ts`, `server/purchases.ts`
+  - Update `processDuitkuCallback()`, Duitku env var reads
+  - _DoD: Payment processing functional_
+- [ ] **D6** Environment config — `.env.local`
+  - `DUITKU_MERCHANT_CODE`, `DUITKU_API_KEY`, `DUITKU_API_SECRET`, `DUITKU_BASE_URL`
+  - _DoD: Env vars configured_
+- [ ] **D7** Duitku sandbox verification — `scripts/test-duitku-sandbox-flow.mjs`
+  - Full flow: inquiry → redirect → callback → verification
+  - _DoD: Sandbox flow passes_
+- [ ] **D8** iPaymu cleanup — delete `ipaymu.ts`, `ipaymu-signature.ts`, legacy webhook route
+  - _DoD: iPaymu files removed, no dead code_
+
+### 7.5 Post-MVP — ⬜ DEFERRED
+
+> Tasks ini di-defer sampai Duitku terverifikasi di production. Reconciliation tool, analytics,
+> dan email notification membutuhkan production data untuk validasi.
+
+- [ ] **I7** Reconciliation & refund — reconcile stale pending payments
+  - _DoD: Stale payments reconciled_
+- [ ] **I8** Analytics + Resend confirmation email — funnel events + transactional email
+  - _DoD: Analytics dashboard functional, emails sent_
+- [ ] **U9** Legal copy — terms, refund policy, contact info
+  - _DoD: Legal copy complete_
+- [ ] **U10** UI verification & handoff — final QA
+  - _DoD: All payment UI verified_
+
+---
+
+## Phase 8 — QA & Ship
+
+- [x] **8.1 Responsive sweep** — semua routes di 320/390/768/1024/1440
   - _DoD: tanpa horizontal scroll, viewport yang benar tampil_ ✓ (65/65 tests passed: 50 public + 15 protected)
 
-- [x] **7.2 Visual diff vs canvas** — screenshot tiap route, bandingkan dengan artboard
+- [x] **8.2 Visual diff vs canvas** — screenshot tiap route, bandingkan dengan artboard
   - _DoD: Selisih yang disengaja terdokumentasi_ ✓ (12/12 routes compared, intentional differences documented)
 
-- [x] **7.3 A11y pass** — focus-visible, aria, alt text, prefers-reduced-motion
+- [x] **8.3 A11y pass** — focus-visible, aria, alt text, prefers-reduced-motion
   - _DoD: Keyboard-only bisa navigasi semua halaman_ ✓ (13/13 axe-core + keyboard tests passed)
 
-- [ ] **7.4 Vercel deployment (Free tier)**
+- [ ] **8.4 Vercel deployment (Free tier)**
   - Connect GitHub repo ke Vercel
   - Setup environment variables
   - Custom domain (tutorlog.id)
   - _DoD: Deploy ke Vercel, semua routes jalan_
   - _Catatan: Migrasi ke SumoPod VPS (Rp 60rb/bulan) saat scale up. App code tidak berubah, hanya deployment workflow._
 
-- [x] **7.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
+- [x] **8.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
   - _DoD: Dokumen up-to-date_ ✓ (SPEC.md rewritten for Next.js, README.md updated, TASKS.md current)
