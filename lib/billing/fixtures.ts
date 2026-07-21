@@ -96,7 +96,7 @@ function payment(
     safeReference: id,
     createdAt: "2030-01-15T10:00:00.000Z",
     paidAt: state === "paid" ? "2030-01-15T10:05:00.000Z" : null,
-    provider: "ipaymu",
+    provider: "duitku",
     expiresAt: "2030-01-15T10:30:00.000Z",
     redirectUrl: state === "pending" ? "https://example.test/pay/PAY-TEST-001" : null,
     instructions: ["Buka halaman pembayaran", "Selesaikan pembayaran sebelum batas waktu"],
