@@ -13,8 +13,8 @@ const quoteRoute = read("app/api/quotes/route.ts");
 const purchaseRoute = read("app/api/purchases/route.ts");
 const statusRoute = read("app/api/purchases/[purchaseId]/route.ts");
 const cancelRoute = read("app/api/payments/[paymentId]/cancel/route.ts");
-const webhookRoute = read("app/api/webhooks/ipaymu/route.ts");
-const signatureSource = read("lib/billing/providers/ipaymu-signature.ts");
+const webhookRoute = read("app/api/webhooks/duitku/route.ts");
+const signatureSource = read("lib/billing/providers/duitku-signature.ts");
 const purchaseFunctionsSql = read(
   "supabase/migrations/202607160003_billing_purchase_functions.sql",
 );
@@ -180,7 +180,7 @@ assert.equal(
   "the webhook route must read the raw body exactly once",
 );
 assert.doesNotMatch(webhookRoute, /request\.json\(\)|JSON\.parse/);
-assert.match(webhookRoute, /processIpaymuCallback\(rawBody, request\.headers\)/);
+assert.match(webhookRoute, /processDuitkuCallback\(rawBody, request\.headers\)/);
 assert.match(webhookRoute, /\{ status: "ok" \}[\s\S]*status: 200/);
 assert.match(webhookRoute, /PROVIDER_RESPONSE_INVALID[\s\S]*status: 400/);
 assert.match(
@@ -190,7 +190,7 @@ assert.match(
 assert.doesNotMatch(webhookRoute, /console\.|providerReference|eventReference|verified\.raw/);
 
 const callbackService = paymentsSource.match(
-  /export async function processIpaymuCallback[\s\S]*?\n}/,
+  /export async function processDuitkuCallback[\s\S]*?\n}/,
 )?.[0] ?? "";
 assert.ok(callbackService, "missing verified callback service");
 const enabledGuard = callbackService.indexOf('BILLING_PAYMENT_PROVIDER_ENABLED !== "true"');
@@ -206,9 +206,7 @@ assert.ok(
   "disabled callback must return before database mutation",
 );
 assert.match(callbackService, /verifyCallback\(\{ rawBody, headers \}\)/);
-assert.match(callbackService, /10 \* 60 \* 1000/);
-assert.match(callbackService, /2 \* 60 \* 1000/);
-assert.match(callbackService, /p_provider: "ipaymu"/);
+assert.match(callbackService, /p_provider: "duitku"/);
 assert.match(callbackService, /p_event_key: verified\.eventReference/);
 assert.match(callbackService, /p_provider_reference: verified\.providerReference/);
 assert.match(callbackService, /p_event_type: verified\.state/);
@@ -222,10 +220,9 @@ for (const acknowledged of ["processed", "duplicate", "amount_mismatch", "ignore
 }
 assert.doesNotMatch(callbackService, /console\.|JSON\.parse|error\.message/);
 
-assert.match(signatureSource, /readRequiredHeader\(input\.headers, "X-Signature"\)/);
-assert.match(signatureSource, /readRequiredHeader\(input\.headers, "X-External-ID"\)/);
-assert.match(signatureSource, /readRequiredHeader\(input\.headers, "X-Timestamp"\)/);
-assert.match(signatureSource, /JSON\.parse\(input\.rawBody\)/);
+assert.match(signatureSource, /createDuitkuInquirySignature/);
+assert.match(signatureSource, /createDuitkuStatusSignature/);
+assert.match(signatureSource, /verifyDuitkuCallback/);
 assert.match(signatureSource, /timingSafeEqual/);
 
 console.log("billing route contract valid");
