@@ -47,7 +47,7 @@ interface PaymentRow {
 
 function toPaymentStatus(row: PaymentRow): PaymentStatusView {
   if (
-    row.provider !== "ipaymu"
+    row.provider !== "ipaymu" && row.provider !== "duitku"
     || row.currency !== "IDR"
     || !Array.isArray(row.instructions)
     || !row.instructions.every((item) => typeof item === "string")
@@ -58,7 +58,7 @@ function toPaymentStatus(row: PaymentRow): PaymentStatusView {
   return {
     id: row.id,
     purchaseId: row.purchase_id,
-    provider: "ipaymu",
+    provider: row.provider as "ipaymu" | "duitku",
     packageName: "",
     method: row.method,
     state: row.state,

@@ -68,7 +68,7 @@ export interface PurchaseSummary {
 
 export interface PaymentStatusView extends LatestPaymentSummary {
   purchaseId: string;
-  provider: "ipaymu";
+  provider: "ipaymu" | "duitku";
   expiresAt: string | null;
   redirectUrl: string | null;
   instructions: string[];
