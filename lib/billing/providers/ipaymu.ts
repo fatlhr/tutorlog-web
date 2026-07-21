@@ -138,10 +138,12 @@ class IpaymuProvider implements PaymentProvider {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getPaymentStatus(_reference: string): Promise<VerifiedProviderEvent> {
     throw providerNotReady();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async cancelPayment(_reference: string): Promise<{ accepted: boolean }> {
     throw providerNotReady();
   }

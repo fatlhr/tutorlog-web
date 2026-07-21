@@ -292,7 +292,6 @@ export function TextField({
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
   "aria-controls": ariaControls,
-  "aria-expanded": ariaExpanded,
   "data-analytics-id": analyticsId,
 }: TextFieldProps) {
   const field = useFieldControl(id, ariaDescribedBy);
@@ -316,7 +315,6 @@ export function TextField({
       aria-labelledby={ariaLabelledBy}
       aria-describedby={field.describedBy}
       aria-controls={ariaControls}
-      aria-expanded={ariaExpanded}
       aria-invalid={field.invalid || undefined}
       data-analytics-id={analyticsId}
     />
@@ -343,7 +341,6 @@ export function DateField({
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
   "aria-controls": ariaControls,
-  "aria-expanded": ariaExpanded,
   "data-analytics-id": analyticsId,
 }: DateFieldProps) {
   const field = useFieldControl(id, ariaDescribedBy);
@@ -365,7 +362,6 @@ export function DateField({
       aria-labelledby={ariaLabelledBy}
       aria-describedby={field.describedBy}
       aria-controls={ariaControls}
-      aria-expanded={ariaExpanded}
       aria-invalid={field.invalid || undefined}
       data-analytics-id={analyticsId}
     />
@@ -388,7 +384,6 @@ export function Textarea({
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
   "aria-controls": ariaControls,
-  "aria-expanded": ariaExpanded,
   "data-analytics-id": analyticsId,
 }: TextareaProps) {
   const field = useFieldControl(id, ariaDescribedBy);
@@ -407,7 +402,6 @@ export function Textarea({
       aria-labelledby={ariaLabelledBy}
       aria-describedby={field.describedBy}
       aria-controls={ariaControls}
-      aria-expanded={ariaExpanded}
       aria-invalid={field.invalid || undefined}
       data-analytics-id={analyticsId}
     />

@@ -228,6 +228,7 @@ class DuitkuProvider implements PaymentProvider {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async cancelPayment(_reference: string): Promise<{ accepted: boolean }> {
     return { accepted: true };
   }

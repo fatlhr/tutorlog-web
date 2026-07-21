@@ -383,7 +383,6 @@ export default function InvoicePage() {
     const access = document.querySelector<HTMLElement>(".app-shell-h")?.dataset.access;
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setAccessState(access === "plus-active" ? "plus_active" : access === "plus-expired" ? "plus_expired" : "free");
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setQuotaReady(true);
   }, []);
 

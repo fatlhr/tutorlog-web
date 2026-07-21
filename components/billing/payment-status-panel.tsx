@@ -91,8 +91,8 @@ export function PaymentStatusPanel({
   const [verificationWindowExpired, setVerificationWindowExpired] = useState(false);
   const pollTimerRef = useRef<number | null>(null);
   const pollIndexRef = useRef(0);
-  const verificationStartedAtRef = useRef(Date.now());
-  const lastCheckedAtRef = useRef(Date.now());
+  const verificationStartedAtRef = useRef(0);
+  const lastCheckedAtRef = useRef(0);
   const refreshRequestSequenceRef = useRef(0);
 
   const payment = purchase.payment;
@@ -113,12 +113,13 @@ export function PaymentStatusPanel({
         surface: "payment_status",
       });
     }
-  }, [payment?.id, payment?.state, purchase.packageCode]);
+  }, [payment, purchase.packageCode]);
 
   useEffect(() => {
     verificationStartedAtRef.current = Date.now();
+    lastCheckedAtRef.current = Date.now();
     pollIndexRef.current = 0;
-    setVerificationWindowExpired(false);
+    queueMicrotask(() => setVerificationWindowExpired(false));
   }, [payment?.id, isVerifying]);
 
   const refreshStatus = useCallback(async () => {
