@@ -196,8 +196,8 @@ export async function createOrResumePurchase(
       amount: reservation.baseAmount,
       method,
       customer: customerFromUser(user),
-      callbackUrl: process.env.IPAYMU_CALLBACK_URL ?? "",
-      returnUrl: process.env.IPAYMU_RETURN_URL ?? "",
+      callbackUrl: process.env.DUITKU_CALLBACK_URL ?? "",
+      returnUrl: process.env.DUITKU_RETURN_URL ?? "",
     });
     assertProviderResult(result, reservation);
   } catch (error) {
