@@ -130,33 +130,40 @@ Duitku mapping:
 - `input.purchaseId` -> `merchantOrderId` (prepend with `TL-` for TutorLog prefix)
 - `input.amount` -> `paymentAmount` (integer, no decimals)
 - `input.method` -> `paymentMethod` (map: `"qris"` -> `"SP"` ShopeePay QRIS, `"va"` -> `"BC"` BCA VA)
-- `input.customer.name` -> `customerVaName` + `customerDetail.firstName/lastName`
+- `input.customer.name` -> `customerVaName`
 - `input.customer.email` -> `email`
+- `input.customer.phone` -> `phoneNumber` when present
 - `input.callbackUrl` -> `callbackUrl`
 - `input.returnUrl` -> `returnUrl`
+- Static MVP product description -> `productDetails: "TutorLog Plus"`
 
 Response mapping:
 - `reference` -> `providerReference`
 - `statusCode === "00"` -> `state: "pending"`, else `state: "failed"`
 - `paymentUrl` -> `redirectUrl`
-- Duitku does not return `channelFee` in create response; use fee from `getPaymentMethod` or hardcode per method
-- `qrString` and `vaNumber` stored in provider-response summary for UI display
+- The current MVP charges users `channelFee: 0` for QRIS because TutorLog absorbs the 0.7% gateway fee.
+- `totalAmount` must equal `input.amount` for QRIS, matching the reserved customer-facing total.
+- `qrString` and `vaNumber` are not surfaced until sandbox verifies the exact response fields needed by the UI.
 
-### 4.2 `getPaymentStatus(reference)` -> `VerifiedProviderEvent`
+### 4.2 `getPaymentStatus(merchantOrderId)` -> `VerifiedProviderEvent`
 
 Duitku mapping:
-- Request: `merchantOrderId` = reference, `signature` = `HMAC_SHA256(merchantCode + merchantOrderId, apiKey)`
-- Response `statusCode`: `"00"` -> `paid`, `"01"` -> `pending`, `"02"` -> `canceled`
-- `fee` from response -> `channelFee`
+- Request: `merchantOrderId` = `TL-${purchaseId}`, `signature` = `HMAC_SHA256(merchantCode + merchantOrderId, apiKey)`
+- Response `reference` -> `providerReference`
+- Response `statusCode`: `"00"` -> `paid`, `"01"` -> `pending`, `"02"` -> `expired`
+- Response `amount` -> `amount`
+- Gateway fee remains raw provider data for now; normalized `channelFee` stays `0` while only absorbed-fee QRIS is enabled.
 
 ### 4.3 `verifyCallback(input)` -> `VerifiedProviderEvent`
 
 Duitku callback is `x-www-form-urlencoded`. Parse body fields:
 - `merchantOrderId` -> match to purchase
+- `merchantCode` -> must match configured merchant code
 - `resultCode`: `"00"` -> `paid`, `"01"` -> `failed`
 - `signature` -> verify: `HMAC_SHA256(merchantCode + amount + merchantOrderId, apiKey)`
 - `reference` -> `providerReference`
 - `amount` -> `amount`
+- Gateway `fee` stays in `raw`; normalized `channelFee` stays `0` while QRIS is absorbed.
 
 ### 4.4 `cancelPayment(reference)` -> `{ accepted: boolean }`
 
@@ -202,14 +209,15 @@ Variables to remove (after migration complete):
 
 | File | Change |
 |------|--------|
-| `lib/billing/providers/index.ts` | Conditional factory: Duitku or iPaymu based on config |
+| `lib/billing/providers/index.ts` | Duitku-only provider factory; old iPaymu rows remain display-readable |
 | `lib/billing/contracts.ts` | Widen `provider` literal from `"ipaymu"` to `"ipaymu" \| "duitku"` |
-| `lib/billing/server/payments.ts` | Accept `"duitku"` provider, update `toPaymentStatus()` and callback processing |
+| `lib/billing/server/payments.ts` | Accept `"duitku"` provider, update status polling, `toPaymentStatus()`, and callback processing |
 | `lib/billing/server/purchases.ts` | Read Duitku env vars for callback/return URLs |
 | `lib/billing/fixtures.ts` | Update fixture provider to `"duitku"` or keep generic |
-| `.env.local` | Add Duitku env vars |
+| `supabase/migrations/202607220001_duitku_provider_flow_fixes.sql` | Patch provider tag, inquiry claim metadata, and provider-event provider validation |
+| `.env.local` | Add Duitku env vars after merchant account exists |
 
-### 6.3 Removed files (after migration verified)
+### 6.3 Removed files
 
 | File | Reason |
 |------|--------|
@@ -223,6 +231,7 @@ Variables to remove (after migration complete):
 No schema changes. The `payments` table already stores `provider` as a string. The `provider_events` table stores raw payloads. The existing `process_billing_provider_event` RPC accepts `p_provider` as a parameter, so it works with any provider string.
 
 The only change is that new payments will have `provider = 'duitku'` instead of `provider = 'ipaymu'`.
+Historical `provider = 'ipaymu'` rows remain readable in app summaries, but new provider calls use Duitku only.
 
 ## 8. Callback IP whitelist
 
@@ -243,7 +252,7 @@ Port: 80 or 443. URL must be publicly accessible.
 | VA (Mandiri) | Rp4.000 | No (user pays) |
 | VA (others) | Rp1.500-3.000 | No (user pays) |
 
-The checkout displays channel fee before payment creation. QRIS fee is absorbed by TutorLog as per existing design.
+The checkout displays customer-facing channel fee before payment creation. QRIS fee is absorbed by TutorLog as per existing design, so the normalized checkout/payment `channelFee` remains `0` even if Duitku reports a gateway fee in provider payloads.
 
 ## 10. Verification strategy
 
@@ -268,8 +277,8 @@ The checkout displays channel fee before payment creation. QRIS fee is absorbed 
 
 This design is ready for implementation when:
 
+- Local contract checks cover signature generation, callback parsing, provider request shape, route wiring, and DB function flow.
 - Duitku sandbox account is registered and API keys are obtained.
-- Sandbox transaction creates successfully for both QRIS and VA.
-- Callback signature verification passes in sandbox.
-- The `PaymentProvider` interface accommodates Duitku without changes to UI, entitlement, or purchase domains.
-- Environment variables are documented and `.env.local` is updated.
+- Sandbox transaction creates successfully for the intended MVP method.
+- Callback signature verification passes against a real sandbox callback.
+- Environment variables are documented and `.env.local` is updated after account registration.

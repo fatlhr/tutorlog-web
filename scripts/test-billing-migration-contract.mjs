@@ -15,6 +15,10 @@ const webhookFunctionsSql = readFileSync(
   "supabase/migrations/202607160004_billing_webhook_functions.sql",
   "utf8",
 );
+const duitkuFlowFixesSql = readFileSync(
+  "supabase/migrations/202607220001_duitku_provider_flow_fixes.sql",
+  "utf8",
+);
 const adminSource = readFileSync("lib/supabase/admin.ts", "utf8");
 const accessSource = readFileSync("lib/billing/server/access.ts", "utf8");
 const exportsSource = readFileSync("lib/billing/server/exports.ts", "utf8");
@@ -370,9 +374,11 @@ for (const column of [
 }
 
 function taskI5Function(name) {
-  const functionSql = purchaseFunctionsSql.match(
+  const functionSql = (duitkuFlowFixesSql.match(
+    new RegExp(`create or replace function public\\.${name}\\b[\\s\\S]*?\\n\\$\\$;`, "i"),
+  ) ?? purchaseFunctionsSql.match(
     new RegExp(`create (?:or replace )?function public\\.${name}\\b[\\s\\S]*?\\n\\$\\$;`, "i"),
-  )?.[0] ?? "";
+  ))?.[0] ?? "";
   assert.ok(functionSql, `missing Task I5 function: ${name}`);
   assert.match(functionSql, /security definer/i);
   assert.match(functionSql, /set search_path = ''/i);
@@ -403,6 +409,11 @@ assert.match(reservePurchaseFunction, /order by payment\.created_at desc/i);
 assert.match(reservePurchaseFunction, /for update/i);
 assert.match(reservePurchaseFunction, /insert into public\.billing_purchases/i);
 assert.match(reservePurchaseFunction, /insert into public\.billing_payments/i);
+assert.match(
+  reservePurchaseFunction,
+  /insert into public\.billing_payments[\s\S]*'duitku'/i,
+  "new provider-backed payment attempts must be tagged as duitku",
+);
 assert.match(
   reservePurchaseFunction,
   /insert into public\.billing_payments[\s\S]*verification_deadline[\s\S]*now\(\) \+ interval '2 minutes'/i,
@@ -468,6 +479,9 @@ assert.match(
 );
 assert.match(claimInquiryFunction, /for update/i);
 assert.match(claimInquiryFunction, /provider_last_checked_at = now\(\)/i);
+assert.match(claimInquiryFunction, /payment\.provider/i);
+assert.match(claimInquiryFunction, /'provider', v_payment\.provider/i);
+assert.match(claimInquiryFunction, /'purchase_id', v_payment\.purchase_id/i);
 
 const supersedePaymentFunction = taskI5Function("supersede_billing_payment");
 assert.match(supersedePaymentFunction, /payment\.user_id = p_user_id/i);
@@ -497,13 +511,15 @@ for (const signature of [
 
 assert.doesNotMatch(purchaseFunctionsSql, /service_role_key|ipaymu_api_key/i);
 
-const processProviderEventFunction = webhookFunctionsSql.match(
+const processProviderEventFunction = (duitkuFlowFixesSql.match(
+  /create or replace function public\.process_billing_provider_event[\s\S]*?\n\$\$;/i,
+) ?? webhookFunctionsSql.match(
   /create (?:or replace )?function public\.process_billing_provider_event[\s\S]*?\n\$\$;/i,
-)?.[0] ?? "";
+))?.[0] ?? "";
 assert.ok(processProviderEventFunction, "missing provider event transaction");
 assert.match(processProviderEventFunction, /security definer/i);
 assert.match(processProviderEventFunction, /set search_path = ''/i);
-assert.match(processProviderEventFunction, /p_provider <> 'ipaymu'/i);
+assert.match(processProviderEventFunction, /p_provider not in \('ipaymu', 'duitku'\)/i);
 assert.match(processProviderEventFunction, /p_event_type not in \('pending', 'paid', 'expired', 'failed', 'canceled'\)/i);
 assert.match(processProviderEventFunction, /jsonb_typeof\(p_payload\) <> 'object'/i);
 

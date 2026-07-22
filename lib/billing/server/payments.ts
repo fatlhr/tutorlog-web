@@ -7,14 +7,19 @@ import type {
   PurchaseSummary,
 } from "@/lib/billing/contracts";
 import { BillingError } from "@/lib/billing/errors";
-import { createPaymentProvider } from "@/lib/billing/providers";
+import { createPaymentProvider, type VerifiedProviderEvent } from "@/lib/billing/providers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { assertPaymentProviderEnabled } from "./catalog";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+type ProviderName = "ipaymu" | "duitku";
 
 export function isUuid(value: unknown): value is string {
   return typeof value === "string" && UUID_PATTERN.test(value);
+}
+
+function merchantOrderIdForPurchase(purchaseId: string): string {
+  return `TL-${purchaseId}`;
 }
 
 interface PurchaseRow {
@@ -172,11 +177,19 @@ export async function getPurchaseStatus(
   if (error) return purchase;
 
   const claim = (data ?? {}) as Record<string, unknown>;
-  if (claim.claimed !== true || typeof claim.provider_reference !== "string") return purchase;
+  if (
+    claim.claimed !== true
+    || typeof claim.provider_reference !== "string"
+    || claim.provider !== "duitku"
+  ) {
+    return purchase;
+  }
 
   try {
     const provider = createPaymentProvider();
-    await provider.getPaymentStatus(claim.provider_reference);
+    const merchantOrderId = merchantOrderIdForPurchase(purchaseId);
+    const verified = await provider.getPaymentStatus(merchantOrderId);
+    await processProviderEvent("duitku", verified);
   } catch {
     return purchase;
   }
@@ -279,31 +292,13 @@ type ProviderEventOutcome =
   | "ignored"
   | "unknown_reference";
 
-export async function processIpaymuCallback(
-  rawBody: string,
-  headers: Headers,
-  now: Date = new Date(),
+async function processProviderEvent(
+  providerName: ProviderName,
+  verified: VerifiedProviderEvent,
 ): Promise<void> {
-  if (process.env.BILLING_PAYMENT_PROVIDER_ENABLED !== "true") {
-    throw new BillingError("PAYMENT_PROVIDER_NOT_READY", "Payment provider is not ready");
-  }
-
-  const provider = createPaymentProvider();
-  const verified = provider.verifyCallback({ rawBody, headers });
-  const occurredAt = Date.parse(verified.occurredAt);
-  const receivedAt = now.getTime();
-  if (
-    !Number.isFinite(occurredAt)
-    || !Number.isFinite(receivedAt)
-    || occurredAt < receivedAt - 10 * 60 * 1000
-    || occurredAt > receivedAt + 2 * 60 * 1000
-  ) {
-    throw new BillingError("PROVIDER_RESPONSE_INVALID", "Payment callback is invalid");
-  }
-
   const admin = createAdminClient();
   const { data, error } = await admin.rpc("process_billing_provider_event", {
-    p_provider: "ipaymu",
+    p_provider: providerName,
     p_event_key: verified.eventReference,
     p_provider_reference: verified.providerReference,
     p_event_type: verified.state,
@@ -336,28 +331,5 @@ export async function processDuitkuCallback(
 
   const provider = createPaymentProvider();
   const verified = provider.verifyCallback({ rawBody, headers });
-
-  const admin = createAdminClient();
-  const { data, error } = await admin.rpc("process_billing_provider_event", {
-    p_provider: "duitku",
-    p_event_key: verified.eventReference,
-    p_provider_reference: verified.providerReference,
-    p_event_type: verified.state,
-    p_amount: verified.amount,
-    p_channel_fee: verified.channelFee,
-    p_occurred_at: verified.occurredAt,
-    p_payload: verified.raw,
-  });
-  if (error) {
-    throw new BillingError("PROVIDER_UNAVAILABLE", "Payment callback is unavailable");
-  }
-
-  const result = (data ?? {}) as Record<string, unknown>;
-  const outcome = result.status as ProviderEventOutcome | undefined;
-  if (outcome === "unknown_reference") {
-    throw new BillingError("PROVIDER_UNAVAILABLE", "Payment callback is unavailable");
-  }
-  if (!["processed", "duplicate", "amount_mismatch", "ignored"].includes(outcome ?? "")) {
-    throw new BillingError("PROVIDER_UNAVAILABLE", "Payment callback is unavailable");
-  }
+  await processProviderEvent("duitku", verified);
 }

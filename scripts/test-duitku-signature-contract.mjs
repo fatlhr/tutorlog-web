@@ -119,6 +119,7 @@ assert.notEqual(
 
 // === Test callback verification ===
 const callbackBody = new URLSearchParams({
+  merchantCode,
   merchantOrderId,
   resultCode: "00",
   reference: "DXXXXCX80TZJ85Q70QCI",
@@ -141,6 +142,7 @@ assert.deepEqual(verified, {
   channelFee: 0,
   occurredAt: verified.occurredAt,
   raw: {
+    merchantCode,
     merchantOrderId,
     resultCode: "00",
     reference: "DXXXXCX80TZJ85Q70QCI",
@@ -160,6 +162,7 @@ for (const [resultCode, expectedState] of [
   ["02", "canceled"],
 ]) {
   const body = new URLSearchParams({
+    merchantCode,
     merchantOrderId,
     resultCode,
     reference: "DXXXXCX80TZJ85Q70QCI",
@@ -191,6 +194,7 @@ function assertInvalidCallback(rawBody) {
 
 // Tampered signature
 const tamperedBody = new URLSearchParams({
+  merchantCode,
   merchantOrderId,
   resultCode: "00",
   reference: "DXXXXCX80TZJ85Q70QCI",
@@ -202,6 +206,7 @@ assertInvalidCallback(tamperedBody);
 
 // Wrong merchant code
 const wrongMerchantBody = new URLSearchParams({
+  merchantCode,
   merchantOrderId,
   resultCode: "00",
   reference: "DXXXXCX80TZJ85Q70QCI",
@@ -223,6 +228,7 @@ assertInvalidCallback(new URLSearchParams({ merchantOrderId, resultCode: "00" })
 assertInvalidCallback(new URLSearchParams({ resultCode: "00", reference: "ref", amount, fee: "0" }).toString());
 assertInvalidCallback(new URLSearchParams({ merchantOrderId, reference: "ref", amount, fee: "0" }).toString());
 assertInvalidCallback(new URLSearchParams({ merchantOrderId, resultCode: "00", reference: "ref", fee: "0" }).toString());
+assertInvalidCallback(new URLSearchParams({ merchantOrderId, resultCode: "00", reference: "ref", amount, fee: "0", signature: callbackSig }).toString());
 
 // Invalid signature format (not hex)
 assertInvalidCallback(new URLSearchParams({
@@ -236,6 +242,7 @@ assertInvalidCallback(new URLSearchParams({
 
 // Invalid resultCode
 const invalidResultBody = new URLSearchParams({
+  merchantCode,
   merchantOrderId,
   resultCode: "99",
   reference: "DXXXXCX80TZJ85Q70QCI",
@@ -249,6 +256,21 @@ const invalidResultBody = new URLSearchParams({
   ),
 }).toString();
 assertInvalidCallback(invalidResultBody);
+
+const absorbedFeeBody = new URLSearchParams({
+  merchantCode,
+  merchantOrderId,
+  resultCode: "00",
+  reference: "DXXXXCX80TZJ85Q70QCI",
+  amount,
+  fee: "133",
+  signature: callbackSig,
+}).toString();
+assert.equal(
+  signature.verifyDuitkuCallback({ rawBody: absorbedFeeBody, merchantCode, apiKey }).channelFee,
+  0,
+  "Duitku gateway fee must not become a customer channel fee while QRIS is absorbed",
+);
 
 // Malformed body
 assertInvalidCallback("{malformed");

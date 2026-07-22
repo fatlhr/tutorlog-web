@@ -22,7 +22,7 @@
 - Preserve protected-app tokens and primitives. Checkout and status use product UI, not landing-page composition.
 - `/harga` stays public. `/checkout` and `/pembayaran/<purchase-id>` require authentication.
 - Plus 12 Bulan is featured. Plus Selamanya has no scarcity counter, buyer cap, or time limit.
-- UI never hardcodes provider fees, derives entitlement expiry, trusts a return query, or imports iPaymu types.
+- UI never hardcodes provider fees, derives entitlement expiry, trusts a return query, or imports provider-specific types.
 - Paywall dialogs open only after locked actions. Dashboard upgrade messaging stays passive.
 - Mobile code is outside this repository. This plan changes only the documented web destination contract.
 - Legal copy waits for verified business identity, support, provider, and refund evidence.

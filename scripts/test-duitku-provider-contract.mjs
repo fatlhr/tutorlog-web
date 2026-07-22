@@ -27,6 +27,9 @@ assert.match(providerSource, /DUITKU_RETURN_URL/);
 // API endpoints
 assert.match(providerSource, /\/webapi\/api\/merchant\/v2\/inquiry/);
 assert.match(providerSource, /\/webapi\/api\/merchant\/transactionStatus/);
+assert.match(providerSource, /productDetails/);
+assert.match(providerSource, /phoneNumber/);
+assert.doesNotMatch(providerSource, /customerPhone/);
 
 // Signature usage
 assert.match(providerSource, /createDuitkuInquirySignature/);
@@ -39,6 +42,15 @@ assert.match(providerSource, /va.*BC|BC.*va/);
 
 // MerchantOrderId prefix
 assert.match(providerSource, /TL-/);
+assert.match(providerSource, /async getPaymentStatus\(merchantOrderId: string\)/);
+assert.match(providerSource, /merchantOrderId,\s*signature/);
+assert.doesNotMatch(providerSource, /merchantOrderId: reference/);
+
+// QRIS provider fee is absorbed by TutorLog in the current MVP contract, so
+// ProviderPaymentResult must match the reserved customer-facing total.
+assert.doesNotMatch(providerSource, /Math\.round\(input\.amount \* 0\.007\)/);
+assert.match(providerSource, /channelFee: 0/);
+assert.match(providerSource, /totalAmount: input\.amount/);
 
 // Export
 assert.match(providerSource, /export function createPaymentProvider/);

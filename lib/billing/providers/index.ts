@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createPaymentProvider as createDuitkuProvider } from "./duitku";
 import type { PaymentProvider } from "./provider";
 
 export type {
@@ -10,16 +11,5 @@ export type {
 } from "./provider";
 
 export function createPaymentProvider(): PaymentProvider {
-  if (process.env.DUITKU_MERCHANT_CODE) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { createPaymentProvider: createDuitkuProvider } = require("./duitku") as {
-      createPaymentProvider: () => PaymentProvider;
-    };
-    return createDuitkuProvider();
-  }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createPaymentProvider: createIpaymuProvider } = require("./ipaymu") as {
-    createPaymentProvider: () => PaymentProvider;
-  };
-  return createIpaymuProvider();
+  return createDuitkuProvider();
 }

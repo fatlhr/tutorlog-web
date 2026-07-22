@@ -15,7 +15,7 @@
 - Database `provider` column stores `"duitku"` for new payments.
 - Existing `"ipaymu"` rows remain valid (historical).
 - `BILLING_PAYMENT_PROVIDER_ENABLED` remains the master gate.
-- Sandbox testing is required before production credentials.
+- Sandbox testing is required before production credentials. As of 2026-07-22, merchant account credentials are not available, so only local code-contract checks can run.
 - Callback URL changes require webhook route update.
 
 ---
@@ -27,7 +27,7 @@
 
 **Purpose:** HMAC-SHA256 signing for Duitku API requests and callback verification.
 
-- [ ] **Step 1: Implement request signing**
+- [x] **Step 1: Implement request signing**
 
 ```ts
 // Signature formulas (all output hex lowercase):
@@ -36,18 +36,18 @@
 // Callback verify: HMAC_SHA256(merchantCode + amount + merchantOrderId, apiKey)
 ```
 
-- [ ] **Step 2: Implement callback verification**
+- [x] **Step 2: Implement callback verification**
 
 Parse `x-www-form-urlencoded` body, extract `signature` field, compute expected signature, constant-time compare.
 
-- [ ] **Step 3: Implement state mapping**
+- [x] **Step 3: Implement state mapping**
 
 Map Duitku `statusCode`/`resultCode` to normalized states:
 - `"00"` -> `"paid"`
 - `"01"` -> `"pending"` (inquiry) or `"failed"` (callback)
-- `"02"` -> `"canceled"`
+- `"02"` -> `"expired"` for status inquiry. Callback currently accepts `"02"` as `"canceled"` only for defensive compatibility.
 
-- [ ] **Step 4: Write signature contract test**
+- [x] **Step 4: Write signature contract test**
 
 Add to `scripts/test-duitku-signature-contract.mjs`:
 - Known-input signature generation.
@@ -63,32 +63,33 @@ Add to `scripts/test-duitku-signature-contract.mjs`:
 
 **Purpose:** Implement `PaymentProvider` interface for Duitku.
 
-- [ ] **Step 1: Implement `createPayment()`**
+- [x] **Step 1: Implement `createPayment()`**
 
 Map `CreateProviderPaymentInput` to Duitku inquiry request:
 - `purchaseId` -> `merchantOrderId` (with `TL-` prefix)
 - `amount` -> `paymentAmount`
 - `method` -> `paymentMethod` (`"qris"` -> `"SP"`, `"va"` -> `"BC"`)
-- Build `customerDetail`, `itemDetails` (single item: "TutorLog Plus")
+- Send `productDetails: "TutorLog Plus"`
 - Sign with HMAC-SHA256
 - POST to `${DUITKU_BASE_URL}/webapi/api/merchant/v2/inquiry`
 - Map response to `ProviderPaymentResult`
-- Handle `qrString` and `vaNumber` in provider-response summary
+- Keep QRIS customer-facing `channelFee` at `0` because TutorLog absorbs the gateway fee.
+- Do not surface `qrString` or `vaNumber` until sandbox confirms the exact response contract needed by UI.
 
-- [ ] **Step 2: Implement `getPaymentStatus()`**
+- [x] **Step 2: Implement `getPaymentStatus()`**
 
-Map reference to Duitku transaction status request:
-- `merchantOrderId` = reference (strip `TL-` prefix if stored that way)
+Map TutorLog purchase ID to Duitku transaction status request:
+- `merchantOrderId` = `TL-${purchaseId}`
 - Sign with `HMAC_SHA256(merchantCode + merchantOrderId, apiKey)`
 - POST to `${DUITKU_BASE_URL}/webapi/api/merchant/transactionStatus`
 - Map `statusCode` to normalized state
-- Return `fee` as `channelFee`
+- Keep normalized `channelFee` at `0` while only absorbed-fee QRIS is enabled.
 
-- [ ] **Step 3: Implement `cancelPayment()`**
+- [x] **Step 3: Implement `cancelPayment()`**
 
 Duitku has no direct cancel API. Return `{ accepted: true }` and let transaction expire naturally.
 
-- [ ] **Step 4: Implement `verifyCallback()`**
+- [x] **Step 4: Implement `verifyCallback()`**
 
 Parse `x-www-form-urlencoded` body:
 - Extract all callback fields
@@ -96,7 +97,7 @@ Parse `x-www-form-urlencoded` body:
 - Map `resultCode` to normalized state
 - Return `VerifiedProviderEvent` with full raw payload
 
-- [ ] **Step 5: Implement `createPaymentProvider()` factory**
+- [x] **Step 5: Implement `createPaymentProvider()` factory**
 
 Read env vars: `DUITKU_MERCHANT_CODE`, `DUITKU_API_KEY`, `DUITKU_BASE_URL`, `DUITKU_CALLBACK_URL`, `DUITKU_RETURN_URL`. Return `DuitkuProvider` instance.
 
@@ -109,7 +110,7 @@ Read env vars: `DUITKU_MERCHANT_CODE`, `DUITKU_API_KEY`, `DUITKU_BASE_URL`, `DUI
 
 **Purpose:** Receive Duitku callback POST and process payment event.
 
-- [ ] **Step 1: Implement POST handler**
+- [x] **Step 1: Implement POST handler**
 
 ```ts
 export async function POST(request: Request) {
@@ -120,13 +121,13 @@ export async function POST(request: Request) {
 }
 ```
 
-- [ ] **Step 2: Implement `processDuitkuCallback()` in `payments.ts`**
+- [x] **Step 2: Implement `processDuitkuCallback()` in `payments.ts`**
 
-Similar to existing `processIpaymuCallback()`:
+Current Duitku path:
 - Check `BILLING_PAYMENT_PROVIDER_ENABLED`
 - Call `provider.verifyCallback()`
-- Validate event timestamp (within -10min to +2min)
-- Call Supabase RPC `process_billing_provider_event` with `p_provider: "duitku"`
+- Call shared provider-event processor with `p_provider: "duitku"`
+- Timestamp freshness is not enforced for Duitku callback because Duitku callback payload does not provide a signed timestamp.
 
 ---
 
@@ -136,22 +137,18 @@ Similar to existing `processIpaymuCallback()`:
 - Modify: `lib/billing/providers/index.ts`
 - Modify: `lib/billing/contracts.ts`
 
-- [ ] **Step 1: Update provider factory**
+- [x] **Step 1: Update provider factory**
 
-`lib/billing/providers/index.ts`:
+`lib/billing/providers/index.ts` is Duitku-only:
 ```ts
 import { createPaymentProvider as createDuitkuProvider } from "./duitku";
-import { createPaymentProvider as createIpaymuProvider } from "./ipaymu";
 
 export function createPaymentProvider() {
-  if (process.env.DUITKU_MERCHANT_CODE) {
-    return createDuitkuProvider();
-  }
-  return createIpaymuProvider();
+  return createDuitkuProvider();
 }
 ```
 
-- [ ] **Step 2: Widen provider type in contracts**
+- [x] **Step 2: Widen provider type in contracts**
 
 `lib/billing/contracts.ts`:
 Change `provider: "ipaymu"` to `provider: "ipaymu" | "duitku"` in `PaymentStatusView`.
@@ -164,17 +161,17 @@ Change `provider: "ipaymu"` to `provider: "ipaymu" | "duitku"` in `PaymentStatus
 - Modify: `lib/billing/server/payments.ts`
 - Modify: `lib/billing/server/purchases.ts`
 
-- [ ] **Step 1: Accept `"duitku"` provider in payment status mapping**
+- [x] **Step 1: Accept `"duitku"` provider in payment status mapping**
 
 In `toPaymentStatus()`, accept both `"ipaymu"` and `"duitku"` as valid provider values.
 
-- [ ] **Step 2: Update callback URL sources**
+- [x] **Step 2: Update callback URL sources**
 
-In `purchases.ts`, read `DUITKU_CALLBACK_URL` and `DUITKU_RETURN_URL` with fallback to iPaymu vars.
+In `purchases.ts`, read `DUITKU_CALLBACK_URL` and `DUITKU_RETURN_URL`.
 
-- [ ] **Step 3: Add `processDuitkuCallback()` function**
+- [x] **Step 3: Add `processDuitkuCallback()` function**
 
-Similar to `processIpaymuCallback()` but with Duitku-specific verification and `p_provider: "duitku"`.
+Use Duitku-specific verification and `p_provider: "duitku"`.
 
 ---
 
@@ -224,9 +221,9 @@ Execute with real Duitku sandbox credentials. Document results.
 ### Task 8: Cleanup iPaymu references
 
 **Files:**
-- Modify: Remove or archive iPaymu-specific files (after Duitku is verified in sandbox)
+- Modify: Remove iPaymu-specific source files; keep local env cleanup pending until user-owned secrets are reviewed.
 
-- [ ] **Step 1: Remove iPaymu provider files** (post-verification)
+- [x] **Step 1: Remove iPaymu provider files**
 
 Files to remove:
 - `lib/billing/providers/ipaymu.ts`
@@ -236,9 +233,9 @@ Files to remove:
 
 - [ ] **Step 2: Remove iPaymu env vars**
 
-Clean up `.env.local` and any docs referencing iPaymu env vars.
+Clean up local env only after confirming there are no user-owned secrets to preserve.
 
-- [ ] **Step 3: Update design docs**
+- [x] **Step 3: Update design docs**
 
 Mark iPaymu as deprecated in `2026-07-16-pricing-paywall-payment-design.md`.
 

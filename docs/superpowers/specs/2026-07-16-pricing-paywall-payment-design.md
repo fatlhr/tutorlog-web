@@ -14,7 +14,7 @@
 
 This document defines the pricing, checkout, payment, entitlement, paywall, and mobile compatibility design for TutorLog Plus.
 
-The design replaces the current hardcoded Lynk purchase flow with a TutorLog-owned purchase and entitlement domain. iPaymu is the first payment provider, but provider-specific objects must not leak into UI components, product rules, or mobile access contracts.
+The design replaces the current hardcoded Lynk purchase flow with a TutorLog-owned purchase and entitlement domain. Duitku is the current target payment provider, but provider-specific objects must not leak into UI components, product rules, or mobile access contracts.
 
 This document is a design contract only. It does not authorize implementation, tests, branch changes, commits, provider activation, database migration, or production rollout.
 
@@ -26,7 +26,7 @@ Authority order:
 2. `AGENTS.md`.
 3. Existing route, auth, invoice, recap, and export behavior unless explicitly changed here.
 4. Existing protected-app visual system and shared UI contracts.
-5. iPaymu's verified merchant and sandbox behavior.
+5. Duitku's verified merchant and sandbox behavior.
 
 This design changes:
 
@@ -123,8 +123,8 @@ interface PaymentProvider {
 
 Rules:
 
-- UI code does not import iPaymu types.
-- Database product codes do not use iPaymu identifiers.
+- UI code does not import provider-specific types.
+- Database product codes do not use provider identifiers.
 - Provider statuses are normalized before reaching the payment domain.
 - Raw provider responses remain private server data.
 - A future provider can be added without rewriting pricing, paywall, entitlement, or mobile contracts.
@@ -506,7 +506,7 @@ LatestPaymentSummary
 ExportAuthorizationResult
 ```
 
-The contract must not expose iPaymu response shapes.
+The contract must not expose provider response shapes.
 
 ### 13.2 Integration/Data workstream
 
@@ -559,7 +559,7 @@ authorizeExport(feature)
 
 The UI must not:
 
-- Call iPaymu directly.
+- Call Duitku or any payment provider directly.
 - Construct provider signatures.
 - Derive paid status from a return URL.
 - Calculate entitlement expiry.
@@ -591,7 +591,7 @@ The Integration workstream must not:
 
 ### Phase 0: Merchant and contract proof
 
-- Confirm iPaymu business eligibility and production requirements.
+- Confirm Duitku business eligibility and production requirements.
 - Verify Redirect capabilities in sandbox.
 - Freeze package codes, DTOs, normalized states, and safe errors.
 - Create UI fixtures from the frozen contract.

@@ -301,8 +301,9 @@
 
 > **Ringkasan:** Phase 7 membangun seluruh sistem billing dari nol — database, API, UI, dan
 > payment gateway. Semua payment call sudah ada di codebase tapi di-gate oleh
-> `BILLING_PAYMENT_PROVIDER_ENABLED=false`. Duitku sandbox memerlukan IP whitelisting
-> untuk callbacks (production: `182.23.85.8`-`103.177.101.190`).
+> `BILLING_PAYMENT_PROVIDER_ENABLED=false`. Duitku sandbox/live belum diverifikasi karena
+> merchant account belum tersedia. Callback production nanti perlu IP whitelist
+> (`182.23.85.8`-`103.177.101.190`).
 >
 > Lihat `docs/superpowers/specs/2026-07-20-duitku-migration-design.md` untuk detail Duitku.
 > Lihat `docs/superpowers/specs/2026-07-16-pricing-paywall-payment-design.md` untuk design spec.
@@ -336,10 +337,10 @@
   - _Apa yang dilakukan:_ Buat fungsi SQL yang cek "apakah user ini boleh export PDF?" tanpa UI harus tahu logikanya
   - _Kenapa penting:_ Authorization logic di database, bukan di client — lebih aman dan konsisten
   - _DoD: Authorization functions live_ ✓ (commit `c2c1eca`, verified via API)
-- [x] **I4** iPaymu provider adapter — `lib/billing/providers/ipaymu.ts`, `ipaymu-signature.ts`
-  - _Apa yang dilakukan:_ Buat adapter iPaymu (placeholder, belum functional — throws `providerNotReady()`)
-  - _Kenapa penting:_ Provider interface punya implementasi awal, bisa di-swap ke Duitku nanti
-  - _DoD: Provider implements PaymentProvider interface_ ✓ (commit `aa7159f`)
+- [x] **I4** Provider adapter seam — `lib/billing/providers/provider.ts`
+  - _Apa yang dilakukan:_ Buat interface provider pembayaran yang dipakai oleh purchase, status, dan callback flow
+  - _Kenapa penting:_ Provider bisa diganti tanpa mengubah UI, entitlement, atau route contract
+  - _DoD: Provider seam exists and is used server-side_ ✓
 - [x] **I5** Billing purchase APIs — 6 route handlers + 6 RPC functions
   - _Apa yang dilakukan:_ Buat API endpoint untuk beli paket, cek status pembayaran, dan grant akses
   - _Kenapa penting:_ Frontend bisa berinteraksi dengan sistem billing
@@ -349,8 +350,10 @@
 - [x] **I6** Webhook processing — `process_billing_provider_event` + callback route
   - _Apa yang dilakukan:_ Buat webhook handler + RPC function untuk terima notifikasi dari payment gateway
   - _Kenapa penting:_ Server bisa terima notifikasi saat pembayaran berhasil/gagal (tanpa user harus refresh)
-  - `app/api/webhooks/ipaymu/route.ts` (to be replaced with Duitku)
-  - _DoD: Webhook processing live_ ✓ (commit `d3592d9`)
+  - Current route: `app/api/webhooks/duitku/route.ts`
+  - Current DB patch: `202607220001_duitku_provider_flow_fixes`
+  - _DoD: Webhook processing code-contract verified_ ✓
+  - _Belum:_ live callback dari Duitku sandbox/production belum bisa diuji sampai merchant account tersedia
 
 ### 7.2 UI/Product — DONE ✓
 
@@ -411,34 +414,37 @@
   - _Kenapa penting:_ Checkout button disabled dengan badge "Coming Soon" saat gateway belum aktif
   - _DoD: Checkout shows "Coming Soon" state_ ✓
 
-### 7.4 Duitku Provider Migration — ⬜ BELUM
+### 7.4 Duitku Provider Migration — CODE READY, SANDBOX BELUM
 
 > **Apa ini:** Ganti payment provider dari iPaymu (yang belum functional) ke Duitku. Duitku
 > sudah punya BI license, sandbox, dan API docs. QRIS fee 0.7%. Tidak ada cancel API —
 > rely on expiry. Callback format: `x-www-form-urlencoded` (bukan JSON).
 >
-> Dependency graph: D1 → D2 → D3 → D4 → D5 → D7 → D8 (D6独立, bisa kapan saja)
+> Dependency graph: D1 → D2 → D3 → D4 → D5 → D7. D6 tetap menunggu merchant account.
 
 - [x] **D1** Duitku signature module — `lib/billing/providers/duitku-signature.ts`
   - _Apa yang dilakukan:_ Buat module HMAC-SHA256 signing untuk Duitku API requests dan callback verification
   - _Kenapa penting:_ Duitku butuh signature di setiap request API — tanpa ini tidak bisa authenticate
-  - _DoD: Signature tests pass, cross-verified with openssl_ ✓ (commit `e884f2a`)
-- [ ] **D2** Duitku provider adapter — `lib/billing/providers/duitku.ts`
+  - _DoD: Signature contract test pass, cross-verified with openssl_ ✓
+- [x] **D2** Duitku provider adapter — `lib/billing/providers/duitku.ts`
   - _Apa yang dilakukan:_ Implement `PaymentProvider` interface untuk Duitku — `createPayment()`, `getPaymentStatus()`, `cancelPayment()`, `verifyCallback()`
   - _Kenapa penting:_ Provider bisa buat pembayaran, cek status, dan verifikasi callback dari Duitku
-  - _DoD: Adapter functional, signature verified_
-- [ ] **D3** Duitku webhook route — `app/api/webhooks/duitku/route.ts`
+  - _DoD: Adapter contract verified locally_ ✓
+  - _Belum:_ inquiry/status request belum dites ke Duitku sandbox
+- [x] **D3** Duitku webhook route — `app/api/webhooks/duitku/route.ts`
   - _Apa yang dilakukan:_ Buat POST handler untuk terima callback `x-www-form-urlencoded` dari Duitku, validasi signature, process callback
   - _Kenapa penting:_ Server bisa terima notifikasi pembayaran dari Duitku saat user bayar
-  - _DoD: Webhook route functional_
-- [ ] **D4** Update provider factory + contracts — `providers/index.ts`, `contracts.ts`
-  - _Apa yang dilakukan:_ Update provider factory — pilih Duitku atau iPaymu berdasarkan env var `DUITKU_MERCHANT_CODE`
-  - _Kenapa penting:_ Bisa switch provider tanpa ubah code lain — tinggal set env var
-  - _DoD: Provider selection functional_
-- [ ] **D5** Server payment processing updates — `server/payments.ts`, `server/purchases.ts`
-  - _Apa yang dilakukan:_ Tambah `processDuitkuCallback()`, update env var reads untuk Duitku
+  - _DoD: Webhook route code-contract verified_ ✓
+  - _Belum:_ endpoint publik dan callback IP whitelist belum dites
+- [x] **D4** Update provider factory + contracts — `providers/index.ts`, `contracts.ts`
+  - _Apa yang dilakukan:_ Provider factory sekarang Duitku-only; contract masih bisa membaca historical `"ipaymu"` rows
+  - _Kenapa penting:_ Flow baru tidak fallback diam-diam ke provider lama
+  - _DoD: Provider selection contract verified_ ✓
+- [x] **D5** Server payment processing updates — `server/payments.ts`, `server/purchases.ts`, `202607220001_duitku_provider_flow_fixes`
+  - _Apa yang dilakukan:_ Tambah `processDuitkuCallback()`, status inquiry memproses hasil provider event, dan DB function menandai payment baru sebagai `duitku`
   - _Kenapa penting:_ Payment processing support Duitku — callback bisa diproses dengan benar
-  - _DoD: Payment processing functional_
+  - _DoD: Route and migration contract verified locally_ ✓
+  - _Belum:_ sandbox event dari Duitku belum bisa diuji
 - [ ] **D6** Environment config — `.env.local`
   - _Apa yang dilakukan:_ Setup env vars: `DUITKU_MERCHANT_CODE`, `DUITKU_API_KEY`, `DUITKU_BASE_URL`, `DUITKU_CALLBACK_URL`, `DUITKU_RETURN_URL`
   - _Kenapa penting:_ App bisa connect ke Duitku API
@@ -447,10 +453,10 @@
   - _Apa yang dilakukan:_ Buat script test end-to-end: inquiry → redirect → callback → verification di Duitku sandbox
   - _Kenapa penting:_ Buktikan seluruh flow jalan di Duitku sandbox sebelum production
   - _DoD: Sandbox flow passes_
-- [ ] **D8** iPaymu cleanup — delete `ipaymu.ts`, `ipaymu-signature.ts`, legacy webhook route
+- [x] **D8** iPaymu source cleanup — delete `ipaymu.ts`, `ipaymu-signature.ts`, legacy webhook route
   - _Apa yang dilakukan:_ Hapus file iPaymu yang sudah tidak dipakai
   - _Kenapa penting:_ Tidak ada dead code, codebase bersih
-  - _DoD: iPaymu files removed, no dead code_
+  - _DoD: iPaymu provider files, signature contract, and legacy webhook route removed_ ✓
 
 ### 7.5 Post-MVP — ⬜ DEFERRED
 

@@ -132,7 +132,7 @@ assert.match(
 assert.match(paymentsSource, /\.eq\("user_id", userId\)/);
 assert.match(paymentsSource, /\.eq\("purchase_id", purchaseId\)/);
 assert.doesNotMatch(
-  paymentsSource.slice(0, paymentsSource.indexOf("export async function processIpaymuCallback")),
+  paymentsSource.slice(0, paymentsSource.indexOf("async function processProviderEvent")),
   /raw|payload|responseBody|providerError/i,
 );
 
@@ -194,31 +194,43 @@ const callbackService = paymentsSource.match(
 )?.[0] ?? "";
 assert.ok(callbackService, "missing verified callback service");
 const enabledGuard = callbackService.indexOf('BILLING_PAYMENT_PROVIDER_ENABLED !== "true"');
-const adminCreation = callbackService.indexOf("createAdminClient()");
-const processingRpc = callbackService.indexOf('rpc("process_billing_provider_event"');
 assert.ok(enabledGuard !== -1, "disabled callback must fail closed");
-assert.ok(
-  adminCreation !== -1 && enabledGuard < adminCreation,
-  "disabled callback must return before creating a database client",
-);
-assert.ok(
-  processingRpc !== -1 && enabledGuard < processingRpc,
-  "disabled callback must return before database mutation",
-);
+assert.doesNotMatch(callbackService, /createAdminClient\(\)|rpc\("process_billing_provider_event"/);
 assert.match(callbackService, /verifyCallback\(\{ rawBody, headers \}\)/);
-assert.match(callbackService, /p_provider: "duitku"/);
-assert.match(callbackService, /p_event_key: verified\.eventReference/);
-assert.match(callbackService, /p_provider_reference: verified\.providerReference/);
-assert.match(callbackService, /p_event_type: verified\.state/);
-assert.match(callbackService, /p_amount: verified\.amount/);
-assert.match(callbackService, /p_channel_fee: verified\.channelFee/);
-assert.match(callbackService, /p_occurred_at: verified\.occurredAt/);
-assert.match(callbackService, /p_payload: verified\.raw/);
-assert.match(callbackService, /unknown_reference[\s\S]*PROVIDER_UNAVAILABLE/);
+assert.match(callbackService, /processProviderEvent\("duitku", verified\)/);
+const eventProcessor = paymentsSource.match(
+  /async function processProviderEvent[\s\S]*?\n}\n\nexport async function processDuitkuCallback/,
+)?.[0] ?? "";
+assert.ok(eventProcessor, "missing shared provider event processor");
+assert.match(eventProcessor, /createAdminClient\(\)/);
+assert.match(eventProcessor, /rpc\("process_billing_provider_event"/);
+assert.match(eventProcessor, /p_provider: providerName/);
+assert.match(eventProcessor, /p_event_key: verified\.eventReference/);
+assert.match(eventProcessor, /p_provider_reference: verified\.providerReference/);
+assert.match(eventProcessor, /p_event_type: verified\.state/);
+assert.match(eventProcessor, /p_amount: verified\.amount/);
+assert.match(eventProcessor, /p_channel_fee: verified\.channelFee/);
+assert.match(eventProcessor, /p_occurred_at: verified\.occurredAt/);
+assert.match(eventProcessor, /p_payload: verified\.raw/);
+assert.match(eventProcessor, /unknown_reference[\s\S]*PROVIDER_UNAVAILABLE/);
 for (const acknowledged of ["processed", "duplicate", "amount_mismatch", "ignored"]) {
-  assert.ok(callbackService.includes(`"${acknowledged}"`), `missing callback outcome: ${acknowledged}`);
+  assert.ok(eventProcessor.includes(`"${acknowledged}"`), `missing callback outcome: ${acknowledged}`);
 }
-assert.doesNotMatch(callbackService, /console\.|JSON\.parse|error\.message/);
+assert.doesNotMatch(callbackService + eventProcessor, /console\.|JSON\.parse|error\.message/);
+
+const purchaseStatusService = paymentsSource.match(
+  /export async function getPurchaseStatus[\s\S]*?\n}/,
+)?.[0] ?? "";
+assert.ok(purchaseStatusService, "missing purchase status service");
+assert.match(purchaseStatusService, /provider\.getPaymentStatus\(merchantOrderId\)/);
+assert.doesNotMatch(
+  purchaseStatusService,
+  /await provider\.getPaymentStatus\([^)]*\);\s*} catch/,
+  "provider status inquiry result must be processed, not discarded",
+);
+assert.match(purchaseStatusService, /processProviderEvent\("duitku", verified\)/);
+assert.match(paymentsSource, /function merchantOrderIdForPurchase\(purchaseId: string\)/);
+assert.match(paymentsSource, /`TL-\$\{purchaseId\}`/);
 
 assert.match(signatureSource, /createDuitkuInquirySignature/);
 assert.match(signatureSource, /createDuitkuStatusSignature/);

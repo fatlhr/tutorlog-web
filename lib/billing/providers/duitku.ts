@@ -44,6 +44,16 @@ function providerResponseInvalid(): BillingError {
   return new BillingError("PROVIDER_RESPONSE_INVALID", "Payment provider response is invalid");
 }
 
+function asNonNegativeInteger(value: unknown): number {
+  if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) {
+    return value;
+  }
+  if (typeof value === "string" && /^(0|[1-9]\d*)$/.test(value)) {
+    return Number(value);
+  }
+  throw providerResponseInvalid();
+}
+
 function readEnabledConfig(): DuitkuProviderConfig {
   if (!(process.env.BILLING_PAYMENT_PROVIDER_ENABLED === "true")) {
     throw providerNotReady();
@@ -112,6 +122,7 @@ class DuitkuProvider implements PaymentProvider {
       merchantOrderId,
       paymentAmount: input.amount,
       paymentMethod,
+      productDetails: "TutorLog Plus",
       customerVaName: input.customer.name,
       email: input.customer.email,
       callbackUrl: this.config.callbackUrl,
@@ -119,7 +130,7 @@ class DuitkuProvider implements PaymentProvider {
       signature,
     };
     if (input.customer.phone) {
-      requestPayload.customerPhone = input.customer.phone;
+      requestPayload.phoneNumber = input.customer.phone;
     }
 
     try {
@@ -150,17 +161,12 @@ class DuitkuProvider implements PaymentProvider {
 
       const state = statusCode === "00" ? "pending" as const : "failed" as const;
 
-      let channelFee = 0;
-      if (input.method === "qris") {
-        channelFee = Math.round(input.amount * 0.007);
-      }
-
       return {
         providerReference: reference,
         state,
         redirectUrl: paymentUrl,
-        channelFee,
-        totalAmount: input.amount + channelFee,
+        channelFee: 0,
+        totalAmount: input.amount,
         expiresAt: null,
       };
     } catch (error) {
@@ -169,12 +175,12 @@ class DuitkuProvider implements PaymentProvider {
     }
   }
 
-  async getPaymentStatus(reference: string): Promise<VerifiedProviderEvent> {
+  async getPaymentStatus(merchantOrderId: string): Promise<VerifiedProviderEvent> {
     assertNetworkReady(this.config);
 
     const signature = createDuitkuStatusSignature(
       this.config.merchantCode,
-      reference,
+      merchantOrderId,
       this.config.apiKey,
     );
 
@@ -188,7 +194,7 @@ class DuitkuProvider implements PaymentProvider {
           },
           body: JSON.stringify({
             merchantCode: this.config.merchantCode,
-            merchantOrderId: reference,
+            merchantOrderId,
             signature,
           }),
           signal: AbortSignal.timeout(10000),
@@ -203,22 +209,22 @@ class DuitkuProvider implements PaymentProvider {
 
       const data = payload as Record<string, unknown>;
       const statusCode = typeof data.statusCode === "string" ? data.statusCode : "";
-      const providerRef = typeof data.reference === "string" ? data.reference : reference;
-      const amount = typeof data.amount === "string" ? Number(data.amount) : 0;
-      const fee = typeof data.fee === "string" ? Number(data.fee) : 0;
+      const providerRef = typeof data.reference === "string" ? data.reference : "";
+      const amount = asNonNegativeInteger(data.amount);
+      if (!providerRef) throw providerResponseInvalid();
 
       let state: VerifiedProviderEvent["state"];
       if (statusCode === "00") state = "paid";
       else if (statusCode === "01") state = "pending";
-      else if (statusCode === "02") state = "canceled";
+      else if (statusCode === "02") state = "expired";
       else state = "failed";
 
       return {
-        eventReference: reference,
+        eventReference: merchantOrderId,
         providerReference: providerRef,
         state,
         amount,
-        channelFee: fee,
+        channelFee: 0,
         occurredAt: new Date().toISOString(),
         raw: data,
       };

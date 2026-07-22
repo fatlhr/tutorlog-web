@@ -55,11 +55,7 @@ export function createDuitkuCallbackSignature(
 
 function parseFormUrlEncoded(body: string): Record<string, string> {
   const result: Record<string, string> = {};
-  for (const pair of body.split("&")) {
-    const eqIndex = pair.indexOf("=");
-    if (eqIndex === -1) continue;
-    const key = decodeURIComponent(pair.slice(0, eqIndex));
-    const value = decodeURIComponent(pair.slice(eqIndex + 1));
+  for (const [key, value] of new URLSearchParams(body)) {
     result[key] = value;
   }
   return result;
@@ -80,11 +76,13 @@ export function verifyDuitkuCallback(input: {
   try {
     const fields = parseFormUrlEncoded(input.rawBody);
 
+    const merchantCode = asString(fields.merchantCode);
     const merchantOrderId = asString(fields.merchantOrderId);
     const resultCode = asString(fields.resultCode);
     const signature = asString(fields.signature);
     const amount = asString(fields.amount);
     const reference = asString(fields.reference);
+    if (merchantCode !== input.merchantCode) throw invalidProviderData();
 
     const expectedSignature = createDuitkuCallbackSignature(
       input.merchantCode,
@@ -106,7 +104,7 @@ export function verifyDuitkuCallback(input: {
       providerReference: reference,
       state: callbackState(resultCode),
       amount: Number(amountValue),
-      channelFee: fields.fee !== undefined ? Number(asNonNegativeIntegerString(fields.fee)) : 0,
+      channelFee: 0,
       occurredAt: new Date().toISOString(),
       raw: Object.fromEntries(
         Object.entries(fields).filter(([key]) => key !== "signature"),
