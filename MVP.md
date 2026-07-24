@@ -189,6 +189,7 @@ TutorLog Web adalah web application untuk manajemen sesi les privat dan pembuata
 - [ ] Bulk invoice generation
 
 ### Priority 4 — Polish
+- [ ] Interactive landing product demo — alur HP tiga state dengan data statis terkurasi
 - [ ] Dark mode
 - [ ] PWA support (installable)
 - [ ] Offline mode (service worker)

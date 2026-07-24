@@ -502,3 +502,23 @@
 
 - [x] **8.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
   - _DoD: Dokumen up-to-date_ ✓ (SPEC.md rewritten for Next.js, README.md updated, TASKS.md current)
+
+---
+
+## Phase 9 — Post-MVP Landing Conversion — ⬜ DEFERRED
+
+> Mulai setelah MVP saat ini selesai diluncurkan dan landing baseline sudah stabil.
+> Phase ini tidak memblokir payment, deployment, atau launch MVP.
+
+- [ ] **9.1 Interactive product demo in landing hero**
+  - _Apa yang dilakukan:_ Ganti proof HP statis menjadi mini-demo inline yang stateful dengan alur `sesi hari ini → sesi tersimpan → rekap dan invoice siap`.
+  - _Interaction contract:_ Maksimal dua klik untuk mencapai hasil; semua control yang terlihat harus bekerja; primary CTA tetap menuju Google Play dan secondary CTA memfokuskan demo.
+  - _Data contract:_ Gunakan fixture public terkurasi yang sudah ada. Jangan memakai auth, Supabase, API, data user, iframe, atau sandbox aplikasi penuh.
+  - _Visual contract:_ Pertahankan warna, typography, dan playful editorial direction TutorLog. Ambil pola interaksi dari Blume tanpa menyalin visual brand atau membuat bezel/notch HP palsu.
+  - _Technical direction:_ React client component lokal, CSS Module, existing GSAP hanya jika motion membantu menjelaskan perubahan state, tanpa dependency baru.
+  - _Accessibility:_ Seluruh interaksi tersedia lewat keyboard, memiliki focus-visible, status perubahan diumumkan secara wajar, dan menghormati `prefers-reduced-motion`.
+  - _Responsive contract:_ Tidak ada horizontal scroll pada 320, 375, 414, 768, dan 1440 px; demo tetap dapat dipahami pada layar kecil.
+  - _Out of scope:_ Live app embedding, editable form lengkap, auth flow, data persistence, backend mutation, dan reproduksi tampilan Blume.
+  - _Estimated effort:_ 1,5–2,5 hari development termasuk focused contract test dan visual QA setelah test/QA diapprove.
+  - _Planning gate:_ Buat implementation plan baru saat Phase 9 diaktifkan agar mengikuti struktur landing, token, dan component ownership terbaru.
+  - _DoD:_ User dapat menyelesaikan demo dua klik dengan mouse atau keyboard, melihat hubungan sesi ke rekap/invoice, lalu memilih CTA Google Play tanpa dead control atau perubahan business logic.

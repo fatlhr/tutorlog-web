@@ -262,6 +262,7 @@ Ide untuk iterasi mendatang (v1.1+):
 - [ ] Bulk invoice generation
 
 ### Priority 4 — Polish
+- [ ] Interactive landing product demo — alur HP tiga state dengan data statis terkurasi
 - [ ] Dark mode
 - [ ] PWA support (installable)
 - [ ] Offline mode (service worker)
