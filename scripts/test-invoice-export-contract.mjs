@@ -41,6 +41,31 @@ assert.match(
   "Modern total hours must be larger than 11px table items",
 );
 assert.match(
+  modernTemplate,
+  /<div className="m-total-summary">[\s\S]*<div className="m-total-hours">[\s\S]*<div className="m-total-amount">/,
+  "Modern totals must use the approved hours-left and amount-right structure",
+);
+assert.doesNotMatch(
+  modernTemplate,
+  /m-total-badge/,
+  "Modern totals must not render the old pill badge",
+);
+assert.match(
+  invoiceCss,
+  /\.tpl-modern \.m-total-summary \{[^}]*padding-top: 14px;[^}]*border-top: 1px solid var\(--tw-divider\);[^}]*display: grid;[^}]*grid-template-columns: 1fr auto;[^}]*\}/,
+  "Modern totals must use a simple divider with hours on the left and amount on the right",
+);
+assert.match(
+  invoiceCss,
+  /\.tpl-modern \.m-total-amount \{[^}]*justify-items: end;[^}]*text-align: right;[^}]*\}[\s\S]*\.tpl-modern \.m-total-amount \.val \{[^}]*color: var\(--acc, #006C53\);/,
+  "Modern total amount must be right-aligned and use the selected accent color",
+);
+assert.doesNotMatch(
+  invoiceCss,
+  /\.tpl-modern \.m-total-(?:badge|amount) \{[^}]*(?:background: var\(--acc|border-radius: 999px)/,
+  "Modern total amount must not use a filled oval treatment",
+);
+assert.match(
   invoiceCss,
   /\.tpl-minimal \.mn-total-row \.hours \{[^}]*font-size: 13px;[^}]*\}[\s\S]*\.tpl-minimal \.mn-total-row \.hours strong \{[^}]*font-size: 15px;/,
   "Minimal total hours must be larger than 11px table items",
@@ -124,6 +149,16 @@ assert.match(
   page,
   /bankAccount\.split\(\/\\s\*\(\?:·\|-\)\\s\*\/,\s*2\)/,
   "Invoice payment parser must accept the separator shown by the Bank placeholder",
+);
+assert.match(
+  page,
+  /placeholder=\{getInvoiceBankOwnerPlaceholder\(tutorName\)\}/,
+  "Bank owner placeholder must follow the resolved tutor name",
+);
+assert.doesNotMatch(
+  page,
+  /Rina Novianti/,
+  "Invoice must not hard-code a tutor name in the bank owner placeholder",
 );
 assert.doesNotMatch(
   page,
@@ -295,7 +330,7 @@ assert.doesNotMatch(
 );
 assert.match(
   page,
-  /function getStudentRecipientName\(student: StudentOption\): string \{[\s\S]*student\.parentName\?\.trim\(\)[\s\S]*`Orang tua\/wali \$\{student\.name\}`[\s\S]*\}/,
+  /function getStudentRecipientName\(student: StudentOption\): string \{[\s\S]*student\.parentName\?\.trim\(\)[\s\S]*`Orang tua\/wali \$\{formatStudentDisplayName\(student\.name\)\}`[\s\S]*\}/,
   "Billing recipient defaults must prefer stored parent data and fall back to the selected student",
 );
 assert.match(
@@ -305,23 +340,28 @@ assert.match(
 );
 assert.match(
   page,
-  /const restoredDraftStudentNameRef = useRef<string \| null>\(null\);[\s\S]*const restoredDraftHasStudentAddressRef = useRef\(false\);/,
-  "Draft restoration must track student identity and explicit address presence separately",
+  /const restoredDraftStudentIdRef = useRef<string \| null>\(null\);[\s\S]*const restoredDraftStudentNameRef = useRef<string \| null>\(null\);[\s\S]*const restoredDraftHasStudentAddressRef = useRef\(false\);[\s\S]*const restoredDraftHasParentContactRef = useRef\(false\);/,
+  "Draft restoration must track student identity, address, and guardian contact separately",
 );
 assert.match(
   page,
-  /const shouldPreserveDraftStudentAddress =\s*restoredDraftStudentNameRef\.current === selectedStudent\.name &&\s*restoredDraftHasStudentAddressRef\.current;[\s\S]*setStudentAddress\(\(current\) =>\s*shouldPreserveDraftStudentAddress \? current : current \|\| selectedStudent\.address \|\| ""\s*\);/,
-  "Initial student hydration must preserve an explicitly present address only for the restored student",
+  /const isRestoredStudent =\s*restoredDraftStudentIdRef\.current === selectedStudent\.id \|\|[\s\S]*restoredDraftStudentNameRef\.current === selectedStudent\.name;[\s\S]*const shouldPreserveDraftStudentAddress =\s*isRestoredStudent && restoredDraftHasStudentAddressRef\.current;[\s\S]*setStudentAddress\(\(current\) =>\s*shouldPreserveDraftStudentAddress \? current : selectedStudent\.address \|\| ""\s*\);[\s\S]*setParentName\(\(current\) =>\s*isRestoredStudent && current\.trim\(\)\s*\? current\s*:\s*getStudentRecipientName\(selectedStudent\)\s*\);/,
+  "Initial student hydration must only preserve address and recipient data for the restored student",
 );
 assert.match(
   page,
-  /const handleStudentChange = \(name: string\) => \{\s*restoredDraftStudentNameRef\.current = null;\s*restoredDraftHasStudentAddressRef\.current = false;\s*setStudentName\(name\);/,
-  "Changing students must clear restored-address preservation markers",
+  /const handleStudentChange = \(studentId: string\) => \{\s*restoredDraftStudentIdRef\.current = null;\s*restoredDraftStudentNameRef\.current = null;\s*restoredDraftHasStudentAddressRef\.current = false;\s*restoredDraftHasParentContactRef\.current = false;\s*setSelectedStudentId\(studentId\);/,
+  "Changing students must clear restored recipient preservation markers",
 );
 assert.match(
   page,
-  /if \(typeof draft\.studentName === "string"\) \{\s*restoredDraftStudentNameRef\.current = draft\.studentName;\s*setStudentName\(draft\.studentName\);\s*\}[\s\S]*if \(typeof draft\.studentAddress === "string"\) \{\s*restoredDraftHasStudentAddressRef\.current = true;\s*setStudentAddress\(draft\.studentAddress\);\s*\}/,
-  "Draft restoration must retain explicit address presence, including an empty string",
+  /const shouldPreserveDraftParentContact =\s*isRestoredStudent && restoredDraftHasParentContactRef\.current;[\s\S]*setParentContact\(\(current\) =>\s*shouldPreserveDraftParentContact \? current : ""\s*\);/,
+  "Guardian contact must only survive hydration for the restored student",
+);
+assert.match(
+  page,
+  /if \(typeof draft\.studentId === "string"\) \{\s*restoredDraftStudentIdRef\.current = draft\.studentId;\s*setSelectedStudentId\(draft\.studentId\);\s*\}[\s\S]*if \(typeof draft\.studentName === "string"\) \{\s*restoredDraftStudentNameRef\.current = draft\.studentName;\s*\}[\s\S]*if \(typeof draft\.studentAddress === "string"\) \{\s*restoredDraftHasStudentAddressRef\.current = true;\s*setStudentAddress\(draft\.studentAddress\);\s*\}[\s\S]*if \(typeof draft\.parentContact === "string"\) \{\s*restoredDraftHasParentContactRef\.current = true;\s*setParentContact\(draft\.parentContact\);\s*\}/,
+  "Draft restoration must retain explicit address and guardian contact presence",
 );
 assert.doesNotMatch(
   page,
@@ -339,14 +379,19 @@ assert.doesNotMatch(
   "Derived education data must not be written to the draft",
 );
 assert.match(
+  persistedDraftBody,
+  /^\s*parentContact,\s*$/m,
+  "Guardian contact must be persisted in the Invoice draft",
+);
+assert.match(
   page,
   /from:\s*\{[\s\S]*lines:\s*\[\s*"Tutor Privat",\s*tutorLocation,\s*tutorContact,?\s*\]\.filter\(Boolean\)/,
   "Sender lines must contain the tutor role, location, and contact without duplicating the brand",
 );
 assert.match(
   page,
-  /to:\s*\{[\s\S]*lines:\s*\[\s*`Murid: \$\{studentName\}`,\s*studentInfo,\s*studentAddress,?\s*\]\.filter\(Boolean\)/,
-  "Recipient lines must identify the student without repeating the billing relationship",
+  /const recipientLines = buildInvoiceRecipientLines\(\{\s*studentName: invoiceStudentName,\s*educationLevel: studentInfo,\s*address: studentAddress,\s*parentContact,?\s*\}\);[\s\S]*to:\s*\{[\s\S]*name: parentName,\s*lines: recipientLines/,
+  "Recipient lines must use the approved student, address, and guardian-contact order",
 );
 assert.match(
   page,
@@ -365,8 +410,13 @@ assert.match(
 );
 assert.match(
   page,
+  /<Field controlId="invoice-parent-contact" label="Kontak wali">[\s\S]*<TextField id="invoice-parent-contact" value=\{parentContact\} onChange=\{setParentContact\}/,
+  "Invoice recipient form must provide an optional guardian contact field",
+);
+assert.doesNotMatch(
+  page,
   /<p className="inv-student-meta" aria-live="polite">\s*\{`Tingkat pendidikan: \$\{studentInfo \|\| "Belum tersedia"\}`\}\s*<\/p>/,
-  "Education must render as one text node with exactly one separator space",
+  "Education must be shown in the student dropdown instead of a separate form row",
 );
 assert.doesNotMatch(
   page,
@@ -486,7 +536,7 @@ for (const [index, template] of templateSources.entries()) {
 
 assert.match(
   page,
-  /const currentSessionsQueryKey = JSON\.stringify\(\[studentName, periodStart, periodEnd\]\);/,
+  /const currentSessionsQueryKey = JSON\.stringify\(\[selectedStudentId, periodStart, periodEnd\]\);/,
   "Invoice sessions must use one stable student and date query key",
 );
 assert.match(

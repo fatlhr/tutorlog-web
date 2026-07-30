@@ -222,10 +222,12 @@
 
 .tpl-modern .m-total-summary {
   margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--tw-divider);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 24px;
 }
 .tpl-modern .m-total-hours {
   display: flex;
@@ -240,19 +242,19 @@
   font-family: var(--f-title);
   font-size: 15px;
 }
-.tpl-modern .m-total-badge {
-  width: fit-content;
-  display: flex; align-items: baseline; gap: 12px;
-  padding: 12px 20px;
-  background: var(--acc, #006C53);
-  color: #fff;
-  border-radius: 999px;
+.tpl-modern .m-total-amount {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  text-align: right;
 }
-.tpl-modern .m-total-badge .lbl {
+.tpl-modern .m-total-amount .lbl {
+  color: var(--tw-text-2);
   font-family: var(--f-body); font-weight: 700; font-size: 11px;
-  letter-spacing: 1.5px; text-transform: uppercase; opacity: .9;
+  letter-spacing: 1.5px; text-transform: uppercase;
 }
-.tpl-modern .m-total-badge .val {
+.tpl-modern .m-total-amount .val {
+  color: var(--acc, #006C53);
   font-family: var(--f-title); font-weight: 700; font-size: 20px;
 }
 

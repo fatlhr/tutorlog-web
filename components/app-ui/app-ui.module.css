@@ -397,6 +397,7 @@
 
 .pageHeader {
   display: flex;
+  min-height: 86px;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-8);
@@ -440,6 +441,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+@media (max-width: 1199px) {
+  .pageHeader.toneInvoice .pageHeaderActions { display: none; }
 }
 
 .sectionHeading {
@@ -701,6 +706,7 @@
   min-height: 0;
   isolation: isolate;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   color: var(--app-ink);
   background-color: var(--app-canvas);
 }
@@ -814,53 +820,32 @@
   transform: rotate(3deg);
 }
 
-.documentTab {
-  position: absolute;
-  top: -12px;
-  right: var(--space-7);
-  width: 88px;
-  height: 24px;
-  border: 1px solid color-mix(in srgb, var(--tone-ink) 14%, transparent);
-  border-bottom: 0;
-  border-radius: var(--radius-small) var(--radius-small) 0 0;
-  background: color-mix(in srgb, var(--tone-soft) 70%, var(--app-paper));
+.routeBadge {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border: 1px solid;
+  border-radius: var(--radius-control);
+}
+
+.recapDecoration,
+.invoiceDecoration {
+  top: 110px;
+  right: max(var(--space-8), calc((100vw - 1200px) / 2 - 80px));
 }
 
 .recapDecoration {
-  top: 112px;
-  right: max(64px, calc((100vw - 1200px) / 2 + 64px));
-  width: 120px;
-  height: 72px;
-  border-inline-end: 1px solid color-mix(in srgb, var(--app-recap-accent-ink) 14%, transparent);
-}
-
-.periodMarker {
-  position: absolute;
-  inset: var(--space-3) 0 var(--space-3) auto;
-  width: var(--space-4);
-  border-block: 1px solid color-mix(in srgb, var(--app-recap-accent-ink) 14%, transparent);
-  background: color-mix(in srgb, var(--app-recap-accent) 70%, transparent);
+  color: var(--app-recap-accent-ink);
+  border-color: color-mix(in srgb, var(--app-recap-accent-ink) 18%, transparent);
+  background: color-mix(in srgb, var(--app-recap-accent) 78%, var(--app-paper));
 }
 
 .invoiceDecoration {
-  top: 108px;
-  right: max(64px, calc((100vw - 1200px) / 2 + 64px));
-  width: 160px;
-  height: 96px;
-  --tone-soft: var(--app-invoice-accent);
-  --tone-ink: var(--app-invoice-accent-ink);
+  color: var(--app-invoice-accent-ink);
+  border-color: color-mix(in srgb, var(--app-invoice-accent-ink) 18%, transparent);
+  background: color-mix(in srgb, var(--app-invoice-accent) 78%, var(--app-paper));
 }
-
-.cropMark {
-  position: absolute;
-  width: var(--space-7);
-  height: var(--space-7);
-  border-color: color-mix(in srgb, var(--app-invoice-accent-ink) 14%, transparent);
-  border-style: solid;
-}
-
-.cropMarkStart { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
-.cropMarkEnd { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
 
 .overlayLayer {
   position: fixed;
@@ -1000,13 +985,16 @@
   .loadingLayoutInvoice > :last-child { display: none; }
 }
 
+@media (max-width: 1279px) {
+  .recapDecoration,
+  .invoiceDecoration { display: none; }
+}
+
 @media (max-width: 1100px) and (min-width: 768px) {
   .routeCanvas::before { opacity: .8333; }
   .pageMain { width: 100%; padding: 88px 32px 48px; gap: 28px; }
   .homeDecoration { top: 88px; right: 32px; width: 37vw; }
   .bookmarkFan { transform: scale(.86); transform-origin: right center; }
-  .recapDecoration,
-  .invoiceDecoration { right: 32px; }
   .summaryDensityDefault .summaryItem { padding: 18px var(--space-6); }
   .summaryDensityDefault.toneHome .summaryItem { min-height: 104px; }
   .summaryBand.summaryDensityDefault.toneHome .summaryItem strong {
@@ -1060,8 +1048,6 @@
   .sectionStack { gap: var(--space-5); }
   .homeDecoration { top: 80px; right: 12px; width: 13px; height: 50px; border-right: 0; border-radius: var(--radius-small) 0 0 var(--radius-small); background: var(--app-home-accent); }
   .homeDecoration .bookmarkFan { display: none; }
-  .recapDecoration,
-  .invoiceDecoration { display: none; }
   .dialogLayer { padding: var(--space-5); }
   .dialogLayer:has(.dialogPreview) { padding: var(--space-0); }
   .dialogPreview { width: 100%; height: 100%; max-height: none; border-radius: var(--radius-0); }

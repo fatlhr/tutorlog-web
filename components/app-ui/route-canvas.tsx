@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  CalendarDots,
   Clock,
   FileText,
 } from "@phosphor-icons/react/dist/ssr";
@@ -40,17 +41,21 @@ function RouteDecoration({ route }: { route: AppRoute }) {
 
   if (route === "recap") {
     return (
-      <div className={`${styles.routeDecoration} ${styles.recapDecoration}`} aria-hidden="true">
-        <span className={styles.periodMarker} />
+      <div
+        className={`${styles.routeDecoration} ${styles.routeBadge} ${styles.recapDecoration}`}
+        aria-hidden="true"
+      >
+        <CalendarDots size={30} weight="duotone" />
       </div>
     );
   }
 
   return (
-    <div className={`${styles.routeDecoration} ${styles.invoiceDecoration}`} aria-hidden="true">
-      <span className={styles.documentTab} />
-      <span className={`${styles.cropMark} ${styles.cropMarkStart}`} />
-      <span className={`${styles.cropMark} ${styles.cropMarkEnd}`} />
+    <div
+      className={`${styles.routeDecoration} ${styles.routeBadge} ${styles.invoiceDecoration}`}
+      aria-hidden="true"
+    >
+      <FileText size={30} weight="duotone" />
     </div>
   );
 }

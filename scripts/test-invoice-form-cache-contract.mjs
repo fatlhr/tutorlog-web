@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   clearInvoiceFormCache,
+  getInvoiceBankOwnerPlaceholder,
   getInvoiceDraft,
   getInvoiceSettings,
   resolveInvoiceTutorName,
@@ -91,6 +92,15 @@ assert.equal(
     email: "fatih@example.com",
   }),
   "fatih",
+);
+
+assert.equal(
+  getInvoiceBankOwnerPlaceholder("  Fatih Ramadhan  "),
+  "Contoh: Fatih Ramadhan",
+);
+assert.equal(
+  getInvoiceBankOwnerPlaceholder(""),
+  "Contoh: Nama pemilik rekening",
 );
 
 console.log("invoice form cache contract valid");

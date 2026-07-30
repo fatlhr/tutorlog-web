@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CheckCircle, Desktop, DownloadSimple, Eye, LockKey, Minus, Plus } from "@phosphor-icons/react";
+import { CheckCircle, Desktop, DownloadSimple, Eye, FilePdf, LockKey, Minus, Plus } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { authorizeExport } from "@/lib/billing/client";
 import html2canvas from "html2canvas";
@@ -14,6 +14,7 @@ import A4Page from "@/components/invoice/A4Page";
 import PaywallDialog from "@/components/PaywallDialog";
 import type { AccessState, PaywallReason } from "@/lib/data/quota-access";
 import {
+  getInvoiceBankOwnerPlaceholder,
   getInvoiceDraft,
   getInvoiceSettings,
   removeInvoiceSettings,
@@ -32,7 +33,15 @@ import {
 } from "@/components/app-ui/controls";
 import { Dialog } from "@/components/app-ui/overlays";
 import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
-import { SectionHeading, Surface } from "@/components/app-ui/structure";
+import { PageHeader, SectionHeading, Surface } from "@/components/app-ui/structure";
+import { getSessionMetrics, getWibMonthRange, toWibDateRange } from "@/lib/data/session-metrics.mjs";
+import {
+  buildInvoiceRecipientLines,
+  buildInvoiceStudentOptions,
+  formatStudentDisplayName,
+  resolveInvoiceStudentId,
+  sortInvoiceStudents,
+} from "@/lib/invoice-students.mjs";
 
 const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#B7950B"];
 const TEMPLATES = ["klasik", "modern", "minimal"] as const;
@@ -50,11 +59,12 @@ interface StudentOption {
 
 function getStudentRecipientName(student: StudentOption): string {
   const storedName = student.parentName?.trim();
-  return storedName || `Orang tua/wali ${student.name}`;
+  return storedName || `Orang tua/wali ${formatStudentDisplayName(student.name)}`;
 }
 
 interface InvoiceSessionItem {
   id: string;
+  studentName: string;
   clockIn: string;
   clockOut: string | null;
   note: string;
@@ -87,13 +97,7 @@ function generateInvoiceNo(): string {
 }
 
 function currentMonthPeriod() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  return {
-    from: `${year}-${String(month).padStart(2, "0")}-01`,
-    to: `${year}-${String(month).padStart(2, "0")}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`,
-  };
+  return getWibMonthRange(new Date());
 }
 
 export default function InvoicePage() {
@@ -132,7 +136,8 @@ export default function InvoicePage() {
   const [tutorLocation, setTutorLocation] = useState("");
   const [tutorContact, setTutorContact] = useState("");
   const [parentName, setParentName] = useState("");
-  const [studentName, setStudentName] = useState("");
+  const [parentContact, setParentContact] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState("");
   const [studentInfo, setStudentInfo] = useState("");
   const [studentAddress, setStudentAddress] = useState("");
   const [bankAccount, setBankAccount] = useState("");
@@ -159,9 +164,14 @@ export default function InvoicePage() {
   const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const sessionsRequestSequence = useRef(0);
+  const restoredDraftStudentIdRef = useRef<string | null>(null);
   const restoredDraftStudentNameRef = useRef<string | null>(null);
   const restoredDraftHasStudentAddressRef = useRef(false);
-  const currentSessionsQueryKey = JSON.stringify([studentName, periodStart, periodEnd]);
+  const restoredDraftHasParentContactRef = useRef(false);
+  const selectedStudent = students.find((student) => student.id === selectedStudentId) ?? null;
+  const studentName = selectedStudent?.name ?? "";
+  const studentOptions = buildInvoiceStudentOptions(students);
+  const currentSessionsQueryKey = JSON.stringify([selectedStudentId, periodStart, periodEnd]);
   const invoiceDownloadLocked = quotaReady && accessState !== "plus_active";
   const invoiceActionsDisabled =
     sessionsLoading ||
@@ -207,7 +217,7 @@ export default function InvoicePage() {
           parentName: null,
         }));
 
-        setStudents(list);
+        setStudents(sortInvoiceStudents(list));
       } catch {
         setStudents([]);
         setStudentsError(true);
@@ -262,37 +272,51 @@ export default function InvoicePage() {
       if (cancelled) return;
 
       if (students.length === 0) {
-        setStudentName("");
+        setSelectedStudentId("");
         setStudentInfo("");
         setStudentAddress("");
         setParentName("");
+        setParentContact("");
         return;
       }
 
-      const selectedStudent = students.find((student) => student.name === studentName);
-      if (!selectedStudent) {
-        const firstStudent = students[0];
-        setStudentName(firstStudent.name);
-        setStudentInfo(firstStudent.educationLevel ?? "");
-        setStudentAddress(firstStudent.address ?? "");
-        setParentName(getStudentRecipientName(firstStudent));
-        return;
-      }
-
-      setStudentInfo(selectedStudent.educationLevel ?? "");
-      const shouldPreserveDraftStudentAddress =
-        restoredDraftStudentNameRef.current === selectedStudent.name &&
-        restoredDraftHasStudentAddressRef.current;
-      setStudentAddress((current) =>
-        shouldPreserveDraftStudentAddress ? current : current || selectedStudent.address || ""
+      const resolvedStudentId = resolveInvoiceStudentId(
+        students,
+        selectedStudentId || restoredDraftStudentIdRef.current,
+        restoredDraftStudentNameRef.current,
       );
-      setParentName((current) => current.trim() || getStudentRecipientName(selectedStudent));
+      if (resolvedStudentId !== selectedStudentId) {
+        setSelectedStudentId(resolvedStudentId);
+        return;
+      }
+
+      const selectedStudent = students.find((student) => student.id === resolvedStudentId);
+      if (!selectedStudent) return;
+      setStudentInfo(selectedStudent.educationLevel ?? "");
+      const isRestoredStudent =
+        restoredDraftStudentIdRef.current === selectedStudent.id ||
+        restoredDraftStudentNameRef.current === selectedStudent.name;
+      const shouldPreserveDraftStudentAddress =
+        isRestoredStudent && restoredDraftHasStudentAddressRef.current;
+      const shouldPreserveDraftParentContact =
+        isRestoredStudent && restoredDraftHasParentContactRef.current;
+      setStudentAddress((current) =>
+        shouldPreserveDraftStudentAddress ? current : selectedStudent.address || ""
+      );
+      setParentContact((current) =>
+        shouldPreserveDraftParentContact ? current : ""
+      );
+      setParentName((current) =>
+        isRestoredStudent && current.trim()
+          ? current
+          : getStudentRecipientName(selectedStudent)
+      );
     });
 
     return () => {
       cancelled = true;
     };
-  }, [studentName, students, studentsLoading]);
+  }, [selectedStudentId, students, studentsLoading]);
 
   useEffect(() => {
     const requestQueryKey = currentSessionsQueryKey;
@@ -301,7 +325,7 @@ export default function InvoicePage() {
     const ownsLatestRequest = () =>
       !cancelled && sessionsRequestSequence.current === requestSequence;
 
-    if (!studentName || !periodStart || !periodEnd) {
+    if (!selectedStudentId || !periodStart || !periodEnd) {
       queueMicrotask(() => {
         if (cancelled) return;
         setInvoiceSessions([]);
@@ -321,42 +345,47 @@ export default function InvoicePage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("AUTH_REQUIRED");
 
-        const startISO = new Date(periodStart + "T00:00:00").toISOString();
-        const endISO = new Date(periodEnd + "T23:59:59.999").toISOString();
+        const { startISO, endExclusiveISO } = toWibDateRange(periodStart, periodEnd);
 
         const { data, error } = await supabase
           .from("sessions")
-          .select("id, clock_in_at, clock_out_at, student_name_snapshot, hourly_rate_snapshot, billing_type_snapshot, session_learning_notes(tutor_note)")
+          .select("id, student_location_id, clock_in_at, clock_out_at, student_name_snapshot, hourly_rate_snapshot, billing_type_snapshot, session_learning_notes(tutor_note)")
           .eq("tutor_id", user.id)
+          .eq("student_location_id", selectedStudentId)
           .eq("status", "completed")
           .gte("clock_in_at", startISO)
-          .lte("clock_in_at", endISO)
+          .lt("clock_in_at", endExclusiveISO)
           .order("clock_in_at", { ascending: true });
 
         if (error || !data) throw error ?? new Error("SESSIONS_FETCH_FAILED");
 
-        const filtered = (data as Record<string, unknown>[]).filter((row) =>
-          (row.student_name_snapshot as string) === studentName
-        );
-
-        const items: InvoiceSessionItem[] = filtered.map((row) => {
+        const items: InvoiceSessionItem[] = (data as Record<string, unknown>[]).map((row) => {
           const clockIn = row.clock_in_at as string;
           const clockOut = (row.clock_out_at as string) ?? null;
-          const startTime = new Date(clockIn).getTime();
-          const endTime = clockOut ? new Date(clockOut).getTime() : 0;
-          const hours = endTime > startTime ? Math.round(((endTime - startTime) / 36e5) * 10) / 10 : 0;
           const rate = (row.hourly_rate_snapshot as number) ?? 0;
-          const billingType: InvoiceSessionItem["billingType"] = row.billing_type_snapshot === "flat"
-            ? "flat"
-            : "hourly";
-          const amount = billingType === "flat" ? (rate || 0) : Math.round(hours * rate);
+          const metrics = getSessionMetrics({
+            clockInAt: clockIn,
+            clockOutAt: clockOut,
+            hourlyRate: rate,
+            billingType: (row.billing_type_snapshot as string) ?? null,
+          });
           const relation = row.session_learning_notes;
           const noteRecord = Array.isArray(relation) ? relation[0] : relation;
           const note = typeof (noteRecord as Record<string, unknown> | null)?.tutor_note === "string"
             ? ((noteRecord as Record<string, unknown>).tutor_note as string).trim()
             : "";
 
-          return { id: row.id as string, clockIn, clockOut, note: note || "-", hours, rate, amount, billingType };
+          return {
+            id: row.id as string,
+            studentName: (row.student_name_snapshot as string) || studentName,
+            clockIn,
+            clockOut,
+            note: note || "-",
+            hours: metrics.actualHours,
+            rate,
+            amount: metrics.amount,
+            billingType: metrics.billingType,
+          };
         });
 
         if (!ownsLatestRequest()) return;
@@ -377,7 +406,7 @@ export default function InvoicePage() {
     return () => {
       cancelled = true;
     };
-  }, [currentSessionsQueryKey, studentName, periodStart, periodEnd, supabase]);
+  }, [currentSessionsQueryKey, selectedStudentId, periodStart, periodEnd, studentName, supabase]);
 
   useEffect(() => {
     const access = document.querySelector<HTMLElement>(".app-shell-h")?.dataset.access;
@@ -439,22 +468,26 @@ export default function InvoicePage() {
     return () => window.clearTimeout(timer);
   }, [exportSuccess]);
 
-  const handleStudentChange = (name: string) => {
+  const handleStudentChange = (studentId: string) => {
+    restoredDraftStudentIdRef.current = null;
     restoredDraftStudentNameRef.current = null;
     restoredDraftHasStudentAddressRef.current = false;
-    setStudentName(name);
-    const found = students.find((student) => student.name === name);
+    restoredDraftHasParentContactRef.current = false;
+    setSelectedStudentId(studentId);
+    const found = students.find((student) => student.id === studentId);
 
     if (!found) {
       setStudentInfo("");
       setStudentAddress("");
       setParentName("");
+      setParentContact("");
       return;
     }
 
     setStudentInfo(found.educationLevel ?? "");
     setStudentAddress(found.address ?? "");
     setParentName(getStudentRecipientName(found));
+    setParentContact("");
   };
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -482,9 +515,12 @@ export default function InvoicePage() {
     }
     if (typeof draft.periodStart === "string") setPeriodStart(draft.periodStart);
     if (typeof draft.periodEnd === "string") setPeriodEnd(draft.periodEnd);
+    if (typeof draft.studentId === "string") {
+      restoredDraftStudentIdRef.current = draft.studentId;
+      setSelectedStudentId(draft.studentId);
+    }
     if (typeof draft.studentName === "string") {
       restoredDraftStudentNameRef.current = draft.studentName;
-      setStudentName(draft.studentName);
     }
     if (typeof draft.invoiceNo === "string") setInvoiceNo(draft.invoiceNo);
     if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
@@ -495,6 +531,10 @@ export default function InvoicePage() {
     if (typeof draft.studentAddress === "string") {
       restoredDraftHasStudentAddressRef.current = true;
       setStudentAddress(draft.studentAddress);
+    }
+    if (typeof draft.parentContact === "string") {
+      restoredDraftHasParentContactRef.current = true;
+      setParentContact(draft.parentContact);
     }
     if (typeof draft.bankAccount === "string") setBankAccount(draft.bankAccount);
     if (typeof draft.bankName === "string") setBankName(draft.bankName);
@@ -510,6 +550,7 @@ export default function InvoicePage() {
     saveInvoiceDraft(sessionStorage, {
       periodStart,
       periodEnd,
+      studentId: selectedStudentId,
       studentName,
       invoiceNo,
       lembaga,
@@ -517,6 +558,7 @@ export default function InvoicePage() {
       tutorLocation,
       tutorContact,
       parentName,
+      parentContact,
       studentAddress,
       bankAccount,
       bankName,
@@ -524,7 +566,7 @@ export default function InvoicePage() {
       accent,
       template,
     });
-  }, [draftReady, periodStart, periodEnd, studentName, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, studentAddress, bankAccount, bankName, notes, accent, template]);
+  }, [draftReady, periodStart, periodEnd, selectedStudentId, studentName, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, parentContact, studentAddress, bankAccount, bankName, notes, accent, template]);
 
   useEffect(() => {
     if (!saveSettings) return;
@@ -544,6 +586,15 @@ export default function InvoicePage() {
   const buildInvoiceData = (): InvoiceData => {
     const now = new Date();
     const [bankCode = "", bankNo = ""] = bankAccount.split(/\s*(?:·|-)\s*/, 2);
+    const invoiceStudentName = formatStudentDisplayName(
+      invoiceSessions[0]?.studentName.trim() || studentName,
+    );
+    const recipientLines = buildInvoiceRecipientLines({
+      studentName: invoiceStudentName,
+      educationLevel: studentInfo,
+      address: studentAddress,
+      parentContact,
+    });
 
     const items = invoiceSessions.map((session) => ({
       date: formatMonthDay(new Date(session.clockIn)),
@@ -569,11 +620,7 @@ export default function InvoicePage() {
       },
       to: {
         name: parentName,
-        lines: [
-          `Murid: ${studentName}`,
-          studentInfo,
-          studentAddress,
-        ].filter(Boolean),
+        lines: recipientLines,
       },
       bank: { bank: bankCode, no: bankNo, name: bankName },
       items,
@@ -644,7 +691,7 @@ export default function InvoicePage() {
         <Field controlId="invoice-student" label="Nama murid" required>
           <Select
             id="invoice-student"
-            value={studentName}
+            value={selectedStudentId}
             onChange={handleStudentChange}
             disabled={studentsLoading || studentsError || students.length === 0}
             options={studentsLoading
@@ -653,13 +700,9 @@ export default function InvoicePage() {
                 ? [{ value: "", label: "Murid belum dapat dimuat" }]
                 : students.length === 0
                   ? [{ value: "", label: "Belum ada murid" }]
-                  : students.map((student) => ({ value: student.name, label: student.name }))}
+                  : studentOptions}
           />
         </Field>
-
-        <p className="inv-student-meta" aria-live="polite">
-          {`Tingkat pendidikan: ${studentInfo || "Belum tersedia"}`}
-        </p>
 
         <div className="inv-period-fields">
           <Field controlId="invoice-period-start" label="Periode" required>
@@ -705,7 +748,12 @@ export default function InvoicePage() {
           </Field>
 
           <Field controlId="invoice-bank-name" label="Nama Pemilik Rekening" required>
-            <TextField id="invoice-bank-name" value={bankName} onChange={setBankName} placeholder="Contoh: Rina Novianti" />
+            <TextField
+              id="invoice-bank-name"
+              value={bankName}
+              onChange={setBankName}
+              placeholder={getInvoiceBankOwnerPlaceholder(tutorName)}
+            />
           </Field>
         </div>
       </div>
@@ -788,6 +836,10 @@ export default function InvoicePage() {
 
         <Field controlId="invoice-student-address" label="Alamat">
           <TextField id="invoice-student-address" value={studentAddress} onChange={setStudentAddress} placeholder="Jalan Sudirman" />
+        </Field>
+
+        <Field controlId="invoice-parent-contact" label="Kontak wali">
+          <TextField id="invoice-parent-contact" value={parentContact} onChange={setParentContact} placeholder="Contoh: 0812-3456-7890" />
         </Field>
       </div>
 
@@ -892,31 +944,30 @@ export default function InvoicePage() {
         <div className={`app-invoice-route${mobileEditorOpen ? " app-invoice-route-open" : ""}`}>
           <RouteCanvas route="invoice">
             <PageMain>
+              <PageHeader
+                route="invoice"
+                eyebrow="Invoice"
+                title="Buat invoice."
+                description="Pilih murid dan periode untuk menyiapkan invoice."
+                actions={(
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="compact"
+                    leadingIcon={<FilePdf size={18} aria-hidden="true" />}
+                    loading={exporting}
+                    disabled={invoiceActionsDisabled}
+                    onClick={handleExportPDF}
+                  >
+                    Unduh PDF
+                  </Button>
+                )}
+              />
+
               <section
                 className={`app-invoice-main${mobileEditorOpen ? " app-invoice-mobile-editor" : ""}`}
-                aria-labelledby="invoice-page-title"
+                aria-label="Editor invoice"
               >
-                <header className="app-invoice-heading">
-                  <div>
-                    <p>Invoice</p>
-                    <h1 id="invoice-page-title">Buat invoice.</h1>
-                    <span>Pilih murid dan periode untuk menyiapkan invoice.</span>
-                  </div>
-              <div className="inv-export-top">
-                <Button
-                  type="button"
-                  size="compact"
-                  leadingIcon={invoiceDownloadLocked ? <LockKey size={14} aria-hidden="true" /> : undefined}
-                  trailingIcon={<DownloadSimple size={16} aria-hidden="true" />}
-                  loading={exporting}
-                  disabled={invoiceActionsDisabled}
-                  onClick={handleExportPDF}
-                >
-                  Unduh PDF
-                </Button>
-              </div>
-                </header>
-
                 {exportError ? <p className="app-export-error" role="alert">{exportError}</p> : null}
 
                 <div className="invoice-layout">

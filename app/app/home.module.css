@@ -1,3 +1,8 @@
+.hero {
+  display: grid;
+  gap: 80px;
+}
+
 .workspace,
 .workspaceHeading {
   display: grid;
@@ -269,7 +274,13 @@
   }
 }
 
+@media (768px <= width < 1200px) {
+  .hero { gap: 80px; }
+}
+
 @media (width < 768px) {
+  .hero { gap: 36px; }
+
   .workspace,
   .workspaceHeading {
     grid-template-columns: 1fr;

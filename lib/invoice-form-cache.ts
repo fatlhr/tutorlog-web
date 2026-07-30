@@ -93,3 +93,10 @@ export function resolveInvoiceTutorName({
     ""
   );
 }
+
+export function getInvoiceBankOwnerPlaceholder(tutorName: string) {
+  const normalizedTutorName = tutorName.trim();
+  return normalizedTutorName
+    ? `Contoh: ${normalizedTutorName}`
+    : "Contoh: Nama pemilik rekening";
+}

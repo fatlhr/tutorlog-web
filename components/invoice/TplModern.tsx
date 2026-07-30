@@ -79,7 +79,7 @@ export default function TplModern({ acc = "#006C53", data = sampleInvoiceData }:
           <span>Total jam</span>
           <strong>{hours.toFixed(1)} jam</strong>
         </div>
-        <div className="m-total-badge">
+        <div className="m-total-amount">
           <span className="lbl">Total</span>
           <span className="val">{formatIDR(sub)}</span>
         </div>

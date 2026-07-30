@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
 import { canExportRecap, getAccessState } from "@/lib/data/quota-access";
 import { fetchRecentSessions, fetchRekapDataByRange } from "@/lib/data/rekap";
+import { getWibMonthRange } from "@/lib/data/session-metrics.mjs";
 import HomeUpgradePrompt from "@/components/HomeUpgradePrompt";
 import NamePromptDialog from "@/components/NamePromptDialog";
 import { Button } from "@/components/app-ui/controls";
@@ -31,16 +32,6 @@ export const metadata: Metadata = {
   description: "Ringkasan sesi dan pekerjaan tutor bulan ini.",
 };
 
-function monthRange(date: Date) {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const lastDay = new Date(year, month, 0).getDate();
-  return {
-    from: `${year}-${String(month).padStart(2, "0")}-01`,
-    to: `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`,
-  };
-}
-
 export default async function HomePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -52,10 +43,15 @@ export default async function HomePage() {
   const monthFormatter = new Intl.DateTimeFormat("id-ID", {
     month: "long",
     year: "numeric",
+    timeZone: "Asia/Jakarta",
   });
-  const period = monthRange(now);
-  const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const previousPeriod = monthRange(previousMonthDate);
+  const period = getWibMonthRange(now);
+  const previousPeriod = getWibMonthRange(now, -1);
+  const previousMonthDate = new Date(Date.UTC(
+    previousPeriod.year,
+    previousPeriod.month - 1,
+    15,
+  ));
   const monthLabel = monthFormatter.format(now);
   const previousMonthLabel = monthFormatter.format(previousMonthDate);
 
@@ -91,26 +87,28 @@ export default async function HomePage() {
       <NamePromptDialog hasName={hasName} />
       <RouteCanvas route="home">
       <PageMain>
-        <PageHeader
-          route="home"
-          eyebrow={monthLabel}
-          title={`Halo, ${name}`}
-          description="Lihat catatan mengajarmu sebelum lanjut ke rekap atau invoice."
-        />
+        <div className={styles.hero}>
+          <PageHeader
+            route="home"
+            eyebrow={monthLabel}
+            title={`Halo, ${name}`}
+            description="Lihat catatan mengajarmu sebelum lanjut ke rekap atau invoice."
+          />
 
-        {monthData ? (
-          <SummaryBand
-            label={`Ringkasan ${monthLabel}`}
-            tone="home"
-            items={summaryItems}
-          />
-        ) : (
-          <ErrorState
-            scope="inline"
-            title="Ringkasan belum dapat dimuat"
-            body="Data sesi tidak berubah. Coba buka Beranda lagi beberapa saat lagi."
-          />
-        )}
+          {monthData ? (
+            <SummaryBand
+              label={`Ringkasan ${monthLabel}`}
+              tone="home"
+              items={summaryItems}
+            />
+          ) : (
+            <ErrorState
+              scope="inline"
+              title="Ringkasan belum dapat dimuat"
+              body="Data sesi tidak berubah. Coba buka Beranda lagi beberapa saat lagi."
+            />
+          )}
+        </div>
 
         {hasSessions ? (
           <Section labelledBy="recent-sessions-title">
