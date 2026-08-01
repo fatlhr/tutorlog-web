@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
 import { canExportRecap, getAccessState } from "@/lib/data/quota-access";
 import { fetchRecentSessions, fetchRekapDataByRange } from "@/lib/data/rekap";
-import { getWibMonthRange } from "@/lib/data/session-metrics.mjs";
+import { getWibMonthRange, getWibMonthToDateRange } from "@/lib/data/session-metrics.mjs";
 import HomeUpgradePrompt from "@/components/HomeUpgradePrompt";
 import NamePromptDialog from "@/components/NamePromptDialog";
 import { Button } from "@/components/app-ui/controls";
@@ -45,7 +45,7 @@ export default async function HomePage() {
     year: "numeric",
     timeZone: "Asia/Jakarta",
   });
-  const period = getWibMonthRange(now);
+  const period = getWibMonthToDateRange(now);
   const previousPeriod = getWibMonthRange(now, -1);
   const previousMonthDate = new Date(Date.UTC(
     previousPeriod.year,

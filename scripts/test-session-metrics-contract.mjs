@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import {
   getSessionMetrics,
   getWibMonthRange,
+  getWibMonthToDateRange,
   toWibDateRange,
 } from "../lib/data/session-metrics.mjs";
 
@@ -77,6 +78,16 @@ assert.deepEqual(
   { from: "2026-08-01", to: "2026-08-31", year: 2026, month: 8 },
 );
 
+assert.deepEqual(
+  getWibMonthToDateRange(new Date("2026-07-31T20:00:00.000Z")),
+  { from: "2026-08-01", to: "2026-08-01", year: 2026, month: 8 },
+);
+
+assert.deepEqual(
+  getWibMonthToDateRange(new Date("2028-02-29T10:00:00.000Z")),
+  { from: "2028-02-01", to: "2028-02-29", year: 2028, month: 2 },
+);
+
 const rekapSource = readFileSync(new URL("../lib/data/rekap.ts", import.meta.url), "utf8");
 const homeSource = readFileSync(new URL("../app/app/page.tsx", import.meta.url), "utf8");
 const invoiceSource = readFileSync(new URL("../app/app/invoice/page.tsx", import.meta.url), "utf8");
@@ -90,8 +101,13 @@ for (const [surface, source] of [
   assert.match(source, /\.lt\("clock_in_at", endExclusiveISO\)/, `${surface} must use a half-open date range`);
 }
 
-assert.match(homeSource, /getWibMonthRange\(now\)/);
+assert.match(homeSource, /getWibMonthToDateRange\(now\)/);
 assert.match(homeSource, /getWibMonthRange\(now, -1\)/);
+assert.match(homeSource, /fetchRekapDataByRange\(period\.from, period\.to\)/);
+assert.match(
+  homeSource,
+  /href=\{`\/app\/rekap\?from=\$\{period\.from\}&to=\$\{period\.to\}`\}/,
+);
 assert.match(rekapSource, /sum \+ session\.rawAmount/);
 assert.doesNotMatch(rekapSource, /Math\.round\(durationHours \*/);
 assert.doesNotMatch(invoiceSource, /Math\.round\(hours \* rate\)/);

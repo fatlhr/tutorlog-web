@@ -21,7 +21,9 @@ import {
 import type { ExportFormat, PaywallReason } from "@/lib/data/quota-access";
 import {
   getAvailableStudentFilterOptions,
+  getRekapPresetRange,
   hasUnappliedCustomRange,
+  isValidRekapCustomRange,
   type RekapRangeMode,
 } from "@/lib/data/rekap-filter";
 import type { RekapData, SessionItem } from "@/lib/data/rekap";
@@ -35,24 +37,13 @@ interface RekapContentProps {
   rekapData: RekapData | null;
   from: string;
   to: string;
+  wibToday: string;
   loadError?: boolean;
 }
 
-function monthDateRange(offset: number) {
-  const date = new Date();
-  date.setMonth(date.getMonth() + offset);
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const lastDay = new Date(year, month, 0).getDate();
-  return {
-    from: `${year}-${String(month).padStart(2, "0")}-01`,
-    to: `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`,
-  };
-}
-
-function inferRangeMode(rangeFrom: string, rangeTo: string): RangeMode {
-  const current = monthDateRange(0);
-  const previous = monthDateRange(-1);
+function inferRangeMode(rangeFrom: string, rangeTo: string, wibToday: string): RangeMode {
+  const current = getRekapPresetRange("current", wibToday);
+  const previous = getRekapPresetRange("previous", wibToday);
   if (rangeFrom === current.from && rangeTo === current.to) return "current";
   if (rangeFrom === previous.from && rangeTo === previous.to) return "previous";
   return "custom";
@@ -62,6 +53,8 @@ interface RecapFilterControlsProps {
   rangeMode: RangeMode;
   dateFrom: string;
   dateTo: string;
+  wibToday: string;
+  filterError: string | null;
   students: string[];
   studentFilter: string | null;
   customRangePending: boolean;
@@ -76,6 +69,8 @@ function RecapFilterControls({
   rangeMode,
   dateFrom,
   dateTo,
+  wibToday,
+  filterError,
   students,
   studentFilter,
   customRangePending,
@@ -110,14 +105,26 @@ function RecapFilterControls({
       {rangeMode === "custom" ? (
         <div className="app-recap-custom-range">
           <Field controlId="recap-date-from" label="Tanggal mulai" density="compact">
-            <DateField id="recap-date-from" value={dateFrom} onChange={onDateFromChange} />
+            <DateField
+              id="recap-date-from"
+              value={dateFrom}
+              max={wibToday}
+              onChange={onDateFromChange}
+            />
           </Field>
           <Field controlId="recap-date-to" label="Tanggal selesai" density="compact">
-            <DateField id="recap-date-to" value={dateTo} onChange={onDateToChange} />
+            <DateField
+              id="recap-date-to"
+              value={dateTo}
+              max={wibToday}
+              onChange={onDateToChange}
+            />
           </Field>
           <Button type="button" size="compact" onClick={onApplyRange}>Terapkan</Button>
         </div>
       ) : null}
+
+      {filterError ? <p className="app-export-error" role="alert">{filterError}</p> : null}
 
       {customRangePending ? (
         <div>
@@ -221,11 +228,18 @@ function SessionDetailOverlay({
   );
 }
 
-export default function RekapContent({ rekapData, from, to, loadError = false }: RekapContentProps) {
+export default function RekapContent({
+  rekapData,
+  from,
+  to,
+  wibToday,
+  loadError = false,
+}: RekapContentProps) {
   const [studentFilter, setStudentFilter] = useState<string | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [filterError, setFilterError] = useState<string | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState<PaywallReason>("free-limit");
   const [paywallUsage, setPaywallUsage] = useState<Partial<Record<ExportFormat, { used: number; limit: number }>>>();
@@ -237,8 +251,13 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
   const [page, setPage] = useState(1);
   const [dateFrom, setDateFrom] = useState(from);
   const [dateTo, setDateTo] = useState(to);
-  const appliedRangeMode = useMemo(() => inferRangeMode(from, to), [from, to]);
-  const [rangeMode, setRangeMode] = useState<RangeMode>(() => inferRangeMode(from, to));
+  const appliedRangeMode = useMemo(
+    () => inferRangeMode(from, to, wibToday),
+    [from, to, wibToday],
+  );
+  const [rangeMode, setRangeMode] = useState<RangeMode>(
+    () => inferRangeMode(from, to, wibToday),
+  );
 
   const allRows = useMemo(() => rekapData?.sessions ?? [], [rekapData]);
   const rows = useMemo(
@@ -287,26 +306,39 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
 
   const handleRangeMode = useCallback((mode: RangeMode) => {
     setRangeMode(mode);
+    setFilterError(null);
     setPage(1);
     setStudentFilter(null);
     if (mode === "custom") return;
-    const range = monthDateRange(mode === "current" ? 0 : -1);
+    const range = getRekapPresetRange(mode, wibToday);
     setDateFrom(range.from);
     setDateTo(range.to);
     openRange(range.from, range.to);
-  }, [openRange]);
+  }, [openRange, wibToday]);
 
   const handleDateFromChange = useCallback((value: string) => {
     setDateFrom(value);
+    setFilterError(null);
     setStudentFilter(null);
     setPage(1);
   }, []);
 
   const handleDateToChange = useCallback((value: string) => {
     setDateTo(value);
+    setFilterError(null);
     setStudentFilter(null);
     setPage(1);
   }, []);
+
+  const handleApplyRange = useCallback(() => {
+    if (!isValidRekapCustomRange(dateFrom, dateTo, wibToday)) {
+      setFilterError("Pilih rentang tanggal yang valid hingga hari ini.");
+      return;
+    }
+
+    setFilterError(null);
+    openRange(dateFrom, dateTo);
+  }, [dateFrom, dateTo, openRange, wibToday]);
 
   const handleStudentChange = useCallback((student: string | null) => {
     setStudentFilter(student);
@@ -430,13 +462,15 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
               rangeMode={rangeMode}
               dateFrom={dateFrom}
               dateTo={dateTo}
+              wibToday={wibToday}
+              filterError={filterError}
               students={summary.students}
               studentFilter={studentFilter}
               customRangePending={customRangePending}
               onRangeMode={handleRangeMode}
               onDateFromChange={handleDateFromChange}
               onDateToChange={handleDateToChange}
-              onApplyRange={() => openRange(dateFrom, dateTo)}
+              onApplyRange={handleApplyRange}
               onStudentChange={handleStudentChange}
             />
           </section>
@@ -521,13 +555,15 @@ export default function RekapContent({ rekapData, from, to, loadError = false }:
               rangeMode={rangeMode}
               dateFrom={dateFrom}
               dateTo={dateTo}
+              wibToday={wibToday}
+              filterError={filterError}
               students={summary.students}
               studentFilter={studentFilter}
               customRangePending={customRangePending}
               onRangeMode={handleRangeMode}
               onDateFromChange={handleDateFromChange}
               onDateToChange={handleDateToChange}
-              onApplyRange={() => openRange(dateFrom, dateTo)}
+              onApplyRange={handleApplyRange}
               onStudentChange={handleStudentChange}
             />
         </div>

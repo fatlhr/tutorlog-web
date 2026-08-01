@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { fetchRekapDataByRange, type RekapData } from "@/lib/data/rekap";
+import { getWibMonthToDateRange } from "@/lib/data/session-metrics.mjs";
 import RekapContent from "@/components/RekapContent";
 
 export const metadata: Metadata = {
@@ -13,12 +14,9 @@ interface RekapPageProps {
 
 export default async function RekapPage({ searchParams }: RekapPageProps) {
   const params = await searchParams;
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-
-  const from = params.from ?? `${year}-${String(month).padStart(2, "0")}-01`;
-  const to = params.to ?? `${year}-${String(month).padStart(2, "0")}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`;
+  const defaultRange = getWibMonthToDateRange(new Date());
+  const from = params.from ?? defaultRange.from;
+  const to = params.to ?? defaultRange.to;
 
   let rekapData: RekapData | null = null;
   let loadError = false;
@@ -29,5 +27,13 @@ export default async function RekapPage({ searchParams }: RekapPageProps) {
     loadError = true;
   }
 
-  return <RekapContent rekapData={rekapData} from={from} to={to} loadError={loadError} />;
+  return (
+    <RekapContent
+      rekapData={rekapData}
+      from={from}
+      to={to}
+      wibToday={defaultRange.to}
+      loadError={loadError}
+    />
+  );
 }
