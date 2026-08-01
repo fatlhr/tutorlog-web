@@ -5,7 +5,7 @@ export function PrivacyContent() {
     <article className="tl-article-main">
       <div className="tl-article-intro">
         <LockKey size={28} weight="duotone" aria-hidden="true" />
-        <p><strong>Ringkasan.</strong> TutorLog membantu tutor privat mencatat sesi les, menyimpan riwayat murid, membuat rekap tagihan, dan mengekspor data ke PDF atau CSV.</p>
+        <p><strong>Ringkasan.</strong> TutorLog membantu tutor privat mencatat sesi les, menyimpan riwayat murid, membuat rekap tagihan, dan mengekspor rekap ke PDF atau CSV.</p>
       </div>
 
       <section className="tl-article-section">
@@ -16,8 +16,8 @@ export function PrivacyContent() {
           <li><strong>Data murid:</strong> nama, tingkat pendidikan, tipe tagihan, tarif, dan status aktif atau tersembunyi.</li>
           <li><strong>Data lokasi:</strong> lokasi belajar murid dan lokasi sesi saat pengguna menyimpan lokasi murid, memulai sesi tatap muka, atau menyelesaikan sesi.</li>
           <li><strong>Aktivitas sesi:</strong> waktu mulai, waktu selesai, mode ajar, durasi, estimasi tagihan, status sinkronisasi, dan riwayat sesi.</li>
-          <li><strong>Data akses premium:</strong> voucher, status akses, tanggal aktif, dan jumlah penggunaan fitur ekspor.</li>
-          <li><strong>File hasil ekspor:</strong> PDF atau CSV yang dibuat hanya saat pengguna memilih ekspor atau membagikannya.</li>
+          <li><strong>Data paket Plus:</strong> voucher, status paket, tanggal aktif, dan jumlah penggunaan fitur ekspor.</li>
+          <li><strong>File hasil ekspor:</strong> PDF atau CSV yang dibuat saat kamu membagikan rekap dari HP atau mengunduh rekap dan PDF invoice dari web.</li>
         </ul>
       </section>
 
@@ -30,7 +30,7 @@ export function PrivacyContent() {
       <section className="tl-article-section">
         <h2>Penyimpanan dan keamanan</h2>
         <p>TutorLog menyimpan data aplikasi di Supabase. Data dikirim melalui koneksi HTTPS terenkripsi. Aturan akses membatasi setiap akun agar hanya dapat melihat datanya sendiri.</p>
-        <p>File PDF dan CSV dibuat dari data rekap yang dipilih pengguna. Setelah ekspor selesai, pengguna menentukan sendiri tempat file tersebut dibagikan atau disimpan.</p>
+        <p>File PDF dan CSV dibuat dari data rekap yang kamu pilih. Setelah ekspor selesai, kamu menentukan sendiri tempat file tersebut dibagikan atau disimpan.</p>
       </section>
 
       <section className="tl-article-section">

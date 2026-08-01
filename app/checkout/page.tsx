@@ -20,7 +20,7 @@ import {
 } from "@/lib/billing/server/catalog";
 
 export const metadata: Metadata = {
-  title: "TutorLog - Checkout",
+  title: "TutorLog - Pembayaran",
   description: "Pilih metode dan periksa total pembayaran paket TutorLog.",
 };
 

@@ -591,7 +591,7 @@ assert.match(
 );
 assert.match(
   page,
-  /Pilih periode yang memiliki minimal satu sesi selesai\./,
+  /Tidak ada sesi selesai untuk murid dan periode ini\./,
   "An empty period must explain why preview and export are unavailable",
 );
 assert.match(
@@ -606,7 +606,7 @@ assert.match(
 );
 assert.match(
   page,
-  /catch \{\s*setExportError\("Ekspor belum dapat diselesaikan\. Coba lagi\."\);\s*\} finally \{\s*setExporting\(false\);/,
+  /catch \{\s*setExportError\("PDF invoice belum berhasil diunduh\. Coba lagi\."\);\s*\} finally \{\s*setExporting\(false\);/,
   "Invoice authorization and generation failures must normalize feedback and clear loading",
 );
 assert.match(

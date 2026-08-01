@@ -130,7 +130,7 @@ function RecapFilterControls({
         <div>
           <p style={{ margin: "0 0 8px", fontWeight: 700 }}>Filter murid</p>
           <p className="tw-helper" style={{ margin: 0 }}>
-            Terapkan tanggal dulu untuk melihat filter murid pada periode ini.
+            Terapkan rentang tanggal terlebih dahulu untuk melihat filter murid pada periode ini.
           </p>
         </div>
       ) : (
@@ -363,7 +363,7 @@ export default function RekapContent({
       const csv = sessionsToCSV(rows.map(({ d, m, s, h, t }) => ({ d, m, s, h, t })));
       downloadCSV(csv, "rekap-sesi.csv");
     } catch {
-      setExportError("Ekspor belum dapat diselesaikan. Coba lagi.");
+      setExportError("CSV belum berhasil diunduh. Coba lagi.");
     } finally {
       setCsvLoading(false);
     }
@@ -412,7 +412,7 @@ export default function RekapContent({
       });
       pdf.save("rekap-sesi.pdf");
     } catch {
-      setExportError("Ekspor belum dapat diselesaikan. Coba lagi.");
+      setExportError("PDF belum berhasil diunduh. Coba lagi.");
     } finally {
       setPdfLoading(false);
     }
@@ -494,9 +494,9 @@ export default function RekapContent({
             density="compact"
             tone="recap"
             items={[
-              { label: "Jumlah sesi", value: filteredSummary.totalSesi },
-              { label: "Total jam", value: filteredSummary.totalJam },
-              { label: "Perkiraan pendapatan", value: filteredSummary.totalPendapatan },
+              { label: "Sesi selesai", value: filteredSummary.totalSesi },
+              { label: "Waktu mengajar", value: filteredSummary.totalJam },
+              { label: "Estimasi pendapatan", value: filteredSummary.totalPendapatan },
             ]}
           />
 

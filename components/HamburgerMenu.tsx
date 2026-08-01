@@ -97,7 +97,7 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
         </nav>
 
         <Link className="tl-mobile-menu-login" href={authed ? "/app" : "/login"} onClick={onClose}>
-          <span>{authed ? "Dashboard" : "Masuk lewat Email"}</span>
+          <span>{authed ? "Beranda" : "Masuk lewat email"}</span>
           <ArrowRight size={18} aria-hidden="true" />
         </Link>
       </div>

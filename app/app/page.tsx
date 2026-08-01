@@ -92,7 +92,7 @@ export default async function HomePage() {
             route="home"
             eyebrow={monthLabel}
             title={`Halo, ${name}`}
-            description="Lihat catatan mengajarmu sebelum lanjut ke rekap atau invoice."
+            description="Periksa catatan mengajarmu sebelum membuka rekap atau membuat invoice."
           />
 
           {monthData ? (
@@ -116,7 +116,7 @@ export default async function HomePage() {
               <SectionHeading
                 headingId="recent-sessions-title"
                 title="Sesi terbaru"
-                description="Tiga sesi terakhir yang tercatat dari aplikasi."
+                description="Tiga sesi terakhir yang dicatat dari aplikasi."
                 action={(
                   <Button
                     href="/app/rekap"
@@ -124,7 +124,7 @@ export default async function HomePage() {
                     size="compact"
                     trailingIcon={<ArrowRight aria-hidden="true" />}
                   >
-                    Lihat semua
+                    Buka semua sesi
                   </Button>
                 )}
               />
@@ -224,7 +224,7 @@ export default async function HomePage() {
         ) : (
           <EmptyState
             context="home"
-            title="Catat sesi pertama dari aplikasi mobile"
+            title="Catat sesi pertama dari aplikasi HP"
             body="Setelah sesi disimpan, ringkasan dan rekapnya akan muncul di sini."
             visual={(
               <span className={styles.emptyVisual}>
@@ -289,7 +289,7 @@ export default async function HomePage() {
             <div>
               <p>Sedang disiapkan</p>
               <h2 id="roadmap-preview-title">Pengingat sebelum sesi</h2>
-              <span>Kami sedang menyiapkan pengingat sebelum sesi untuk melengkapi alur harian di aplikasi mobile.</span>
+              <span>Kami sedang menyiapkan pengingat sebelum sesi untuk melengkapi alur harian di aplikasi HP.</span>
             </div>
           </aside>
         </section>

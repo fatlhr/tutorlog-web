@@ -7,7 +7,7 @@ import { MarketingButton } from "@/components/public-ui/marketing-button";
 
 export const metadata: Metadata = {
   title: "TutorLog - Fitur",
-  description: "Catat sesi dan perbarui riwayat di HP, lalu cek rekap, ekspor data, dan buat invoice di web TutorLog.",
+  description: "Catat sesi dan perbarui riwayat di HP, lalu periksa dan ekspor rekap atau buat invoice di web TutorLog.",
 };
 
 const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog.app";
@@ -18,7 +18,7 @@ export default function FiturPage() {
       className="tls-features"
       eyebrow="Fitur TutorLog"
       title="Catat di HP, lanjutkan rekap di web."
-      subtitle="Gunakan HP saat mengajar. Buka web saat perlu mengecek rekap, mengekspor data, atau membuat invoice."
+      subtitle="Gunakan HP saat mengajar. Buka web saat perlu memeriksa atau mengekspor rekap, atau membuat invoice."
       withRail={false}
       showBackLink
       closing={(
@@ -32,7 +32,7 @@ export default function FiturPage() {
             rel="noopener"
             leadingIcon={<Play size={18} weight="fill" />}
           >
-            Mulai Gratis
+              Mulai gratis
           </MarketingButton>
           <Link className="tls-inline-link" href="/panduan">Baca panduan <ArrowRight size={16} aria-hidden="true" /></Link>
         </section>
@@ -61,8 +61,8 @@ export default function FiturPage() {
         <div className="tls-feature-evidence-item">
           <div className="tls-feature-evidence-copy">
             <p className="tls-feature-platform">HP dan web</p>
-            <h2 id="feature-rekap">Rekap dan ekspor dari perangkat yang kamu pakai.</h2>
-            <p>Lihat sesi, total jam mengajar, pendapatan, dan murid dalam satu rekap.<span className="tls-feature-detail"> Ekspor ke PDF atau CSV dari HP maupun web saat ingin dibagikan atau disimpan.</span></p>
+            <h2 id="feature-rekap">Periksa dan ekspor rekap dari perangkat yang kamu pakai.</h2>
+            <p>Lihat sesi, total jam mengajar, pendapatan, dan murid dalam satu rekap.<span className="tls-feature-detail"> Di HP, bagikan rekap sebagai PDF atau CSV. Di web, unduh file untuk disimpan atau dibagikan.</span></p>
           </div>
           <div className="tls-feature-evidence-proof"><PublicProductProof id="recap" annotation /></div>
         </div>
@@ -73,7 +73,7 @@ export default function FiturPage() {
           <div className="tls-feature-evidence-copy">
             <p className="tls-feature-platform">Web</p>
             <h2 id="feature-invoice">Buat invoice di web.</h2>
-            <p>Pilih sesi yang ingin ditagih, atur tampilan invoice, lalu periksa hasilnya sebelum dikirim.<span className="tls-feature-detail"> Invoice dibuat di web agar detailnya lebih nyaman dicek.</span></p>
+            <p>Pilih murid dan periode yang ingin ditagih, atur tampilan invoice, lalu periksa draftnya.<span className="tls-feature-detail"> Aktifkan Plus saat kamu perlu mengunduh PDF invoice.</span></p>
           </div>
           <div className="tls-feature-evidence-proof"><PublicProductProof id="invoice" annotation /></div>
         </div>

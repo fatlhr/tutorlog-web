@@ -45,7 +45,7 @@ export default function PublicNav() {
         ))}
       </div>
       <Link className="tl-nav-login" href={authed ? "/app" : "/login"}>
-        {authed ? "Dashboard" : "Masuk"}
+        {authed ? "Beranda" : "Masuk"}
       </Link>
       <div className="tl-public-menu">
         <MenuToggle />

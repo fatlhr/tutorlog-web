@@ -10,8 +10,8 @@ import type {
 const products = [
   {
     code: "free",
-    name: "Free",
-    description: "Fitur dasar untuk mulai mencatat sesi.",
+    name: "Paket Free",
+    description: "Catat sesi, periksa rekap, dan susun draft invoice dengan batas ekspor gratis.",
     priceId: null,
     amount: 0,
     currency: "IDR",
@@ -22,8 +22,8 @@ const products = [
   },
   {
     code: "plus_30d",
-    name: "Plus 30 Hari",
-    description: "Akses seluruh fitur Plus selama 30 hari.",
+    name: "Plus 30 hari",
+    description: "Ekspor rekap tanpa batas dan unduh PDF invoice selama 30 hari.",
     priceId: "price_test_plus_30d",
     amount: 19000,
     currency: "IDR",
@@ -34,8 +34,8 @@ const products = [
   },
   {
     code: "plus_12m",
-    name: "Plus 12 Bulan",
-    description: "Akses seluruh fitur Plus selama 12 bulan.",
+    name: "Plus 12 bulan",
+    description: "Ekspor rekap tanpa batas dan unduh PDF invoice selama 12 bulan.",
     priceId: "price_test_plus_12m",
     amount: 149000,
     currency: "IDR",
@@ -46,8 +46,8 @@ const products = [
   },
   {
     code: "plus_lifetime",
-    name: "Plus Selamanya",
-    description: "Sekali bayar untuk akses Plus selamanya.",
+    name: "Plus selamanya",
+    description: "Ekspor rekap tanpa batas dan unduh PDF invoice selamanya.",
     priceId: "price_test_plus_lifetime",
     amount: 249000,
     currency: "IDR",
@@ -86,7 +86,7 @@ function payment(
   return {
     id,
     purchaseId: "PURCHASE-TEST-001",
-    packageName: "Plus 12 Bulan",
+    packageName: "Plus 12 bulan",
     method: "qris",
     state,
     baseAmount: 149000,

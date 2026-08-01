@@ -13,7 +13,7 @@ export default function CheckoutLoading() {
       }}
     >
       <div style={{ width: "min(100%, 620px)" }}>
-        <LoadingState shape="form" rowCount={6} label="Memuat checkout" />
+        <LoadingState shape="form" rowCount={6} label="Memuat pembayaran" />
       </div>
     </div>
   );

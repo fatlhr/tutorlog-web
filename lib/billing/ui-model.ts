@@ -46,10 +46,10 @@ export function annualSavings(products: readonly ProductSummary[]): number {
 }
 
 export function accessLabel(access: AccessSummary): string {
-  if (access.isLifetime) return "Plus Selamanya";
-  if (access.state === "plus_active") return "Plus Aktif";
-  if (access.state === "plus_expired") return "Plus Berakhir";
-  return "Free";
+  if (access.isLifetime) return "Plus selamanya";
+  if (access.state === "plus_active") return "Plus aktif";
+  if (access.state === "plus_expired") return "Plus berakhir";
+  return "Paket Free";
 }
 
 export function paymentStatusCopy(payment: PaymentStatusView): PaymentStatusCopy {
@@ -87,7 +87,7 @@ export function paymentStatusCopy(payment: PaymentStatusView): PaymentStatusCopy
     },
     paid: {
       title: "Plus sudah aktif",
-      body: "Pembayaran berhasil dan akses Plus sudah aktif.",
+      body: "Pembayaran berhasil. Plus sudah aktif.",
       tone: "success",
     },
     expired: {

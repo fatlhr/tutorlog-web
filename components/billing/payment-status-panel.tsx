@@ -69,7 +69,7 @@ function errorMessage(error: unknown): string {
         return "Pembayaran ini tidak dapat diganti lagi.";
       case "PAYMENT_NOT_FOUND":
       case "PURCHASE_NOT_FOUND":
-        return "Pembayaran tidak ditemukan. Coba mulai dari checkout.";
+        return "Pembayaran tidak ditemukan. Buat pembayaran baru dari halaman Harga.";
       default:
         return "Status pembayaran belum dapat dimuat. Coba lagi.";
     }
@@ -210,7 +210,7 @@ export function PaymentStatusPanel({
     if (!payment || replacing) return;
 
     const confirmed = window.confirm(
-      "Ganti metode pembayaran? Pembayaran yang selesai pada metode sebelumnya tetap akan ditinjau dan dihormati.",
+      "Ganti metode pembayaran? Jika pembayaran lewat metode sebelumnya tetap masuk, kami akan memeriksanya.",
     );
     if (!confirmed) return;
 
@@ -231,9 +231,9 @@ export function PaymentStatusPanel({
       <section className={styles.panel} aria-labelledby="payment-status-title">
         <h1 id="payment-status-title">Status pembayaran</h1>
         <p className={styles.error} role="alert">
-          Detail pembayaran belum tersedia. Kembali ke checkout untuk membuat pembayaran baru.
+          Detail pembayaran belum tersedia. Kembali ke halaman pembayaran untuk membuat pembayaran baru.
         </p>
-        <Button href={checkoutPath}>Kembali ke checkout</Button>
+        <Button href={checkoutPath}>Kembali ke pembayaran</Button>
       </section>
     );
   }
@@ -260,7 +260,7 @@ export function PaymentStatusPanel({
 
       <dl className={styles.details}>
         <div>
-          <dt>Referensi aman</dt>
+          <dt>Referensi pembayaran</dt>
           <dd>{payment.safeReference}</dd>
         </div>
         {deadline ? (
@@ -275,7 +275,7 @@ export function PaymentStatusPanel({
 
       {verificationWindowExpired && isPollingPayment(payment) ? (
         <div className={styles.notice}>
-          <p>Verifikasi membutuhkan waktu lebih dari sepuluh menit. Anda dapat memeriksa ulang atau menghubungi kami.</p>
+          <p>Verifikasi membutuhkan waktu lebih dari sepuluh menit. Kamu dapat memeriksa ulang atau menghubungi kami.</p>
           <div className={styles.actions}>
             <Button type="button" variant="secondary" onClick={() => void refreshStatus()}>
               Periksa lagi
@@ -287,7 +287,7 @@ export function PaymentStatusPanel({
 
       {payment.duplicateReview ? (
         <div className={styles.notice}>
-          <p>Pembayaran ganda sedang ditinjau. Sertakan referensi aman saat menghubungi dukungan.</p>
+          <p>Kami sedang memeriksa pembayaran ganda. Sertakan referensi pembayaran saat menghubungi dukungan.</p>
           <Button href={contactPath} variant="quiet">Hubungi dukungan</Button>
         </div>
       ) : null}
@@ -298,7 +298,7 @@ export function PaymentStatusPanel({
           <ol>
             {payment.instructions.map((instruction) => <li key={instruction}>{instruction}</li>)}
           </ol>
-          <p>Jika Anda mengganti metode, pembayaran yang selesai pada metode sebelumnya tetap akan ditinjau dan dihormati.</p>
+          <p>Jika kamu mengganti metode, pembayaran yang masuk lewat metode sebelumnya tetap akan kami periksa.</p>
           <div className={styles.actions}>
             <Button type="button" variant="secondary" onClick={() => void refreshStatus()}>
               Perbarui status
@@ -318,7 +318,7 @@ export function PaymentStatusPanel({
 
       {isVerifying ? (
         <div className={styles.notice}>
-          <p>Pembayaran sedang diverifikasi. Simpan referensi aman di atas bila Anda perlu menghubungi dukungan.</p>
+          <p>Pembayaran sedang diverifikasi. Simpan referensi pembayaran di atas jika kamu perlu menghubungi dukungan.</p>
           <Button type="button" variant="secondary" onClick={() => void refreshStatus()}>
             Perbarui status
           </Button>

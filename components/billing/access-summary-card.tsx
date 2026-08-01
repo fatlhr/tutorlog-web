@@ -20,11 +20,11 @@ export function AccessSummaryCard({ access }: AccessSummaryCardProps) {
   const isExpired = access.state === "plus_expired";
   const canRenew = access.entitlementType === "term";
   const title = access.isLifetime
-    ? "Plus Selamanya"
+    ? "Plus selamanya"
     : isExpired
-      ? "Plus Berakhir"
+      ? "Plus berakhir"
       : access.state === "plus_active"
-        ? "Plus Aktif"
+        ? "Plus aktif"
         : "Paket Free";
   const expiryLabel = isExpired ? "Berakhir pada" : "Aktif sampai";
 
@@ -50,7 +50,7 @@ export function AccessSummaryCard({ access }: AccessSummaryCardProps) {
 
         {access.isLifetime ? (
           <p className={styles.description}>
-            Akses Plus aktif selamanya tanpa masa perpanjangan.
+            Plus aktif selamanya dan tidak perlu diperpanjang.
           </p>
         ) : access.activeUntil ? (
           <p className={styles.description}>
@@ -58,14 +58,14 @@ export function AccessSummaryCard({ access }: AccessSummaryCardProps) {
           </p>
         ) : access.state === "free" ? (
           <p className={styles.description}>
-            Upgrade untuk membuka invoice dan export rekap tanpa batas.
+            Aktifkan Plus untuk mengunduh PDF invoice dan mengekspor rekap tanpa batas.
           </p>
         ) : null}
 
         {isExpired ? (
           <p className={styles.description}>
-            Export rekap kembali mengikuti batas gratis dan invoice terkunci
-            sampai Plus diperpanjang.
+            Ekspor rekap kembali mengikuti batas Paket Free. Kamu tetap bisa
+            menyusun draft invoice, tetapi perlu memperpanjang Plus untuk mengunduh PDF.
           </p>
         ) : null}
 

@@ -35,7 +35,7 @@ const recapProof = {
     width: 1024,
     height: 900,
   },
-  note: "Rekap bisa dibuka dan diekspor dari HP maupun web.",
+  note: "Bagikan rekap sebagai PDF atau CSV dari HP. Di web, unduh file yang sama.",
 } as const;
 
 const invoiceProof = {

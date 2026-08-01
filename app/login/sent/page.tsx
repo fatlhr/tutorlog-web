@@ -7,8 +7,8 @@ import { safeNextPath } from "@/lib/auth/safe-next";
 import { sendMagicLink } from "../actions";
 
 export const metadata: Metadata = {
-  title: "TutorLog - Cek Email",
-  description: "Buka link dari email untuk masuk ke TutorLog.",
+  title: "TutorLog - Cek email",
+  description: "Buka tautan dari email untuk masuk ke TutorLog.",
 };
 
 export default async function LoginSentPage({
@@ -24,23 +24,23 @@ export default async function LoginSentPage({
     <PublicShell
       compact
       className="tl-auth-page tl-auth-sent-page"
-      eyebrow="Link masuk terkirim"
+      eyebrow="Tautan masuk sudah dikirim"
       title="Cek email kamu."
-      subtitle="Klik link di email untuk masuk ke web TutorLog."
+      subtitle="Buka tautan di email untuk masuk ke web TutorLog."
       icon={null}
       showBackLink
     >
-      <section className="tl-auth-layout tl-auth-sent-layout" aria-label="Petunjuk membuka link masuk">
+      <section className="tl-auth-layout tl-auth-sent-layout" aria-label="Petunjuk membuka tautan masuk">
         <div className="tl-auth-context">
           <span className="tl-auth-icon" aria-hidden="true"><EnvelopeOpen size={28} weight="duotone" /></span>
-          <h2>Link dikirim ke:</h2>
+          <h2>Tautan dikirim ke:</h2>
           <p className="tl-auth-email">{emailLabel}</p>
-          <p className="tl-auth-note">Link berlaku selama 1 jam.</p>
+          <p className="tl-auth-note">Tautan berlaku selama 1 jam.</p>
         </div>
         <div className="tl-auth-divider" aria-hidden="true" />
         <div className="tl-auth-form tl-auth-sent-actions">
           <div className="tl-auth-form-heading">
-            <h2>Buka email lalu klik link masuk.</h2>
+            <h2>Buka email lalu pilih tautan masuk.</h2>
             <p>Kalau email belum terlihat, cek folder spam atau tunggu beberapa detik.</p>
           </div>
           <MarketingButton
@@ -57,7 +57,7 @@ export default async function LoginSentPage({
             <form action={sendMagicLink}>
               <input type="hidden" name="email" value={email} />
               <input type="hidden" name="next" value={next} />
-              <button className="tl-auth-text-button" type="submit">Kirim ulang link</button>
+              <button className="tl-auth-text-button" type="submit">Kirim tautan baru</button>
             </form>
           ) : null}
           <p className="tl-auth-legal">Salah alamat? <Link href={`/login?next=${encodeURIComponent(next)}`}>Ganti email</Link>.</p>

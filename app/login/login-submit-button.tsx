@@ -14,9 +14,9 @@ export function LoginSubmitButton() {
       block
       leadingIcon={<PaperPlaneTilt size={18} weight="fill" />}
       loading={pending}
-      loadingLabel="Mengirim link..."
+      loadingLabel="Mengirim tautan..."
     >
-      Kirim link masuk
+      Kirim tautan masuk
     </MarketingButton>
   );
 }

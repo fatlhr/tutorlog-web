@@ -3,7 +3,7 @@ import { Warning } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
 
 export const metadata: Metadata = {
-  title: "TutorLog - Hapus Akun",
+  title: "TutorLog - Hapus akun",
   description: "Panduan penghapusan akun TutorLog, data yang dihapus, cara mengajukan, dan estimasi proses.",
 };
 
@@ -18,7 +18,7 @@ export default function AccountPage() {
   return (
     <PublicShell
       compact
-      eyebrow="Hapus Akun"
+      eyebrow="Hapus akun"
       title="Penghapusan akun TutorLog"
       subtitle="Terakhir diperbarui: 3 Juni 2026"
       icon={null}
@@ -46,7 +46,7 @@ export default function AccountPage() {
               <li>Profil tutor.</li>
               <li>Data murid dan lokasi belajar.</li>
               <li>Riwayat sesi dan kehadiran.</li>
-              <li>Data akses premium, voucher, dan jumlah penggunaan fitur.</li>
+              <li>Data paket Plus, voucher, dan jumlah penggunaan fitur.</li>
               <li>Catatan dukungan terkait permintaan, jika sudah tidak dibutuhkan.</li>
             </ul>
             <p>Jika ada data yang wajib disimpan untuk keamanan, pencegahan penyalahgunaan, atau kewajiban hukum, TutorLog hanya akan menyimpan data yang memang diperlukan.</p>

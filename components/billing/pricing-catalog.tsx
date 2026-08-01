@@ -69,7 +69,7 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
               ) : isLifetime ? (
                 <p>Bayar sekali untuk akses Plus selamanya.</p>
               ) : (
-                <p>{isFree ? "Mulai tanpa biaya." : "Seluruh fitur Plus termasuk dalam paket ini."}</p>
+                <p>{isFree ? "Mulai tanpa biaya." : "Ekspor rekap tanpa batas dan unduh PDF invoice."}</p>
               )}
             </div>
 
@@ -87,7 +87,9 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
                     surface: "pricing",
                   })}
                 >
-                  {isFree ? (authenticated ? "Buka TutorLog" : "Mulai gratis") : "Pilih paket"}
+                  {isFree
+                    ? (authenticated ? "Buka Beranda" : "Mulai gratis")
+                    : `Pilih ${product.name}`}
                 </MarketingButton>
               )}
             </div>

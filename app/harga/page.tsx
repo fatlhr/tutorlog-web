@@ -9,17 +9,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "TutorLog - Harga",
-  description: "Mulai gratis, lalu pilih Plus saat kamu sudah perlu mengekspor rekap dan mengunduh invoice.",
+  description: "Mulai dengan Paket Free, lalu pilih Plus saat kamu perlu mengekspor rekap tanpa batas dan mengunduh PDF invoice.",
 };
 
 const faqs = [
   {
-    question: "Apakah data tetap aman kalau tidak upgrade?",
+    question: "Apakah data tetap aman jika saya memakai Paket Free?",
     answer: "Ya. Paket Free tetap bisa dipakai untuk mencatat sesi dan membuat rekap. Ekspor mengikuti batas paket, sedangkan invoice hanya bisa diunduh saat Plus aktif.",
   },
   {
     question: "Apa beda beli putus dan bulanan?",
-    answer: "Fitur Plus-nya sama. Beli putus dibayar sekali untuk akses penuh selamanya, sedangkan bulanan bisa dihentikan kapan saja.",
+    answer: "Fitur Plus-nya sama. Paket sekali bayar tetap aktif selamanya, sedangkan paket berjangka berakhir sesuai durasi yang dipilih.",
   },
   {
     question: "Bagaimana cara pembayaran?",
@@ -36,7 +36,7 @@ function PriceVisual() {
     <aside className="tl-price-visual tl-public-product" aria-label="Ilustrasi akses TutorLog" data-symbolic-evidence="pricing">
       <Receipt size={46} weight="duotone" aria-hidden="true" />
       <strong>Mulai dari catatan pertama.</strong>
-      <p>Pilih Plus saat kamu sudah rutin mengekspor rekap atau membuat invoice.</p>
+      <p>Pilih Plus saat kamu perlu mengekspor rekap tanpa batas atau mengunduh PDF invoice.</p>
     </aside>
   );
 }
@@ -57,7 +57,7 @@ export default async function HargaPage() {
     <PublicShell
       eyebrow="Harga TutorLog"
       title="Mulai gratis, pilih Plus saat sudah dibutuhkan."
-      subtitle="Coba alurnya lewat paket Free. Plus membuka ekspor tanpa batas dan unduh invoice."
+      subtitle="Mulai dengan Paket Free. Aktifkan Plus saat kamu perlu mengekspor rekap tanpa batas dan mengunduh PDF invoice."
       icon={null}
       aside={<PriceVisual />}
       showBackLink

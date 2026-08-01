@@ -456,7 +456,7 @@ export default function InvoicePage() {
       pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
       setExportSuccess(true);
     } catch {
-      setExportError("Ekspor belum dapat diselesaikan. Coba lagi.");
+      setExportError("PDF invoice belum berhasil diunduh. Coba lagi.");
     } finally {
       setExporting(false);
     }
@@ -644,10 +644,10 @@ export default function InvoicePage() {
         style={{ overflow: "auto" }}
       >
         <div className="inv-preview-toolbar">
-          <div className="tw-title-md">{dialog ? "Tampilan" : "Periksa invoice"} · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
+          <div className="tw-title-md">{dialog ? "Pratinjau" : "Periksa invoice"} · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
           <div className="zoom-ctl">
             <IconButton
-              label="Perkecil preview"
+              label="Perkecil pratinjau"
               icon={<Minus size={14} />}
               variant="quiet"
               size="compact"
@@ -655,7 +655,7 @@ export default function InvoicePage() {
             />
             <span className="z">{z}%</span>
             <IconButton
-              label="Perbesar preview"
+              label="Perbesar pratinjau"
               icon={<Plus size={14} />}
               variant="quiet"
               size="compact"
@@ -705,7 +705,7 @@ export default function InvoicePage() {
         </Field>
 
         <div className="inv-period-fields">
-          <Field controlId="invoice-period-start" label="Periode" required>
+          <Field controlId="invoice-period-start" label="Tanggal mulai" required>
             <DateField
               id="invoice-period-start"
               value={periodStart}
@@ -713,7 +713,7 @@ export default function InvoicePage() {
               onChange={setPeriodStart}
             />
           </Field>
-          <Field controlId="invoice-period-end" label="Sampai" required>
+          <Field controlId="invoice-period-end" label="Tanggal selesai" required>
             <DateField
               id="invoice-period-end"
               value={periodEnd}
@@ -729,11 +729,11 @@ export default function InvoicePage() {
           <div className="inv-auto-sessions inv-auto-sessions-error" aria-live="polite">Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
         ) : invoiceSessions.length > 0 ? (
           <div className="inv-auto-sessions" aria-live="polite">
-            Semua sesi selesai pada periode yang dipilih akan dimasukkan otomatis ke preview invoice.
+            Sesi selesai pada periode ini dimasukkan otomatis ke draft invoice.
           </div>
         ) : studentName && periodStart && periodEnd ? (
           <div className="inv-auto-sessions inv-auto-sessions-error" aria-live="polite">
-            Pilih periode yang memiliki minimal satu sesi selesai.
+            Tidak ada sesi selesai untuk murid dan periode ini.
           </div>
         ) : null}
 
@@ -743,11 +743,11 @@ export default function InvoicePage() {
         <SectionHeading level="h2" size="compact" title="Pembayaran" />
 
         <div className="inv-payment-fields">
-          <Field controlId="invoice-bank-account" label="Bank" required>
+          <Field controlId="invoice-bank-account" label="Bank dan nomor rekening" required>
             <TextField id="invoice-bank-account" value={bankAccount} onChange={setBankAccount} placeholder="BCA - 1234 5678 9012" />
           </Field>
 
-          <Field controlId="invoice-bank-name" label="Nama Pemilik Rekening" required>
+          <Field controlId="invoice-bank-name" label="Nama pemilik rekening" required>
             <TextField
               id="invoice-bank-name"
               value={bankName}
@@ -762,7 +762,7 @@ export default function InvoicePage() {
         <SectionHeading level="h2" size="compact" title="Tampilan invoice" />
 
         <div className="inv-choice-field">
-          <div className="inv-choice-label">Template</div>
+          <div className="inv-choice-label">Pilih tampilan</div>
           <div className="template-picker">
             {TEMPLATES.map((t) => (
               <button
@@ -790,7 +790,7 @@ export default function InvoicePage() {
         </div>
 
         <div className="inv-choice-field">
-          <div className="inv-choice-label">Warna Aksen</div>
+          <div className="inv-choice-label">Warna aksen</div>
           <div className="color-picker">
             {COLORS.map((c) => (
               <button
@@ -814,7 +814,7 @@ export default function InvoicePage() {
           <TextField id="invoice-tutor-name" value={tutorName} onChange={setTutorName} placeholder="Contoh: Nama tutor" />
         </Field>
 
-        <Field controlId="invoice-service-name" label="Nama layanan atau brand (opsional)">
+        <Field controlId="invoice-service-name" label="Nama layanan atau merek (opsional)">
           <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les Privat Rina" />
         </Field>
 
@@ -830,7 +830,7 @@ export default function InvoicePage() {
       <div className="inv-section">
         <SectionHeading level="h2" size="compact" title="Penerima invoice" />
 
-        <Field controlId="invoice-parent-name" label="Ditagih Kepada" required>
+        <Field controlId="invoice-parent-name" label="Ditagih kepada" required>
           <TextField id="invoice-parent-name" value={parentName} onChange={setParentName} placeholder="Contoh: Orang tua/wali murid" />
         </Field>
 
@@ -900,7 +900,9 @@ export default function InvoicePage() {
       </div>
       {invoiceDownloadLocked ? (
         <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
-          Unduh PDF invoice tersedia untuk Plus aktif.
+          {accessState === "plus_expired"
+            ? "Perpanjang Plus untuk mengunduh PDF invoice."
+            : "Aktifkan Plus untuk mengunduh PDF invoice."}
         </div>
       ) : null}
       </form>
@@ -928,7 +930,7 @@ export default function InvoicePage() {
           <Desktop size={34} aria-hidden="true" />
           <p>Invoice TutorLog</p>
           <h1 id="invoice-mobile-handoff-title">Buat invoice di laptop.</h1>
-          <span>Editor dan preview A4 lebih nyaman diperiksa pada layar yang lebih lebar.</span>
+          <span>Form dan pratinjau A4 lebih nyaman diperiksa di layar yang lebih lebar.</span>
           <div className="app-invoice-handoff-actions">
             <Button href="/app" size="large" block>Kembali ke Beranda</Button>
             <button
@@ -936,7 +938,7 @@ export default function InvoicePage() {
               className="app-invoice-continue"
               onClick={() => setMobileEditorOpen(true)}
             >
-              Lanjutkan di sini
+              Tetap buat di sini
             </button>
           </div>
         </section>

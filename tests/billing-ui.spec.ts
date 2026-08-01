@@ -163,10 +163,10 @@ test.describe("Billing fixture and browser-boundary contracts", () => {
   });
 
   test("validates four Profile access DTO view-model contracts", async () => {
-    expect(accessLabel(billingFixtures.access.free)).toBe("Free");
-    expect(accessLabel(billingFixtures.access.active)).toBe("Plus Aktif");
-    expect(accessLabel(billingFixtures.access.expired)).toBe("Plus Berakhir");
-    expect(accessLabel(billingFixtures.access.lifetime)).toBe("Plus Selamanya");
+    expect(accessLabel(billingFixtures.access.free)).toBe("Paket Free");
+    expect(accessLabel(billingFixtures.access.active)).toBe("Plus aktif");
+    expect(accessLabel(billingFixtures.access.expired)).toBe("Plus berakhir");
+    expect(accessLabel(billingFixtures.access.lifetime)).toBe("Plus selamanya");
   });
 
   test("validates the blocked-export browser API mock DTO contract", async ({ page }) => {

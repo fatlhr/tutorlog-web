@@ -25,16 +25,16 @@ export default function PaywallDialog({
   const isInvoice = variant === "invoice";
   const expired = reason === "expired";
   const title = isInvoice
-    ? expired ? "Plus sudah kedaluwarsa" : "Invoice tersedia di Plus"
-    : expired ? "Plus sudah kedaluwarsa" : "Batas export rekap gratis tercapai";
+    ? expired ? "Plus sudah berakhir" : "Unduh PDF invoice dengan Plus"
+    : expired ? "Plus sudah berakhir" : "Batas ekspor rekap Paket Free tercapai";
   const description = isInvoice
     ? expired
-      ? "Perpanjang Plus untuk membuka kembali export invoice."
-      : "Aktifkan Plus untuk membuat dan mengunduh invoice. Rekap export gratis tetap mengikuti batas paketmu."
+      ? "Kamu tetap bisa menyusun dan memeriksa draft invoice. Perpanjang Plus untuk mengunduh PDF."
+      : "Kamu tetap bisa menyusun dan memeriksa draft invoice dengan Paket Free. Aktifkan Plus untuk mengunduh PDF."
     : expired
-      ? "Akses Plus kamu sudah berakhir, jadi export rekap kembali mengikuti batas gratis. Perpanjang Plus untuk export tanpa batas."
-      : "Paket Free memiliki batas export rekap untuk tiap format. Plus aktif membuka export PDF dan CSV tanpa batas.";
-  const primaryCta = expired ? "Perpanjang Plus" : "Lihat paket Plus";
+      ? "Masa aktif Plus sudah berakhir. Ekspor rekap kembali mengikuti batas Paket Free. Perpanjang Plus untuk mengekspor tanpa batas."
+      : "Paket Free memiliki batas ekspor rekap untuk setiap format. Aktifkan Plus untuk mengekspor PDF dan CSV tanpa batas.";
+  const primaryCta = expired ? "Perpanjang Plus" : "Aktifkan Plus";
 
   useEffect(() => {
     if (!open) return;
@@ -85,21 +85,21 @@ export default function PaywallDialog({
               lineHeight: "18px",
             }}
           >
-            {quotaUsage.pdf ? <span>PDF: {quotaUsage.pdf.used}/{quotaUsage.pdf.limit} export terpakai</span> : null}
-            {quotaUsage.csv ? <span>CSV: {quotaUsage.csv.used}/{quotaUsage.csv.limit} export terpakai</span> : null}
+            {quotaUsage.pdf ? <span>PDF: {quotaUsage.pdf.used}/{quotaUsage.pdf.limit} ekspor terpakai</span> : null}
+            {quotaUsage.csv ? <span>CSV: {quotaUsage.csv.used}/{quotaUsage.csv.limit} ekspor terpakai</span> : null}
           </div>
         ) : null}
         <ul className="feats">
           {isInvoice ? (
             <>
-              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Export invoice PDF</li>
-              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Tiga tampilan invoice dan pilihan warna</li>
-              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Draft invoice tetap bisa diperiksa sebelum upgrade</li>
+              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Unduh PDF invoice</li>
+              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Ekspor rekap PDF dan CSV tanpa batas selama Plus aktif</li>
+              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Draft invoice tetap dapat diperiksa dengan Paket Free</li>
             </>
           ) : (
             <>
-              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Export rekap PDF dan CSV tanpa batas</li>
-              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Invoice PDF terbuka selama Plus aktif</li>
+              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Ekspor rekap PDF dan CSV tanpa batas</li>
+              <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Unduh PDF invoice selama Plus aktif</li>
               <li><span className="ck"><Check size={12} weight="bold" aria-hidden="true" /></span>Cocok untuk rekap bulanan dan arsip pembayaran</li>
             </>
           )}

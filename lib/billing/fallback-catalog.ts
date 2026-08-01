@@ -7,8 +7,8 @@ import type {
 export const FALLBACK_BILLING_CATALOG = [
   {
     code: "free",
-    name: "TutorLog Free",
-    description: "Fitur inti TutorLog dengan batas penggunaan gratis.",
+    name: "Paket Free",
+    description: "Catat sesi, periksa rekap, dan susun draft invoice dengan batas ekspor gratis.",
     priceId: null,
     amount: 0,
     currency: "IDR",
@@ -19,8 +19,8 @@ export const FALLBACK_BILLING_CATALOG = [
   },
   {
     code: "plus_30d",
-    name: "Plus 30 Hari",
-    description: "Akses penuh TutorLog Plus selama 30 hari.",
+    name: "Plus 30 hari",
+    description: "Ekspor rekap tanpa batas dan unduh PDF invoice selama 30 hari.",
     priceId: null,
     amount: 19000,
     currency: "IDR",
@@ -31,8 +31,8 @@ export const FALLBACK_BILLING_CATALOG = [
   },
   {
     code: "plus_12m",
-    name: "Plus 12 Bulan",
-    description: "Akses penuh TutorLog Plus selama 12 bulan.",
+    name: "Plus 12 bulan",
+    description: "Ekspor rekap tanpa batas dan unduh PDF invoice selama 12 bulan.",
     priceId: null,
     amount: 149000,
     currency: "IDR",
@@ -43,8 +43,8 @@ export const FALLBACK_BILLING_CATALOG = [
   },
   {
     code: "plus_lifetime",
-    name: "Plus Selamanya",
-    description: "Akses penuh TutorLog Plus tanpa batas waktu.",
+    name: "Plus selamanya",
+    description: "Ekspor rekap tanpa batas dan unduh PDF invoice selamanya.",
     priceId: null,
     amount: 249000,
     currency: "IDR",

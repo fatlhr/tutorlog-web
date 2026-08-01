@@ -30,7 +30,7 @@ assert.equal(productPeriodLabel(billingFixtures.products[1]), "30 hari");
 assert.equal(productPeriodLabel(billingFixtures.products[2]), "12 bulan");
 assert.equal(productPeriodLabel(billingFixtures.products[3]), "selamanya");
 assert.equal(annualSavings(billingFixtures.products), 79000);
-assert.equal(accessLabel(billingFixtures.access.lifetime), "Plus Selamanya");
+assert.equal(accessLabel(billingFixtures.access.lifetime), "Plus selamanya");
 assert.equal(
   paymentStatusCopy(billingFixtures.payments.verifying).title,
   "Memverifikasi pembayaran",
@@ -283,7 +283,7 @@ assert.equal(
 const accessSummaryCardSource = readFileSync(accessSummaryCardPath, "utf8");
 assert.match(accessSummaryCardSource, /access: AccessSummary/);
 assert.match(accessSummaryCardSource, /access\.isLifetime/);
-assert.match(accessSummaryCardSource, /Plus Selamanya/);
+assert.match(accessSummaryCardSource, /Plus selamanya/);
 assert.match(accessSummaryCardSource, /access\.activeUntil/);
 assert.match(accessSummaryCardSource, /Aktif sampai/);
 assert.match(accessSummaryCardSource, /Berakhir pada/);

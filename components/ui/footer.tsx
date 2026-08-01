@@ -32,12 +32,12 @@ export function AppFooter({ context }: AppFooterProps) {
       <div className={styles.footerCol}>
         <span className={styles.footerColHeading}>Bantuan</span>
         {context === "public" ? (
-          <Link className={styles.footerLink} href="/account">Hapus Akun</Link>
+          <Link className={styles.footerLink} href="/account">Hapus akun</Link>
         ) : (
           <Link className={styles.footerLink} href="/kontak">Kontak</Link>
         )}
         <Link className={styles.footerLink} href="/privacy">Privasi</Link>
-        <Link className={styles.footerLink} href="/terms">Syarat &amp; Ketentuan</Link>
+        <Link className={styles.footerLink} href="/terms">Syarat &amp; ketentuan</Link>
       </div>
       <span className={styles.footerCopyright}>© 2026 TutorLog</span>
     </footer>

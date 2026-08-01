@@ -13,13 +13,13 @@ const workflowCopy = [
   {
     id: "recap",
     title: "Buka rekap saat dibutuhkan.",
-    body: "Sesi, jam mengajar, pendapatan, dan murid sudah tersusun. Tinggal cek atau ekspor dari HP maupun web.",
+    body: "Sesi, jam mengajar, pendapatan, dan murid sudah tersusun. Bagikan rekap dari HP atau unduh dari web.",
     artifact: <RecapArtifact />,
   },
   {
     id: "invoice",
     title: "Buat invoice dari sesi yang sama.",
-    body: "Pilih sesi dan periksa invoice di web sebelum disimpan atau dikirim.",
+    body: "Pilih murid dan periode, lalu periksa draft invoice di web. Plus diperlukan untuk mengunduh PDF.",
     artifact: <InvoiceArtifact />,
   },
 ] as const;

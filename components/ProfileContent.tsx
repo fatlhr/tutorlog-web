@@ -40,7 +40,7 @@ export default function ProfileContent({
   const handleSave = useCallback(() => {
     const trimmed = editValue.trim();
     if (!trimmed || trimmed.length > 100) {
-      setError("Nama tidak valid");
+      setError("Nama tidak valid.");
       return;
     }
 
@@ -103,7 +103,7 @@ export default function ProfileContent({
                     htmlFor="profile-name"
                     style={{ display: "block", marginBottom: 8 }}
                   >
-                    Edit nama<span className={styles.requiredMark}> *</span>
+                    Ubah nama<span className={styles.requiredMark}> *</span>
                   </label>
                   <div
                     className={`${styles.fieldControl} ${styles.fieldControlSizeDefault}`}
@@ -194,7 +194,7 @@ export default function ProfileContent({
                 <DeviceMobile size={24} aria-hidden="true" />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Catat sesi dari aplikasi TutorLog</div>
-                  <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)" }}>Unduh aplikasi untuk mencatat sesi les di HP.</div>
+                  <div style={{ fontSize: 13, color: "var(--app-ink-muted, #5f6b68)" }}>Buka aplikasi TutorLog untuk mencatat sesi les di HP.</div>
                 </div>
               </div>
               <div className={styles.profileCtaButton}>

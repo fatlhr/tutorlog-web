@@ -113,12 +113,12 @@ export default function AppTopBar({ name, initials, access, communityLink }: App
               {communityLink ? (
                 <a href={communityLink} role="menuitem" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
                   <TelegramLogo size={17} aria-hidden="true" />
-                  Gabung Komunitas
+                  Gabung komunitas
                 </a>
               ) : (
                 <button type="button" role="menuitem" aria-disabled="true" disabled>
                   <TelegramLogo size={17} aria-hidden="true" />
-                  Gabung Komunitas
+                  Gabung komunitas
                 </button>
               )}
               <Link href="/kontak" role="menuitem" onClick={() => setOpen(false)}>

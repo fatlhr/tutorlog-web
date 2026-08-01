@@ -3,7 +3,7 @@ import { PublicShell } from "@/components/PublicShell";
 import { PrivacyContent } from "@/components/content/privacy-content";
 
 export const metadata: Metadata = {
-  title: "TutorLog - Kebijakan Privasi",
+  title: "TutorLog - Kebijakan privasi",
   description: "Kebijakan privasi TutorLog, data yang dipakai, penyimpanan, dan hak pengguna.",
 };
 
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     <PublicShell
       compact
       eyebrow="Privasi"
-      title="Kebijakan Privasi"
+      title="Kebijakan privasi"
       subtitle="Terakhir diperbarui: 3 Juni 2026"
       icon={null}
     >

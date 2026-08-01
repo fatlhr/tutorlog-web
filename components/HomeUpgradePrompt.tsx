@@ -10,13 +10,13 @@ interface HomeUpgradePromptProps {
 export default function HomeUpgradePrompt({ accessState, exhausted }: HomeUpgradePromptProps) {
   const expired = accessState === "plus_expired";
   const title = expired
-    ? "Plus sudah kedaluwarsa."
+    ? "Plus sudah berakhir."
     : exhausted
-      ? "Batas export rekap gratis sudah digunakan."
-      : "Export rekap gratis masih tersedia.";
+      ? "Batas ekspor rekap Paket Free sudah terpakai."
+      : "Ekspor rekap Paket Free masih tersedia.";
   const body = expired
-    ? "Perpanjang Plus untuk membuka invoice dan export rekap tanpa batas."
-    : "Plus membuka invoice dan export rekap PDF/CSV tanpa batas.";
+    ? "Perpanjang Plus untuk mengunduh PDF invoice dan mengekspor rekap tanpa batas."
+    : "Dengan Plus, kamu bisa mengunduh PDF invoice dan mengekspor rekap PDF/CSV tanpa batas.";
 
   return (
     <aside aria-label="TutorLog Plus" data-analytics-id="billing-dashboard-prompt">

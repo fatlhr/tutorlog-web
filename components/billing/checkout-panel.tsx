@@ -28,7 +28,7 @@ const PAYMENT_OPTIONS = [
   },
   {
     value: "va",
-    label: "Virtual Account",
+    label: "Virtual account",
     description: "Bayar melalui transfer bank.",
   },
 ];
@@ -53,7 +53,7 @@ function errorMessage(error: unknown): string {
       case "PRICE_CHANGED":
         return "Harga paket telah berubah. Muat ulang halaman untuk melihat harga terbaru.";
       case "LIFETIME_ALREADY_ACTIVE":
-        return "Akun ini sudah memiliki akses Plus Selamanya.";
+        return "Plus selamanya sudah aktif di akun ini.";
       case "PAYMENT_PROVIDER_NOT_READY":
       case "PROVIDER_UNAVAILABLE":
         return "Layanan pembayaran sedang tidak tersedia. Coba lagi beberapa saat.";
@@ -201,7 +201,7 @@ export function CheckoutPanel({
   return (
     <section className={styles.panel} aria-labelledby="checkout-title">
       <header className={styles.header}>
-        <p className={styles.eyebrow}>Checkout</p>
+        <p className={styles.eyebrow}>Pembayaran</p>
         <h1 id="checkout-title">{product.name}</h1>
         <p>{product.description}</p>
       </header>
@@ -251,8 +251,8 @@ export function CheckoutPanel({
           onChange={(event) => setTermsAccepted(event.target.checked)}
         />
         <span>
-          Saya menyetujui <Link href="/terms">Syarat dan Ketentuan</Link> serta{" "}
-          <Link href="/privacy">Kebijakan Privasi</Link>.
+          Saya menyetujui <Link href="/terms">Syarat dan ketentuan</Link> serta{" "}
+          <Link href="/privacy">Kebijakan privasi</Link>.
         </span>
       </label>
 

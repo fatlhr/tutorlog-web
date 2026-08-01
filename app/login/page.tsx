@@ -10,13 +10,13 @@ import { LoginSubmitButton } from "./login-submit-button";
 
 export const metadata: Metadata = {
   title: "TutorLog - Masuk",
-  description: "Masuk ke TutorLog lewat link yang dikirim ke emailmu.",
+  description: "Masuk ke TutorLog lewat tautan yang dikirim ke emailmu.",
 };
 
 const errorMessages: Record<string, string> = {
   "invalid-email": "Masukkan alamat email yang valid.",
-  "send-failed": "Link belum berhasil dikirim. Coba lagi beberapa saat lagi.",
-  auth: "Link masuk tidak valid atau sudah kedaluwarsa. Kirim link baru untuk melanjutkan.",
+  "send-failed": "Tautan belum berhasil dikirim. Coba lagi beberapa saat lagi.",
+  auth: "Tautan masuk tidak valid atau sudah kedaluwarsa. Kirim tautan baru untuk masuk.",
 };
 
 export default async function LoginPage({
@@ -38,7 +38,7 @@ export default async function LoginPage({
       className="tl-auth-page"
       eyebrow="Masuk"
       title="Masuk ke TutorLog."
-      subtitle="Masukkan email yang kamu pakai di aplikasi. Kami akan mengirim link masuk ke emailmu. Kamu tidak perlu password."
+      subtitle="Masukkan email yang kamu pakai di aplikasi. Kami akan mengirim tautan masuk ke emailmu. Kamu tidak perlu kata sandi."
       icon={null}
       showBackLink
     >
@@ -56,10 +56,10 @@ export default async function LoginPage({
             defaultValue={email}
             placeholder="nama@email.com"
             required
-            helper="Link berlaku 1 jam. Kalau email belum terdaftar, akun baru akan dibuat otomatis."
+            helper="Tautan berlaku selama 1 jam. Kalau email belum terdaftar, akun baru akan dibuat otomatis."
           />
           <LoginSubmitButton />
-          <p className="tl-auth-legal">Dengan masuk, kamu menyetujui <Link href="/privacy">Kebijakan Privasi</Link> dan <Link href="/terms">Syarat &amp; Ketentuan</Link> TutorLog.</p>
+          <p className="tl-auth-legal">Dengan masuk, kamu menyetujui <Link href="/privacy">Kebijakan privasi</Link> dan <Link href="/terms">Syarat &amp; ketentuan</Link> TutorLog.</p>
         </form>
       </section>
     </PublicShell>

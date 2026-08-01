@@ -31,7 +31,7 @@ export default function Home() {
               rel="noopener"
               leadingIcon={<Play size={18} weight="fill" />}
             >
-              Mulai Gratis
+              Mulai gratis
             </MarketingButton>
             <LandingDemoDialog />
           </div>
@@ -60,7 +60,7 @@ export default function Home() {
       </div>
 
       <section className="tl-landing-next" aria-labelledby="landing-next-title">
-        <p id="landing-next-title">Mulai gratis. Pilih Plus saat kamu mulai rutin mengekspor rekap atau membuat invoice.</p>
+        <p id="landing-next-title">Mulai dengan Paket Free. Aktifkan Plus saat kamu perlu mengekspor rekap tanpa batas atau mengunduh PDF invoice.</p>
         <nav aria-label="Jelajahi TutorLog">
           <Link href="/fitur">Lihat fitur <ArrowRight size={16} aria-hidden="true" /></Link>
           <Link href="/harga">Bandingkan paket <ArrowRight size={16} aria-hidden="true" /></Link>
@@ -86,7 +86,7 @@ export default function Home() {
             rel="noopener"
             leadingIcon={<Play size={18} weight="fill" />}
           >
-            Mulai Gratis
+            Mulai gratis
           </MarketingButton>
         </section>
       </div>

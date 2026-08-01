@@ -19,7 +19,7 @@ export default function NamePromptDialog({ hasName }: NamePromptDialogProps) {
 
   const handleSubmit = useCallback(() => {
     if (!name.trim() || name.trim().length > 100) {
-      setError("Nama tidak valid");
+      setError("Nama tidak valid.");
       return;
     }
 
@@ -49,7 +49,7 @@ export default function NamePromptDialog({ hasName }: NamePromptDialogProps) {
       footer={
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <Button type="button" variant="quiet" onClick={() => setOpen(false)}>
-            Nanti
+            Nanti saja
           </Button>
           <Button type="button" variant="primary" disabled={pending || !name.trim()} onClick={handleSubmit}>
             {pending ? "Menyimpan..." : "Simpan"}
