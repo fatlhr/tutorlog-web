@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PaperPlaneTilt } from "@phosphor-icons/react/dist/ssr";
 import { redirect } from "next/navigation";
 import { PublicShell } from "@/components/PublicShell";
-import { MarketingButton } from "@/components/public-ui/marketing-button";
 import { PublicField } from "@/components/public-ui/public-field";
 import { safeNextPath } from "@/lib/auth/safe-next";
 import { createClient } from "@/lib/supabase/server";
 import { sendMagicLink } from "./actions";
+import { LoginSubmitButton } from "./login-submit-button";
 
 export const metadata: Metadata = {
   title: "TutorLog - Masuk",
@@ -59,14 +58,7 @@ export default async function LoginPage({
             required
             helper="Link berlaku 1 jam. Kalau email belum terdaftar, akun baru akan dibuat otomatis."
           />
-          <MarketingButton
-            type="submit"
-            size="large"
-            block
-            leadingIcon={<PaperPlaneTilt size={18} weight="fill" />}
-          >
-            Kirim link masuk
-          </MarketingButton>
+          <LoginSubmitButton />
           <p className="tl-auth-legal">Dengan masuk, kamu menyetujui <Link href="/privacy">Kebijakan Privasi</Link> dan <Link href="/terms">Syarat &amp; Ketentuan</Link> TutorLog.</p>
         </form>
       </section>
