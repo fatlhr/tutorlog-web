@@ -62,7 +62,7 @@ export default function FiturPage() {
           <div className="tls-feature-evidence-copy">
             <p className="tls-feature-platform">HP dan web</p>
             <h2 id="feature-rekap">Periksa dan ekspor rekap dari perangkat yang kamu pakai.</h2>
-            <p>Lihat sesi, total jam mengajar, pendapatan, dan murid dalam satu rekap.<span className="tls-feature-detail"> Di HP, bagikan rekap sebagai PDF atau CSV. Di web, unduh file untuk disimpan atau dibagikan.</span></p>
+            <p>Lihat sesi, total durasi mengajar, pendapatan, dan murid dalam satu rekap.<span className="tls-feature-detail"> Di HP, bagikan rekap sebagai PDF atau CSV. Di web, unduh file untuk disimpan atau dibagikan.</span></p>
           </div>
           <div className="tls-feature-evidence-proof"><PublicProductProof id="recap" annotation /></div>
         </div>

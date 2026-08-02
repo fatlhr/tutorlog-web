@@ -18,7 +18,7 @@ const mobileSteps = [
 
 const webSteps = [
   ["Masuk ke web dengan email yang sama.", "Kami mengirim tautan masuk ke emailmu agar catatan dari aplikasi bisa dibuka di web."],
-  ["Lihat rekap bulanannya.", "Sesi, jam, dan murid sudah terkumpul untuk dicek ulang."],
+  ["Lihat rekap bulanannya.", "Sesi, durasi, dan murid sudah terkumpul untuk dicek ulang."],
   ["Buat invoice.", "Pilih murid dan periode, periksa draft, lalu unduh PDF saat Plus aktif."],
 ] as const;
 

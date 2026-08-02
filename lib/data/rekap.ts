@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/format";
-import { getSessionMetrics, toWibDateRange } from "@/lib/data/session-metrics.mjs";
+import {
+  formatDurationMinutes,
+  getSessionMetrics,
+  toWibDateRange,
+} from "@/lib/data/session-metrics.mjs";
 
 export interface SessionItem {
   id: string;
@@ -8,20 +12,21 @@ export interface SessionItem {
   rawDate: string;
   m: string;
   s: string;
-  h: number;
+  durationMinutes: number;
+  durationLabel: string;
   t: string;
   rawAmount: number;
+  isBillingValid: boolean;
   time: string;
   mode: string;
   location: string;
   rate: string;
-  rateLabel: string;
   note: string;
 }
 
 export interface RekapSummary {
   totalSesi: number;
-  totalJam: number;
+  totalDurationMinutes: number;
   totalPendapatan: string;
   totalPendapatanRaw: number;
   totalMurid: number;
@@ -100,7 +105,7 @@ export async function fetchRecentSessions(limit = 3): Promise<SessionItem[]> {
 function emptyResult(from: string, to: string): RekapData {
   return {
     sessions: [],
-    summary: { totalSesi: 0, totalJam: 0, totalPendapatan: "Rp 0", totalPendapatanRaw: 0, totalMurid: 0, students: [] },
+    summary: { totalSesi: 0, totalDurationMinutes: 0, totalPendapatan: "Rp 0", totalPendapatanRaw: 0, totalMurid: 0, students: [] },
     month: from,
     monthLabel: rangeLabel(from, to),
   };
@@ -146,14 +151,15 @@ function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
       rawDate: clockIn,
       m: studentName,
       s: subject || "Belum diisi",
-      h: metrics.actualHours,
+      durationMinutes: metrics.billableMinutes,
+      durationLabel: formatDurationMinutes(metrics.billableMinutes),
       t: formatCurrency(metrics.amount),
       rawAmount: metrics.amount,
+      isBillingValid: metrics.isValid,
       time: formatTimeRange(clockIn, clockOut),
       mode: teachingMode === "online" ? "Online" : "Tatap muka",
       location: hasLocation ? "Lokasi tersimpan di aplikasi" : "Lokasi tidak tercatat",
       rate: formatCurrency(rate ?? 0),
-      rateLabel: metrics.billingType === "flat" ? "Tarif per sesi" : "Tarif per jam",
       note: typeof note === "string" && note.trim() ? note.trim() : "Belum ada catatan sesi",
     };
   });
@@ -172,7 +178,7 @@ function formatTimeRange(clockIn: string, clockOut: string | null): string {
 
 function buildResult(sessions: SessionItem[], from: string, to: string): RekapData {
   const totalSesi = sessions.length;
-  const totalJam = sessions.reduce((sum, s) => sum + s.h, 0);
+  const totalDurationMinutes = sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
   const totalPendapatanRaw = sessions.reduce((sum, session) => sum + session.rawAmount, 0);
 
   const students = [...new Set(sessions.map((s) => s.m))];
@@ -181,7 +187,7 @@ function buildResult(sessions: SessionItem[], from: string, to: string): RekapDa
     sessions,
     summary: {
       totalSesi,
-      totalJam: Math.round(totalJam * 10) / 10,
+      totalDurationMinutes,
       totalPendapatan: formatCurrency(totalPendapatanRaw),
       totalPendapatanRaw,
       totalMurid: students.length,

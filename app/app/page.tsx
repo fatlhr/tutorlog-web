@@ -10,7 +10,11 @@ import { createClient } from "@/lib/supabase/server";
 import { checkQuota } from "@/lib/data/quota";
 import { canExportRecap, getAccessState } from "@/lib/data/quota-access";
 import { fetchRecentSessions, fetchRekapDataByRange } from "@/lib/data/rekap";
-import { getWibMonthRange, getWibMonthToDateRange } from "@/lib/data/session-metrics.mjs";
+import {
+  formatDurationMinutes,
+  getWibMonthRange,
+  getWibMonthToDateRange,
+} from "@/lib/data/session-metrics.mjs";
 import HomeUpgradePrompt from "@/components/HomeUpgradePrompt";
 import NamePromptDialog from "@/components/NamePromptDialog";
 import { Button } from "@/components/app-ui/controls";
@@ -78,7 +82,7 @@ export default async function HomePage() {
   );
   const summaryItems: SummaryItem[] = monthData ? [
     { label: "Sesi selesai", value: monthData.summary.totalSesi },
-    { label: "Waktu mengajar", value: monthData.summary.totalJam },
+    { label: "Total durasi", value: formatDurationMinutes(monthData.summary.totalDurationMinutes) },
     { label: "Estimasi pendapatan", value: monthData.summary.totalPendapatan },
   ] : [];
 
@@ -142,7 +146,7 @@ export default async function HomePage() {
                   {recentSessions.map((session) => (
                     <DataRow
                       key={session.id}
-                      label={`${session.m}, ${session.d}, ${session.h} jam, ${session.t}`}
+                      label={`${session.m}, ${session.d}, ${session.durationLabel}, ${session.t}`}
                       tone="home"
                       leading={(
                         <time
@@ -158,7 +162,7 @@ export default async function HomePage() {
                           <span className={styles.sessionA11y}>
                             {session.m}, {session.d},{" "}
                             {session.s === String.fromCharCode(8212) ? "Tanpa detail" : session.s},{" "}
-                            {session.h} jam, {session.t}
+                            {session.durationLabel}, {session.t}
                           </span>
                           <span className={styles.sessionName} aria-hidden="true">
                             {session.m}
@@ -167,13 +171,13 @@ export default async function HomePage() {
                       )}
                       metadata={(
                         <span className={styles.sessionMetadata} aria-hidden="true">
-                          {session.s === String.fromCharCode(8212) ? "Tanpa detail" : session.s} · {session.h} jam
+                          {session.s === String.fromCharCode(8212) ? "Tanpa detail" : session.s} · {session.durationLabel}
                         </span>
                       )}
                       trailing={(
                         <>
                           <span className={styles.sessionAmount} aria-hidden="true">{session.t}</span>
-                          <span className={styles.sessionDuration} aria-hidden="true">{session.h} jam</span>
+                          <span className={styles.sessionDuration} aria-hidden="true">{session.durationLabel}</span>
                         </>
                       )}
                     />
@@ -195,7 +199,7 @@ export default async function HomePage() {
                     </span>
                     <div className={styles.contextualCopy}>
                       <h2 id="home-next-action-title">Buka rekap bulan ini</h2>
-                      <p>Periksa sesi, jam, dan pendapatan sebelum membuat invoice.</p>
+                      <p>Periksa sesi, durasi, dan pendapatan sebelum membuat invoice.</p>
                     </div>
                     <div className={styles.contextualButton}>
                       <Button
@@ -270,7 +274,7 @@ export default async function HomePage() {
                 </div>
                 <div>
                   <dt>Waktu mengajar</dt>
-                  <dd>{previousData.summary.totalJam}</dd>
+                  <dd>{formatDurationMinutes(previousData.summary.totalDurationMinutes)}</dd>
                 </div>
                 <div>
                   <dt>Estimasi pendapatan</dt>

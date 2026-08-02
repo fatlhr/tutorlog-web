@@ -1,7 +1,9 @@
 import { createInvoiceAccentStyle } from "@/lib/invoice-colors";
+import { formatDurationMinutes } from "@/lib/data/session-metrics.mjs";
 import InvoiceNotes from "./InvoiceNotes";
 import {
   formatIDR,
+  getInvoiceRateColumnLabel,
   getInvoiceTotals,
   hasInvoiceDescriptions,
   sampleInvoiceData,
@@ -14,7 +16,7 @@ interface TplMinimalProps {
 }
 
 export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }: TplMinimalProps) {
-  const { amount: sub, hours } = getInvoiceTotals(data.items);
+  const { amount: sub, durationMinutes } = getInvoiceTotals(data.items);
   const showDescription = hasInvoiceDescriptions(data.items);
 
   return (
@@ -48,8 +50,8 @@ export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }
           <tr>
             <th style={{ width: "56px" }}>Tgl</th>
             {showDescription ? <th>Deskripsi sesi</th> : null}
-            <th className="right mono" style={{ width: "46px" }}>Jam</th>
-            <th className="right mono" style={{ width: "112px" }}>Tarif</th>
+            <th className="right mono" style={{ width: "92px" }}>Durasi</th>
+            <th className="right mono" style={{ width: "112px" }}>Tarif ({getInvoiceRateColumnLabel(data.items)})</th>
             <th className="right mono" style={{ width: "106px" }}>Subtotal</th>
           </tr>
         </thead>
@@ -58,7 +60,9 @@ export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }
             <tr key={i}>
               <td>{it.date}</td>
               {showDescription ? <td>{it.desc.trim() || "-"}</td> : null}
-              <td className="right mono">{it.h.toFixed(1)}</td>
+              <td className="right mono">
+                <span>{formatDurationMinutes(it.durationMinutes)}</span>
+              </td>
               <td className="right mono">{formatIDR(it.rate)}</td>
               <td className="right mono">{formatIDR(it.amount)}</td>
             </tr>
@@ -67,7 +71,7 @@ export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }
       </table>
 
       <div className="mn-total-row">
-        <span className="hours">Total jam <strong>{hours.toFixed(1)} jam</strong></span>
+        <span className="hours">Total durasi <strong>{formatDurationMinutes(durationMinutes)}</strong></span>
         <span className="lbl">TOTAL</span>
         <span className="val">{formatIDR(sub)}</span>
       </div>

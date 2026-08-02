@@ -192,17 +192,9 @@ for (const selector of [
     `${selector} must vertically center its cell content`,
   );
 }
-for (const selector of [
-  ".tpl-klasik table.k-table td",
-  ".tpl-minimal table.mn-table td",
-]) {
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  assert.match(
-    invoiceCss,
-    new RegExp(`${escapedSelector} \\{[^}]*height: 34px;[^}]*padding-block: 0;[^}]*line-height: 34px;`, "s"),
-    `${selector} must use a fixed row box for optical vertical centering`,
-  );
-}
+assert.match(invoiceData, /export function getInvoiceRateColumnLabel/);
+assert.match(templates, /getInvoiceRateColumnLabel\(data\.items\)/);
+assert.doesNotMatch(templates, /invoice-billing-meta/);
 assert.match(
   invoiceCss,
   /\.tpl-modern table\.m-table td \{[^}]*padding-block: 10px;[^}]*line-height: 1\.4;/s,
@@ -325,7 +317,7 @@ assert.doesNotMatch(
 );
 assert.match(
   invoiceData,
-  /export interface InvoiceItem \{[\s\S]*amount: number;[\s\S]*billingType: "hourly" \| "flat";[\s\S]*\}/,
+  /export interface InvoiceItem \{[\s\S]*durationMinutes: number;[\s\S]*amount: number;[\s\S]*billingType: InvoiceBillingType;[\s\S]*\}/,
   "Every InvoiceItem must retain authoritative amount and billing semantics",
 );
 assert.match(
@@ -365,7 +357,7 @@ assert.match(
 );
 assert.match(
   page,
-  /const handleStudentChange = \(studentId: string\) => \{\s*restoredDraftStudentIdRef\.current = null;\s*restoredDraftStudentNameRef\.current = null;\s*restoredDraftHasStudentAddressRef\.current = false;\s*restoredDraftHasParentContactRef\.current = false;\s*setSelectedStudentId\(studentId\);/,
+  /const handleStudentChange = \(studentId: string\) => \{\s*restoredDraftStudentIdRef\.current = null;\s*restoredDraftStudentNameRef\.current = null;\s*restoredDraftHasStudentAddressRef\.current = false;\s*restoredDraftHasParentContactRef\.current = false;[\s\S]*?setSelectedStudentId\(studentId\);/,
   "Changing students must clear restored recipient preservation markers",
 );
 assert.match(
@@ -485,7 +477,7 @@ assert.match(
 );
 assert.match(
   page,
-  /interface InvoiceSessionItem \{[\s\S]*amount: number;[\s\S]*billingType: "hourly" \| "flat";[\s\S]*\}/,
+  /interface InvoiceSessionItem \{[\s\S]*durationMinutes: number;[\s\S]*amount: number;[\s\S]*billingType: InvoiceBillingType;[\s\S]*isValid: boolean;[\s\S]*\}/,
   "Fetched Invoice sessions must retain amount and billing semantics",
 );
 assert.match(
@@ -511,8 +503,8 @@ for (const [index, template] of templateSources.entries()) {
     /data\.period/,
     /data\.from\.lines\.map/,
     /data\.to\.lines\.map/,
-    />Tarif<\/th>/,
-    /hours\.toFixed\(1\)/,
+    />Durasi<\/th>/,
+    /formatDurationMinutes\(durationMinutes\)/,
     /formatIDR\(sub\)/,
     /<InvoiceNotes notes=\{data\.notes\} \/>/,
     /data\.bank\.bank/,

@@ -7,7 +7,7 @@ import { authorizeExport } from "@/lib/billing/client";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import TplKlasik from "@/components/invoice/TplKlasik";
-import type { InvoiceData } from "@/components/invoice/invoice-data";
+import type { InvoiceBillingType, InvoiceData } from "@/components/invoice/invoice-data";
 import TplModern from "@/components/invoice/TplModern";
 import TplMinimal from "@/components/invoice/TplMinimal";
 import A4Page from "@/components/invoice/A4Page";
@@ -34,7 +34,12 @@ import {
 import { Dialog } from "@/components/app-ui/overlays";
 import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
 import { PageHeader, SectionHeading, Surface } from "@/components/app-ui/structure";
-import { getSessionMetrics, getWibMonthRange, toWibDateRange } from "@/lib/data/session-metrics.mjs";
+import {
+  formatBillingTypeLabel,
+  getSessionMetrics,
+  getWibMonthRange,
+  toWibDateRange,
+} from "@/lib/data/session-metrics.mjs";
 import {
   buildInvoiceRecipientLines,
   buildInvoiceStudentOptions,
@@ -68,10 +73,11 @@ interface InvoiceSessionItem {
   clockIn: string;
   clockOut: string | null;
   note: string;
-  hours: number;
+  durationMinutes: number;
   rate: number;
   amount: number;
-  billingType: "hourly" | "flat";
+  billingType: InvoiceBillingType;
+  isValid: boolean;
 }
 
 function formatDateLabel(d: Date): string {
@@ -193,6 +199,7 @@ export default function InvoicePage() {
     sessionsLoading ||
     sessionsError ||
     invoiceSessions.length === 0 ||
+    invoiceSessions.some((session) => !session.isValid) ||
     loadedSessionsQueryKey !== currentSessionsQueryKey;
 
   const periodLabel = (() => {
@@ -394,10 +401,11 @@ export default function InvoicePage() {
             clockIn,
             clockOut,
             note: note || "-",
-            hours: metrics.actualHours,
+            durationMinutes: metrics.billableMinutes,
             rate,
             amount: metrics.amount,
             billingType: metrics.billingType,
+            isValid: metrics.isValid,
           };
         });
 
@@ -615,7 +623,7 @@ export default function InvoicePage() {
     const items = invoiceSessions.map((session) => ({
       date: formatMonthDay(new Date(session.clockIn)),
       desc: session.note,
-      h: session.hours,
+      durationMinutes: session.durationMinutes,
       rate: session.rate,
       amount: session.amount,
       billingType: session.billingType,
@@ -741,6 +749,10 @@ export default function InvoicePage() {
           <div className="inv-auto-sessions" aria-live="polite">Memuat sesi selesai untuk periode ini...</div>
         ) : sessionsError ? (
           <div className="inv-auto-sessions inv-auto-sessions-error" aria-live="polite">Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
+        ) : invoiceSessions.some((session) => !session.isValid) ? (
+          <div className="inv-auto-sessions inv-auto-sessions-error" role="alert" aria-live="polite">
+            Billing tidak valid pada salah satu sesi ({formatBillingTypeLabel("invalid")}). Preview dan export invoice dihentikan.
+          </div>
         ) : invoiceSessions.length > 0 ? (
           <div className="inv-auto-sessions" aria-live="polite">
             Sesi selesai pada periode ini dimasukkan otomatis ke draft invoice.

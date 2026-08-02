@@ -49,14 +49,14 @@ assert.deepEqual(publicSessionEvidence, {
   studentName: "Bintang",
   date: "03 Jun",
   timeRange: "18.00 - 19.30",
-  duration: "1j 30m",
+  duration: "90 menit",
   amount: 180000,
   status: "Tersimpan",
 });
 assert.deepEqual(publicRecapEvidence, {
   period: "Juni 2026",
   sessionCount: 3,
-  hours: 5,
+  durationLabel: "5 jam",
   amount: 560000,
 });
 assert.equal(

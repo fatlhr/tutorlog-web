@@ -20,7 +20,6 @@
   height: 7px;
   border-bottom: 1px solid var(--tw-divider);
 }
-
 /* ---------- KLASIK ---------- */
 .tpl-klasik .k-header {
   background: var(--acc, #006C53);

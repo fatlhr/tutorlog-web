@@ -22,22 +22,23 @@ function hourlySession(minutes, hourlyRate = 80_000) {
   });
 }
 
-for (const [minutes, expectedAmount] of [
-  [0.5, 80_000],
-  [1, 80_000],
-  [45, 80_000],
-  [60, 80_000],
-  [61, 80_000],
-  [74, 80_000],
-  [75, 120_000],
-  [91, 120_000],
-  [105, 160_000],
+for (const [minutes, expectedAmount, expectedBillableMinutes] of [
+  [0.5, 80_000, 60],
+  [1, 80_000, 60],
+  [45, 80_000, 60],
+  [60, 80_000, 60],
+  [61, 80_000, 60],
+  [74, 80_000, 60],
+  [75, 120_000, 90],
+  [91, 120_000, 90],
+  [105, 160_000, 120],
 ]) {
   assert.equal(
     hourlySession(minutes).amount,
     expectedAmount,
     `${minutes} minutes must follow the mobile billing rule`,
   );
+  assert.equal(hourlySession(minutes).billableMinutes, expectedBillableMinutes);
 }
 
 assert.deepEqual(
@@ -48,11 +49,11 @@ assert.deepEqual(
     billingType: "flat",
   }),
   {
-    actualMinutes: 31,
-    actualHours: 0.5,
-    billableMinutes: 0,
+    durationMinutes: 31,
+    billableMinutes: 31,
     amount: 80_000,
     billingType: "flat",
+    isValid: true,
   },
 );
 

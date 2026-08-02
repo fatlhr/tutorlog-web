@@ -8,7 +8,7 @@ export function RecapArtifact({ className = "" }: { className?: string }) {
     <figure className={`${styles.artifact} ${styles.recap} ${className}`} data-product-artifact="recap">
       <figcaption>Rekap {recap.period}</figcaption>
       <strong>{recap.sessionCount} sesi</strong>
-      <span>{recap.hours} jam mengajar</span>
+      <span>{recap.durationLabel} durasi</span>
     </figure>
   );
 }

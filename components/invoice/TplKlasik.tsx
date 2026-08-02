@@ -1,7 +1,9 @@
 import { createInvoiceAccentStyle } from "@/lib/invoice-colors";
+import { formatDurationMinutes } from "@/lib/data/session-metrics.mjs";
 import InvoiceNotes from "./InvoiceNotes";
 import {
   formatIDR,
+  getInvoiceRateColumnLabel,
   getInvoiceTotals,
   hasInvoiceDescriptions,
   sampleInvoiceData,
@@ -16,7 +18,7 @@ interface TplKlasikProps {
 }
 
 export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }: TplKlasikProps) {
-  const { amount: sub, hours } = getInvoiceTotals(data.items);
+  const { amount: sub, durationMinutes } = getInvoiceTotals(data.items);
   const showDescription = hasInvoiceDescriptions(data.items);
 
   return (
@@ -56,8 +58,8 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
           <tr>
             <th style={{ width: "56px" }}>Tgl</th>
             {showDescription ? <th>Deskripsi</th> : null}
-            <th className="right mono" style={{ width: "46px" }}>Jam</th>
-            <th className="right mono" style={{ width: "112px" }}>Tarif</th>
+            <th className="right mono" style={{ width: "92px" }}>Durasi</th>
+            <th className="right mono" style={{ width: "112px" }}>Tarif ({getInvoiceRateColumnLabel(data.items)})</th>
             <th className="right mono" style={{ width: "106px" }}>Subtotal</th>
           </tr>
         </thead>
@@ -66,7 +68,9 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
             <tr key={i}>
               <td><span className="cell-content">{it.date}</span></td>
               {showDescription ? <td><span className="cell-content">{it.desc.trim() || "-"}</span></td> : null}
-              <td className="right mono"><span className="cell-content">{it.h.toFixed(1)}</span></td>
+              <td className="right mono">
+                <span className="cell-content">{formatDurationMinutes(it.durationMinutes)}</span>
+              </td>
               <td className="right mono"><span className="cell-content">{formatIDR(it.rate)}</span></td>
               <td className="right mono"><span className="cell-content">{formatIDR(it.amount)}</span></td>
             </tr>
@@ -76,8 +80,8 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
 
       <div className="k-total-block">
         <div className="row">
-          <span>Total jam</span>
-          <span className="val">{hours.toFixed(1)} jam</span>
+          <span>Total durasi</span>
+          <span className="val">{formatDurationMinutes(durationMinutes)}</span>
         </div>
         <div className="total">
           <span className="lbl">TOTAL TAGIHAN</span>

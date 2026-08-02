@@ -28,6 +28,7 @@ import {
 } from "@/lib/data/rekap-filter";
 import type { RekapData, SessionItem } from "@/lib/data/rekap";
 import { formatCurrency } from "@/lib/format";
+import { formatDurationMinutes } from "@/lib/data/session-metrics.mjs";
 
 const PAGE_SIZE = 20;
 
@@ -152,7 +153,8 @@ function SessionDetailContent({ session }: { session: SessionItem }) {
         <div><dt>Tanggal dan waktu</dt><dd>{session.d} · {session.time}</dd></div>
         <div><dt>Mode</dt><dd>{session.mode}</dd></div>
         <div><dt>Lokasi</dt><dd>{session.location}</dd></div>
-        <div><dt>{session.rateLabel}</dt><dd>{session.rate}</dd></div>
+        <div><dt>Tarif</dt><dd>{session.rate}</dd></div>
+        <div><dt>Durasi</dt><dd>{session.durationLabel}</dd></div>
         <div><dt>Total sesi</dt><dd>{session.t}</dd></div>
       </dl>
       <section className="app-session-detail-note"><h3>Catatan sesi</h3><p>{session.note}</p></section>
@@ -170,12 +172,12 @@ const SessionRow = memo(function SessionRow({
   const handleClick = useCallback(() => onSelectSession(row), [onSelectSession, row]);
   return (
     <DataRow
-      label={`${row.m}, ${row.d}, ${row.time}, ${row.h} jam, ${row.t}`}
+      label={`${row.m}, ${row.d}, ${row.time}, ${row.durationLabel}, ${row.t}`}
       density="compact"
       tone="recap"
       leading={<span className="app-recap-row-date">{row.d}</span>}
       title={row.m}
-      metadata={`${row.time} · ${row.h} jam`}
+      metadata={`${row.time} · ${row.durationLabel}`}
       trailing={(
         <span className="app-recap-row-trailing">
           <strong>{row.t}</strong>
@@ -264,6 +266,10 @@ export default function RekapContent({
     () => studentFilter ? allRows.filter((row) => row.m === studentFilter) : allRows,
     [allRows, studentFilter],
   );
+  const hasInvalidBilling = useMemo(
+    () => rows.some((row) => !row.isBillingValid),
+    [rows],
+  );
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginatedRows = useMemo(
@@ -272,7 +278,7 @@ export default function RekapContent({
   );
   const summary = useMemo(() => rekapData?.summary ?? {
     totalSesi: 0,
-    totalJam: 0,
+    totalDurationMinutes: 0,
     totalPendapatan: "Rp 0",
     totalPendapatanRaw: 0,
     totalMurid: 0,
@@ -288,12 +294,12 @@ export default function RekapContent({
   });
   const filteredSummary = useMemo(() => {
     if (!studentFilter) return summary;
-    const totalJam = Math.round(rows.reduce((total, row) => total + row.h, 0) * 10) / 10;
+    const totalDurationMinutes = rows.reduce((total, row) => total + row.durationMinutes, 0);
     const totalPendapatanRaw = rows.reduce((total, row) => total + row.rawAmount, 0);
     return {
       ...summary,
       totalSesi: rows.length,
-      totalJam,
+      totalDurationMinutes,
       totalPendapatan: formatCurrency(totalPendapatanRaw),
       totalPendapatanRaw,
       totalMurid: new Set(rows.map((row) => row.m)).size,
@@ -349,6 +355,10 @@ export default function RekapContent({
     setCsvLoading(true);
     setExportError(null);
     try {
+      if (hasInvalidBilling) {
+        setExportError("CSV dihentikan karena ada sesi dengan billing type tidak valid.");
+        return;
+      }
       const decision = await authorizeExport("recap_csv");
       if (!decision.allowed) {
         setPaywallReason(decision.reason ?? "free-limit");
@@ -360,19 +370,23 @@ export default function RekapContent({
         setPaywallOpen(true);
         return;
       }
-      const csv = sessionsToCSV(rows.map(({ d, m, s, h, t }) => ({ d, m, s, h, t })));
+      const csv = sessionsToCSV(rows.map(({ d, m, s, durationLabel, t }) => ({ d, m, s, durationLabel, t })));
       downloadCSV(csv, "rekap-sesi.csv");
     } catch {
       setExportError("CSV belum berhasil diunduh. Coba lagi.");
     } finally {
       setCsvLoading(false);
     }
-  }, [rows]);
+  }, [hasInvalidBilling, rows]);
 
   const handleExportPDF = useCallback(async () => {
     setPdfLoading(true);
     setExportError(null);
     try {
+      if (hasInvalidBilling) {
+        setExportError("PDF dihentikan karena ada sesi dengan billing type tidak valid.");
+        return;
+      }
       const decision = await authorizeExport("recap_pdf");
       if (!decision.allowed) {
         setPaywallReason(decision.reason ?? "free-limit");
@@ -396,7 +410,7 @@ export default function RekapContent({
       pdf.setFontSize(10);
       pdf.text(rekapData?.monthLabel || `${dateFrom} - ${dateTo}`, margin, y);
       y += 10;
-      pdf.text(`${filteredSummary.totalSesi} sesi · ${filteredSummary.totalJam} jam · ${filteredSummary.totalPendapatan}`, margin, y);
+      pdf.text(`${filteredSummary.totalSesi} sesi · ${formatDurationMinutes(filteredSummary.totalDurationMinutes)} · ${filteredSummary.totalPendapatan}`, margin, y);
       y += 10;
       rows.forEach((row) => {
         if (y > 280) {
@@ -406,7 +420,7 @@ export default function RekapContent({
         pdf.setFont("helvetica", "bold");
         pdf.text(`${row.d}  ${row.m}`, margin, y);
         pdf.setFont("helvetica", "normal");
-        pdf.text(`${row.s} · ${row.h} jam`, margin, y + 5);
+        pdf.text(`${row.s} · ${row.durationLabel}`, margin, y + 5);
         pdf.text(row.t, 192, y, { align: "right" });
         y += 14;
       });
@@ -416,7 +430,7 @@ export default function RekapContent({
     } finally {
       setPdfLoading(false);
     }
-  }, [dateFrom, dateTo, filteredSummary, rekapData, rows]);
+  }, [dateFrom, dateTo, filteredSummary, hasInvalidBilling, rekapData, rows]);
 
   return (
     <>
@@ -435,7 +449,7 @@ export default function RekapContent({
                 size="compact"
                 leadingIcon={<FileCsv size={18} aria-hidden="true" />}
                 loading={csvLoading}
-                disabled={loadError || rows.length === 0}
+                disabled={loadError || rows.length === 0 || hasInvalidBilling}
                 onClick={handleExportCSV}
               >
                 Unduh CSV
@@ -447,7 +461,7 @@ export default function RekapContent({
                 size="compact"
                 leadingIcon={<FilePdf size={18} aria-hidden="true" />}
                 loading={pdfLoading}
-                disabled={loadError || rows.length === 0}
+                disabled={loadError || rows.length === 0 || hasInvalidBilling}
                 onClick={handleExportPDF}
               >
                 Unduh PDF
@@ -455,6 +469,9 @@ export default function RekapContent({
             ]}
           />
 
+          {hasInvalidBilling ? (
+            <p className="app-export-error" role="alert">Billing tidak valid ditemukan. Export Rekap dihentikan.</p>
+          ) : null}
           {exportError ? <p className="app-export-error" role="alert">{exportError}</p> : null}
 
           <section className="app-recap-controls app-recap-controls-desktop" aria-label="Filter rekap">
@@ -495,7 +512,7 @@ export default function RekapContent({
             tone="recap"
             items={[
               { label: "Sesi selesai", value: filteredSummary.totalSesi },
-              { label: "Waktu mengajar", value: filteredSummary.totalJam },
+              { label: "Total durasi", value: formatDurationMinutes(filteredSummary.totalDurationMinutes) },
               { label: "Estimasi pendapatan", value: filteredSummary.totalPendapatan },
             ]}
           />
