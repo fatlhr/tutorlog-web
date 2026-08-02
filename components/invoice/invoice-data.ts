@@ -8,7 +8,6 @@ export interface InvoiceItem {
 }
 
 export interface InvoiceData {
-  no: string;
   date: string;
   period: string;
   lembaga?: string;
@@ -20,7 +19,6 @@ export interface InvoiceData {
 }
 
 export const sampleInvoiceData: InvoiceData = {
-  no: "INV-2026/06-014",
   date: "30 Juni 2026",
   period: "1 - 30 Juni 2026",
   from: {

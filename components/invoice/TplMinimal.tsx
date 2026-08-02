@@ -27,9 +27,8 @@ export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }
 
       <div className="mn-head">
         <div className="col">
-          <div className="lbl">NOMOR</div>
-          <div className="val">{data.no}</div>
-          <div className="sub" style={{ marginTop: 6 }}>{data.date}</div>
+          <div className="lbl">TANGGAL</div>
+          <div className="val">{data.date}</div>
           <div className="sub">{data.period}</div>
         </div>
         <div className="col">

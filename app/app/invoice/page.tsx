@@ -88,12 +88,29 @@ function formatMonthDay(d: Date): string {
   return `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]}`;
 }
 
-function generateInvoiceNo(): string {
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const seq = String(Math.floor(Math.random() * 900) + 100);
-  return `INV-${yy}${mm}-${seq}`;
+function safeInvoiceFilePart(value: string, fallback: string): string {
+  const cleaned = value
+    .trim()
+    .replace(/[\\/:"*?<>|]+/g, " ")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return cleaned || fallback;
+}
+
+function buildInvoicePdfFilename({
+  studentName,
+  periodStart,
+  periodEnd,
+}: {
+  studentName: string;
+  periodStart: string;
+  periodEnd: string;
+}): string {
+  const studentPart = safeInvoiceFilePart(formatStudentDisplayName(studentName), "Murid");
+  const startPart = safeInvoiceFilePart(periodStart, "tanggal-mulai");
+  const endPart = safeInvoiceFilePart(periodEnd, "tanggal-selesai");
+  return `Invoice-${studentPart}-${startPart}sd${endPart}.pdf`;
 }
 
 function currentMonthPeriod() {
@@ -146,7 +163,6 @@ export default function InvoicePage() {
   const [saveSettings, setSaveSettings] = useState(false);
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
-  const [invoiceNo, setInvoiceNo] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -178,9 +194,6 @@ export default function InvoicePage() {
     sessionsError ||
     invoiceSessions.length === 0 ||
     loadedSessionsQueryKey !== currentSessionsQueryKey;
-
-  /* eslint-disable-next-line react-hooks/set-state-in-effect */
-  useEffect(() => { setInvoiceNo(generateInvoiceNo()); }, []);
 
   const periodLabel = (() => {
     const s = new Date(periodStart + "T00:00:00");
@@ -453,14 +466,18 @@ export default function InvoicePage() {
       const pageHeight = 297;
       pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
 
-      pdf.save(`Invoice-${invoiceNo.replace("/", "-")}.pdf`);
+      pdf.save(buildInvoicePdfFilename({
+        studentName: invoiceSessions[0]?.studentName.trim() || studentName,
+        periodStart,
+        periodEnd,
+      }));
       setExportSuccess(true);
     } catch {
       setExportError("PDF invoice belum berhasil diunduh. Coba lagi.");
     } finally {
       setExporting(false);
     }
-  }, [invoiceNo, validateInvoiceForm]);
+  }, [invoiceSessions, periodEnd, periodStart, studentName, validateInvoiceForm]);
 
   useEffect(() => {
     if (!exportSuccess) return;
@@ -473,6 +490,7 @@ export default function InvoicePage() {
     restoredDraftStudentNameRef.current = null;
     restoredDraftHasStudentAddressRef.current = false;
     restoredDraftHasParentContactRef.current = false;
+    if (studentId !== selectedStudentId) setNotes("");
     setSelectedStudentId(studentId);
     const found = students.find((student) => student.id === studentId);
 
@@ -522,7 +540,6 @@ export default function InvoicePage() {
     if (typeof draft.studentName === "string") {
       restoredDraftStudentNameRef.current = draft.studentName;
     }
-    if (typeof draft.invoiceNo === "string") setInvoiceNo(draft.invoiceNo);
     if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
     if (typeof draft.tutorName === "string") setTutorName(draft.tutorName);
     if (typeof draft.tutorLocation === "string") setTutorLocation(draft.tutorLocation);
@@ -552,7 +569,6 @@ export default function InvoicePage() {
       periodEnd,
       studentId: selectedStudentId,
       studentName,
-      invoiceNo,
       lembaga,
       tutorName,
       tutorLocation,
@@ -566,7 +582,7 @@ export default function InvoicePage() {
       accent,
       template,
     });
-  }, [draftReady, periodStart, periodEnd, selectedStudentId, studentName, invoiceNo, lembaga, tutorName, tutorLocation, tutorContact, parentName, parentContact, studentAddress, bankAccount, bankName, notes, accent, template]);
+  }, [draftReady, periodStart, periodEnd, selectedStudentId, studentName, lembaga, tutorName, tutorLocation, tutorContact, parentName, parentContact, studentAddress, bankAccount, bankName, notes, accent, template]);
 
   useEffect(() => {
     if (!saveSettings) return;
@@ -606,7 +622,6 @@ export default function InvoicePage() {
     }));
 
     return {
-      no: invoiceNo,
       date: formatInvoiceDate(now),
       period: periodLabel,
       lembaga: lembaga || undefined,
@@ -630,7 +645,6 @@ export default function InvoicePage() {
 
   const handlePreview = () => {
     if (!validateInvoiceForm()) return;
-    setInvoiceNo(generateInvoiceNo());
     setPreviewOpen(true);
   };
 

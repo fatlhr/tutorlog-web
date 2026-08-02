@@ -100,6 +100,16 @@ assert.match(
   /pdf\.addImage\(imgData, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST"\)/,
   "Invoice image must fit exactly one A4 page",
 );
+assert.match(
+  page,
+  /function buildInvoicePdfFilename\(\{[\s\S]*studentName[\s\S]*periodStart[\s\S]*periodEnd[\s\S]*\}\): string \{[\s\S]*Invoice-\$\{studentPart\}-\$\{startPart\}sd\$\{endPart\}\.pdf/,
+  "Downloaded Invoice filename must include student name and date range",
+);
+assert.match(
+  page,
+  /pdf\.save\(buildInvoicePdfFilename\(\{[\s\S]*studentName: invoiceSessions\[0\]\?\.studentName\.trim\(\) \|\| studentName,[\s\S]*periodStart,[\s\S]*periodEnd,/,
+  "Invoice PDF export must build the filename from the selected student and period",
+);
 assert.doesNotMatch(
   page,
   /record_feature_usage_event/,
@@ -220,8 +230,8 @@ assert.match(
 );
 assert.match(
   invoiceCss,
-  /\.tpl-klasik \.k-bank \{[^}]*margin-top: 24px;[^}]*grid-template-columns: max-content minmax\(0, 1fr\);[^}]*align-items: baseline;[^}]*align-content: center;/s,
-  "Klasik payment label and account details must share one centered baseline row with clear note spacing",
+  /\.tpl-klasik \.k-bank \{[^}]*margin-top: 24px;[^}]*grid-template-columns: max-content minmax\(0, 1fr\);[^}]*align-items: center;[^}]*align-content: center;/s,
+  "Klasik payment label and account details must share one centered row with clear note spacing",
 );
 assert.match(
   invoiceCss,
@@ -235,8 +245,13 @@ assert.match(
 );
 assert.match(
   invoiceCss,
-  /\.tpl-klasik table\.k-table td \.cell-content \{[^}]*position: relative;[^}]*top: -8px;/s,
-  "Klasik table text must compensate for rasterized font baseline offset",
+  /\.tpl-klasik table\.k-table td \{[^}]*padding-block: 8px 10px;[^}]*line-height: 1\.45;/s,
+  "Klasik table cells must keep readable vertical padding without loose wrapped text",
+);
+assert.match(
+  invoiceCss,
+  /\.tpl-klasik table\.k-table td \.cell-content \{[^}]*position: relative;[^}]*top: 0;[^}]*line-height: 1\.45;/s,
+  "Klasik table text must keep wrapped descriptions close while respecting cell padding",
 );
 assert.doesNotMatch(
   invoiceCss,
@@ -492,7 +507,6 @@ assert.match(
 for (const [index, template] of templateSources.entries()) {
   const name = ["Klasik", "Modern", "Minimal"][index];
   for (const requiredContent of [
-    /data\.no/,
     /data\.date/,
     /data\.period/,
     /data\.from\.lines\.map/,

@@ -2,7 +2,6 @@ import type { InvoiceData } from "@/components/invoice/invoice-data";
 import { getInvoiceTotals } from "@/components/invoice/invoice-data";
 
 export const publicProductInvoiceData: InvoiceData = {
-  no: "INV-2026-06-014",
   date: "30 Juni 2026",
   period: "1-30 Juni 2026",
   from: {

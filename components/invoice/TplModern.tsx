@@ -29,7 +29,6 @@ export default function TplModern({ acc = "#006C53", data = sampleInvoiceData }:
           <div className="inv-document-title">Invoice.</div>
         </div>
         <div className="meta">
-          <div className="row"><span className="lbl">No.</span><span className="val">{data.no}</span></div>
           <div className="row"><span className="lbl">Tanggal</span><span className="val">{data.date}</span></div>
           <div className="row"><span className="lbl">Periode</span><span className="val">{data.period}</span></div>
         </div>

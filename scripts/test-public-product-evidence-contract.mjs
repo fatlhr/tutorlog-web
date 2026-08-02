@@ -44,7 +44,6 @@ const {
   "@/components/invoice/invoice-data": invoiceDataModule,
 });
 
-assert.equal(publicProductInvoiceData.no, "INV-2026-06-014");
 assert.equal(publicProductInvoiceData.items.length, 3);
 assert.deepEqual(publicSessionEvidence, {
   studentName: "Bintang",

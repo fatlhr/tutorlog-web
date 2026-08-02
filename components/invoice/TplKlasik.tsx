@@ -33,9 +33,7 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
           <div className="subj">Rekap sesi les periode {data.period}</div>
         </div>
         <div className="no">
-          <div className="lbl">NOMOR</div>
-          <div className="val">{data.no}</div>
-          <div className="lbl" style={{ marginTop: 6 }}>TANGGAL</div>
+          <div className="lbl">TANGGAL</div>
           <div className="val">{data.date}</div>
         </div>
       </div>
