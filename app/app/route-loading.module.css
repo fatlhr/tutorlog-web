@@ -1,0 +1,122 @@
+.loadingPageHeader {
+  display: flex;
+  min-height: 86px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.headerCopy {
+  display: grid;
+  width: min(560px, 100%);
+  gap: var(--space-3);
+}
+
+.loadingLine,
+.headerAction,
+.sectionAction,
+.handoffIcon {
+  display: block;
+  border-radius: var(--radius-small);
+  background: var(--app-paper-soft);
+  animation: routeLoadingPulse var(--motion-overlay) var(--ease-standard) infinite alternate;
+}
+
+.headerEyebrow { width: 96px; height: 16px; }
+.headerTitle { width: min(340px, 78%); height: 34px; }
+.headerDescription { width: min(460px, 92%); height: 24px; }
+
+.headerActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--space-3);
+}
+
+.headerAction {
+  width: 124px;
+  height: 44px;
+  border: 1px solid var(--app-line);
+  border-radius: var(--radius-round);
+}
+
+.sectionStack,
+.homeLoadingSection {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.sectionHeading {
+  display: flex;
+  min-height: 48px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.sectionHeadingCopy {
+  display: grid;
+  width: min(360px, 72%);
+  gap: var(--space-2);
+}
+
+.sectionTitle { width: 180px; height: 24px; }
+.sectionDescription { width: 260px; max-width: 100%; height: 18px; }
+.sectionAction { width: 112px; height: 36px; border-radius: var(--radius-round); }
+
+.recapMobileFilter { display: none; }
+
+.invoiceMobileHandoff { display: none; }
+
+.invoiceLayout {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+
+.invoiceForm,
+.invoicePreview { min-width: 0; }
+
+.handoffIcon { width: 44px; height: 44px; }
+.handoffEyebrow { width: 112px; height: 16px; }
+.handoffTitle { width: min(300px, 84%); height: 34px; }
+.handoffDescription { width: min(340px, 100%); height: 52px; }
+.handoffAction { width: min(340px, 100%); height: 48px; border-radius: var(--radius-control); }
+
+@keyframes routeLoadingPulse {
+  to { background: var(--app-paper-muted); }
+}
+
+@media (max-width: 1199px) {
+  .invoiceLayout {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .invoiceForm { width: min(760px, 100%); margin: 0 auto; }
+  .invoicePreview { display: none; }
+  .invoiceDesktop .headerActions { display: none; }
+}
+
+@media (width < 768px) {
+  .loadingPageHeader { min-height: 0; }
+  .headerActions { display: none; }
+  .headerCopy { gap: var(--space-2); }
+  .headerTitle { height: 30px; }
+  .headerDescription { height: 44px; }
+  .sectionHeading { min-height: 44px; }
+  .sectionAction { display: none; }
+
+  .recapDesktopFilters { display: none; }
+  .recapMobileFilter { display: block; width: min(180px, 100%); }
+
+  .invoiceDesktop { display: none; }
+  .invoiceMobileHandoff {
+    display: grid;
+    min-height: calc(100svh - 64px);
+    align-content: center;
+    gap: 14px;
+    padding: 96px 24px 116px;
+    background: var(--app-paper-soft);
+  }
+}

@@ -1,0 +1,421 @@
+.hero {
+  display: grid;
+  gap: 80px;
+}
+
+.workspace,
+.workspaceHeading {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workspace {
+  align-items: start;
+}
+
+.workspaceHeading > * {
+  grid-column: 1 / span 2;
+  align-items: flex-start;
+}
+
+.workspaceAside {
+  grid-column: 3;
+  display: grid;
+  gap: var(--space-5);
+  margin-inline-start: var(--space-8);
+}
+
+.workspace > :first-child {
+  grid-column: 1 / span 2;
+}
+
+.sessionDate {
+  color: var(--app-ink-muted);
+  font-size: 12px;
+  line-height: 17px;
+  white-space: nowrap;
+}
+
+.sessionName {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionA11y {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sessionMetadata,
+.sessionAmount,
+.sessionDuration {
+  min-width: 0;
+}
+
+.sessionDuration {
+  display: none;
+}
+
+.contextualAction {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--space-4) var(--space-5);
+}
+
+.contextualIcon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: var(--radius-control);
+  color: var(--app-home-accent-ink);
+  background: var(--app-home-accent);
+}
+
+.contextualCopy h2,
+.contextualCopy p {
+  margin: var(--space-0);
+}
+
+.contextualCopy h2 {
+  font-family: var(--app-font-title);
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.contextualCopy p {
+  margin-top: var(--space-2);
+  color: var(--app-ink-muted);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.contextualButton {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.emptyVisual {
+  position: relative;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+}
+
+.emptyVisual img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.emptyVisual svg {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  padding: var(--space-1);
+  border-radius: var(--radius-small);
+  color: var(--app-home-accent-ink);
+  background: var(--app-paper);
+}
+
+.closingRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  border-radius: var(--radius-surface);
+  background: var(--app-paper);
+}
+
+.archiveRail,
+.roadmapRail {
+  min-width: 0;
+  padding: var(--space-7);
+}
+
+.archiveRail {
+  grid-column: 1 / span 2;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.railHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.railHeader p,
+.roadmapRail p {
+  margin: 0;
+  color: var(--app-home-accent-ink);
+  font-family: var(--app-font-title);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.railHeader h2,
+.roadmapRail h2 {
+  margin: var(--space-2) 0 0;
+  font-family: var(--app-font-title);
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.archiveMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin: 0;
+}
+
+.archiveMetrics div {
+  min-width: 0;
+  padding-inline-end: var(--space-5);
+  border-inline-end: 1px solid var(--app-line);
+}
+
+.archiveMetrics div:last-child {
+  padding-inline-end: 0;
+  border-inline-end: 0;
+}
+
+.archiveMetrics dt {
+  color: var(--app-ink-muted);
+  font-family: var(--app-font-body);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.archiveMetrics dd {
+  margin: var(--space-2) 0 0;
+  overflow-wrap: anywhere;
+  font-family: var(--app-font-title);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+}
+
+.archiveMessage {
+  margin: 0;
+  color: var(--app-ink-muted);
+  font-family: var(--app-font-body);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.roadmapRail {
+  grid-column: 3;
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  border-inline-start: 1px solid var(--app-line);
+  color: var(--app-ink);
+  background: color-mix(in srgb, var(--app-home-accent) 46%, var(--app-paper));
+}
+
+.roadmapRail > svg {
+  color: var(--app-home-accent-ink);
+}
+
+.roadmapRail span {
+  display: block;
+  margin-top: var(--space-3);
+  color: var(--app-ink-muted);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+@media (max-width: 1100px) and (min-width: 768px) {
+  .workspace,
+  .workspaceHeading {
+    grid-template-columns: minmax(0, 1.3fr) minmax(280px, .8fr);
+    gap: var(--space-7);
+  }
+
+  .workspaceHeading > *,
+  .workspace > :first-child,
+  .workspaceAside {
+    grid-column: auto;
+  }
+
+  .workspaceAside {
+    margin-inline-start: 0;
+  }
+
+  .closingRail {
+    grid-template-columns: 1fr;
+  }
+
+  .archiveRail,
+  .roadmapRail {
+    grid-column: auto;
+  }
+
+  .roadmapRail {
+    border-inline-start: 0;
+    border-top: 1px solid var(--app-line);
+  }
+}
+
+@media (768px <= width < 1200px) {
+  .hero { gap: 80px; }
+}
+
+@media (width < 768px) {
+  .hero { gap: 36px; }
+
+  .workspace,
+  .workspaceHeading {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .workspaceHeading > *,
+  .workspace > :first-child,
+  .workspaceAside {
+    grid-column: auto;
+  }
+
+  .workspaceAside {
+    gap: var(--space-4);
+    margin-inline-start: 0;
+  }
+
+  .closingRail {
+    grid-template-columns: 1fr;
+  }
+
+  .archiveRail,
+  .roadmapRail {
+    grid-column: auto;
+  }
+
+  .archiveRail,
+  .roadmapRail {
+    padding: var(--space-6);
+  }
+
+  .roadmapRail {
+    border-inline-start: 0;
+    border-top: 1px solid var(--app-line);
+  }
+
+  .archiveRail {
+    gap: var(--space-5);
+  }
+
+  .railHeader {
+    align-items: center;
+    flex-direction: row;
+    gap: var(--space-3);
+  }
+
+  .railHeader > div {
+    min-width: 0;
+  }
+
+  .railHeader h2 {
+    white-space: nowrap;
+  }
+
+  .railHeader > :last-child {
+    flex: 0 0 auto;
+    width: 44px;
+    padding-inline: 0;
+  }
+
+  .archiveActionLabel {
+    display: none;
+  }
+
+  .archiveMetrics {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .archiveMetrics div {
+    grid-column: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) 0;
+    border-top: 0;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--app-line);
+  }
+
+  .archiveMetrics div:last-child {
+    border-bottom: 0;
+  }
+
+  .archiveMetrics dt {
+    min-width: 0;
+  }
+
+  .archiveMetrics dd {
+    margin: 0;
+    text-align: end;
+    white-space: nowrap;
+  }
+
+  .sessionDate {
+    font-size: 11px;
+    line-height: 16px;
+  }
+
+  .workspace span:has(> .sessionMetadata),
+  .sessionAmount {
+    display: none;
+  }
+
+  .sessionDuration {
+    display: inline;
+    color: var(--app-ink-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .contextualAction {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: var(--space-3);
+  }
+
+  .contextualIcon {
+    display: none;
+  }
+
+  .contextualCopy h2 {
+    font-size: 15px;
+    line-height: 21px;
+  }
+
+  .contextualCopy p {
+    margin-top: var(--space-1);
+    font-size: 12px;
+    line-height: 17px;
+  }
+
+  .contextualButton {
+    grid-column: 1;
+    justify-self: start;
+  }
+}

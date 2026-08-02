@@ -1,0 +1,1048 @@
+"use client";
+
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CheckCircle, Desktop, DownloadSimple, Eye, FilePdf, LockKey, Minus, Plus } from "@phosphor-icons/react";
+import { createClient } from "@/lib/supabase/client";
+import { authorizeExport } from "@/lib/billing/client";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import TplKlasik from "@/components/invoice/TplKlasik";
+import type { InvoiceBillingType, InvoiceData } from "@/components/invoice/invoice-data";
+import TplModern from "@/components/invoice/TplModern";
+import TplMinimal from "@/components/invoice/TplMinimal";
+import A4Page from "@/components/invoice/A4Page";
+import PaywallDialog from "@/components/PaywallDialog";
+import type { AccessState, PaywallReason } from "@/lib/data/quota-access";
+import {
+  getInvoiceBankOwnerPlaceholder,
+  getInvoiceDraft,
+  getInvoiceSettings,
+  removeInvoiceSettings,
+  resolveInvoiceTutorName,
+  saveInvoiceDraft,
+  saveInvoiceSettings,
+} from "@/lib/invoice-form-cache";
+import {
+  Button,
+  DateField,
+  Field,
+  IconButton,
+  Select,
+  Textarea,
+  TextField,
+} from "@/components/app-ui/controls";
+import { Dialog } from "@/components/app-ui/overlays";
+import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
+import { PageHeader, SectionHeading, Surface } from "@/components/app-ui/structure";
+import {
+  formatBillingTypeLabel,
+  getSessionMetrics,
+  getWibMonthRange,
+  toWibDateRange,
+} from "@/lib/data/session-metrics.mjs";
+import {
+  buildInvoiceRecipientLines,
+  buildInvoiceStudentOptions,
+  formatStudentDisplayName,
+  resolveInvoiceStudentId,
+  sortInvoiceStudents,
+} from "@/lib/invoice-students.mjs";
+
+const COLORS = ["#006C53", "#235C8F", "#805346", "#635880", "#161D1F", "#C0392B", "#1A5276", "#7D3C98", "#B7950B"];
+const TEMPLATES = ["klasik", "modern", "minimal"] as const;
+type Template = (typeof TEMPLATES)[number];
+
+interface StudentOption {
+  id: string;
+  name: string;
+  hourlyRate: number | null;
+  billingType: string | null;
+  educationLevel: string | null;
+  address: string | null;
+  parentName: string | null;
+}
+
+function getStudentRecipientName(student: StudentOption): string {
+  const storedName = student.parentName?.trim();
+  return storedName || `Orang tua/wali ${formatStudentDisplayName(student.name)}`;
+}
+
+interface InvoiceSessionItem {
+  id: string;
+  studentName: string;
+  clockIn: string;
+  clockOut: string | null;
+  note: string;
+  durationMinutes: number;
+  rate: number;
+  amount: number;
+  billingType: InvoiceBillingType;
+  isValid: boolean;
+}
+
+function formatDateLabel(d: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatInvoiceDate(d: Date): string {
+  return formatDateLabel(d);
+}
+
+function formatMonthDay(d: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]}`;
+}
+
+function safeInvoiceFilePart(value: string, fallback: string): string {
+  const cleaned = value
+    .trim()
+    .replace(/[\\/:"*?<>|]+/g, " ")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return cleaned || fallback;
+}
+
+function buildInvoicePdfFilename({
+  studentName,
+  periodStart,
+  periodEnd,
+}: {
+  studentName: string;
+  periodStart: string;
+  periodEnd: string;
+}): string {
+  const studentPart = safeInvoiceFilePart(formatStudentDisplayName(studentName), "Murid");
+  const startPart = safeInvoiceFilePart(periodStart, "tanggal-mulai");
+  const endPart = safeInvoiceFilePart(periodEnd, "tanggal-selesai");
+  return `Invoice-${studentPart}-${startPart}sd${endPart}.pdf`;
+}
+
+function currentMonthPeriod() {
+  return getWibMonthRange(new Date());
+}
+
+export default function InvoicePage() {
+  const supabase = createClient();
+
+  const [template, setTemplate] = useState<Template>("klasik");
+  const [accent, setAccent] = useState("#006C53");
+  const [zoom, setZoom] = useState(75);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [dialogZoom, setDialogZoom] = useState(75);
+  const dialogStageRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useLayoutEffect(() => {
+    if (!previewOpen) return;
+    const el = dialogStageRef.current;
+    if (!el) return;
+    let lastW = 0;
+    const fit = () => {
+      const w = el.clientWidth;
+      if (w > 0 && Math.abs(w - lastW) > 8) {
+        lastW = w;
+        setDialogZoom(Math.max(40, Math.min(200, Math.floor(((w - 16) / 794) * 100))));
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [previewOpen]);
+
+  const [periodStart, setPeriodStart] = useState(() => currentMonthPeriod().from);
+  const [periodEnd, setPeriodEnd] = useState(() => currentMonthPeriod().to);
+  const [lembaga, setLembaga] = useState("");
+  const [tutorName, setTutorName] = useState("");
+  const [tutorLocation, setTutorLocation] = useState("");
+  const [tutorContact, setTutorContact] = useState("");
+  const [parentName, setParentName] = useState("");
+  const [parentContact, setParentContact] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [studentInfo, setStudentInfo] = useState("");
+  const [studentAddress, setStudentAddress] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saveSettings, setSaveSettings] = useState(false);
+  const [students, setStudents] = useState<StudentOption[]>([]);
+  const [invoiceSessions, setInvoiceSessions] = useState<InvoiceSessionItem[]>([]);
+  const [exporting, setExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<PaywallReason>("invoice-locked");
+  const [accessState, setAccessState] = useState<AccessState>("free");
+  const [quotaReady, setQuotaReady] = useState(false);
+  const [studentsLoading, setStudentsLoading] = useState(true);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [studentsError, setStudentsError] = useState(false);
+  const [sessionsError, setSessionsError] = useState(false);
+  const [accountTutorName, setAccountTutorName] = useState("");
+  const [loadedSessionsQueryKey, setLoadedSessionsQueryKey] = useState<string | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+  const sessionsRequestSequence = useRef(0);
+  const restoredDraftStudentIdRef = useRef<string | null>(null);
+  const restoredDraftStudentNameRef = useRef<string | null>(null);
+  const restoredDraftHasStudentAddressRef = useRef(false);
+  const restoredDraftHasParentContactRef = useRef(false);
+  const selectedStudent = students.find((student) => student.id === selectedStudentId) ?? null;
+  const studentName = selectedStudent?.name ?? "";
+  const studentOptions = buildInvoiceStudentOptions(students);
+  const currentSessionsQueryKey = JSON.stringify([selectedStudentId, periodStart, periodEnd]);
+  const invoiceDownloadLocked = quotaReady && accessState !== "plus_active";
+  const invoiceActionsDisabled =
+    sessionsLoading ||
+    sessionsError ||
+    invoiceSessions.length === 0 ||
+    invoiceSessions.some((session) => !session.isValid) ||
+    loadedSessionsQueryKey !== currentSessionsQueryKey;
+
+  const periodLabel = (() => {
+    const s = new Date(periodStart + "T00:00:00");
+    const e = new Date(periodEnd + "T00:00:00");
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return "Pilih periode";
+    const sy = s.getFullYear() === e.getFullYear() ? "" : ` ${s.getFullYear()}`;
+    return `${s.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][s.getMonth()]}${sy} - ${e.getDate()} ${["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"][e.getMonth()]} ${e.getFullYear()}`;
+  })();
+
+  useEffect(() => {
+    const doFetch = async () => {
+      setStudentsLoading(true);
+      setStudentsError(false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("AUTH_REQUIRED");
+
+        const { data, error } = await supabase
+          .from("student_locations")
+          .select("id, student_name, hourly_rate, billing_type, education_level")
+          .eq("tutor_id", user.id)
+          .is("deleted_at", null)
+          .order("student_name", { ascending: true });
+
+        if (error || !data) throw error ?? new Error("STUDENTS_FETCH_FAILED");
+
+        const list: StudentOption[] = (data as Record<string, unknown>[]).map((row) => ({
+          id: row.id as string,
+          name: (row.student_name as string) ?? "Tanpa Nama",
+          hourlyRate: (row.hourly_rate as number) ?? null,
+          billingType: (row.billing_type as string) ?? null,
+          educationLevel: (row.education_level as string) ?? null,
+          address: null,
+          parentName: null,
+        }));
+
+        setStudents(sortInvoiceStudents(list));
+      } catch {
+        setStudents([]);
+        setStudentsError(true);
+      } finally {
+        setStudentsLoading(false);
+      }
+    };
+    doFetch();
+  }, [supabase]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const doFetch = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+        const rawAccountName = user.user_metadata?.full_name ?? user.user_metadata?.name;
+        const accountName = typeof rawAccountName === "string" ? rawAccountName : "";
+        setAccountTutorName(resolveInvoiceTutorName({
+          draft: null,
+          settings: null,
+          accountName,
+          email: user.email ?? "",
+        }));
+      } catch {
+        /* ignore */
+      }
+    };
+    doFetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!draftReady || !accountTutorName) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setTutorName((current) => current.trim() || accountTutorName);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountTutorName, draftReady]);
+
+  useEffect(() => {
+    if (studentsLoading) return;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      if (students.length === 0) {
+        setSelectedStudentId("");
+        setStudentInfo("");
+        setStudentAddress("");
+        setParentName("");
+        setParentContact("");
+        return;
+      }
+
+      const resolvedStudentId = resolveInvoiceStudentId(
+        students,
+        selectedStudentId || restoredDraftStudentIdRef.current,
+        restoredDraftStudentNameRef.current,
+      );
+      if (resolvedStudentId !== selectedStudentId) {
+        setSelectedStudentId(resolvedStudentId);
+        return;
+      }
+
+      const selectedStudent = students.find((student) => student.id === resolvedStudentId);
+      if (!selectedStudent) return;
+      setStudentInfo(selectedStudent.educationLevel ?? "");
+      const isRestoredStudent =
+        restoredDraftStudentIdRef.current === selectedStudent.id ||
+        restoredDraftStudentNameRef.current === selectedStudent.name;
+      const shouldPreserveDraftStudentAddress =
+        isRestoredStudent && restoredDraftHasStudentAddressRef.current;
+      const shouldPreserveDraftParentContact =
+        isRestoredStudent && restoredDraftHasParentContactRef.current;
+      setStudentAddress((current) =>
+        shouldPreserveDraftStudentAddress ? current : selectedStudent.address || ""
+      );
+      setParentContact((current) =>
+        shouldPreserveDraftParentContact ? current : ""
+      );
+      setParentName((current) =>
+        isRestoredStudent && current.trim()
+          ? current
+          : getStudentRecipientName(selectedStudent)
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedStudentId, students, studentsLoading]);
+
+  useEffect(() => {
+    const requestQueryKey = currentSessionsQueryKey;
+    const requestSequence = ++sessionsRequestSequence.current;
+    let cancelled = false;
+    const ownsLatestRequest = () =>
+      !cancelled && sessionsRequestSequence.current === requestSequence;
+
+    if (!selectedStudentId || !periodStart || !periodEnd) {
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setInvoiceSessions([]);
+        setSessionsError(false);
+        setSessionsLoading(false);
+        setLoadedSessionsQueryKey(null);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+    const doFetch = async () => {
+      setSessionsLoading(true);
+      setSessionsError(false);
+      setLoadedSessionsQueryKey(null);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("AUTH_REQUIRED");
+
+        const { startISO, endExclusiveISO } = toWibDateRange(periodStart, periodEnd);
+
+        const { data, error } = await supabase
+          .from("sessions")
+          .select("id, student_location_id, clock_in_at, clock_out_at, student_name_snapshot, hourly_rate_snapshot, billing_type_snapshot, session_learning_notes(tutor_note)")
+          .eq("tutor_id", user.id)
+          .eq("student_location_id", selectedStudentId)
+          .eq("status", "completed")
+          .gte("clock_in_at", startISO)
+          .lt("clock_in_at", endExclusiveISO)
+          .order("clock_in_at", { ascending: true });
+
+        if (error || !data) throw error ?? new Error("SESSIONS_FETCH_FAILED");
+
+        const items: InvoiceSessionItem[] = (data as Record<string, unknown>[]).map((row) => {
+          const clockIn = row.clock_in_at as string;
+          const clockOut = (row.clock_out_at as string) ?? null;
+          const rate = (row.hourly_rate_snapshot as number) ?? 0;
+          const metrics = getSessionMetrics({
+            clockInAt: clockIn,
+            clockOutAt: clockOut,
+            hourlyRate: rate,
+            billingType: (row.billing_type_snapshot as string) ?? null,
+          });
+          const relation = row.session_learning_notes;
+          const noteRecord = Array.isArray(relation) ? relation[0] : relation;
+          const note = typeof (noteRecord as Record<string, unknown> | null)?.tutor_note === "string"
+            ? ((noteRecord as Record<string, unknown>).tutor_note as string).trim()
+            : "";
+
+          return {
+            id: row.id as string,
+            studentName: (row.student_name_snapshot as string) || studentName,
+            clockIn,
+            clockOut,
+            note: note || "-",
+            durationMinutes: metrics.billableMinutes,
+            rate,
+            amount: metrics.amount,
+            billingType: metrics.billingType,
+            isValid: metrics.isValid,
+          };
+        });
+
+        if (!ownsLatestRequest()) return;
+        setInvoiceSessions(items);
+        setLoadedSessionsQueryKey(requestQueryKey);
+      } catch {
+        if (!ownsLatestRequest()) return;
+        setInvoiceSessions([]);
+        setSessionsError(true);
+        setLoadedSessionsQueryKey(null);
+      } finally {
+        if (ownsLatestRequest()) {
+          setSessionsLoading(false);
+        }
+      }
+    };
+    doFetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentSessionsQueryKey, selectedStudentId, periodStart, periodEnd, studentName, supabase]);
+
+  useEffect(() => {
+    const access = document.querySelector<HTMLElement>(".app-shell-h")?.dataset.access;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    setAccessState(access === "plus-active" ? "plus_active" : access === "plus-expired" ? "plus_expired" : "free");
+    setQuotaReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (mobileEditorOpen) window.scrollTo(0, 0);
+  }, [mobileEditorOpen]);
+
+  const validateInvoiceForm = useCallback(() => {
+    const fieldsValid = formRef.current?.reportValidity() ?? false;
+    return fieldsValid && !invoiceActionsDisabled;
+  }, [invoiceActionsDisabled]);
+
+  const handleExportPDF = useCallback(async () => {
+    if (!validateInvoiceForm()) return;
+    setExporting(true);
+    setExportError(null);
+    try {
+      const decision = await authorizeExport("invoice_pdf");
+      if (!decision.allowed) {
+        setPaywallReason(decision.reason ?? "invoice-locked");
+        setPaywallOpen(true);
+        return;
+      }
+
+      const container = exportRef.current;
+      if (!container) throw new Error("EXPORT_TARGET_UNAVAILABLE");
+
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.88);
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
+
+      pdf.save(buildInvoicePdfFilename({
+        studentName: invoiceSessions[0]?.studentName.trim() || studentName,
+        periodStart,
+        periodEnd,
+      }));
+      setExportSuccess(true);
+    } catch {
+      setExportError("PDF invoice belum berhasil diunduh. Coba lagi.");
+    } finally {
+      setExporting(false);
+    }
+  }, [invoiceSessions, periodEnd, periodStart, studentName, validateInvoiceForm]);
+
+  useEffect(() => {
+    if (!exportSuccess) return;
+    const timer = window.setTimeout(() => setExportSuccess(false), 3600);
+    return () => window.clearTimeout(timer);
+  }, [exportSuccess]);
+
+  const handleStudentChange = (studentId: string) => {
+    restoredDraftStudentIdRef.current = null;
+    restoredDraftStudentNameRef.current = null;
+    restoredDraftHasStudentAddressRef.current = false;
+    restoredDraftHasParentContactRef.current = false;
+    if (studentId !== selectedStudentId) setNotes("");
+    setSelectedStudentId(studentId);
+    const found = students.find((student) => student.id === studentId);
+
+    if (!found) {
+      setStudentInfo("");
+      setStudentAddress("");
+      setParentName("");
+      setParentContact("");
+      return;
+    }
+
+    setStudentInfo(found.educationLevel ?? "");
+    setStudentAddress(found.address ?? "");
+    setParentName(getStudentRecipientName(found));
+    setParentContact("");
+  };
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const parsed = getInvoiceSettings(localStorage);
+    if (!parsed) return;
+    if (typeof parsed.accent === "string") setAccent(parsed.accent);
+    if (TEMPLATES.includes(parsed.template as Template)) setTemplate(parsed.template as Template);
+    if (typeof parsed.bankAccount === "string") setBankAccount(parsed.bankAccount);
+    if (typeof parsed.bankName === "string") setBankName(parsed.bankName);
+    if (typeof parsed.lembaga === "string") setLembaga(parsed.lembaga);
+    if (typeof parsed.tutorName === "string") setTutorName(parsed.tutorName);
+    if (typeof parsed.tutorLocation === "string") setTutorLocation(parsed.tutorLocation);
+    if (typeof parsed.tutorContact === "string") setTutorContact(parsed.tutorContact);
+    setSaveSettings(true);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const draft = getInvoiceDraft(sessionStorage);
+    if (!draft) {
+      setDraftReady(true);
+      return;
+    }
+    if (typeof draft.periodStart === "string") setPeriodStart(draft.periodStart);
+    if (typeof draft.periodEnd === "string") setPeriodEnd(draft.periodEnd);
+    if (typeof draft.studentId === "string") {
+      restoredDraftStudentIdRef.current = draft.studentId;
+      setSelectedStudentId(draft.studentId);
+    }
+    if (typeof draft.studentName === "string") {
+      restoredDraftStudentNameRef.current = draft.studentName;
+    }
+    if (typeof draft.lembaga === "string") setLembaga(draft.lembaga);
+    if (typeof draft.tutorName === "string") setTutorName(draft.tutorName);
+    if (typeof draft.tutorLocation === "string") setTutorLocation(draft.tutorLocation);
+    if (typeof draft.tutorContact === "string") setTutorContact(draft.tutorContact);
+    if (typeof draft.parentName === "string") setParentName(draft.parentName);
+    if (typeof draft.studentAddress === "string") {
+      restoredDraftHasStudentAddressRef.current = true;
+      setStudentAddress(draft.studentAddress);
+    }
+    if (typeof draft.parentContact === "string") {
+      restoredDraftHasParentContactRef.current = true;
+      setParentContact(draft.parentContact);
+    }
+    if (typeof draft.bankAccount === "string") setBankAccount(draft.bankAccount);
+    if (typeof draft.bankName === "string") setBankName(draft.bankName);
+    if (typeof draft.notes === "string") setNotes(draft.notes);
+    if (typeof draft.accent === "string") setAccent(draft.accent);
+    if (typeof draft.template === "string" && TEMPLATES.includes(draft.template as Template)) setTemplate(draft.template as Template);
+    setDraftReady(true);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!draftReady) return;
+    saveInvoiceDraft(sessionStorage, {
+      periodStart,
+      periodEnd,
+      studentId: selectedStudentId,
+      studentName,
+      lembaga,
+      tutorName,
+      tutorLocation,
+      tutorContact,
+      parentName,
+      parentContact,
+      studentAddress,
+      bankAccount,
+      bankName,
+      notes,
+      accent,
+      template,
+    });
+  }, [draftReady, periodStart, periodEnd, selectedStudentId, studentName, lembaga, tutorName, tutorLocation, tutorContact, parentName, parentContact, studentAddress, bankAccount, bankName, notes, accent, template]);
+
+  useEffect(() => {
+    if (!saveSettings) return;
+    saveInvoiceSettings(localStorage, {
+      accent, template, bankAccount, bankName, lembaga,
+      tutorName, tutorLocation, tutorContact,
+    });
+  }, [saveSettings, accent, template, bankAccount, bankName, lembaga, tutorName, tutorLocation, tutorContact]);
+
+  const handleToggleSave = (checked: boolean) => {
+    setSaveSettings(checked);
+    if (!checked) {
+      removeInvoiceSettings(localStorage);
+    }
+  };
+
+  const buildInvoiceData = (): InvoiceData => {
+    const now = new Date();
+    const [bankCode = "", bankNo = ""] = bankAccount.split(/\s*(?:·|-)\s*/, 2);
+    const invoiceStudentName = formatStudentDisplayName(
+      invoiceSessions[0]?.studentName.trim() || studentName,
+    );
+    const recipientLines = buildInvoiceRecipientLines({
+      studentName: invoiceStudentName,
+      educationLevel: studentInfo,
+      address: studentAddress,
+      parentContact,
+    });
+
+    const items = invoiceSessions.map((session) => ({
+      date: formatMonthDay(new Date(session.clockIn)),
+      desc: session.note,
+      durationMinutes: session.durationMinutes,
+      rate: session.rate,
+      amount: session.amount,
+      billingType: session.billingType,
+    }));
+
+    return {
+      date: formatInvoiceDate(now),
+      period: periodLabel,
+      lembaga: lembaga || undefined,
+      from: {
+        name: tutorName,
+        lines: [
+          "Tutor Privat",
+          tutorLocation,
+          tutorContact,
+        ].filter(Boolean),
+      },
+      to: {
+        name: parentName,
+        lines: recipientLines,
+      },
+      bank: { bank: bankCode, no: bankNo, name: bankName },
+      items,
+      notes,
+    };
+  };
+
+  const handlePreview = () => {
+    if (!validateInvoiceForm()) return;
+    setPreviewOpen(true);
+  };
+
+  const renderPreview = (dialog = false) => {
+    const z = dialog ? dialogZoom : zoom;
+    const setZ = dialog ? setDialogZoom : setZoom;
+    const invoiceData = buildInvoiceData();
+    return (
+      <div
+        className={"inv-preview-wrap" + (dialog ? " inv-preview-dialog" : "")}
+        style={{ overflow: "auto" }}
+      >
+        <div className="inv-preview-toolbar">
+          <div className="tw-title-md">{dialog ? "Pratinjau" : "Periksa invoice"} · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
+          <div className="zoom-ctl">
+            <IconButton
+              label="Perkecil pratinjau"
+              icon={<Minus size={14} />}
+              variant="quiet"
+              size="compact"
+              onClick={() => setZ((v) => Math.max(40, v - 10))}
+            />
+            <span className="z">{z}%</span>
+            <IconButton
+              label="Perbesar pratinjau"
+              icon={<Plus size={14} />}
+              variant="quiet"
+              size="compact"
+              onClick={() => setZ((v) => Math.min(200, v + 10))}
+            />
+          </div>
+        </div>
+        <div style={{ overflow: "auto", flex: 1 }} className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
+          <div className="a4-stage" style={{ zoom: z / 100 }}>
+            <A4Page>
+              {template === "klasik" && <TplKlasik acc={accent} data={invoiceData} />}
+              {template === "modern" && <TplModern acc={accent} data={invoiceData} />}
+              {template === "minimal" && <TplMinimal acc={accent} data={invoiceData} />}
+            </A4Page>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderForm = () => (
+    <Surface padding="compact">
+      <form
+        id="invoice-form"
+        ref={formRef}
+        className="inv-form"
+        onSubmit={(event) => event.preventDefault()}
+      >
+
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Murid dan periode" />
+
+        <Field controlId="invoice-student" label="Nama murid" required>
+          <Select
+            id="invoice-student"
+            value={selectedStudentId}
+            onChange={handleStudentChange}
+            disabled={studentsLoading || studentsError || students.length === 0}
+            options={studentsLoading
+              ? [{ value: "", label: "Memuat..." }]
+              : studentsError
+                ? [{ value: "", label: "Murid belum dapat dimuat" }]
+                : students.length === 0
+                  ? [{ value: "", label: "Belum ada murid" }]
+                  : studentOptions}
+          />
+        </Field>
+
+        <div className="inv-period-fields">
+          <Field controlId="invoice-period-start" label="Tanggal mulai" required>
+            <DateField
+              id="invoice-period-start"
+              value={periodStart}
+              max={periodEnd || undefined}
+              onChange={setPeriodStart}
+            />
+          </Field>
+          <Field controlId="invoice-period-end" label="Tanggal selesai" required>
+            <DateField
+              id="invoice-period-end"
+              value={periodEnd}
+              min={periodStart || undefined}
+              onChange={setPeriodEnd}
+            />
+          </Field>
+        </div>
+
+        {sessionsLoading ? (
+          <div className="inv-auto-sessions" aria-live="polite">Memuat sesi selesai untuk periode ini...</div>
+        ) : sessionsError ? (
+          <div className="inv-auto-sessions inv-auto-sessions-error" aria-live="polite">Sesi belum dapat dimuat. Coba muat ulang halaman.</div>
+        ) : invoiceSessions.some((session) => !session.isValid) ? (
+          <div className="inv-auto-sessions inv-auto-sessions-error" role="alert" aria-live="polite">
+            Billing tidak valid pada salah satu sesi ({formatBillingTypeLabel("invalid")}). Preview dan export invoice dihentikan.
+          </div>
+        ) : invoiceSessions.length > 0 ? (
+          <div className="inv-auto-sessions" aria-live="polite">
+            Sesi selesai pada periode ini dimasukkan otomatis ke draft invoice.
+          </div>
+        ) : studentName && periodStart && periodEnd ? (
+          <div className="inv-auto-sessions inv-auto-sessions-error" aria-live="polite">
+            Tidak ada sesi selesai untuk murid dan periode ini.
+          </div>
+        ) : null}
+
+      </div>
+
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Pembayaran" />
+
+        <div className="inv-payment-fields">
+          <Field controlId="invoice-bank-account" label="Bank dan nomor rekening" required>
+            <TextField id="invoice-bank-account" value={bankAccount} onChange={setBankAccount} placeholder="BCA - 1234 5678 9012" />
+          </Field>
+
+          <Field controlId="invoice-bank-name" label="Nama pemilik rekening" required>
+            <TextField
+              id="invoice-bank-name"
+              value={bankName}
+              onChange={setBankName}
+              placeholder={getInvoiceBankOwnerPlaceholder(tutorName)}
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Tampilan invoice" />
+
+        <div className="inv-choice-field">
+          <div className="inv-choice-label">Pilih tampilan</div>
+          <div className="template-picker">
+            {TEMPLATES.map((t) => (
+              <button
+                type="button"
+                key={t}
+                className={"opt" + (template === t ? " on" : "")}
+                aria-pressed={template === t}
+                onClick={() => setTemplate(t)}
+              >
+                <div className="preview" style={{ background: t === "klasik" ? `linear-gradient(${accent} 22%, #fff 22%)` : "#fff" }}>
+                  {t === "modern" && <div style={{ height: 3, background: accent, marginBottom: 4 }}></div>}
+                  {t === "minimal" && <div style={{ borderBottom: `1px solid ${accent}`, paddingBottom: 3, fontFamily: "var(--f-title)", fontSize: 8, fontWeight: 700 }}>INVOICE</div>}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 4 }}>
+                    <div style={{ height: 2, background: "#eee", width: "80%" }}></div>
+                    <div style={{ height: 2, background: "#eee", width: "90%" }}></div>
+                    <div style={{ height: 2, background: "#eee", width: "70%" }}></div>
+                    <div style={{ height: 2, background: "#eee", width: "85%" }}></div>
+                  </div>
+                  <div style={{ marginTop: "auto", height: 4, background: accent, width: "40%", alignSelf: "flex-end" }}></div>
+                </div>
+                <span className="nm">{t.charAt(0).toUpperCase() + t.slice(1)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="inv-choice-field">
+          <div className="inv-choice-label">Warna aksen</div>
+          <div className="color-picker">
+            {COLORS.map((c) => (
+              <button
+                type="button"
+                key={c}
+                className={"sw" + (c === accent ? " on" : "")}
+                style={{ background: c, color: c }}
+                aria-label={`Pilih warna ${c}`}
+                aria-pressed={c === accent}
+                onClick={() => setAccent(c)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Profil tutor" />
+
+        <Field controlId="invoice-tutor-name" label="Nama" required>
+          <TextField id="invoice-tutor-name" value={tutorName} onChange={setTutorName} placeholder="Contoh: Nama tutor" />
+        </Field>
+
+        <Field controlId="invoice-service-name" label="Nama layanan atau merek (opsional)">
+          <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les Privat Rina" />
+        </Field>
+
+        <Field controlId="invoice-tutor-location" label="Lokasi">
+          <TextField id="invoice-tutor-location" value={tutorLocation} onChange={setTutorLocation} placeholder="Contoh: Jakarta Selatan" />
+        </Field>
+
+        <Field controlId="invoice-tutor-contact" label="Kontak">
+          <TextField id="invoice-tutor-contact" value={tutorContact} onChange={setTutorContact} placeholder="Contoh: 0812-3456-7890" />
+        </Field>
+      </div>
+
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Penerima invoice" />
+
+        <Field controlId="invoice-parent-name" label="Ditagih kepada" required>
+          <TextField id="invoice-parent-name" value={parentName} onChange={setParentName} placeholder="Contoh: Orang tua/wali murid" />
+        </Field>
+
+        <Field controlId="invoice-student-address" label="Alamat">
+          <TextField id="invoice-student-address" value={studentAddress} onChange={setStudentAddress} placeholder="Jalan Sudirman" />
+        </Field>
+
+        <Field controlId="invoice-parent-contact" label="Kontak wali">
+          <TextField id="invoice-parent-contact" value={parentContact} onChange={setParentContact} placeholder="Contoh: 0812-3456-7890" />
+        </Field>
+      </div>
+
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Catatan tambahan" />
+
+        <Field controlId="invoice-notes" label="Catatan tambahan" labelVisuallyHidden>
+          <Textarea
+            id="invoice-notes"
+            value={notes}
+            onChange={setNotes}
+            placeholder="Contoh: Bulan ini pembelajaran berfokus pada persiapan ujian dan penguatan materi."
+          />
+        </Field>
+      </div>
+
+      <div className="inv-section">
+        <SectionHeading level="h2" size="compact" title="Pengaturan" />
+
+        <label className="inv-save-check">
+          <input
+            type="checkbox"
+            checked={saveSettings}
+            onChange={(e) => handleToggleSave(e.target.checked)}
+          />
+          <span>Simpan pengaturan untuk invoice berikutnya</span>
+        </label>
+
+        <div className="tw-helper" style={{ marginTop: -4 }}>
+          Yang disimpan: profil tutor, nama layanan, rekening pembayaran, dan
+          tampilan invoice. Data tersimpan di perangkat ini dan terisi otomatis
+          saat halaman dibuka lagi.
+        </div>
+      </div>
+
+      <div className="inv-form-actions">
+        <Button
+          type="button"
+          variant="quiet"
+          size="compact"
+          leadingIcon={<Eye size={16} aria-hidden="true" />}
+          disabled={invoiceActionsDisabled}
+          onClick={handlePreview}
+        >
+          Periksa invoice
+        </Button>
+        <Button
+          type="button"
+          size="compact"
+          leadingIcon={invoiceDownloadLocked ? <LockKey size={14} aria-hidden="true" /> : undefined}
+          trailingIcon={<DownloadSimple size={16} aria-hidden="true" />}
+          loading={exporting}
+          disabled={invoiceActionsDisabled}
+          onClick={handleExportPDF}
+        >
+          Unduh PDF
+        </Button>
+      </div>
+      {invoiceDownloadLocked ? (
+        <div className="tw-helper inv-premium-note" style={{ marginTop: 4 }}>
+          {accessState === "plus_expired"
+            ? "Perpanjang Plus untuk mengunduh PDF invoice."
+            : "Aktifkan Plus untuk mengunduh PDF invoice."}
+        </div>
+      ) : null}
+      </form>
+    </Surface>
+  );
+
+  const renderPreviewDialog = () => (
+    <Dialog
+      open={previewOpen}
+      onOpenChange={setPreviewOpen}
+      title="Periksa invoice"
+      size="preview"
+    >
+      {renderPreview(true)}
+    </Dialog>
+  );
+
+  return (
+    <>
+      <div>
+        <section
+          className={`app-invoice-mobile-handoff${mobileEditorOpen ? " app-invoice-mobile-handoff-hidden" : ""}`}
+          aria-labelledby="invoice-mobile-handoff-title"
+        >
+          <Desktop size={34} aria-hidden="true" />
+          <p>Invoice TutorLog</p>
+          <h1 id="invoice-mobile-handoff-title">Buat invoice di laptop.</h1>
+          <span>Form dan pratinjau A4 lebih nyaman diperiksa di layar yang lebih lebar.</span>
+          <div className="app-invoice-handoff-actions">
+            <Button href="/app" size="large" block>Kembali ke Beranda</Button>
+            <button
+              type="button"
+              className="app-invoice-continue"
+              onClick={() => setMobileEditorOpen(true)}
+            >
+              Tetap buat di sini
+            </button>
+          </div>
+        </section>
+
+        <div className={`app-invoice-route${mobileEditorOpen ? " app-invoice-route-open" : ""}`}>
+          <RouteCanvas route="invoice">
+            <PageMain>
+              <PageHeader
+                route="invoice"
+                eyebrow="Invoice"
+                title="Buat invoice."
+                description="Pilih murid dan periode untuk menyiapkan invoice."
+                actions={(
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="compact"
+                    leadingIcon={<FilePdf size={18} aria-hidden="true" />}
+                    loading={exporting}
+                    disabled={invoiceActionsDisabled}
+                    onClick={handleExportPDF}
+                  >
+                    Unduh PDF
+                  </Button>
+                )}
+              />
+
+              <section
+                className={`app-invoice-main${mobileEditorOpen ? " app-invoice-mobile-editor" : ""}`}
+                aria-label="Editor invoice"
+              >
+                {exportError ? <p className="app-export-error" role="alert">{exportError}</p> : null}
+
+                <div className="invoice-layout">
+                  {renderForm()}
+                  <div className="inv-preview-col">
+                    <Surface variant="preview" padding="compact">
+                      {renderPreview()}
+                    </Surface>
+                  </div>
+                </div>
+              </section>
+            </PageMain>
+          </RouteCanvas>
+        </div>
+      </div>
+
+      {renderPreviewDialog()}
+
+      <PaywallDialog
+        open={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        variant="invoice"
+        reason={paywallReason}
+      />
+
+      {exportSuccess ? (
+        <div className="app-success-toast" role="status">
+          <CheckCircle size={20} weight="fill" aria-hidden="true" />
+          <span>PDF invoice berhasil diunduh.</span>
+        </div>
+      ) : null}
+
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: "-9999px",
+          width: "794px",
+          zIndex: -1,
+        }}
+      >
+        <A4Page pageRef={exportRef}>
+          {template === "klasik" && <TplKlasik acc={accent} data={buildInvoiceData()} />}
+          {template === "modern" && <TplModern acc={accent} data={buildInvoiceData()} />}
+          {template === "minimal" && <TplMinimal acc={accent} data={buildInvoiceData()} />}
+        </A4Page>
+      </div>
+    </>
+  );
+}

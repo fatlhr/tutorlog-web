@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Design Artboard Renderer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Source+Serif+4:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="tutorlog-web.css?v=14" />
+  <link rel="stylesheet" href="tutorlog-web-invoices.css?v=1" />
+  <link rel="stylesheet" href="tutorlog-web-mobile.css?v=4" />
+  <style>
+    html, body { margin: 0; background: #E8EFF1; font-family: 'Source Serif 4', Georgia, serif; }
+    .dc-artboard { display: inline-block; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+
+<script type="text/babel" src="web-shared.jsx?v=1"></script>
+<script type="text/babel" src="web-invoices.jsx?v=1"></script>
+<script type="text/babel" src="web-mobile-screens.jsx?v=4"></script>
+
+<script type="text/babel">
+// Minimal stubs for DesignCanvas components
+const DesignCanvas = ({ children }) => <div className="design-canvas">{children}</div>;
+const DCSection = ({ children }) => <div className="dc-section">{children}</div>;
+const DCArtboard = ({ id, label, width, height, children }) => (
+  <div
+    className="dc-artboard"
+    data-artboard-id={id}
+    data-artboard-label={label}
+    style={{ width: width, minHeight: height, overflow: 'hidden' }}
+  >
+    {children}
+  </div>
+);
+
+window.DesignCanvas = DesignCanvas;
+window.DCSection = DCSection;
+window.DCArtboard = DCArtboard;
+
+// Parse URL params to select which artboards to render
+const params = new URLSearchParams(window.location.search);
+const artboardIds = params.get('ids')?.split(',') || [];
+const mobileOnly = params.get('mobile') === '1';
+const desktopOnly = params.get('desktop') === '1';
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="mob-public" title="Mobile — Landing & Login">
+        <DCArtboard id="mob-landing" label="Landing" width={390} height={1580}>
+          <MobScreenLanding />
+        </DCArtboard>
+        <DCArtboard id="mob-login" label="Login" width={390} height={844}>
+          <MobScreenLogin />
+        </DCArtboard>
+        <DCArtboard id="mob-login-sent" label="Login Sent" width={390} height={844}>
+          <MobScreenLoginSent />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="mob-public-pages" title="Mobile — Public Pages">
+        <DCArtboard id="mob-fitur" label="Fitur" width={390} height={1480}>
+          <MobScreenFitur />
+        </DCArtboard>
+        <DCArtboard id="mob-harga" label="Harga" width={390} height={1380}>
+          <MobScreenHarga />
+        </DCArtboard>
+        <DCArtboard id="mob-panduan" label="Panduan" width={390} height={1250}>
+          <MobScreenPanduan />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="mob-legal" title="Mobile — Legal">
+        <DCArtboard id="mob-privacy" label="Privacy" width={390} height={1000}>
+          <MobScreenPrivacy />
+        </DCArtboard>
+        <DCArtboard id="mob-terms" label="Terms" width={390} height={900}>
+          <MobScreenTerms />
+        </DCArtboard>
+        <DCArtboard id="mob-account-del" label="Account" width={390} height={820}>
+          <MobScreenAccountDeletion />
+        </DCArtboard>
+        <DCArtboard id="mob-kontak" label="Kontak" width={390} height={1000}>
+          <MobScreenKontak />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="mob-app" title="Mobile — App (Protected)">
+        <DCArtboard id="mob-rekap" label="Rekap Sesi" width={390} height={1340}>
+          <MobScreenRekap />
+        </DCArtboard>
+        <DCArtboard id="mob-invoice" label="Invoice Builder" width={390} height={844}>
+          <MobScreenInvoiceBuilder />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
