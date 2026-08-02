@@ -47,11 +47,11 @@ export default function TplMinimal({ acc = "#006C53", data = sampleInvoiceData }
       <table className="mn-table">
         <thead>
           <tr>
-            <th style={{ width: "55px" }}>Tgl</th>
+            <th style={{ width: "56px" }}>Tgl</th>
             {showDescription ? <th>Deskripsi sesi</th> : null}
             <th className="right mono" style={{ width: "46px" }}>Jam</th>
-            <th className="right mono" style={{ width: "90px" }}>Tarif</th>
-            <th className="right mono" style={{ width: "100px" }}>Subtotal</th>
+            <th className="right mono" style={{ width: "112px" }}>Tarif</th>
+            <th className="right mono" style={{ width: "106px" }}>Subtotal</th>
           </tr>
         </thead>
         <tbody>

@@ -51,11 +51,11 @@ export default function TplModern({ acc = "#006C53", data = sampleInvoiceData }:
       <table className="m-table">
         <thead>
           <tr>
-            <th style={{ width: "60px" }}>Tgl</th>
+            <th style={{ width: "56px" }}>Tgl</th>
             {showDescription ? <th>Deskripsi</th> : null}
             <th className="right mono" style={{ width: "46px" }}>Jam</th>
-            <th className="right mono" style={{ width: "80px" }}>Tarif</th>
-            <th className="right mono" style={{ width: "90px" }}>Subtotal</th>
+            <th className="right mono" style={{ width: "112px" }}>Tarif</th>
+            <th className="right mono" style={{ width: "106px" }}>Subtotal</th>
           </tr>
         </thead>
         <tbody>

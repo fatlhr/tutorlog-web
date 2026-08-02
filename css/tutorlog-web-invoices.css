@@ -60,7 +60,7 @@
   font-family: var(--f-body); font-size: 11px; line-height: 1.5; color: var(--tw-text-2);
 }
 .tpl-klasik table.k-table {
-  width: 100%; border-collapse: collapse; margin-top: 20px;
+  width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 20px;
 }
 .tpl-klasik table.k-table th {
   background: var(--acc-soft-12, #E0EDEA);
@@ -77,18 +77,20 @@
 .tpl-klasik table.k-table td {
   height: 34px;
   padding-inline: 10px;
-  padding-block: 0;
-  line-height: 34px;
+  padding-block: 6px;
+  line-height: 1.45;
   border: 1px solid var(--tw-divider);
   font-family: var(--f-body); font-size: 11px;
   vertical-align: middle;
 }
-.tpl-klasik table.k-table td.right, .tpl-klasik table.k-table th.right { text-align: right; }
+.tpl-klasik table.k-table td.right, .tpl-klasik table.k-table th.right { text-align: right; white-space: nowrap; }
 .tpl-klasik table.k-table td.mono, .tpl-klasik table.k-table th.mono { font-family: var(--f-title); font-weight: 700; }
 .tpl-klasik table.k-table td .cell-content {
   display: inline-block;
   position: relative;
-  top: -8px;
+  top: 0;
+  line-height: 1.45;
+  vertical-align: middle;
 }
 .tpl-klasik .k-total-block {
   margin-top: 16px; margin-left: auto; width: 240px;
@@ -190,7 +192,7 @@
 }
 
 .tpl-modern table.m-table {
-  width: 100%; border-collapse: separate; border-spacing: 0;
+  width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed;
   border-radius: 8px; overflow: hidden;
 }
 .tpl-modern table.m-table th {
@@ -208,7 +210,7 @@
   vertical-align: middle;
 }
 .tpl-modern table.m-table td.mono, .tpl-modern table.m-table th.mono { font-family: var(--f-title); font-weight: 700; }
-.tpl-modern table.m-table td.right, .tpl-modern table.m-table th.right { text-align: right; }
+.tpl-modern table.m-table td.right, .tpl-modern table.m-table th.right { text-align: right; white-space: nowrap; }
 .tpl-modern table.m-table tbody tr.m-table-gap td {
   height: 6px;
   padding: 0;
@@ -306,7 +308,7 @@
 }
 
 .tpl-minimal table.mn-table {
-  width: 100%; border-collapse: collapse;
+  width: 100%; border-collapse: collapse; table-layout: fixed;
 }
 .tpl-minimal table.mn-table th {
   height: 34px;
@@ -331,7 +333,7 @@
 .tpl-minimal table.mn-table td.mono, .tpl-minimal table.mn-table th.mono {
   font-family: var(--f-title); font-weight: 700;
 }
-.tpl-minimal table.mn-table td.right, .tpl-minimal table.mn-table th.right { text-align: right; }
+.tpl-minimal table.mn-table td.right, .tpl-minimal table.mn-table th.right { text-align: right; white-space: nowrap; }
 
 .tpl-minimal .mn-total-row {
   display: grid;
