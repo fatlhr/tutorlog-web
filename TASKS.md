@@ -18,7 +18,7 @@
 - **Database:** Supabase (PostgreSQL) — shared with mobile app
 - **Auth:** Supabase Auth (Magic Link) — sudah di-setup di mobile
 - **PDF Export:** Client-side (`jsPDF`, native drawing)
-- **Deployment:** Vercel Free → SumoPod VPS (saat scale up)
+- **Deployment:** Cloudflare Workers Free + OpenNext → Workers Paid/managed runtime (saat scale up)
 - **Components:** Custom (mengikuti pattern TutorPlis, tanpa component library)
 - **Responsive:** Dual viewport (vp-mobile + vp-desktop) via media query
 - **Git:** Trunk-based development — lihat [GIT_STRATEGY.md](GIT_STRATEGY.md)
@@ -493,12 +493,183 @@
 - [x] **8.3 A11y pass** — focus-visible, aria, alt text, prefers-reduced-motion
   - _DoD: Keyboard-only bisa navigasi semua halaman_ ✓ (13/13 axe-core + keyboard tests passed)
 
-- [ ] **8.4 Vercel deployment (Free tier)**
-  - Connect GitHub repo ke Vercel
-  - Setup environment variables
-  - Custom domain (tutorlog.id)
-  - _DoD: Deploy ke Vercel, semua routes jalan_
-  - _Catatan: Migrasi ke SumoPod VPS (Rp 60rb/bulan) saat scale up. App code tidak berubah, hanya deployment workflow._
+- [ ] **8.4 Cloudflare Workers deployment (Free tier + OpenNext)**
+
+  > **Keputusan deployment:** TutorLog Web dipindahkan dari target Vercel → SumoPod
+  > menjadi Cloudflare Workers sebagai runtime production default. Supabase tetap menjadi
+  > database, Auth, RPC, dan Storage karena database tersebut dipakai bersama mobile app.
+  > Kita tidak memindahkan schema ke D1 atau object storage ke R2 dalam task ini.
+
+  > **Target arsitektur:** Browser/mobile client → Cloudflare DNS/TLS/CDN → Cloudflare
+  > Worker (Next.js melalui `@opennextjs/cloudflare`) → Supabase Auth/Postgres/Storage
+  > dan Duitku API. Halaman public yang statis dilayani sebagai asset; route protected,
+  > Server Actions, Route Handlers, dan webhook berjalan sebagai Worker request.
+
+  > **Target biaya awal:** Cloudflare Workers Free, selama penggunaan tetap di bawah
+  > 100.000 request/hari dan request dynamic tidak konsisten melewati batas 10 ms CPU.
+  > Static asset requests tidak menjadi batas utama. Domain, Supabase, dan fee transaksi
+  > Duitku tetap merupakan komponen terpisah dari biaya Workers.
+
+  #### 8.4.1 Prasyarat dan keputusan scope
+
+  - [ ] Pastikan akun Cloudflare aktif dan zone `tutorlog.id` dapat dikelola dari Cloudflare.
+  - [ ] Pastikan repository GitHub dan branch deploy sudah ditentukan. Branch production
+    menggunakan alur repo yang berlaku: feature/fix → `develop` → production setelah
+    verifikasi, bukan direct edit pada `develop` untuk application code.
+  - [ ] Pertahankan Vercel deployment terakhir sebagai rollback target sampai Worker
+    production selesai diverifikasi.
+  - [ ] Tetapkan `tutorlog.id` sebagai custom domain Worker production dan gunakan
+    `*.workers.dev` hanya untuk preview/canary.
+  - [ ] Jangan mengaktifkan `BILLING_PAYMENT_PROVIDER_ENABLED=true` hanya karena hosting
+    sudah berpindah. Aktivasi payment tetap menunggu merchant account dan sandbox Duitku.
+
+  #### 8.4.2 Tambahkan adapter dan konfigurasi Worker
+
+  - [ ] Tambahkan `@opennextjs/cloudflare` sebagai dependency build dan `wrangler` sebagai
+    devDependency pada `package.json`.
+  - [ ] Tambahkan `wrangler.jsonc` di root dengan konfigurasi minimal:
+    `main: ".open-next/worker.js"`, assets directory `.open-next/assets`, binding
+    `ASSETS`, `compatibility_flags: ["nodejs_compat"]`, dan compatibility date yang
+    memenuhi minimum OpenNext.
+  - [ ] Tambahkan `open-next.config.ts` menggunakan `defineCloudflareConfig()`.
+  - [ ] Tambahkan script yang eksplisit dan dapat diulang:
+    - `preview`: build OpenNext lalu jalankan preview dengan runtime `workerd`/Wrangler.
+    - `deploy`: build OpenNext lalu deploy ke Worker target.
+    - `cf-typegen`: generate type declaration untuk environment/bindings Cloudflare.
+  - [ ] Pastikan output `.open-next/`, Wrangler artifacts, dan local Worker variables tidak
+    masuk commit jika memang bersifat generated atau secret.
+  - [ ] Jangan menambahkan `output: "export"`; route auth, Server Actions, billing API,
+    dan webhook memerlukan runtime server.
+  - [ ] Audit dependency yang hanya dipakai saat development. Script test/generate yang
+    memakai `node:fs` tetap berjalan di mesin CI/local dan tidak boleh ikut terseret ke
+    runtime Worker.
+
+  **Referensi resmi:**
+  - Next.js di Workers: `https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/`
+  - Automatic configuration: `https://developers.cloudflare.com/workers/framework-guides/automatic-configuration/`
+
+  #### 8.4.3 Siapkan environment variables dan secrets
+
+  - [ ] Pisahkan konfigurasi public/build-time dari secret runtime.
+  - [ ] Sediakan build variables:
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+  - [ ] Sediakan Worker secrets menggunakan Wrangler secret store atau dashboard:
+    - `SUPABASE_SERVICE_ROLE_KEY`
+    - `DUITKU_API_KEY`
+    - `DUITKU_MERCHANT_CODE` jika diperlakukan sebagai credential internal
+  - [ ] Sediakan runtime vars/secrets billing:
+    - `BILLING_PAYMENT_PROVIDER_ENABLED`
+    - `DUITKU_BASE_URL`
+    - `DUITKU_CALLBACK_URL`
+    - `DUITKU_RETURN_URL`
+  - [ ] Untuk staging, gunakan environment Duitku sandbox dan callback URL staging yang
+    jelas. Jangan memakai callback production dari preview Worker.
+  - [ ] Pastikan semua variable yang diperlukan oleh Next.js tersedia pada build phase,
+    karena sebagian `NEXT_PUBLIC_*` di-inline saat build.
+  - [ ] Jangan menaruh Supabase service role key, Duitku API key, atau credential lain di
+    `wrangler.jsonc`, `vars`, source code, log, atau repository.
+
+  #### 8.4.4 Deploy preview dan canary
+
+  - [ ] Deploy branch kandidat ke Worker preview dengan nama yang membedakan environment,
+    misalnya `tutorlog-web-staging`, tanpa mengubah DNS production.
+  - [ ] Jalankan `npm run build` dan `npm run preview` menggunakan adapter Cloudflare.
+  - [ ] Verifikasi smoke route public:
+    `/`, `/login`, `/login/sent`, `/fitur`, `/harga`, `/panduan`, `/privacy`, `/terms`,
+    `/account`, dan `/kontak`.
+  - [ ] Verifikasi protected route tanpa session: `/app`, `/app/rekap`, dan
+    `/app/invoice` harus redirect ke `/login`.
+  - [ ] Verifikasi protected route dengan session Supabase nyata: session cookie terbaca,
+    `proxy.ts` dapat memanggil `supabase.auth.getUser()`, dan refresh cookie tidak hilang.
+  - [ ] Verifikasi Magic Link pada browser yang sama dengan pengirim request. Tambahkan
+    URL callback preview ke Supabase hanya jika memang dibutuhkan untuk testing, lalu
+    hapus atau batasi setelah canary selesai.
+  - [ ] Verifikasi Server Actions: kirim Magic Link dan update profile/name.
+  - [ ] Verifikasi Route Handlers: products, quotes, purchases, payment status/cancel, dan
+    export authorization merespons dengan status serta error contract yang benar.
+  - [ ] Verifikasi PDF/CSV export di browser. PDF tetap client-side dan tidak boleh
+    bergantung pada filesystem atau API Node di Worker.
+
+  #### 8.4.5 Integrasi Supabase dan Duitku
+
+  - [ ] Tambahkan production redirect URL Supabase:
+    `https://tutorlog.id/auth/callback`.
+  - [ ] Pastikan Site URL Supabase mengarah ke `https://tutorlog.id` dan tidak lagi
+    mengandalkan hostname preview untuk user production.
+  - [ ] Uji query Rekap, RPC billing, RLS, upload logo ke bucket `user-assets`, dan
+    operasi admin yang memakai `SUPABASE_SERVICE_ROLE_KEY` dari Worker.
+  - [ ] Set production `DUITKU_CALLBACK_URL` ke:
+    `https://tutorlog.id/api/webhooks/duitku`.
+  - [ ] Set production `DUITKU_RETURN_URL` ke route pembayaran yang benar setelah route
+    pembayaran final dikonfirmasi.
+  - [ ] Jalankan inquiry dan status check Duitku sandbox dari Worker preview.
+  - [ ] Kirim callback `application/x-www-form-urlencoded` ke webhook preview dan verifikasi
+    HMAC, mapping status, amount, provider reference, serta idempotency RPC.
+  - [ ] Terapkan callback IP whitelist Duitku pada jalur yang sesuai setelah endpoint
+    production diketahui. IP callback Duitku menuju TutorLog berbeda dari source IP
+    outbound Worker menuju API Duitku.
+  - [ ] Konfirmasi ke Duitku apakah request outbound merchant membutuhkan source IP tetap.
+    Workers Free tidak boleh diasumsikan memiliki dedicated egress IP. Jika Duitku
+    mensyaratkan allowlist source outbound, pilih solusi yang mendukung static egress
+    sebelum mengaktifkan payment production.
+  - [ ] Jangan menandai payment flow production sebagai selesai sebelum sandbox event,
+    callback publik, dan status inquiry benar-benar berhasil.
+
+  #### 8.4.6 Custom domain dan cutover production
+
+  - [ ] Attach custom domain `tutorlog.id` ke Worker production setelah preview/canary
+    lolos. Cloudflare harus menjadi zone aktif agar DNS, TLS, dan certificate management
+    dapat dikelola oleh Cloudflare.
+  - [ ] Pastikan tidak ada CNAME lama yang bentrok dengan custom domain Worker.
+  - [ ] Verifikasi HTTPS, apex domain, redirect behavior, cookie domain, canonical URL,
+    metadata, dan callback URL setelah domain terpasang.
+  - [ ] Lakukan cutover pada waktu yang bisa dipantau. Jangan menghapus deployment Vercel
+    sebelum smoke test production selesai.
+  - [ ] Ulangi smoke test public, auth, protected routes, invoice, export, dan webhook
+    pada hostname production.
+  - [ ] Pantau Worker logs dan error rate pada jam pertama. Catat status request, CPU time,
+    invocation errors, redirect loop, Supabase auth errors, dan webhook response.
+
+  #### 8.4.7 Batas Free plan dan jalur scale-up
+
+  - [ ] Catat baseline harian untuk dynamic request, CPU time, error 1102, dan error 1027.
+  - [ ] Anggap Free plan tidak memenuhi kebutuhan jika request Worker mendekati 100.000/hari,
+    dynamic SSR/auth konsisten melewati 10 ms CPU, atau workload melewati batas 50
+    subrequests/invocation.
+  - [ ] Jika hanya membutuhkan limit compute lebih besar, evaluasi Workers Paid mulai
+    dari $5/bulan sebelum memindahkan aplikasi ke VPS.
+  - [ ] Jika membutuhkan static egress IP, long-running process, filesystem, atau runtime
+    Node penuh, evaluasi kembali opsi managed runtime/VPS. Jangan memaksa semua workload
+    masuk ke Worker.
+  - [ ] Tetapkan keputusan scale-up berdasarkan metrics nyata, bukan asumsi traffic.
+
+  #### 8.4.8 Rollback dan Definition of Done
+
+  - [ ] Dokumentasikan rollback: detach/repoint domain ke deployment Vercel terakhir,
+    mempertahankan Supabase dan data billing tanpa migrasi schema.
+  - [ ] Pastikan rollback tidak mengubah `DUITKU_CALLBACK_URL` tanpa rencana, karena callback
+    yang tertunda harus tetap memiliki endpoint yang dapat diproses.
+  - [ ] Jalankan `git diff --check` dan review file config/generated yang ikut berubah.
+  - [ ] Jalankan lint, TypeScript check, production build, Cloudflare preview, dan smoke
+    test pada Worker runtime sesuai approval QA.
+  - [ ] DoD deployment:
+    - Semua public routes dapat dibuka melalui `tutorlog.id`.
+    - Protected routes menolak anonymous request dan menerima Supabase session yang valid.
+    - Magic Link callback berhasil membentuk session pada domain production.
+    - Rekap, Invoice, CSV, dan client-side PDF tetap berfungsi.
+    - API billing fail closed saat provider disabled.
+    - Duitku sandbox inquiry, status, callback, signature verification, dan processing RPC
+      berhasil pada runtime Cloudflare.
+    - Tidak ada secret di repository atau response/log yang dapat diakses user.
+    - Vercel rollback target masih tersedia sampai observasi production selesai.
+
+  **Status evidence yang harus dilampirkan pada completion note:**
+  - Worker name, environment, deployment URL, dan custom domain.
+  - Commit/branch yang dideploy.
+  - Hasil build, typecheck, lint, preview, dan smoke test.
+  - Hasil verifikasi Supabase Auth redirect dan Duitku sandbox/callback.
+  - Snapshot metrics Free plan pada periode observasi awal.
 
 - [x] **8.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
   - _DoD: Dokumen up-to-date_ ✓ (SPEC.md rewritten for Next.js, README.md updated, TASKS.md current)
