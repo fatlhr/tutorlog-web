@@ -118,6 +118,27 @@ bash scripts/setup-hooks.sh
 Hook ini lokal dan bisa dilewati dengan `--no-verify`. Fungsinya rem cepat supaya
 kesalahan ketahuan sebelum kena jaringan, bukan pagar.
 
-Pagar sebenarnya = **branch ruleset di GitHub**: server-side, gak bisa dilewati, dan
-tetap berlaku dari mesin manapun termasuk yang belum jalanin `setup-hooks.sh`.
-Repo ini public, jadi ruleset gratis.
+Pagar sebenarnya ada di bawah.
+
+## Branch Ruleset (GitHub)
+
+Ruleset **"main protection"** aktif di `refs/heads/main`. Server-side, gak bisa
+dilewati `--no-verify`, dan tetap berlaku dari mesin manapun termasuk yang belum
+jalanin `setup-hooks.sh`.
+
+| Rule | Efek |
+|------|------|
+| `pull_request` (0 approval) | `main` cuma bisa diubah lewat PR. Approval 0 disengaja — GitHub gak ngebolehin approve PR sendiri, kalau di-set 1 malah kekunci sendiri. |
+| `required_status_checks` → `lint + build` | PR gak bisa di-merge sebelum CI hijau. |
+| `non_fast_forward` | Gak bisa force-push, histori `main` gak bisa ditimpa. |
+| `deletion` | `main` gak bisa dihapus. |
+
+Diverifikasi dengan percobaan push langsung (commit kosong, `--no-verify`, lalu
+di-reset). Server nolak:
+
+```
+remote: - Changes must be made through a pull request.
+remote: - Required status check "lint + build" is expected.
+```
+
+Kelola di: `https://github.com/fatlhr/tutorlog-web/rules`
