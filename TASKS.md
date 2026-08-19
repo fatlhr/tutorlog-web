@@ -703,7 +703,8 @@
   - [x] Record Resend di-push ke Cloudflare via auto-configure: DKIM `resend._domainkey`,
         MX + SPF di subdomain `send`. SPF root milik Mailspace tidak tersentuh karena
         Resend memakai subdomain terpisah, jadi tidak perlu digabung.
-  - [x] Supabase custom SMTP diarahkan ke `smtp.resend.com:465`, sender `noreply@tutorlog.id`.
+  - [x] Supabase custom SMTP diarahkan ke `smtp.resend.com:465`. Sender awalnya
+        `noreply@tutorlog.id`, lalu diganti ke `halo@tutorlog.id` — lihat 8.6.6.
   - [x] Magic link terverifikasi sampai ke Gmail eksternal dengan TLS.
 
   #### 8.6.3 Template email — HTML SIAP, BELUM DIPASANG
@@ -723,30 +724,6 @@
         `TutorLog <halo@tutorlog.id>`, preheader tampil di baris pertama. ✓
   - [ ] Verifikasi dark mode di Gmail mobile.
   - [ ] Verifikasi tombol benar-benar membentuk session (lihat 8.6.7, sekarang masih rusak).
-
-  #### 8.6.7 URL Configuration dan verifikasi redirect
-
-  Kondisi sekarang di Supabase → Authentication → URL Configuration:
-
-  - Site URL: `https://tutorlog.id`
-  - Redirect URLs: `tutorlog://login-callback`, `https://tutorlog.id/auth/callback`
-
-  Satu email tes menunjukkan `redirect_to=tutorlog://login-callback`. Karena Site URL
-  sudah mengarah ke web, kemungkinan besar email itu diminta dari aplikasi Flutter yang
-  mengirim `emailRedirectTo` sendiri, bukan dari web. Kalau begitu, perilakunya benar.
-  Belum dipastikan, dan cara memastikannya ada di langkah verifikasi di bawah.
-
-  Catatan tentang aplikasi mobile: keberadaan `tutorlog://login-callback` di daftar
-  Redirect URLs menunjukkan aplikasi Flutter mengirim `emailRedirectTo` secara eksplisit,
-  bukan mengandalkan fallback Site URL. Kalau benar, Site URL boleh diarahkan ke web
-  tanpa mematikan login mobile. Konfirmasi di repo Flutter sebelum mengandalkan asumsi ini.
-
-  - [ ] Tambahkan `http://localhost:3000/auth/callback` ke Redirect URLs. Wajib untuk
-        menguji flow web sebelum deployment, karena `tutorlog.id` belum ke-deploy dan
-        tanpa entry ini magic link dari dev server jatuh ke Site URL yang masih kosong.
-  - [ ] Jalankan `npm run dev`, minta magic link dari `/login` di browser, lalu periksa
-        `redirect_to` di URL email. Harus terbaca `http://localhost:3000/auth/callback`.
-  - [ ] Klik tombol, pastikan session terbentuk dan redirect ke `/app` berhasil.
 
   #### 8.6.4 Ganti alamat kontak di halaman publik — BELUM
 
@@ -800,6 +777,30 @@
   - [ ] Akun baru (Duitku merchant dan seterusnya) langsung pakai `admin@tutorlog.id`.
   - [ ] Foto profil pengirim di Gmail (BIMI) tidak dikejar. Butuh sertifikat VMC/CMC
         USD 650–1.100 per tahun plus DMARC di enforcement. Tidak sepadan untuk tahap ini.
+
+  #### 8.6.7 URL Configuration dan verifikasi redirect
+
+  Kondisi sekarang di Supabase → Authentication → URL Configuration:
+
+  - Site URL: `https://tutorlog.id`
+  - Redirect URLs: `tutorlog://login-callback`, `https://tutorlog.id/auth/callback`
+
+  Satu email tes menunjukkan `redirect_to=tutorlog://login-callback`. Karena Site URL
+  sudah mengarah ke web, kemungkinan besar email itu diminta dari aplikasi Flutter yang
+  mengirim `emailRedirectTo` sendiri, bukan dari web. Kalau begitu, perilakunya benar.
+  Belum dipastikan, dan cara memastikannya ada di langkah verifikasi di bawah.
+
+  Catatan tentang aplikasi mobile: keberadaan `tutorlog://login-callback` di daftar
+  Redirect URLs menunjukkan aplikasi Flutter mengirim `emailRedirectTo` secara eksplisit,
+  bukan mengandalkan fallback Site URL. Kalau benar, Site URL boleh diarahkan ke web
+  tanpa mematikan login mobile. Konfirmasi di repo Flutter sebelum mengandalkan asumsi ini.
+
+  - [ ] Tambahkan `http://localhost:3000/auth/callback` ke Redirect URLs. Wajib untuk
+        menguji flow web sebelum deployment, karena `tutorlog.id` belum ke-deploy dan
+        tanpa entry ini magic link dari dev server jatuh ke Site URL yang masih kosong.
+  - [ ] Jalankan `npm run dev`, minta magic link dari `/login` di browser, lalu periksa
+        `redirect_to` di URL email. Harus terbaca `http://localhost:3000/auth/callback`.
+  - [ ] Klik tombol, pastikan session terbentuk dan redirect ke `/app` berhasil.
 
 ---
 
