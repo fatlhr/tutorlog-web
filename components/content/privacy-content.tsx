@@ -36,7 +36,7 @@ export function PrivacyContent() {
       <section className="tl-article-section">
         <h2>Retensi dan penghapusan data</h2>
         <p>TutorLog menyimpan data akun, murid, sesi, voucher, dan rekap selama akun aktif agar tutor bisa melihat riwayat dan membuat laporan.</p>
-        <p>Untuk pertanyaan privasi atau penghapusan data, kirim email ke <a href="mailto:tutorlog.admin@gmail.com">tutorlog.admin@gmail.com</a>.</p>
+        <p>Untuk pertanyaan privasi atau penghapusan data, kirim email ke <a href="mailto:halo@tutorlog.id">halo@tutorlog.id</a>.</p>
       </section>
     </article>
   );

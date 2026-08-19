@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const steps = [
-  { title: "Kirim email", body: <>Kirim email ke <a href="mailto:tutorlog.admin@gmail.com">tutorlog.admin@gmail.com</a>.</> },
+  { title: "Kirim email", body: <>Kirim email ke <a href="mailto:halo@tutorlog.id">halo@tutorlog.id</a>.</> },
   { title: "Gunakan subjek yang benar", body: <>Gunakan subjek <strong>Hapus akun TutorLog</strong>.</> },
   { title: "Sertakan email login", body: "Sertakan email yang dipakai untuk login TutorLog." },
   { title: "Tulis konfirmasi", body: "Tulis konfirmasi singkat bahwa kamu ingin akun dan data TutorLog dihapus." },
