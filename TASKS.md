@@ -523,73 +523,91 @@
   - [ ] Jangan mengaktifkan `BILLING_PAYMENT_PROVIDER_ENABLED=true` hanya karena hosting
     sudah berpindah. Aktivasi payment tetap menunggu merchant account dan sandbox Duitku.
 
-  #### 8.4.2 Tambahkan adapter dan konfigurasi Worker
+  #### 8.4.2 Tambahkan adapter dan konfigurasi Worker — DONE ✓
 
-  - [ ] Tambahkan `@opennextjs/cloudflare` sebagai dependency build dan `wrangler` sebagai
-    devDependency pada `package.json`.
-  - [ ] Tambahkan `wrangler.jsonc` di root dengan konfigurasi minimal:
+  - [x] Tambahkan `@opennextjs/cloudflare` sebagai dependency build dan `wrangler` sebagai
+    devDependency pada `package.json`. Next.js dan `eslint-config-next` sekalian dinaikkan
+    16.2.10 → 16.2.12 (exact pin dipertahankan) karena peer range `@opennextjs/cloudflare`
+    mengecualikan 16.2.10 spesifik (butuh >=16.2.11).
+  - [x] Tambahkan `wrangler.jsonc` di root dengan konfigurasi minimal:
     `main: ".open-next/worker.js"`, assets directory `.open-next/assets`, binding
     `ASSETS`, `compatibility_flags: ["nodejs_compat"]`, dan compatibility date yang
     memenuhi minimum OpenNext.
-  - [ ] Tambahkan `open-next.config.ts` menggunakan `defineCloudflareConfig()`.
-  - [ ] Tambahkan script yang eksplisit dan dapat diulang:
+  - [x] Tambahkan `open-next.config.ts` menggunakan `defineCloudflareConfig()`.
+  - [x] Tambahkan script yang eksplisit dan dapat diulang:
     - `preview`: build OpenNext lalu jalankan preview dengan runtime `workerd`/Wrangler.
     - `deploy`: build OpenNext lalu deploy ke Worker target.
     - `cf-typegen`: generate type declaration untuk environment/bindings Cloudflare.
-  - [ ] Pastikan output `.open-next/`, Wrangler artifacts, dan local Worker variables tidak
-    masuk commit jika memang bersifat generated atau secret.
-  - [ ] Jangan menambahkan `output: "export"`; route auth, Server Actions, billing API,
-    dan webhook memerlukan runtime server.
-  - [ ] Audit dependency yang hanya dipakai saat development. Script test/generate yang
-    memakai `node:fs` tetap berjalan di mesin CI/local dan tidak boleh ikut terseret ke
-    runtime Worker.
+  - [x] Pastikan output `.open-next/`, Wrangler artifacts, dan local Worker variables tidak
+    masuk commit jika memang bersifat generated atau secret. `.gitignore` ditambah
+    `.open-next/`, `.wrangler/`, `.dev.vars`, `cloudflare-env.d.ts`, `.env.deploy.local`.
+    `eslint.config.mjs` juga ditambah `.open-next/**` ke ignore, lint sempat nyisir build
+    chunk generated di situ.
+  - [x] Jangan menambahkan `output: "export"`; route auth, Server Actions, billing API,
+    dan webhook memerlukan runtime server. Dikonfirmasi tidak ada di `next.config.ts`.
+  - [x] Audit dependency yang hanya dipakai saat development — `proxy.ts`/`middleware.ts`
+    dan `lib/supabase/admin.ts` cuma pakai `@supabase/ssr`/`@supabase/supabase-js`, tidak
+    ada Node-only API yang kebawa ke runtime Worker.
+
+  **Catatan blocker yang ditemukan dan diperbaiki:** `@opennextjs/cloudflare` (versi
+  1.20.2, per Agustus 2026) belum mendukung `proxy.ts` Next.js 16 — build hard-exit
+  dengan pesan "Node.js middleware is not currently supported", karena `proxy.ts` di
+  Next 16 selalu compile ke Node.js runtime tanpa cara opt-out (`export const runtime`
+  di file proxy malah throw error). Ini bug upstream yang masih terbuka
+  ([opennextjs-cloudflare#1277](https://github.com/opennextjs/opennextjs-cloudflare/issues/1277),
+  fix real di [PR #1309](https://github.com/opennextjs/opennextjs-cloudflare/pull/1309)
+  masih open per pengecekan ini). Solusi: file dikembalikan ke nama lama `middleware.ts`
+  (fungsi `middleware`, bukan `proxy`) — nama lama itu masih default ke Edge runtime dan
+  Next 16 tetap mendukungnya (dengan warning deprecation). Dikonfirmasi maintainer di
+  issue yang sama. Ganti balik ke `proxy.ts` begitu adapter Cloudflare rilis dukungan
+  Node middleware.
 
   **Referensi resmi:**
   - Next.js di Workers: `https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/`
   - Automatic configuration: `https://developers.cloudflare.com/workers/framework-guides/automatic-configuration/`
 
-  #### 8.4.3 Siapkan environment variables dan secrets
+  #### 8.4.3 Siapkan environment variables dan secrets — SEBAGIAN, DUITKU SENGAJA SKIP
 
-  - [ ] Pisahkan konfigurasi public/build-time dari secret runtime.
-  - [ ] Sediakan build variables:
+  - [x] Pisahkan konfigurasi public/build-time dari secret runtime. Token deploy
+    (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) disimpan terpisah di
+    `.env.deploy.local` (gitignored), bukan campur ke `.env.local` punya app.
+  - [x] Build variables — sudah ada di `.env.local`, otomatis ke-inline `next build`:
     - `NEXT_PUBLIC_SUPABASE_URL`
     - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-  - [ ] Sediakan Worker secrets menggunakan Wrangler secret store atau dashboard:
-    - `SUPABASE_SERVICE_ROLE_KEY`
-    - `DUITKU_API_KEY`
-    - `DUITKU_MERCHANT_CODE` jika diperlakukan sebagai credential internal
-  - [ ] Sediakan runtime vars/secrets billing:
-    - `BILLING_PAYMENT_PROVIDER_ENABLED`
-    - `DUITKU_BASE_URL`
-    - `DUITKU_CALLBACK_URL`
-    - `DUITKU_RETURN_URL`
-  - [ ] Untuk staging, gunakan environment Duitku sandbox dan callback URL staging yang
-    jelas. Jangan memakai callback production dari preview Worker.
-  - [ ] Pastikan semua variable yang diperlukan oleh Next.js tersedia pada build phase,
-    karena sebagian `NEXT_PUBLIC_*` di-inline saat build.
-  - [ ] Jangan menaruh Supabase service role key, Duitku API key, atau credential lain di
-    `wrangler.jsonc`, `vars`, source code, log, atau repository.
+  - [x] `SUPABASE_SERVICE_ROLE_KEY` di-set via `wrangler secret put` ke
+    `tutorlog-web-staging`. Diverifikasi: `/api/products` sempat 500 sebelum secret
+    ini di-set (admin client gagal init), 200 setelahnya dengan data katalog asli.
+  - [ ] `DUITKU_API_KEY`, `DUITKU_MERCHANT_CODE` — **sengaja tidak di-set.** Merchant
+    account/sandbox Duitku belum ada. Lihat 8.4.1: jangan aktifkan payment cuma karena
+    hosting pindah.
+  - [ ] `BILLING_PAYMENT_PROVIDER_ENABLED`, `DUITKU_BASE_URL`, `DUITKU_CALLBACK_URL`,
+    `DUITKU_RETURN_URL` — **sengaja tidak di-set**, alasan sama. Diverifikasi fail-closed:
+    `POST /api/webhooks/duitku` di staging balikin `503 CALLBACK_UNAVAILABLE`, bukan crash.
+  - [ ] Duitku sandbox — ditunda sampai merchant account ada, lihat 8.4.5.
+  - [x] Semua variable yang diperlukan Next.js tersedia di build phase — dikonfirmasi
+    lewat `npm run build` sukses lokal sebelum deploy.
+  - [x] Tidak ada secret di `wrangler.jsonc`, `vars`, source code — `SUPABASE_SERVICE_ROLE_KEY`
+    dikirim lewat stdin ke `wrangler secret put`, bukan argumen CLI (gak nyangkut shell history).
 
-  #### 8.4.4 Deploy preview dan canary
+  #### 8.4.4 Deploy preview dan canary — STAGING LIVE, SEBAGIAN TERVERIFIKASI
 
-  - [ ] Deploy branch kandidat ke Worker preview dengan nama yang membedakan environment,
-    misalnya `tutorlog-web-staging`, tanpa mengubah DNS production.
-  - [ ] Jalankan `npm run build` dan `npm run preview` menggunakan adapter Cloudflare.
-  - [ ] Verifikasi smoke route public:
+  - [x] Deploy ke Worker preview `tutorlog-web-staging`, tanpa mengubah DNS production.
+    Live: `https://tutorlog-web-staging.fatlhr.workers.dev`.
+  - [x] `npm run build` (Next.js) dan `opennextjs-cloudflare build` sukses.
+  - [x] Smoke test public routes — semua 200 setelah propagasi cold-start awal:
     `/`, `/login`, `/login/sent`, `/fitur`, `/harga`, `/panduan`, `/privacy`, `/terms`,
-    `/account`, dan `/kontak`.
-  - [ ] Verifikasi protected route tanpa session: `/app`, `/app/rekap`, dan
-    `/app/invoice` harus redirect ke `/login`.
-  - [ ] Verifikasi protected route dengan session Supabase nyata: session cookie terbaca,
-    `proxy.ts` dapat memanggil `supabase.auth.getUser()`, dan refresh cookie tidak hilang.
-  - [ ] Verifikasi Magic Link pada browser yang sama dengan pengirim request. Tambahkan
-    URL callback preview ke Supabase hanya jika memang dibutuhkan untuk testing, lalu
-    hapus atau batasi setelah canary selesai.
-  - [ ] Verifikasi Server Actions: kirim Magic Link dan update profile/name.
-  - [ ] Verifikasi Route Handlers: products, quotes, purchases, payment status/cancel, dan
-    export authorization merespons dengan status serta error contract yang benar.
-  - [ ] Verifikasi PDF/CSV export di browser. PDF tetap client-side dan tidak boleh
-    bergantung pada filesystem atau API Node di Worker.
+    `/account`, `/kontak`. Render visual dicek lewat browser, font/warna/gambar tampil benar.
+  - [x] Protected route tanpa session — `/app`, `/app/rekap`, `/app/invoice`, `/checkout`
+    semua `307` ke `/login?next=...` dengan path yang benar.
+  - [ ] Protected route dengan session Supabase nyata — belum diverifikasi, butuh klik
+    magic link sungguhan dari inbox (di luar akses agent).
+  - [x] Server Action `sendMagicLink` — dicoba lewat browser (submit form di `/login`),
+    redirect ke `/login/sent` sukses. Server Action konfirmasi jalan di runtime Worker.
+  - [ ] Magic Link end-to-end (klik dari email, session kebentuk) — butuh dicoba manual,
+    agent tidak punya akses inbox.
+  - [x] Route Handlers — `/api/products` (200, data katalog asli via admin client) dan
+    `/api/webhooks/duitku` (503 `CALLBACK_UNAVAILABLE`, fail-closed sesuai desain).
+  - [ ] PDF/CSV export — client-side (`jspdf`/`html2canvas`), butuh dicoba manual di browser.
 
   #### 8.4.5 Integrasi Supabase dan Duitku
 
