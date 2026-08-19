@@ -8,23 +8,43 @@ HOOK_DIR="$(git rev-parse --git-dir)/hooks"
 
 cat > "$HOOK_DIR/pre-push" << 'HOOK'
 #!/bin/bash
-protected_branch='main'
-current_branch=$(git symbolic-ref HEAD | sed -e 's|^refs/heads/||')
+# Block push langsung ke main. main menerima perubahan lewat PR dari develop.
+#
+# Catatan: hook ini lokal dan bisa dilewati dengan --no-verify. Pagar yang
+# sebenarnya adalah branch ruleset di GitHub. Hook ini cuma rem cepat supaya
+# kesalahan ketahuan sebelum kena jaringan.
 
-if [ "$current_branch" = "$protected_branch" ]; then
+protected_ref='refs/heads/main'
+blocked=0
+
+# pre-push menerima daftar ref lewat stdin:
+#   <local ref> <local sha> <remote ref> <remote sha>
+# Yang dicek ref tujuan, bukan branch aktif — supaya `git push origin develop:main`
+# dan `git push origin HEAD:main` ikut ketahan, bukan cuma push saat sedang di main.
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  if [ "$remote_ref" = "$protected_ref" ]; then
+    blocked=1
+  fi
+done
+
+if [ "$blocked" = "1" ]; then
   echo ""
-  echo "⛔ DILARANG PUSH KE MAIN!"
+  echo "⛔ Push langsung ke main ditolak."
   echo ""
-  echo "Main branch LOCKED sampai Next.js v2 siap deploy."
-  echo "Main = production legal web yang sedang aktif dipakai."
+  echo "main = production (tutorlog.id). Perubahan masuk lewat PR dari develop,"
+  echo "supaya ada diff yang bisa direview dan jejak apa yang naik ke production."
   echo ""
-  echo "Push ke develop atau feature branch instead:"
-  echo "  git checkout develop"
-  echo "  git push origin develop"
+  echo "Alur rilis:"
+  echo "  git checkout develop && git push origin develop"
+  echo "  gh pr create --base main --head develop"
+  echo ""
+  echo "Darurat (hotfix production yang gak bisa nunggu): git push --no-verify"
   echo ""
   exit 1
 fi
+
+exit 0
 HOOK
 
 chmod +x "$HOOK_DIR/pre-push"
-echo "✓ Pre-push hook installed (blocks push to main)"
+echo "✓ Pre-push hook installed (blocks direct push to main)"
