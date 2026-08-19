@@ -4,10 +4,12 @@
 
 ```
 main ──────────────────────────────────────────────────────►
-│  (production — legal web, jangan ganggu sampai v2 ready)   │
-│                                                            │
+│  (production — tutorlog.id, live di Cloudflare Workers)    │
+│  ▲                                                         │
+│  └── PR rilis ──────────────────────────────────┐          │
+│                                                 │          │
 └── develop ─────────────────────────────────────────────────►
-    │  (development — Next.js migration)                     │
+    │  (integrasi — semua fitur mendarat di sini dulu)       │
     │                                                        │
     ├── feat/m1-foundation ───┬──► PR ──► merge ──► delete  │
     │                         │                              │
@@ -16,23 +18,34 @@ main ─────────────────────────
     └── fix/login-bug ────────┘                              │
 ```
 
-## ⛔ PERINGATAN: MAIN LOCKED
+## Status main
 
-> **DILARANG KERAS** push, merge, atau buat PR ke `main` sampai Next.js v2 siap deploy.
-> `main` = production legal web yang sedang aktif dipakai. Apapun yang masuk ke `main`
-> = langsung live ke user. Jangan ganggu.
+`main` sudah **tidak lagi locked**. Kunci lama berlaku selama migrasi Next.js v2 belum
+deploy; sejak `tutorlog.id` live di Cloudflare Workers (lihat TASKS.md 8.4), syarat itu
+sudah terpenuhi.
+
+Yang berlaku sekarang: `main` = production. Apapun yang masuk ke `main` langsung jadi
+yang dilihat user, jadi masuknya lewat PR dari `develop`, bukan push langsung.
 
 | Aturan | Detail |
 |--------|--------|
-| **⛔ `main` — LOCKED** | Production. **DILARANG** push/merge/PR. Hanya di-unlock saat v2 siap. |
-| **`develop`** | Development branch untuk Next.js migration. Semua feature branch start dari sini. |
+| **`main`** | Production (`tutorlog.id`). Hanya menerima merge lewat PR dari `develop`. Tidak ada push langsung. |
+| **`develop`** | Branch integrasi. Semua feature branch start dari sini. |
 | **Feature branch** | `feat/<milestone>` atau `feat/<deskripsi>` — hidup max 2 hari, start dari `develop` |
 | **Fix branch** | `fix/<deskripsi>` — langsung dari `develop`, cepat merge |
 | **Commit ke `develop` langsung** | Hanya untuk docs, config, typo fix — tanpa PR |
 | **PR wajib** | Semua perubahan kode. Self-review dulu sebelum merge |
 | **Squash merge** | Semua PR di-squash ke 1 commit di `develop` |
 | **Delete branch** | Hapus setelah merge |
-| **Merge ke `main`** | **DILARANG** sampai Next.js v2 siap deploy. Akan diinformasikan kapan waktunya. |
+| **Rilis ke `main`** | PR `develop` → `main`. Isinya commit yang sudah direview waktu masuk `develop`, jadi PR ini fungsinya checkpoint rilis: lihat diff yang akan naik, catat verifikasi, baru merge. |
+
+### Kenapa PR untuk rilis, padahal solo
+
+Bukan soal nunggu approval orang lain. Tiga alasan praktis:
+
+1. **Jeda yang disengaja** sebelum sesuatu jadi live.
+2. **Diff yang kebaca** — kelihatan persis apa yang naik, bukan asumsi.
+3. **Jejak rilis** — waktu ada yang rusak, "kapan ini naik?" kejawab dari daftar PR.
 
 ## Commit Convention
 
@@ -69,20 +82,63 @@ git push -u origin feat/m2-auth
 git checkout develop && git pull && git branch -d feat/m2-auth
 ```
 
-## CI/CD
+## Deploy
 
-- `develop` branch → auto-deploy ke Vercel preview
-- PR branch → Vercel preview deployment
-- `main` → **jangan auto-deploy** sampai v2 siap
-- Build gagal = merge di-block
+Vercel sudah tidak dipakai — project-nya tidak ada lagi (lihat TASKS.md 8.4.1).
+Sekarang di Cloudflare Workers lewat OpenNext:
+
+| Target | Worker | URL |
+|--------|--------|-----|
+| Production | `tutorlog-web` | `tutorlog.id` (+ `www` redirect ke apex) |
+| Staging | `tutorlog-web-staging` | `tutorlog-web-staging.fatlhr.workers.dev` |
+
+Deploy masih **manual** lewat `npm run deploy` (production) atau
+`wrangler deploy --name tutorlog-web-staging` (staging). Belum ada auto-deploy.
+
+**Belum ada CI.** Tidak ada `.github/workflows/`, jadi tidak ada gate otomatis yang
+nge-block merge kalau lint/build gagal — untuk sekarang itu tanggung jawab manual
+sebelum merge (`npm run lint && npm run build`). Kalau nanti CI ditambah, itu juga
+yang bikin "require status checks" di ruleset GitHub jadi ada artinya.
 
 ## Git Hooks
 
-Pre-push hook aktif untuk block push ke `main`. File: `.git/hooks/pre-push`.
+Pre-push hook nolak push langsung ke `main`. File: `.git/hooks/pre-push`.
+
+Hook baca daftar ref dari stdin dan cek ref **tujuan**, bukan branch yang lagi aktif.
+Bedanya penting: versi lama cuma cek branch aktif, jadi `git push origin develop:main`
+lolos begitu saja.
 
 **Hook tidak ter-track oleh git.** Setelah fresh clone, jalankan:
 ```bash
 bash scripts/setup-hooks.sh
 ```
 
-Script ini akan install pre-push hook secara otomatis.
+### Hook bukan pengaman
+
+Hook ini lokal dan bisa dilewati dengan `--no-verify`. Fungsinya rem cepat supaya
+kesalahan ketahuan sebelum kena jaringan, bukan pagar.
+
+Pagar sebenarnya ada di bawah.
+
+## Branch Ruleset (GitHub)
+
+Ruleset **"main protection"** aktif di `refs/heads/main`. Server-side, gak bisa
+dilewati `--no-verify`, dan tetap berlaku dari mesin manapun termasuk yang belum
+jalanin `setup-hooks.sh`.
+
+| Rule | Efek |
+|------|------|
+| `pull_request` (0 approval) | `main` cuma bisa diubah lewat PR. Approval 0 disengaja — GitHub gak ngebolehin approve PR sendiri, kalau di-set 1 malah kekunci sendiri. |
+| `required_status_checks` → `lint + build` | PR gak bisa di-merge sebelum CI hijau. |
+| `non_fast_forward` | Gak bisa force-push, histori `main` gak bisa ditimpa. |
+| `deletion` | `main` gak bisa dihapus. |
+
+Diverifikasi dengan percobaan push langsung (commit kosong, `--no-verify`, lalu
+di-reset). Server nolak:
+
+```
+remote: - Changes must be made through a pull request.
+remote: - Required status check "lint + build" is expected.
+```
+
+Kelola di: `https://github.com/fatlhr/tutorlog-web/rules`

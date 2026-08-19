@@ -516,84 +516,149 @@
   - [ ] Pastikan repository GitHub dan branch deploy sudah ditentukan. Branch production
     menggunakan alur repo yang berlaku: feature/fix → `develop` → production setelah
     verifikasi, bukan direct edit pada `develop` untuk application code.
-  - [ ] Pertahankan Vercel deployment terakhir sebagai rollback target sampai Worker
-    production selesai diverifikasi.
+  - [x] ~~Pertahankan Vercel deployment terakhir sebagai rollback target~~ — **N/A,
+    tidak ada yang bisa dipertahankan.** Dicek langsung lewat `vercel project ls` /
+    `vercel domains inspect tutorlog.id` (CLI ter-autentikasi sebagai `fatlhr`, team
+    `fatihs-personal-web`): tidak ada project `tutorlog-web` dan domain `tutorlog.id`
+    tidak terdaftar di Vercel manapun yang terlihat dari akun ini. Tidak ada
+    `vercel.json`, `.vercel/project.json`, atau commit apapun di branch manapun yang
+    pernah menghubungkan repo ini ke project Vercel. Baris ini sebelumnya sempat
+    tercentang `[x]` di sesi lain padahal isinya sendiri bilang "belum diverifikasi" —
+    kontradiksi itu sekarang diperbaiki. Rollback plan yang beneran ada: lihat 8.4.6
+    dan 8.4.8.
   - [ ] Tetapkan `tutorlog.id` sebagai custom domain Worker production dan gunakan
     `*.workers.dev` hanya untuk preview/canary.
   - [ ] Jangan mengaktifkan `BILLING_PAYMENT_PROVIDER_ENABLED=true` hanya karena hosting
     sudah berpindah. Aktivasi payment tetap menunggu merchant account dan sandbox Duitku.
 
-  #### 8.4.2 Tambahkan adapter dan konfigurasi Worker
+  #### 8.4.2 Tambahkan adapter dan konfigurasi Worker — DONE ✓
 
-  - [ ] Tambahkan `@opennextjs/cloudflare` sebagai dependency build dan `wrangler` sebagai
-    devDependency pada `package.json`.
-  - [ ] Tambahkan `wrangler.jsonc` di root dengan konfigurasi minimal:
+  - [x] Tambahkan `@opennextjs/cloudflare` sebagai dependency build dan `wrangler` sebagai
+    devDependency pada `package.json`. Next.js dan `eslint-config-next` sekalian dinaikkan
+    16.2.10 → 16.2.12 (exact pin dipertahankan) karena peer range `@opennextjs/cloudflare`
+    mengecualikan 16.2.10 spesifik (butuh >=16.2.11).
+  - [x] Tambahkan `wrangler.jsonc` di root dengan konfigurasi minimal:
     `main: ".open-next/worker.js"`, assets directory `.open-next/assets`, binding
     `ASSETS`, `compatibility_flags: ["nodejs_compat"]`, dan compatibility date yang
     memenuhi minimum OpenNext.
-  - [ ] Tambahkan `open-next.config.ts` menggunakan `defineCloudflareConfig()`.
-  - [ ] Tambahkan script yang eksplisit dan dapat diulang:
+  - [x] Tambahkan `open-next.config.ts` menggunakan `defineCloudflareConfig()`.
+  - [x] Tambahkan script yang eksplisit dan dapat diulang:
     - `preview`: build OpenNext lalu jalankan preview dengan runtime `workerd`/Wrangler.
     - `deploy`: build OpenNext lalu deploy ke Worker target.
     - `cf-typegen`: generate type declaration untuk environment/bindings Cloudflare.
-  - [ ] Pastikan output `.open-next/`, Wrangler artifacts, dan local Worker variables tidak
-    masuk commit jika memang bersifat generated atau secret.
-  - [ ] Jangan menambahkan `output: "export"`; route auth, Server Actions, billing API,
-    dan webhook memerlukan runtime server.
-  - [ ] Audit dependency yang hanya dipakai saat development. Script test/generate yang
-    memakai `node:fs` tetap berjalan di mesin CI/local dan tidak boleh ikut terseret ke
-    runtime Worker.
+  - [x] Pastikan output `.open-next/`, Wrangler artifacts, dan local Worker variables tidak
+    masuk commit jika memang bersifat generated atau secret. `.gitignore` ditambah
+    `.open-next/`, `.wrangler/`, `.dev.vars`, `cloudflare-env.d.ts`, `.env.deploy.local`.
+    `eslint.config.mjs` juga ditambah `.open-next/**` ke ignore, lint sempat nyisir build
+    chunk generated di situ.
+  - [x] Jangan menambahkan `output: "export"`; route auth, Server Actions, billing API,
+    dan webhook memerlukan runtime server. Dikonfirmasi tidak ada di `next.config.ts`.
+  - [x] Audit dependency yang hanya dipakai saat development — `proxy.ts`/`middleware.ts`
+    dan `lib/supabase/admin.ts` cuma pakai `@supabase/ssr`/`@supabase/supabase-js`, tidak
+    ada Node-only API yang kebawa ke runtime Worker.
+
+  **Catatan blocker yang ditemukan dan diperbaiki:** `@opennextjs/cloudflare` (versi
+  1.20.2, per Agustus 2026) belum mendukung `proxy.ts` Next.js 16 — build hard-exit
+  dengan pesan "Node.js middleware is not currently supported", karena `proxy.ts` di
+  Next 16 selalu compile ke Node.js runtime tanpa cara opt-out (`export const runtime`
+  di file proxy malah throw error). Ini bug upstream yang masih terbuka
+  ([opennextjs-cloudflare#1277](https://github.com/opennextjs/opennextjs-cloudflare/issues/1277),
+  fix real di [PR #1309](https://github.com/opennextjs/opennextjs-cloudflare/pull/1309)
+  masih open per pengecekan ini). Solusi: file dikembalikan ke nama lama `middleware.ts`
+  (fungsi `middleware`, bukan `proxy`) — nama lama itu masih default ke Edge runtime dan
+  Next 16 tetap mendukungnya (dengan warning deprecation). Dikonfirmasi maintainer di
+  issue yang sama. Ganti balik ke `proxy.ts` begitu adapter Cloudflare rilis dukungan
+  Node middleware.
 
   **Referensi resmi:**
   - Next.js di Workers: `https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/`
   - Automatic configuration: `https://developers.cloudflare.com/workers/framework-guides/automatic-configuration/`
 
-  #### 8.4.3 Siapkan environment variables dan secrets
+  #### 8.4.3 Siapkan environment variables dan secrets — SEBAGIAN, DUITKU SENGAJA SKIP
 
-  - [ ] Pisahkan konfigurasi public/build-time dari secret runtime.
-  - [ ] Sediakan build variables:
+  - [x] Pisahkan konfigurasi public/build-time dari secret runtime. Token deploy
+    (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) disimpan terpisah di
+    `.env.deploy.local` (gitignored), bukan campur ke `.env.local` punya app.
+  - [x] Build variables — sudah ada di `.env.local`, otomatis ke-inline `next build`:
     - `NEXT_PUBLIC_SUPABASE_URL`
     - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-  - [ ] Sediakan Worker secrets menggunakan Wrangler secret store atau dashboard:
-    - `SUPABASE_SERVICE_ROLE_KEY`
-    - `DUITKU_API_KEY`
-    - `DUITKU_MERCHANT_CODE` jika diperlakukan sebagai credential internal
-  - [ ] Sediakan runtime vars/secrets billing:
-    - `BILLING_PAYMENT_PROVIDER_ENABLED`
-    - `DUITKU_BASE_URL`
-    - `DUITKU_CALLBACK_URL`
-    - `DUITKU_RETURN_URL`
-  - [ ] Untuk staging, gunakan environment Duitku sandbox dan callback URL staging yang
-    jelas. Jangan memakai callback production dari preview Worker.
-  - [ ] Pastikan semua variable yang diperlukan oleh Next.js tersedia pada build phase,
-    karena sebagian `NEXT_PUBLIC_*` di-inline saat build.
-  - [ ] Jangan menaruh Supabase service role key, Duitku API key, atau credential lain di
-    `wrangler.jsonc`, `vars`, source code, log, atau repository.
+  - [x] `SUPABASE_SERVICE_ROLE_KEY` di-set via `wrangler secret put` ke
+    `tutorlog-web-staging`. Diverifikasi: `/api/products` sempat 500 sebelum secret
+    ini di-set (admin client gagal init), 200 setelahnya dengan data katalog asli.
+  - [ ] `DUITKU_API_KEY`, `DUITKU_MERCHANT_CODE` — **sengaja tidak di-set.** Merchant
+    account/sandbox Duitku belum ada. Lihat 8.4.1: jangan aktifkan payment cuma karena
+    hosting pindah.
+  - [ ] `BILLING_PAYMENT_PROVIDER_ENABLED`, `DUITKU_BASE_URL`, `DUITKU_CALLBACK_URL`,
+    `DUITKU_RETURN_URL` — **sengaja tidak di-set**, alasan sama. Diverifikasi fail-closed:
+    `POST /api/webhooks/duitku` di staging balikin `503 CALLBACK_UNAVAILABLE`, bukan crash.
+  - [ ] Duitku sandbox — ditunda sampai merchant account ada, lihat 8.4.5.
+  - [x] Semua variable yang diperlukan Next.js tersedia di build phase — dikonfirmasi
+    lewat `npm run build` sukses lokal sebelum deploy.
+  - [x] Tidak ada secret di `wrangler.jsonc`, `vars`, source code — `SUPABASE_SERVICE_ROLE_KEY`
+    dikirim lewat stdin ke `wrangler secret put`, bukan argumen CLI (gak nyangkut shell history).
 
-  #### 8.4.4 Deploy preview dan canary
+  #### 8.4.4 Deploy preview dan canary — STAGING LIVE, TERVERIFIKASI PENUH
 
-  - [ ] Deploy branch kandidat ke Worker preview dengan nama yang membedakan environment,
-    misalnya `tutorlog-web-staging`, tanpa mengubah DNS production.
-  - [ ] Jalankan `npm run build` dan `npm run preview` menggunakan adapter Cloudflare.
-  - [ ] Verifikasi smoke route public:
+  - [x] Deploy ke Worker preview `tutorlog-web-staging`, tanpa mengubah DNS production.
+    Live: `https://tutorlog-web-staging.fatlhr.workers.dev`.
+  - [x] `npm run build` (Next.js) dan `opennextjs-cloudflare build` sukses.
+  - [x] Smoke test public routes — semua 200 setelah propagasi cold-start awal:
     `/`, `/login`, `/login/sent`, `/fitur`, `/harga`, `/panduan`, `/privacy`, `/terms`,
-    `/account`, dan `/kontak`.
-  - [ ] Verifikasi protected route tanpa session: `/app`, `/app/rekap`, dan
-    `/app/invoice` harus redirect ke `/login`.
-  - [ ] Verifikasi protected route dengan session Supabase nyata: session cookie terbaca,
-    `proxy.ts` dapat memanggil `supabase.auth.getUser()`, dan refresh cookie tidak hilang.
-  - [ ] Verifikasi Magic Link pada browser yang sama dengan pengirim request. Tambahkan
-    URL callback preview ke Supabase hanya jika memang dibutuhkan untuk testing, lalu
-    hapus atau batasi setelah canary selesai.
-  - [ ] Verifikasi Server Actions: kirim Magic Link dan update profile/name.
-  - [ ] Verifikasi Route Handlers: products, quotes, purchases, payment status/cancel, dan
-    export authorization merespons dengan status serta error contract yang benar.
-  - [ ] Verifikasi PDF/CSV export di browser. PDF tetap client-side dan tidak boleh
-    bergantung pada filesystem atau API Node di Worker.
+    `/account`, `/kontak`. Render visual dicek lewat browser, font/warna/gambar tampil benar.
+  - [x] Protected route tanpa session — `/app`, `/app/rekap`, `/app/invoice`, `/checkout`
+    semua `307` ke `/login?next=...` dengan path yang benar.
+  - [x] Protected route dengan session Supabase nyata — dikonfirmasi manual (Fatih):
+    login via magic link sukses, `/app/rekap` (dengan filter tanggal) dan `/app/invoice`
+    ke-load dengan data asli. `middleware.ts` (lihat 8.4.2) menahan session dengan benar
+    di runtime Worker.
+  - [x] Server Action `sendMagicLink` — dicoba lewat browser (submit form di `/login`),
+    redirect ke `/login/sent` sukses. Server Action konfirmasi jalan di runtime Worker.
+  - [x] Magic Link end-to-end — dikonfirmasi manual (Fatih), klik dari email, session kebentuk.
+  - [x] Route Handlers — `/api/products` (200, data katalog asli via admin client),
+    `/api/webhooks/duitku` (503 `CALLBACK_UNAVAILABLE`, fail-closed sesuai desain), dan
+    `/api/exports/authorize` (200, dipakai alur PDF export).
+  - [x] PDF/CSV export — dikonfirmasi manual (Fatih), download PDF invoice sukses dari
+    `/app/invoice`.
+
+  **Catatan insiden — Error 1102 (CPU/resource limit) sekali, tidak reproduksi:**
+  Satu request sempat kena `Error 1102: Worker exceeded resource limits` tak lama setelah
+  redeploy staging (fix logo). Retry langsung berhasil tanpa perubahan apa pun, dan
+  `wrangler tail` selama sesi retry menunjukkan seluruh alur (`/app`, `/app/rekap`,
+  `/app/invoice`, `/api/exports/authorize`) sukses bersih. Dugaan kuat: cold start —
+  request pertama ke isolate V8 yang baru di-deploy harus compile ulang bundle JS, dan
+  itu ikut terhitung sebagai CPU time yang bisa nabrak limit 10ms Free plan pas persis di
+  request pertama itu. Bukan bug kode; catat sebagai baseline observasi 8.4.7, pantau
+  apakah berulang di production.
+
+  **`env.IMAGES binding is not defined` — FIXED ✓.** Ditambahkan `images.binding: "IMAGES"`
+  ke `wrangler.jsonc` sesuai [opennext.js.org/cloudflare/howtos/image](https://opennext.js.org/cloudflare/howtos/image).
+  Diverifikasi lewat `wrangler tail`: warning hilang total dari request `/_next/image`
+  setelah redeploy staging dan production. Cloudflare Images adalah produk billing
+  terpisah dari Workers (gratis sampai 5.000 transformasi unik/bulan, lewat itu
+  $0.50/1.000) — inventori gambar situs ini kecil (aset marketing statis), jauh di
+  bawah ambang itu, jadi tetap di tier gratis tanpa upgrade plan.
+
+  **`www.tutorlog.id` — FIXED ✓.** Redirect 308 ke apex ditambahkan di `next.config.ts`
+  (`has: [{ type: "host", value: "www.tutorlog.id" }]`), dikonfirmasi masuk
+  `.next/routes-manifest.json`. Diverifikasi hidup: `curl -I https://www.tutorlog.id/fitur`
+  → `308` → `https://tutorlog.id/fitur`.
+
+  **Catatan setup yang gak sesuai dugaan awal:** dialog "Connect domain" / "Add Domain"
+  di Workers & Pages **gak bisa nerima subdomain sama sekali** ("No zones match
+  www.tutorlog.id"), meski DNS record `www` (CNAME → apex, proxied) udah dibuat duluan.
+  CNAME proxied ke apex juga sempat dicoba tapi balikin `522` (Cloudflare gagal proxy ke
+  origin, karena record apex tipenya "Worker" khusus, bukan A/AAAA biasa yang bisa
+  di-chain). Solusi yang jalan: **Workers & Pages → tutorlog-web → Domains → Add Route**
+  (bukan Add Domain), ketik `tutorlog.id` dulu di search buat milih zone, lalu field
+  pattern terpisah muncul — defaultnya `*.tutorlog.id/*` (wildcard semua subdomain,
+  sengaja dipersempit ke `www.tutorlog.id/*` biar subdomain lain di masa depan gak
+  ikut ke-route ke Worker ini tanpa sengaja).
 
   #### 8.4.5 Integrasi Supabase dan Duitku
 
-  - [ ] Tambahkan production redirect URL Supabase:
+  - [x] Tambahkan redirect URL Supabase untuk staging:
+    `https://tutorlog-web-staging.fatlhr.workers.dev/auth/callback`.
+  - [x] Tambahkan production redirect URL Supabase setelah custom domain attach (8.4.6):
     `https://tutorlog.id/auth/callback`.
   - [ ] **JANGAN mengubah Site URL Supabase.** Site URL saat ini `tutorlog://login-callback`,
     yaitu deep link aplikasi mobile, dan project Supabase ini dipakai bersama aplikasi
@@ -623,20 +688,41 @@
   - [ ] Jangan menandai payment flow production sebagai selesai sebelum sandbox event,
     callback publik, dan status inquiry benar-benar berhasil.
 
-  #### 8.4.6 Custom domain dan cutover production
+  #### 8.4.6 Custom domain dan cutover production — DONE ✓
 
-  - [ ] Attach custom domain `tutorlog.id` ke Worker production setelah preview/canary
-    lolos. Cloudflare harus menjadi zone aktif agar DNS, TLS, dan certificate management
-    dapat dikelola oleh Cloudflare.
-  - [ ] Pastikan tidak ada CNAME lama yang bentrok dengan custom domain Worker.
-  - [ ] Verifikasi HTTPS, apex domain, redirect behavior, cookie domain, canonical URL,
-    metadata, dan callback URL setelah domain terpasang.
-  - [ ] Lakukan cutover pada waktu yang bisa dipantau. Jangan menghapus deployment Vercel
-    sebelum smoke test production selesai.
-  - [ ] Ulangi smoke test public, auth, protected routes, invoice, export, dan webhook
-    pada hostname production.
-  - [ ] Pantau Worker logs dan error rate pada jam pertama. Catat status request, CPU time,
-    invocation errors, redirect loop, Supabase auth errors, dan webhook response.
+  - [x] Worker production `tutorlog-web` di-deploy ke `tutorlog-web.fatlhr.workers.dev`
+    (terpisah dari `tutorlog-web-staging`), `SUPABASE_SERVICE_ROLE_KEY` di-set, smoke
+    test lolos sebelum custom domain attach.
+  - [x] Attach custom domain `tutorlog.id` ke Worker production lewat dashboard
+    (Workers & Pages → tutorlog-web → Settings → Domains & Routes), bukan lewat
+    `wrangler.jsonc` `routes` — sesuai keputusan supaya titik yang nyentuh DNS zone
+    email tetap klik manual yang diawasi, bukan efek samping command rutin.
+  - [x] DNS diff dicek sebelum/sesudah lewat `dig`: MX, SPF, DMARC, kedua DKIM record
+    (`default._domainkey` milik Mailspace, `resend._domainkey` milik Resend), dan A
+    record `mail` — **identik byte-per-byte**, tidak ada yang berubah. Yang nambah cuma
+    A+AAAA di apex (IP anycast Cloudflare). `www.tutorlog.id` masih kosong, sesuai
+    dugaan bahwa custom domain apex tidak otomatis cover subdomain `www` — di luar
+    scope deploy ini.
+  - [x] Verifikasi HTTPS: sertifikat valid (`Google Trust Services`, `CN=tutorlog.id`,
+    berlaku sampai 17 Nov 2026), diperiksa langsung lewat `openssl s_client`.
+  - [x] Smoke test public routes, protected routes, dan API di `https://tutorlog.id`
+    — semua identik dengan hasil staging.
+  - [x] Redirect URL Supabase production (`https://tutorlog.id/auth/callback`) —
+    ditambahkan setelah domain live. Lihat 8.4.5 baris yang sama.
+  - [x] Magic Link end-to-end di domain production sungguhan — dikonfirmasi manual
+    (Fatih), login di `https://tutorlog.id/login` berhasil.
+  - [x] Pantau Worker logs dan error rate pada jam pertama observasi — dipantau aktif
+    lewat `wrangler tail` selama redeploy fit-and-finish (images binding, www redirect)
+    di sesi ini. Satu `Error 1102` (cold start) sempat terjadi di staging tak lama
+    setelah redeploy, tidak reproduksi pada retry — lihat catatan di 8.4.4. Monitoring
+    lanjutan pasca-merge tetap disarankan tapi bukan blocker.
+  - [x] Rollback Vercel: **sudah diverifikasi, dan jawabannya tidak ada.** Dicek
+    lewat `vercel project ls`/`vercel domains inspect tutorlog.id` — tidak ada project
+    atau domain Vercel yang cocok di akun manapun yang terlihat dari CLI ini. Konsisten
+    dengan fakta bahwa `tutorlog.id` sebelum sesi ini tidak punya A/CNAME apex sama
+    sekali — ini kemungkinan besar traffic HTTP pertama yang pernah diarahkan ke domain
+    ini, jadi tidak ada "Vercel lama" yang bisa jadi rollback target. Rollback plan
+    yang beneran ada dicatat di 8.4.8.
 
   #### 8.4.7 Batas Free plan dan jalur scale-up
 
@@ -653,8 +739,13 @@
 
   #### 8.4.8 Rollback dan Definition of Done
 
-  - [ ] Dokumentasikan rollback: detach/repoint domain ke deployment Vercel terakhir,
-    mempertahankan Supabase dan data billing tanpa migrasi schema.
+  - [x] **Rollback plan (direvisi — Vercel tidak tersedia, lihat 8.4.1 dan 8.4.6):**
+    detach custom domain `tutorlog.id` dari Worker `tutorlog-web` lewat Cloudflare
+    dashboard (Workers & Pages → tutorlog-web → Settings → Domains & Routes → Remove).
+    Itu balikin apex ke kondisi sebelum sesi deploy ini — tidak ada A/AAAA/CNAME apex,
+    domain unreachable, tapi `*.workers.dev` tetap hidup untuk debug tanpa terburu-buru.
+    Supabase dan data billing tidak tersentuh sama sekali oleh langkah ini, tidak ada
+    migrasi schema yang perlu dibalik.
   - [ ] Pastikan rollback tidak mengubah `DUITKU_CALLBACK_URL` tanpa rencana, karena callback
     yang tertunda harus tetap memiliki endpoint yang dapat diproses.
   - [ ] Jalankan `git diff --check` dan review file config/generated yang ikut berubah.
@@ -669,7 +760,8 @@
     - Duitku sandbox inquiry, status, callback, signature verification, dan processing RPC
       berhasil pada runtime Cloudflare.
     - Tidak ada secret di repository atau response/log yang dapat diakses user.
-    - Vercel rollback target masih tersedia sampai observasi production selesai.
+    - ~~Vercel rollback target masih tersedia~~ — N/A, tidak ada project Vercel yang
+      bisa dijadikan target (lihat 8.4.1). Rollback real: detach custom domain dari Worker.
 
   **Status evidence yang harus dilampirkan pada completion note:**
   - Worker name, environment, deployment URL, dan custom domain.
@@ -801,6 +893,61 @@
   - [ ] Jalankan `npm run dev`, minta magic link dari `/login` di browser, lalu periksa
         `redirect_to` di URL email. Harus terbaca `http://localhost:3000/auth/callback`.
   - [ ] Klik tombol, pastikan session terbentuk dan redirect ke `/app` berhasil.
+
+- [ ] **8.7 Halaman legal dan URL untuk Play Store**
+
+  > Semua URL di bawah sudah live di `tutorlog.id` dan diverifikasi 200. Bagian ini
+  > mencatat mana yang dipakai di Play Console dan dua celah yang perlu ditutup sebelum
+  > submit.
+
+  #### 8.7.1 GitHub Pages lama dimatikan — DONE ✓
+
+  - [x] GitHub Pages sebelumnya aktif dan deploy dari `main` ke
+        `https://fatlhr.github.io/tutorlog-web/`. Itu sisa setup lama waktu `main` masih
+        berisi legal pages statis — kemungkinan besar itulah "production legal web" yang
+        dimaksud dokumen lama. Setelah `main` berisi source Next.js, Pages malah
+        me-render `README.md` lewat Jekyll dan menghasilkan halaman tanpa guna.
+  - [x] Dimatikan lewat `gh api -X DELETE repos/fatlhr/tutorlog-web/pages`. Dikonfirmasi
+        API balik 404. `cname` sebelumnya `null`, jadi tidak pernah menyentuh
+        `tutorlog.id` — mematikannya tidak berpengaruh ke production.
+  - [x] Efek samping yang hilang: tiap push ke `main` tidak lagi memicu build Pages
+        yang sia-sia, dan tidak ada lagi duplikat konten yang bisa terindeks.
+
+  #### 8.7.2 URL untuk Play Console
+
+  Semua diverifikasi `200` pada 2026-08-20:
+
+  | Field Play Console | URL |
+  |---|---|
+  | Privacy Policy (wajib) | `https://tutorlog.id/privacy` |
+  | Account deletion URL (wajib) | `https://tutorlog.id/account` |
+  | Terms of Service | `https://tutorlog.id/terms` |
+  | Website / Marketing | `https://tutorlog.id` |
+  | Support email | `halo@tutorlog.id` |
+  | Support website | `https://tutorlog.id/kontak` |
+
+  Halaman `/fitur`, `/harga`, `/panduan` hidup tapi bukan untuk form Play Console —
+  berguna kalau mau ditautkan dari store listing description.
+
+  Isi `/account` sudah memenuhi syarat Google: menyatakan penghapusan permanen, langkah
+  pengajuan jelas, daftar eksplisit data yang dihapus, pengecualian retensi untuk
+  kewajiban hukum, estimasi maksimal 7 hari, dan bisa diakses tanpa login.
+
+  #### 8.7.3 Dua celah sebelum submit — BELUM
+
+  - [ ] **Penghapusan akun dari dalam aplikasi.** Sejak 2024 Google tidak cukup dengan
+        URL penghapusan; aplikasi yang bisa membuat akun juga wajib menyediakan
+        penghapusan akun di dalam aplikasi. Halaman `/account` memenuhi bagian URL-nya,
+        tapi kalau app Flutter belum punya menu hapus akun, itu bisa jadi alasan
+        penolakan review terpisah. Belum bisa diverifikasi dari repo ini — repo Flutter
+        tidak ada di sini. Cek sebelum submit.
+  - [ ] **Konsistensi privacy policy dengan Data Safety form.** `/privacy` punya 4
+        bagian (data yang dipakai, penggunaan lokasi, penyimpanan dan keamanan, retensi
+        dan penghapusan) tapi belum menyebut eksplisit berbagi data ke pihak ketiga:
+        Supabase sebagai penyimpanan, dan Duitku nanti untuk pembayaran. Data Safety
+        form di Play Console menanyakan itu, dan idealnya isinya konsisten dengan
+        privacy policy. Belum mendesak karena payment belum aktif (lihat 8.4.3), tapi
+        wajib disamakan sebelum `BILLING_PAYMENT_PROVIDER_ENABLED=true`.
 
 ---
 

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+# Batalkan run lama kalau ada push baru di ref yang sama, biar gak numpuk antrian.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: lint + build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # wrangler minta ^20.19 || ^22.13 || >=24; 22 LTS aman untuk semuanya.
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Build sengaja tanpa NEXT_PUBLIC_SUPABASE_* — sudah diverifikasi jalan tanpa
+      # env vars, jadi CI gak perlu secret sama sekali. Kalau suatu saat build mulai
+      # butuh env var, itu sinyal ada kode yang nyentuh Supabase saat build time.
+      - name: Build
+        run: npm run build

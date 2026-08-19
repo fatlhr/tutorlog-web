@@ -1,7 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
+// Named "middleware" (not "proxy") deliberately: @opennextjs/cloudflare does not
+// yet support Next.js 16's proxy.ts, which always compiles to the Node.js runtime
+// with no way to opt back into Edge (see opennextjs/opennextjs-cloudflare#1277,
+// still open as of 2026-08). This file has zero Node-only APIs — just
+// @supabase/ssr + NextResponse — so it is genuinely Edge-eligible; the old
+// middleware.ts convention still defaults to Edge and Next 16 keeps supporting
+// it (with a deprecation warning) for exactly this kind of case. Switch back to
+// proxy.ts once the Cloudflare adapter ships Node middleware support.
+export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

@@ -8,6 +8,7 @@ const eslintConfig = defineConfig([
   // Keep lint scoped to this checkout instead of linked worktrees and build output.
   globalIgnores([
     ".next/**",
+    ".open-next/**",
     ".worktrees/**",
     "out/**",
     "build/**",
