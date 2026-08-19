@@ -894,6 +894,61 @@
         `redirect_to` di URL email. Harus terbaca `http://localhost:3000/auth/callback`.
   - [ ] Klik tombol, pastikan session terbentuk dan redirect ke `/app` berhasil.
 
+- [ ] **8.7 Halaman legal dan URL untuk Play Store**
+
+  > Semua URL di bawah sudah live di `tutorlog.id` dan diverifikasi 200. Bagian ini
+  > mencatat mana yang dipakai di Play Console dan dua celah yang perlu ditutup sebelum
+  > submit.
+
+  #### 8.7.1 GitHub Pages lama dimatikan — DONE ✓
+
+  - [x] GitHub Pages sebelumnya aktif dan deploy dari `main` ke
+        `https://fatlhr.github.io/tutorlog-web/`. Itu sisa setup lama waktu `main` masih
+        berisi legal pages statis — kemungkinan besar itulah "production legal web" yang
+        dimaksud dokumen lama. Setelah `main` berisi source Next.js, Pages malah
+        me-render `README.md` lewat Jekyll dan menghasilkan halaman tanpa guna.
+  - [x] Dimatikan lewat `gh api -X DELETE repos/fatlhr/tutorlog-web/pages`. Dikonfirmasi
+        API balik 404. `cname` sebelumnya `null`, jadi tidak pernah menyentuh
+        `tutorlog.id` — mematikannya tidak berpengaruh ke production.
+  - [x] Efek samping yang hilang: tiap push ke `main` tidak lagi memicu build Pages
+        yang sia-sia, dan tidak ada lagi duplikat konten yang bisa terindeks.
+
+  #### 8.7.2 URL untuk Play Console
+
+  Semua diverifikasi `200` pada 2026-08-20:
+
+  | Field Play Console | URL |
+  |---|---|
+  | Privacy Policy (wajib) | `https://tutorlog.id/privacy` |
+  | Account deletion URL (wajib) | `https://tutorlog.id/account` |
+  | Terms of Service | `https://tutorlog.id/terms` |
+  | Website / Marketing | `https://tutorlog.id` |
+  | Support email | `halo@tutorlog.id` |
+  | Support website | `https://tutorlog.id/kontak` |
+
+  Halaman `/fitur`, `/harga`, `/panduan` hidup tapi bukan untuk form Play Console —
+  berguna kalau mau ditautkan dari store listing description.
+
+  Isi `/account` sudah memenuhi syarat Google: menyatakan penghapusan permanen, langkah
+  pengajuan jelas, daftar eksplisit data yang dihapus, pengecualian retensi untuk
+  kewajiban hukum, estimasi maksimal 7 hari, dan bisa diakses tanpa login.
+
+  #### 8.7.3 Dua celah sebelum submit — BELUM
+
+  - [ ] **Penghapusan akun dari dalam aplikasi.** Sejak 2024 Google tidak cukup dengan
+        URL penghapusan; aplikasi yang bisa membuat akun juga wajib menyediakan
+        penghapusan akun di dalam aplikasi. Halaman `/account` memenuhi bagian URL-nya,
+        tapi kalau app Flutter belum punya menu hapus akun, itu bisa jadi alasan
+        penolakan review terpisah. Belum bisa diverifikasi dari repo ini — repo Flutter
+        tidak ada di sini. Cek sebelum submit.
+  - [ ] **Konsistensi privacy policy dengan Data Safety form.** `/privacy` punya 4
+        bagian (data yang dipakai, penggunaan lokasi, penyimpanan dan keamanan, retensi
+        dan penghapusan) tapi belum menyebut eksplisit berbagi data ke pihak ketiga:
+        Supabase sebagai penyimpanan, dan Duitku nanti untuk pembayaran. Data Safety
+        form di Play Console menanyakan itu, dan idealnya isinya konsisten dengan
+        privacy policy. Belum mendesak karena payment belum aktif (lihat 8.4.3), tapi
+        wajib disamakan sebelum `BILLING_PAYMENT_PROVIDER_ENABLED=true`.
+
 ---
 
 ## Phase 9 — Post-MVP Landing Conversion — ⬜ DEFERRED
