@@ -516,8 +516,16 @@
   - [ ] Pastikan repository GitHub dan branch deploy sudah ditentukan. Branch production
     menggunakan alur repo yang berlaku: feature/fix → `develop` → production setelah
     verifikasi, bukan direct edit pada `develop` untuk application code.
-  - [ ] Pertahankan Vercel deployment terakhir sebagai rollback target sampai Worker
-    production selesai diverifikasi.
+  - [x] ~~Pertahankan Vercel deployment terakhir sebagai rollback target~~ — **N/A,
+    tidak ada yang bisa dipertahankan.** Dicek langsung lewat `vercel project ls` /
+    `vercel domains inspect tutorlog.id` (CLI ter-autentikasi sebagai `fatlhr`, team
+    `fatihs-personal-web`): tidak ada project `tutorlog-web` dan domain `tutorlog.id`
+    tidak terdaftar di Vercel manapun yang terlihat dari akun ini. Tidak ada
+    `vercel.json`, `.vercel/project.json`, atau commit apapun di branch manapun yang
+    pernah menghubungkan repo ini ke project Vercel. Baris ini sebelumnya sempat
+    tercentang `[x]` di sesi lain padahal isinya sendiri bilang "belum diverifikasi" —
+    kontradiksi itu sekarang diperbaiki. Rollback plan yang beneran ada: lihat 8.4.6
+    dan 8.4.8.
   - [ ] Tetapkan `tutorlog.id` sebagai custom domain Worker production dan gunakan
     `*.workers.dev` hanya untuk preview/canary.
   - [ ] Jangan mengaktifkan `BILLING_PAYMENT_PROVIDER_ENABLED=true` hanya karena hosting
@@ -622,12 +630,19 @@
   request pertama itu. Bukan bug kode; catat sebagai baseline observasi 8.4.7, pantau
   apakah berulang di production.
 
-  **Catatan minor — `env.IMAGES binding is not defined`:** Warning ini muncul di setiap
-  request `/_next/image` di log Worker. Gambar tetap terkirim (`Ok`), tapi kemungkinan
-  fallback ke unoptimized passthrough tanpa lewat Cloudflare Image Resizing. Tidak
-  blocking, tapi worth dicek: [OpenNext Cloudflare docs soal image
-  optimization](https://opennext.js.org/cloudflare) — kemungkinan perlu binding `images`
-  di `wrangler.jsonc` atau custom loader.
+  **`env.IMAGES binding is not defined` — FIXED ✓.** Ditambahkan `images.binding: "IMAGES"`
+  ke `wrangler.jsonc` sesuai [opennext.js.org/cloudflare/howtos/image](https://opennext.js.org/cloudflare/howtos/image).
+  Diverifikasi lewat `wrangler tail`: warning hilang total dari request `/_next/image`
+  setelah redeploy staging dan production. Cloudflare Images adalah produk billing
+  terpisah dari Workers (gratis sampai 5.000 transformasi unik/bulan, lewat itu
+  $0.50/1.000) — inventori gambar situs ini kecil (aset marketing statis), jauh di
+  bawah ambang itu, jadi tetap di tier gratis tanpa upgrade plan.
+
+  **`www.tutorlog.id` belum ke-cover — FIXED (kode), MENUNGGU DNS.** Redirect 308 ke
+  apex ditambahkan di `next.config.ts` (`has: [{ type: "host", value: "www.tutorlog.id" }]`),
+  dikonfirmasi masuk `.next/routes-manifest.json` dan sudah live di kedua Worker.
+  Redirect baru benar-benar jalan setelah `www.tutorlog.id` punya DNS record — perlu
+  ditambahkan sebagai custom domain kedua di Worker `tutorlog-web` lewat dashboard.
 
   #### 8.4.5 Integrasi Supabase dan Duitku
 
@@ -689,9 +704,13 @@
   - [ ] Pantau Worker logs dan error rate pada jam pertama observasi. Catatan awal:
     satu `Error 1102` (cold start) sempat terjadi di staging tak lama setelah redeploy,
     tidak reproduksi pada retry — lihat catatan di 8.4.4.
-  - [x] Rollback Vercel: belum diverifikasi apakah project Vercel lama masih hidup.
-    `tutorlog.id` sebelum sesi ini tidak punya A/CNAME apex sama sekali, jadi ini
-    kemungkinan besar traffic HTTP pertama yang pernah diarahkan ke domain ini.
+  - [x] Rollback Vercel: **sudah diverifikasi, dan jawabannya tidak ada.** Dicek
+    lewat `vercel project ls`/`vercel domains inspect tutorlog.id` — tidak ada project
+    atau domain Vercel yang cocok di akun manapun yang terlihat dari CLI ini. Konsisten
+    dengan fakta bahwa `tutorlog.id` sebelum sesi ini tidak punya A/CNAME apex sama
+    sekali — ini kemungkinan besar traffic HTTP pertama yang pernah diarahkan ke domain
+    ini, jadi tidak ada "Vercel lama" yang bisa jadi rollback target. Rollback plan
+    yang beneran ada dicatat di 8.4.8.
 
   #### 8.4.7 Batas Free plan dan jalur scale-up
 
@@ -708,8 +727,13 @@
 
   #### 8.4.8 Rollback dan Definition of Done
 
-  - [ ] Dokumentasikan rollback: detach/repoint domain ke deployment Vercel terakhir,
-    mempertahankan Supabase dan data billing tanpa migrasi schema.
+  - [x] **Rollback plan (direvisi — Vercel tidak tersedia, lihat 8.4.1 dan 8.4.6):**
+    detach custom domain `tutorlog.id` dari Worker `tutorlog-web` lewat Cloudflare
+    dashboard (Workers & Pages → tutorlog-web → Settings → Domains & Routes → Remove).
+    Itu balikin apex ke kondisi sebelum sesi deploy ini — tidak ada A/AAAA/CNAME apex,
+    domain unreachable, tapi `*.workers.dev` tetap hidup untuk debug tanpa terburu-buru.
+    Supabase dan data billing tidak tersentuh sama sekali oleh langkah ini, tidak ada
+    migrasi schema yang perlu dibalik.
   - [ ] Pastikan rollback tidak mengubah `DUITKU_CALLBACK_URL` tanpa rencana, karena callback
     yang tertunda harus tetap memiliki endpoint yang dapat diproses.
   - [ ] Jalankan `git diff --check` dan review file config/generated yang ikut berubah.
@@ -724,7 +748,8 @@
     - Duitku sandbox inquiry, status, callback, signature verification, dan processing RPC
       berhasil pada runtime Cloudflare.
     - Tidak ada secret di repository atau response/log yang dapat diakses user.
-    - Vercel rollback target masih tersedia sampai observasi production selesai.
+    - ~~Vercel rollback target masih tersedia~~ — N/A, tidak ada project Vercel yang
+      bisa dijadikan target (lihat 8.4.1). Rollback real: detach custom domain dari Worker.
 
   **Status evidence yang harus dilampirkan pada completion note:**
   - Worker name, environment, deployment URL, dan custom domain.
