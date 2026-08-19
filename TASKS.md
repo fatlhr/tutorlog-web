@@ -663,20 +663,35 @@
   - [ ] Jangan menandai payment flow production sebagai selesai sebelum sandbox event,
     callback publik, dan status inquiry benar-benar berhasil.
 
-  #### 8.4.6 Custom domain dan cutover production
+  #### 8.4.6 Custom domain dan cutover production — DONE ✓
 
-  - [ ] Attach custom domain `tutorlog.id` ke Worker production setelah preview/canary
-    lolos. Cloudflare harus menjadi zone aktif agar DNS, TLS, dan certificate management
-    dapat dikelola oleh Cloudflare.
-  - [ ] Pastikan tidak ada CNAME lama yang bentrok dengan custom domain Worker.
-  - [ ] Verifikasi HTTPS, apex domain, redirect behavior, cookie domain, canonical URL,
-    metadata, dan callback URL setelah domain terpasang.
-  - [ ] Lakukan cutover pada waktu yang bisa dipantau. Jangan menghapus deployment Vercel
-    sebelum smoke test production selesai.
-  - [ ] Ulangi smoke test public, auth, protected routes, invoice, export, dan webhook
-    pada hostname production.
-  - [ ] Pantau Worker logs dan error rate pada jam pertama. Catat status request, CPU time,
-    invocation errors, redirect loop, Supabase auth errors, dan webhook response.
+  - [x] Worker production `tutorlog-web` di-deploy ke `tutorlog-web.fatlhr.workers.dev`
+    (terpisah dari `tutorlog-web-staging`), `SUPABASE_SERVICE_ROLE_KEY` di-set, smoke
+    test lolos sebelum custom domain attach.
+  - [x] Attach custom domain `tutorlog.id` ke Worker production lewat dashboard
+    (Workers & Pages → tutorlog-web → Settings → Domains & Routes), bukan lewat
+    `wrangler.jsonc` `routes` — sesuai keputusan supaya titik yang nyentuh DNS zone
+    email tetap klik manual yang diawasi, bukan efek samping command rutin.
+  - [x] DNS diff dicek sebelum/sesudah lewat `dig`: MX, SPF, DMARC, kedua DKIM record
+    (`default._domainkey` milik Mailspace, `resend._domainkey` milik Resend), dan A
+    record `mail` — **identik byte-per-byte**, tidak ada yang berubah. Yang nambah cuma
+    A+AAAA di apex (IP anycast Cloudflare). `www.tutorlog.id` masih kosong, sesuai
+    dugaan bahwa custom domain apex tidak otomatis cover subdomain `www` — di luar
+    scope deploy ini.
+  - [x] Verifikasi HTTPS: sertifikat valid (`Google Trust Services`, `CN=tutorlog.id`,
+    berlaku sampai 17 Nov 2026), diperiksa langsung lewat `openssl s_client`.
+  - [x] Smoke test public routes, protected routes, dan API di `https://tutorlog.id`
+    — semua identik dengan hasil staging.
+  - [ ] Redirect URL Supabase production (`https://tutorlog.id/auth/callback`) —
+    ditambahkan setelah domain live, lihat 8.4.5.
+  - [ ] Magic Link end-to-end di domain production sungguhan (bukan `*.workers.dev`)
+    — perlu dicoba manual sekali lagi karena domainnya baru pertama kali live.
+  - [ ] Pantau Worker logs dan error rate pada jam pertama observasi. Catatan awal:
+    satu `Error 1102` (cold start) sempat terjadi di staging tak lama setelah redeploy,
+    tidak reproduksi pada retry — lihat catatan di 8.4.4.
+  - [x] Rollback Vercel: belum diverifikasi apakah project Vercel lama masih hidup.
+    `tutorlog.id` sebelum sesi ini tidak punya A/CNAME apex sama sekali, jadi ini
+    kemungkinan besar traffic HTTP pertama yang pernah diarahkan ke domain ini.
 
   #### 8.4.7 Batas Free plan dan jalur scale-up
 
