@@ -1202,6 +1202,8 @@ html, body { overflow-x: hidden; }
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  width: 40px;
+  height: 40px;
   border: 2px solid var(--tl-line);
   border-radius: 14px;
   background: rgba(255, 255, 255, .88);

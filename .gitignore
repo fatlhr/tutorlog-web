@@ -41,3 +41,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .worktrees/
+
+# opennext / cloudflare
+/.open-next/
+/.wrangler/
+.dev.vars
+cloudflare-env.d.ts
+.env.deploy.local
