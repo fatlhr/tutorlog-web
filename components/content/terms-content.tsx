@@ -56,7 +56,7 @@ export function TermsContent() {
       <section className="tl-article-section">
         <h2>Perubahan ketentuan</h2>
         <p>TutorLog dapat memperbarui syarat dan ketentuan ini sewaktu-waktu. Perubahan akan diinformasikan melalui aplikasi atau email. Penggunaan layanan setelah perubahan berarti kamu menyetujui ketentuan yang diperbarui.</p>
-        <p>Untuk pertanyaan tentang syarat dan ketentuan ini, hubungi <a href="mailto:tutorlog.admin@gmail.com">tutorlog.admin@gmail.com</a>.</p>
+        <p>Untuk pertanyaan tentang syarat dan ketentuan ini, hubungi <a href="mailto:halo@tutorlog.id">halo@tutorlog.id</a>.</p>
       </section>
     </article>
   );

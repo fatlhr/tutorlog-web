@@ -314,5 +314,5 @@ kalau belum ada.)
 
 - `<html lang="id">`, title `TutorLog — <Halaman>`, meta description per halaman.
 - Copywriting HARUS persis dari JSX desain — jangan parafrase. Email kontak:
-  `tutorlog.admin@gmail.com`. Rekening demo: BCA `7712 3456 789` a/n Kalilinux Studio.
+  `halo@tutorlog.id`. Rekening demo: BCA `7712 3456 789` a/n Kalilinux Studio.
 - Ikon dekoratif: `aria-hidden` via `alt=""`/`focusable="false"`; ikon bermakna diberi label.
