@@ -589,7 +589,7 @@
   - [x] Tidak ada secret di `wrangler.jsonc`, `vars`, source code — `SUPABASE_SERVICE_ROLE_KEY`
     dikirim lewat stdin ke `wrangler secret put`, bukan argumen CLI (gak nyangkut shell history).
 
-  #### 8.4.4 Deploy preview dan canary — STAGING LIVE, SEBAGIAN TERVERIFIKASI
+  #### 8.4.4 Deploy preview dan canary — STAGING LIVE, TERVERIFIKASI PENUH
 
   - [x] Deploy ke Worker preview `tutorlog-web-staging`, tanpa mengubah DNS production.
     Live: `https://tutorlog-web-staging.fatlhr.workers.dev`.
@@ -599,15 +599,35 @@
     `/account`, `/kontak`. Render visual dicek lewat browser, font/warna/gambar tampil benar.
   - [x] Protected route tanpa session — `/app`, `/app/rekap`, `/app/invoice`, `/checkout`
     semua `307` ke `/login?next=...` dengan path yang benar.
-  - [ ] Protected route dengan session Supabase nyata — belum diverifikasi, butuh klik
-    magic link sungguhan dari inbox (di luar akses agent).
+  - [x] Protected route dengan session Supabase nyata — dikonfirmasi manual (Fatih):
+    login via magic link sukses, `/app/rekap` (dengan filter tanggal) dan `/app/invoice`
+    ke-load dengan data asli. `middleware.ts` (lihat 8.4.2) menahan session dengan benar
+    di runtime Worker.
   - [x] Server Action `sendMagicLink` — dicoba lewat browser (submit form di `/login`),
     redirect ke `/login/sent` sukses. Server Action konfirmasi jalan di runtime Worker.
-  - [ ] Magic Link end-to-end (klik dari email, session kebentuk) — butuh dicoba manual,
-    agent tidak punya akses inbox.
-  - [x] Route Handlers — `/api/products` (200, data katalog asli via admin client) dan
-    `/api/webhooks/duitku` (503 `CALLBACK_UNAVAILABLE`, fail-closed sesuai desain).
-  - [ ] PDF/CSV export — client-side (`jspdf`/`html2canvas`), butuh dicoba manual di browser.
+  - [x] Magic Link end-to-end — dikonfirmasi manual (Fatih), klik dari email, session kebentuk.
+  - [x] Route Handlers — `/api/products` (200, data katalog asli via admin client),
+    `/api/webhooks/duitku` (503 `CALLBACK_UNAVAILABLE`, fail-closed sesuai desain), dan
+    `/api/exports/authorize` (200, dipakai alur PDF export).
+  - [x] PDF/CSV export — dikonfirmasi manual (Fatih), download PDF invoice sukses dari
+    `/app/invoice`.
+
+  **Catatan insiden — Error 1102 (CPU/resource limit) sekali, tidak reproduksi:**
+  Satu request sempat kena `Error 1102: Worker exceeded resource limits` tak lama setelah
+  redeploy staging (fix logo). Retry langsung berhasil tanpa perubahan apa pun, dan
+  `wrangler tail` selama sesi retry menunjukkan seluruh alur (`/app`, `/app/rekap`,
+  `/app/invoice`, `/api/exports/authorize`) sukses bersih. Dugaan kuat: cold start —
+  request pertama ke isolate V8 yang baru di-deploy harus compile ulang bundle JS, dan
+  itu ikut terhitung sebagai CPU time yang bisa nabrak limit 10ms Free plan pas persis di
+  request pertama itu. Bukan bug kode; catat sebagai baseline observasi 8.4.7, pantau
+  apakah berulang di production.
+
+  **Catatan minor — `env.IMAGES binding is not defined`:** Warning ini muncul di setiap
+  request `/_next/image` di log Worker. Gambar tetap terkirim (`Ok`), tapi kemungkinan
+  fallback ke unoptimized passthrough tanpa lewat Cloudflare Image Resizing. Tidak
+  blocking, tapi worth dicek: [OpenNext Cloudflare docs soal image
+  optimization](https://opennext.js.org/cloudflare) — kemungkinan perlu binding `images`
+  di `wrangler.jsonc` atau custom loader.
 
   #### 8.4.5 Integrasi Supabase dan Duitku
 
