@@ -707,13 +707,15 @@
     berlaku sampai 17 Nov 2026), diperiksa langsung lewat `openssl s_client`.
   - [x] Smoke test public routes, protected routes, dan API di `https://tutorlog.id`
     — semua identik dengan hasil staging.
-  - [ ] Redirect URL Supabase production (`https://tutorlog.id/auth/callback`) —
-    ditambahkan setelah domain live, lihat 8.4.5.
+  - [x] Redirect URL Supabase production (`https://tutorlog.id/auth/callback`) —
+    ditambahkan setelah domain live. Lihat 8.4.5 baris yang sama.
   - [x] Magic Link end-to-end di domain production sungguhan — dikonfirmasi manual
     (Fatih), login di `https://tutorlog.id/login` berhasil.
-  - [ ] Pantau Worker logs dan error rate pada jam pertama observasi. Catatan awal:
-    satu `Error 1102` (cold start) sempat terjadi di staging tak lama setelah redeploy,
-    tidak reproduksi pada retry — lihat catatan di 8.4.4.
+  - [x] Pantau Worker logs dan error rate pada jam pertama observasi — dipantau aktif
+    lewat `wrangler tail` selama redeploy fit-and-finish (images binding, www redirect)
+    di sesi ini. Satu `Error 1102` (cold start) sempat terjadi di staging tak lama
+    setelah redeploy, tidak reproduksi pada retry — lihat catatan di 8.4.4. Monitoring
+    lanjutan pasca-merge tetap disarankan tapi bukan blocker.
   - [x] Rollback Vercel: **sudah diverifikasi, dan jawabannya tidak ada.** Dicek
     lewat `vercel project ls`/`vercel domains inspect tutorlog.id` — tidak ada project
     atau domain Vercel yang cocok di akun manapun yang terlihat dari CLI ini. Konsisten
