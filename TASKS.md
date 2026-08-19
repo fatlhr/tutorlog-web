@@ -631,7 +631,9 @@
 
   #### 8.4.5 Integrasi Supabase dan Duitku
 
-  - [ ] Tambahkan production redirect URL Supabase:
+  - [x] Tambahkan redirect URL Supabase untuk staging:
+    `https://tutorlog-web-staging.fatlhr.workers.dev/auth/callback`.
+  - [ ] Tambahkan production redirect URL Supabase setelah custom domain attach (8.4.6):
     `https://tutorlog.id/auth/callback`.
   - [ ] **JANGAN mengubah Site URL Supabase.** Site URL saat ini `tutorlog://login-callback`,
     yaitu deep link aplikasi mobile, dan project Supabase ini dipakai bersama aplikasi
