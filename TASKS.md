@@ -595,8 +595,15 @@
 
   - [ ] Tambahkan production redirect URL Supabase:
     `https://tutorlog.id/auth/callback`.
-  - [ ] Pastikan Site URL Supabase mengarah ke `https://tutorlog.id` dan tidak lagi
-    mengandalkan hostname preview untuk user production.
+  - [ ] **JANGAN mengubah Site URL Supabase.** Site URL saat ini `tutorlog://login-callback`,
+    yaitu deep link aplikasi mobile, dan project Supabase ini dipakai bersama aplikasi
+    Flutter. Site URL hanya ada satu per project. Kalau aplikasi mobile mengandalkan
+    fallback Site URL untuk magic link-nya, mengubah nilai ini akan mematikan login di
+    aplikasi yang sudah jalan. Verifikasi dulu apakah aplikasi Flutter mengirim
+    `emailRedirectTo` sendiri sebelum mempertimbangkan perubahan apa pun di sini.
+
+    Web tidak membutuhkannya: `app/login/actions.ts` sudah mengirim `emailRedirectTo`
+    secara eksplisit. Yang diperlukan hanya memasukkan URL tujuan ke daftar Redirect URLs.
   - [ ] Uji query Rekap, RPC billing, RLS, upload logo ke bucket `user-assets`, dan
     operasi admin yang memakai `SUPABASE_SERVICE_ROLE_KEY` dari Worker.
   - [ ] Set production `DUITKU_CALLBACK_URL` ke:
@@ -673,6 +680,126 @@
 
 - [x] **8.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
   - _DoD: Dokumen up-to-date_ ✓ (SPEC.md rewritten for Next.js, README.md updated, TASKS.md current)
+
+- [ ] **8.6 Domain, email, dan transactional mail**
+
+  > Domain `tutorlog.id` sudah dibeli di DomaiNesia, nameserver sudah dipindah ke
+  > Cloudflare, dan email dikirim lewat Resend SMTP. Supabase built-in SMTP tidak
+  > dipakai karena batasnya 2 email/jam dan hanya ke alamat anggota team project,
+  > yang berarti magic link tidak akan sampai ke user manapun di production.
+
+  #### 8.6.1 Domain dan DNS — DONE ✓
+
+  - [x] Registrasi `tutorlog.id` di DomaiNesia (Rp219.000/tahun) + addon Mailspace 2 mailbox.
+  - [x] Nameserver dipindah ke Cloudflare (`julian.ns.cloudflare.com`, `nadia.ns.cloudflare.com`).
+  - [x] Record email direplikasi ke Cloudflare: MX `mx8.mailspace.id`, SPF root,
+        DKIM `default._domainkey`, A record `mail` (DNS only, proxy OFF).
+  - [x] Mailbox `halo@tutorlog.id` (publik) dan `admin@tutorlog.id` (privat, tidak
+        pernah dipublikasikan) dibuat. Kuota terpakai penuh 2/2.
+
+  #### 8.6.2 Resend transactional mail — DONE ✓
+
+  - [x] Domain `tutorlog.id` terverifikasi di Resend (region Tokyo `ap-northeast-1`).
+  - [x] Record Resend di-push ke Cloudflare via auto-configure: DKIM `resend._domainkey`,
+        MX + SPF di subdomain `send`. SPF root milik Mailspace tidak tersentuh karena
+        Resend memakai subdomain terpisah, jadi tidak perlu digabung.
+  - [x] Supabase custom SMTP diarahkan ke `smtp.resend.com:465`, sender `noreply@tutorlog.id`.
+  - [x] Magic link terverifikasi sampai ke Gmail eksternal dengan TLS.
+
+  #### 8.6.3 Template email — HTML SIAP, BELUM DIPASANG
+
+  - [x] Template dibuat di `supabase/email-templates/` (`confirm-signup.html`,
+        `magic-link.html`, `_preview.html`, `README.md`). Table-based, CSS inline,
+        wordmark teks tanpa gambar, warna eksplisit untuk menahan auto-dark-invert.
+  - [ ] Paste `confirm-signup.html` ke Supabase → Authentication → Emails → Templates
+        (**Confirm signup**), subject `Konfirmasi email kamu di TutorLog`.
+  - [x] Paste `magic-link.html` ke template **Magic Link**. ✓
+        Dua-duanya wajib: `app/login/actions.ts` memakai `signInWithOtp` tanpa
+        `shouldCreateUser: false`, jadi user baru memicu Confirm signup dan user lama
+        memicu Magic Link.
+  - [x] Header email diverifikasi lewat Gmail Show original: `dkim=pass` dengan
+        `header.i=@tutorlog.id header.s=resend`, `spf=pass` via `send.tutorlog.id`,
+        `dmarc=pass` dengan `header.from=tutorlog.id`. From terbaca
+        `TutorLog <halo@tutorlog.id>`, preheader tampil di baris pertama. ✓
+  - [ ] Verifikasi dark mode di Gmail mobile.
+  - [ ] Verifikasi tombol benar-benar membentuk session (lihat 8.6.7, sekarang masih rusak).
+
+  #### 8.6.7 URL Configuration dan verifikasi redirect
+
+  Kondisi sekarang di Supabase → Authentication → URL Configuration:
+
+  - Site URL: `https://tutorlog.id`
+  - Redirect URLs: `tutorlog://login-callback`, `https://tutorlog.id/auth/callback`
+
+  Satu email tes menunjukkan `redirect_to=tutorlog://login-callback`. Karena Site URL
+  sudah mengarah ke web, kemungkinan besar email itu diminta dari aplikasi Flutter yang
+  mengirim `emailRedirectTo` sendiri, bukan dari web. Kalau begitu, perilakunya benar.
+  Belum dipastikan, dan cara memastikannya ada di langkah verifikasi di bawah.
+
+  Catatan tentang aplikasi mobile: keberadaan `tutorlog://login-callback` di daftar
+  Redirect URLs menunjukkan aplikasi Flutter mengirim `emailRedirectTo` secara eksplisit,
+  bukan mengandalkan fallback Site URL. Kalau benar, Site URL boleh diarahkan ke web
+  tanpa mematikan login mobile. Konfirmasi di repo Flutter sebelum mengandalkan asumsi ini.
+
+  - [ ] Tambahkan `http://localhost:3000/auth/callback` ke Redirect URLs. Wajib untuk
+        menguji flow web sebelum deployment, karena `tutorlog.id` belum ke-deploy dan
+        tanpa entry ini magic link dari dev server jatuh ke Site URL yang masih kosong.
+  - [ ] Jalankan `npm run dev`, minta magic link dari `/login` di browser, lalu periksa
+        `redirect_to` di URL email. Harus terbaca `http://localhost:3000/auth/callback`.
+  - [ ] Klik tombol, pastikan session terbentuk dan redirect ke `/app` berhasil.
+
+  #### 8.6.4 Ganti alamat kontak di halaman publik — BELUM
+
+  - [ ] Ganti `tutorlog.admin@gmail.com` → `halo@tutorlog.id` di:
+        `components/content/kontak-content.tsx`, `components/content/privacy-content.tsx`,
+        `components/content/terms-content.tsx`, `app/account/page.tsx`, dan `UI_SPECS.md`.
+  - [ ] Semua halaman publik memakai `halo@`. Alamat `admin@` tidak boleh muncul di
+        file manapun yang terbit ke web, karena itu jalur recovery akun vendor.
+  - [ ] Catatan: menyentuh halaman privacy dan terms. `AGENTS.md` menandai legal copy
+        sebagai butuh persetujuan. Isi kalimat tidak berubah, hanya alamat email.
+
+  #### 8.6.5 Pengetatan DMARC — TERTUNDA SENGAJA
+
+  - [ ] DMARC sekarang di `p=none` dengan `rua=mailto:admin@tutorlog.id`. Ini disengaja
+        selama masa setup supaya misalignment terlihat dulu, bukan langsung membuang email.
+  - [ ] Naikkan ke `p=quarantine` setelah Resend dan Mailspace terbukti lolos alignment
+        beberapa minggu tanpa insiden, lalu ke `p=reject`.
+  - [ ] **Abaikan warning DNS di panel DomaiNesia** yang menyuruh kembali ke `p=reject`
+        dengan `rua=mailto:dmarc@tutorlog.id`. DomaiNesia tidak lagi mengelola DNS ini
+        (NS sudah di Cloudflare), rekomendasinya template statis yang tidak tahu ada
+        Resend, dan mailbox `dmarc@tutorlog.id` tidak ada karena kuota sudah 2/2.
+        Laporan DMARC ke alamat itu akan hilang.
+
+  #### 8.6.6 Lubang yang belum ditutup
+
+  - [x] **Sender diganti dari `noreply@tutorlog.id` ke `halo@tutorlog.id`** di Supabase →
+        Authentication → Emails → SMTP Settings. ✓
+
+    Alasannya: balasan ke `noreply@` bounce tanpa jejak karena alamat itu tidak punya
+    mailbox, dan orang tetap membalas email otomatis. Dua jalan keluar lain sudah dicek
+    dan dua-duanya buntu:
+
+    - Forwarder `noreply@` → `halo@` **tidak mungkin**. Forwarding di Mailspace adalah
+      setelan keluar dari mailbox yang sudah ada (Manage → Forwarding), bukan alat
+      membuat alias tanpa mailbox. Kuota sudah 2/2 dan catch-all tidak tersedia.
+    - **Reply-To tidak ada** di SMTP settings Supabase. Yang tersedia hanya Sender Email
+      dan Sender Name. Reply-To hanya bisa lewat Send Email Auth Hook, yang berarti
+      menulis edge function sendiri. Tidak sepadan.
+
+    Autentikasi tidak terpengaruh: Resend memverifikasi domain, bukan alamat individual.
+    DKIM `resend._domainkey` menandatangani `d=tutorlog.id`, jadi alignment DMARC tetap lolos.
+
+  - [ ] Verifikasi header email: Gmail → Show original → pastikan `SPF`, `DKIM`, dan
+        `DMARC` ketiganya `PASS`. Wajib dicek selagi DMARC masih `p=none`, karena di
+        posisi itu email tetap sampai walau autentikasi gagal. Kalau tidak dicek
+        sekarang, kegagalannya baru ketahuan saat DMARC dinaikkan ke `reject` dan
+        email mendadak hilang semua.
+  - [ ] Akun Cloudflare, Resend, dan DomaiNesia masih terdaftar dengan Gmail pribadi.
+        Pindahkan ke `admin@tutorlog.id` setelah zone stabil, satu per satu sambil
+        memastikan akses tetap jalan. Jangan lakukan di tengah setup DNS.
+  - [ ] Akun baru (Duitku merchant dan seterusnya) langsung pakai `admin@tutorlog.id`.
+  - [ ] Foto profil pengirim di Gmail (BIMI) tidak dikejar. Butuh sertifikat VMC/CMC
+        USD 650–1.100 per tahun plus DMARC di enforcement. Tidak sepadan untuk tahap ini.
 
 ---
 
