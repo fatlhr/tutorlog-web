@@ -638,11 +638,21 @@
   $0.50/1.000) — inventori gambar situs ini kecil (aset marketing statis), jauh di
   bawah ambang itu, jadi tetap di tier gratis tanpa upgrade plan.
 
-  **`www.tutorlog.id` belum ke-cover — FIXED (kode), MENUNGGU DNS.** Redirect 308 ke
-  apex ditambahkan di `next.config.ts` (`has: [{ type: "host", value: "www.tutorlog.id" }]`),
-  dikonfirmasi masuk `.next/routes-manifest.json` dan sudah live di kedua Worker.
-  Redirect baru benar-benar jalan setelah `www.tutorlog.id` punya DNS record — perlu
-  ditambahkan sebagai custom domain kedua di Worker `tutorlog-web` lewat dashboard.
+  **`www.tutorlog.id` — FIXED ✓.** Redirect 308 ke apex ditambahkan di `next.config.ts`
+  (`has: [{ type: "host", value: "www.tutorlog.id" }]`), dikonfirmasi masuk
+  `.next/routes-manifest.json`. Diverifikasi hidup: `curl -I https://www.tutorlog.id/fitur`
+  → `308` → `https://tutorlog.id/fitur`.
+
+  **Catatan setup yang gak sesuai dugaan awal:** dialog "Connect domain" / "Add Domain"
+  di Workers & Pages **gak bisa nerima subdomain sama sekali** ("No zones match
+  www.tutorlog.id"), meski DNS record `www` (CNAME → apex, proxied) udah dibuat duluan.
+  CNAME proxied ke apex juga sempat dicoba tapi balikin `522` (Cloudflare gagal proxy ke
+  origin, karena record apex tipenya "Worker" khusus, bukan A/AAAA biasa yang bisa
+  di-chain). Solusi yang jalan: **Workers & Pages → tutorlog-web → Domains → Add Route**
+  (bukan Add Domain), ketik `tutorlog.id` dulu di search buat milih zone, lalu field
+  pattern terpisah muncul — defaultnya `*.tutorlog.id/*` (wildcard semua subdomain,
+  sengaja dipersempit ke `www.tutorlog.id/*` biar subdomain lain di masa depan gak
+  ikut ke-route ke Worker ini tanpa sengaja).
 
   #### 8.4.5 Integrasi Supabase dan Duitku
 
