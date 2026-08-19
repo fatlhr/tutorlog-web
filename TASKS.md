@@ -633,7 +633,7 @@
 
   - [x] Tambahkan redirect URL Supabase untuk staging:
     `https://tutorlog-web-staging.fatlhr.workers.dev/auth/callback`.
-  - [ ] Tambahkan production redirect URL Supabase setelah custom domain attach (8.4.6):
+  - [x] Tambahkan production redirect URL Supabase setelah custom domain attach (8.4.6):
     `https://tutorlog.id/auth/callback`.
   - [ ] **JANGAN mengubah Site URL Supabase.** Site URL saat ini `tutorlog://login-callback`,
     yaitu deep link aplikasi mobile, dan project Supabase ini dipakai bersama aplikasi
@@ -684,8 +684,8 @@
     — semua identik dengan hasil staging.
   - [ ] Redirect URL Supabase production (`https://tutorlog.id/auth/callback`) —
     ditambahkan setelah domain live, lihat 8.4.5.
-  - [ ] Magic Link end-to-end di domain production sungguhan (bukan `*.workers.dev`)
-    — perlu dicoba manual sekali lagi karena domainnya baru pertama kali live.
+  - [x] Magic Link end-to-end di domain production sungguhan — dikonfirmasi manual
+    (Fatih), login di `https://tutorlog.id/login` berhasil.
   - [ ] Pantau Worker logs dan error rate pada jam pertama observasi. Catatan awal:
     satu `Error 1102` (cold start) sempat terjadi di staging tak lama setelah redeploy,
     tidak reproduksi pada retry — lihat catatan di 8.4.4.
