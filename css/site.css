@@ -5655,6 +5655,25 @@ html, body { overflow-x: hidden; }
 .tl-landing-hero-copy,
 .tl-landing-hero-proof { position: relative; z-index: 1; }
 
+/* Halo di belakang copy hero. Label jam timetable (07.00, 09.00, 11.00 ...)
+   jatuh tepat di belakang h1 dan paragraf, jadi dua lapis teks bertumpuk dan
+   sulit dibaca. z-index -1 menaruhnya di belakang teks tapi tetap di dalam
+   stacking context .tl-landing-hero-copy (z-index 1), jadi masih menutup
+   .tl-hero-schedule yang ada di z-index 0. */
+.tl-landing-hero-copy::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -36px -72px -28px -60px;
+  background: radial-gradient(
+    ellipse 72% 62% at 32% 48%,
+    #f4faf8 0%,
+    rgba(244, 250, 248, .94) 46%,
+    rgba(244, 250, 248, 0) 100%
+  );
+  pointer-events: none;
+}
+
 .tl-hero-schedule {
   position: absolute;
   z-index: 0;
