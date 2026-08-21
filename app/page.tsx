@@ -84,14 +84,17 @@ export default function Home() {
 
       <section className="tl-landing-partner" aria-labelledby="landing-partner-title">
         <p id="landing-partner-title">Cari murid baru?</p>
-        <a
-          href="https://tutorplis.id"
-          target="_blank"
-          rel="noopener"
-          aria-label="TutorPlis, direktori tutor privat Indonesia (buka di tab baru)"
-        >
-          TutorPlis <span aria-hidden="true">— direktori tutor privat Indonesia</span>
-        </a>
+        <div className="tl-landing-partner-link">
+          <a
+            href="https://tutorplis.id"
+            target="_blank"
+            rel="noopener"
+            aria-label="TutorPlis, buka di tab baru"
+          >
+            TutorPlis <ArrowRight size={16} aria-hidden="true" />
+          </a>
+          <span>Direktori tutor privat Indonesia</span>
+        </div>
       </section>
 
       <div className="tl-landing-closing">

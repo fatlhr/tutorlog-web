@@ -5922,32 +5922,46 @@ html, body { overflow-x: hidden; }
 .tl-landing-partner {
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 28px 0;
+  padding: 40px 0;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 24px;
   border-bottom: 1px solid var(--tl-line);
 }
 
+/* Naik lewat ukuran dan kontras, bukan chrome kartu baru — halaman ini sudah
+   datar sepanjang jalan (border tipis, tanpa bayangan), jadi baris ini tetap
+   ikut bahasa itu sambil bicara lebih berani dari sebelumnya. */
 .tl-landing-partner > p {
   margin: 0;
-  color: var(--tl-muted);
-  font-size: 15px;
+  color: var(--tl-ink);
+  font-family: var(--f-title), monospace;
+  font-size: 22px;
+  font-weight: 700;
 }
 
-.tl-landing-partner a {
+.tl-landing-partner-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tl-landing-partner-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   text-decoration: none;
 }
 
-.tl-landing-partner a span {
+.tl-landing-partner-link span {
   color: var(--tl-muted);
-  font-family: var(--f-body);
-  font-weight: 400;
+  font-size: 13px;
 }
 
 .tl-demo-backdrop {
@@ -6185,7 +6199,7 @@ html, body { overflow-x: hidden; }
   .tl-landing-next { display: block; }
   .tl-landing-next-plans { margin-top: 28px; }
   .tl-landing-partner { display: block; }
-  .tl-landing-partner a { display: inline-block; margin-top: 10px; }
+  .tl-landing-partner-link { align-items: flex-start; margin-top: 12px; }
 }
 
 @media (max-width: 767px) {
@@ -6220,8 +6234,9 @@ html, body { overflow-x: hidden; }
   .tl-landing-next nav { margin-top: 24px; gap: 12px; }
   .tl-landing-next-plans { margin-top: 28px; }
   .tl-landing-next-plans dd { font-size: 15px; }
-  .tl-landing-partner { width: calc(100% - 48px); padding: 24px 0; display: block; }
-  .tl-landing-partner a { display: inline-block; margin-top: 10px; }
+  .tl-landing-partner { width: calc(100% - 48px); padding: 32px 0; display: block; }
+  .tl-landing-partner > p { font-size: 19px; }
+  .tl-landing-partner-link { align-items: flex-start; margin-top: 14px; }
   .tl-demo-backdrop { padding: 16px; }
   .tl-demo-dialog { padding: 18px; }
   .tl-demo-dialog h2 { font-size: 23px; }
