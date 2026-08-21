@@ -60,7 +60,21 @@ export default function Home() {
       </div>
 
       <section className="tl-landing-next" aria-labelledby="landing-next-title">
-        <p id="landing-next-title">Mulai dengan Paket Free. Aktifkan Plus saat kamu perlu mengekspor rekap tanpa batas atau mengunduh PDF invoice.</p>
+        <div className="tl-landing-next-copy">
+          <p className="tl-kicker">Paket</p>
+          <h2 id="landing-next-title">Mencatat selalu gratis.</h2>
+          <p>Yang berbayar cuma saat kamu perlu ekspor rekap tanpa batas dan unduh PDF invoice.</p>
+        </div>
+        <dl className="tl-landing-next-plans">
+          <div>
+            <dt>Gratis selamanya</dt>
+            <dd>Catat sesi · Lihat rekap · Susun draft invoice</dd>
+          </div>
+          <div data-plan="plus">
+            <dt>Perlu Plus · dari Rp19.000</dt>
+            <dd>Ekspor rekap tanpa batas · Unduh PDF invoice</dd>
+          </div>
+        </dl>
         <nav aria-label="Jelajahi TutorLog">
           <Link href="/fitur">Lihat fitur <ArrowRight size={16} aria-hidden="true" /></Link>
           <Link href="/harga">Bandingkan paket <ArrowRight size={16} aria-hidden="true" /></Link>
