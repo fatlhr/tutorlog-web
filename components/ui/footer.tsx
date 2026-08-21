@@ -39,6 +39,20 @@ export function AppFooter({ context }: AppFooterProps) {
         <Link className={styles.footerLink} href="/privacy">Privasi</Link>
         <Link className={styles.footerLink} href="/terms">Syarat &amp; ketentuan</Link>
       </div>
+      {context === "public" ? (
+        <div className={styles.footerCol}>
+          <span className={styles.footerColHeading}>Partner</span>
+          <a
+            className={styles.footerLink}
+            href="https://tutorplis.id"
+            target="_blank"
+            rel="noopener"
+            aria-label="TutorPlis, direktori tutor privat Indonesia (buka di tab baru)"
+          >
+            TutorPlis
+          </a>
+        </div>
+      ) : null}
       <span className={styles.footerCopyright}>© 2026 TutorLog</span>
     </footer>
   );

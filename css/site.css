@@ -5655,6 +5655,25 @@ html, body { overflow-x: hidden; }
 .tl-landing-hero-copy,
 .tl-landing-hero-proof { position: relative; z-index: 1; }
 
+/* Halo di belakang copy hero. Label jam timetable (07.00, 09.00, 11.00 ...)
+   jatuh tepat di belakang h1 dan paragraf, jadi dua lapis teks bertumpuk dan
+   sulit dibaca. z-index -1 menaruhnya di belakang teks tapi tetap di dalam
+   stacking context .tl-landing-hero-copy (z-index 1), jadi masih menutup
+   .tl-hero-schedule yang ada di z-index 0. */
+.tl-landing-hero-copy::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -36px -72px -28px -60px;
+  background: radial-gradient(
+    ellipse 72% 62% at 32% 48%,
+    #f4faf8 0%,
+    rgba(244, 250, 248, .94) 46%,
+    rgba(244, 250, 248, 0) 100%
+  );
+  pointer-events: none;
+}
+
 .tl-hero-schedule {
   position: absolute;
   z-index: 0;
@@ -5852,6 +5871,40 @@ html, body { overflow-x: hidden; }
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
+}
+
+/* Baris partner. Sengaja tanpa border-top: border-bottom milik .tl-landing-next
+   sudah jadi pemisahnya, sama seperti .tl-landing-feature-rows yang reset
+   border-top: 0 supaya tidak muncul garis rambut ganda. */
+.tl-landing-partner {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 28px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--tl-line);
+}
+
+.tl-landing-partner > p {
+  margin: 0;
+  color: var(--tl-muted);
+  font-size: 15px;
+}
+
+.tl-landing-partner a {
+  color: var(--tl-green);
+  font-family: var(--f-title), monospace;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tl-landing-partner a span {
+  color: var(--tl-muted);
+  font-family: var(--f-body);
+  font-weight: 400;
 }
 
 .tl-demo-backdrop {
@@ -6080,11 +6133,14 @@ html, body { overflow-x: hidden; }
   .tl-landing-hero-side-shot { top: 152px; left: -4px; width: 132px; border-radius: 14px; }
   .tl-landing-feature-rows { width: calc(100% - 64px); padding: 64px 0; }
   .tl-landing-next { width: calc(100% - 64px); }
+  .tl-landing-partner { width: calc(100% - 64px); }
 }
 
 @media (min-width: 768px) and (max-width: 899px) {
   .tl-landing-next { display: block; }
   .tl-landing-next nav { margin-top: 18px; }
+  .tl-landing-partner { display: block; }
+  .tl-landing-partner a { display: inline-block; margin-top: 10px; }
 }
 
 @media (max-width: 767px) {
@@ -6115,6 +6171,8 @@ html, body { overflow-x: hidden; }
   .tl-landing-feature-rows { width: calc(100% - 48px); padding: 16px 0; }
   .tl-landing-next { width: calc(100% - 48px); padding: 36px 0; display: block; }
   .tl-landing-next nav { margin-top: 18px; display: grid; gap: 12px; }
+  .tl-landing-partner { width: calc(100% - 48px); padding: 24px 0; display: block; }
+  .tl-landing-partner a { display: inline-block; margin-top: 10px; }
   .tl-demo-backdrop { padding: 16px; }
   .tl-demo-dialog { padding: 18px; }
   .tl-demo-dialog h2 { font-size: 23px; }

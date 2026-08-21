@@ -30,6 +30,18 @@
   --footer-radius: var(--tl-radius-surface);
 }
 
+/* Kolom Partner hanya dirender di konteks publik, jadi kolom keempat juga
+   dibatasi ke sini. Footer protected tetap 3 kolom, tanpa slot kosong.
+   Dipasang di dalam min-width, bukan di blok atas: selector
+   .footer[data-footer="public"] lebih spesifik daripada .footer di media query
+   mobile, jadi kalau ditaruh di atas ia menang dan mobile ikut jadi 4 kolom
+   sempit (di 320px kolom terakhir tinggal ~25px). */
+@media (min-width: 768px) {
+  .footer[data-footer="public"] {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .footerCol {
   display: flex;
   flex-direction: column;
