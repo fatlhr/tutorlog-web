@@ -39,7 +39,7 @@ export function AppFooter({ context }: AppFooterProps) {
         <Link className={styles.footerLink} href="/privacy">Privasi</Link>
         <Link className={styles.footerLink} href="/terms">Syarat &amp; ketentuan</Link>
       </div>
-      {context === "public" ? (
+      {context === "public" || context === "protected" ? (
         <div className={styles.footerCol}>
           <span className={styles.footerColHeading}>Partner</span>
           <a
