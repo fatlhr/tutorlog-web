@@ -33,15 +33,16 @@
 | 4 | `/fitur` | ✅ | ✅ | Static |
 | 5 | `/harga` | ✅ | ✅ | Static |
 | 6 | `/panduan` | ✅ | ✅ | Static |
-| 7 | `/privacy` | ✅ | ✅ | Static |
-| 8 | `/terms` | ✅ | ✅ | Static |
-| 9 | `/account` | ✅ | ✅ | Static |
-| 10 | `/kontak` | ✅ | ✅ | Static |
-| 11 | `/app` (home) | ⬜ | ⬜ | Protected |
-| 12 | `/app/rekap` | ✅ | ✅ | Protected |
-| 13 | `/app/invoice` | ✅ | ⬜ | Protected |
-| 14 | `/checkout` | ✅ | ✅ | Protected |
-| 15 | `/pembayaran/[purchaseId]` | ✅ | ✅ | Protected |
+| 7 | `/legal` | ✅ | ✅ | Static |
+| 8 | `/privacy` | ✅ | ✅ | Static |
+| 9 | `/terms` | ✅ | ✅ | Static |
+| 10 | `/account` | ✅ | ✅ | Static |
+| 11 | `/kontak` | ✅ | ✅ | Static |
+| 12 | `/app` (home) | ⬜ | ⬜ | Protected |
+| 13 | `/app/rekap` | ✅ | ✅ | Protected |
+| 14 | `/app/invoice` | ✅ | ⬜ | Protected |
+| 15 | `/checkout` | ✅ | ✅ | Protected |
+| 16 | `/pembayaran/[purchaseId]` | ✅ | ✅ | Protected |
 
 ---
 
@@ -123,6 +124,10 @@
 - [x] **2.5 Terms page** — `app/terms/page.tsx`
 - [x] **2.6 Account Deletion page** — `app/account/page.tsx`
 - [x] **2.7 Kontak page** — `app/kontak/page.tsx`
+- [x] **2.8 Legal hub** — `app/legal/page.tsx`
+  - Tiga kartu link penuh menuju `/privacy`, `/account`, dan `/terms`.
+  - Jalur penghapusan akun menjelaskan bahwa permintaan bisa diajukan melalui web
+    tanpa membuka aplikasi.
   - _DoD setiap page: identik artboard desain, responsive, link resolve_
 
 ---
@@ -926,6 +931,9 @@
   | Support email | `halo@tutorlog.id` |
   | Support website | `https://tutorlog.id/kontak` |
 
+  `/legal` adalah hub legal publik untuk menu aplikasi, bukan pengganti URL langsung
+  Privacy Policy atau Account deletion di Play Console.
+
   Halaman `/fitur`, `/harga`, `/panduan` hidup tapi bukan untuk form Play Console —
   berguna kalau mau ditautkan dari store listing description.
 
@@ -933,7 +941,15 @@
   pengajuan jelas, daftar eksplisit data yang dihapus, pengecualian retensi untuk
   kewajiban hukum, estimasi maksimal 7 hari, dan bisa diakses tanpa login.
 
-  #### 8.7.3 Dua celah sebelum submit — BELUM
+  #### 8.7.3 Store Listing Contact Details — BELUM DIVERIFIKASI
+
+  - [ ] Ganti email Store Listing dari `admin@tutorlog.id` menjadi `halo@tutorlog.id`.
+  - [ ] Biarkan field Phone kosong.
+  - [ ] Ganti Website dari GitHub Pages lama menjadi `https://tutorlog.id`.
+  - [ ] Verifikasi sesudah disimpan bahwa Privacy Policy tetap memakai `/privacy` dan
+        Data Safety Account Deletion tetap memakai `/account`.
+
+  #### 8.7.4 Dua celah sebelum submit — BELUM
 
   - [ ] **Penghapusan akun dari dalam aplikasi.** Sejak 2024 Google tidak cukup dengan
         URL penghapusan; aplikasi yang bisa membuat akun juga wajib menyediakan
