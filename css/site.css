@@ -3104,6 +3104,30 @@ html, body { overflow-x: hidden; }
   color: var(--tl-green);
 }
 
+.tl-legal-card {
+  color: inherit;
+}
+
+.tl-legal-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 22px;
+  color: var(--tl-green);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tl-legal-card-action svg {
+  transition: transform .2s ease;
+}
+
+.tl-legal-card:hover .tl-legal-card-action svg,
+.tl-legal-card:focus-visible .tl-legal-card-action svg {
+  transform: translateX(4px);
+}
+
 .tl-public-mini {
   display: grid;
   gap: 8px;
