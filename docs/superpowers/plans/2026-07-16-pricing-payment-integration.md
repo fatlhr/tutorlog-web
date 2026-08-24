@@ -1,8 +1,13 @@
 # TutorLog Pricing and Payment Integration Implementation Plan
 
+> **Status: Superseded.** Do not execute this provider flow. The current payment plan is
+> `docs/superpowers/plans/2026-08-24-lynk-webhook-integration.md`, using external Lynk.id
+> checkout and a signed successful-transaction webhook. This file remains only as historical
+> implementation evidence for the billing foundation already present in the repository.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the TutorLog-owned catalog, purchase, payment, entitlement, export-authorization, analytics, and notification backend behind a provider-neutral contract, with iPaymu Redirect as the conditional MVP provider.
+**Historical goal:** Build the TutorLog-owned catalog, purchase, payment, entitlement, export-authorization, analytics, and notification backend behind a provider-neutral contract.
 
 **Architecture:** Supabase/Postgres owns commercial and entitlement state. Next.js Route Handlers authenticate users, call focused billing application services, and map provider-specific results into shared DTOs. iPaymu callbacks and reconciliation use a server-only Supabase admin client; browser code never writes payment or entitlement state.
 

@@ -1,5 +1,10 @@
 # TutorLog Pricing and Checkout UI Implementation Plan
 
+> **Status: Partially superseded.** Completed pricing, paywall, access, and export UI remain
+> relevant. Internal checkout creation and payment-status navigation must not be used for new
+> sales. Follow `docs/superpowers/plans/2026-08-24-lynk-webhook-integration.md` for current
+> checkout links and activation behavior.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build and connect TutorLog pricing, login return, checkout, payment status, paywall, entitlement presentation, latest-payment, and export-authorization UI without provider-specific logic in browser code.

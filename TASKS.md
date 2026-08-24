@@ -302,188 +302,118 @@
 
 ---
 
-## Phase 7 — Payment Integration & Provider Activation
+## Phase 7 — Lynk.id Checkout & Webhook Activation
 
-> **Ringkasan:** Phase 7 membangun seluruh sistem billing dari nol — database, API, UI, dan
-> payment gateway. Semua payment call sudah ada di codebase tapi di-gate oleh
-> `BILLING_PAYMENT_PROVIDER_ENABLED=false`. Duitku sandbox/live belum diverifikasi karena
-> merchant account belum tersedia. Callback production nanti perlu IP whitelist
-> (`182.23.85.8`-`103.177.101.190`).
+> **Keputusan provider (2026-08-24):** Pembayaran Plus dilakukan pada halaman produk
+> `https://lynk.id/tutorlog`. TutorLog tidak membuat transaksi, memilih metode pembayaran,
+> melakukan inquiry, atau membatalkan pembayaran melalui API provider. TutorLog menerima
+> event sukses melalui webhook Lynk.id, memverifikasi `X-Lynk-Signature`, mencocokkan
+> produk, nominal, dan email akun, lalu mengaktifkan entitlement di Supabase.
 >
-> Lihat `docs/superpowers/specs/2026-07-20-duitku-migration-design.md` untuk detail Duitku.
-> Lihat `docs/superpowers/specs/2026-07-16-pricing-paywall-payment-design.md` untuk design spec.
-
-### 7.1 Integration/Data — DONE ✓
-
-> **Apa ini:** Fondasi database dan backend untuk seluruh sistem billing. Semua sudah di-apply
-> ke Supabase production. Termasuk tabel, RPC functions, dan provider adapter placeholder.
-
-- [x] **I0** Capture live DB & merchant evidence — verifikasi schema mobile + sandbox
-  - _Apa yang dilakukan:_ Cek bahwa Supabase production sudah punya tabel-tabel billing yang benar
-  - _Kenapa penting:_ Memastikan fondasi data sudah siap sebelum mulai build
-  - _DoD: DB live verified, screenshot evidence tersimpan_ ✓
-- [x] **I1** Freeze shared billing contract — `lib/billing/contracts.ts`, `lib/billing/errors.ts`
-  - _Apa yang dilakukan:_ Buat "kontrak" (interface TypeScript) yang mendefinisikan tipe data billing — product, purchase, payment, access
-  - _Kenapa penting:_ Semua komponen (UI, API, provider) punya satu sumber kebenaran untuk tipe data
-  - _DoD: Contract test pass, `lib/billing/contracts.test.ts` green_ ✓ (commit `9bb02f4`)
-- [x] **I2** Billing schema, catalog, RLS — 4 Supabase migrations
-  - _Apa yang dilakukan:_ Buat SQL migration: tabel billing_products, billing_purchases, billing_payments, billing_entitlements + RLS policies + seed data
-  - _Kenapa penting:_ Database punya struktur untuk menyimpan produk, pembelian, pembayaran, dan hak akses user
-  - `202607160001_billing_schema`: 6 tabel + RLS + seed
-  - `202607160002_billing_functions`: 10 RPC functions (billing_status, start_purchase, record_payment, grant_access, dll)
-  - `202607160003_billing_purchase_functions`: purchase flow functions
-  - `202607160004_billing_webhook_functions`: webhook processing + authorization functions
-  - _DoD: Migrations applied ke live Supabase_ ✓ (verified via API)
-- [x] **I2A** Entitlement grant provenance — legacy + billing grant coexistence
-  - _Apa yang dilakukan:_ Pastikan sistem entitlement lama (dari mobile app) bisa hidup berdampingan dengan sistem baru
-  - _Kenapa penting:_ User lama tidak kehilangan akses saat migrasi
-  - _DoD: Legacy grants preserved_ ✓ (commit `d91d459`)
-- [x] **I3** Atomic billing authorization — `billing_access_status_for_user`, `authorize_feature_export`
-  - _Apa yang dilakukan:_ Buat fungsi SQL yang cek "apakah user ini boleh export PDF?" tanpa UI harus tahu logikanya
-  - _Kenapa penting:_ Authorization logic di database, bukan di client — lebih aman dan konsisten
-  - _DoD: Authorization functions live_ ✓ (commit `c2c1eca`, verified via API)
-- [x] **I4** Provider adapter seam — `lib/billing/providers/provider.ts`
-  - _Apa yang dilakukan:_ Buat interface provider pembayaran yang dipakai oleh purchase, status, dan callback flow
-  - _Kenapa penting:_ Provider bisa diganti tanpa mengubah UI, entitlement, atau route contract
-  - _DoD: Provider seam exists and is used server-side_ ✓
-- [x] **I5** Billing purchase APIs — 6 route handlers + 6 RPC functions
-  - _Apa yang dilakukan:_ Buat API endpoint untuk beli paket, cek status pembayaran, dan grant akses
-  - _Kenapa penting:_ Frontend bisa berinteraksi dengan sistem billing
-  - Routes: `/api/products`, `/api/quotes`, `/api/purchases`, `/api/payments`, `/api/billing/status`
-  - RPC: `billing_status_for_user`, `billing_start_purchase`, `billing_record_payment`, `billing_grant_access`, `billing_list_user_purchases`, `billing_user_access_status`
-  - _DoD: All endpoints functional_ ✓ (commit `36bf713`, verified via API)
-- [x] **I6** Webhook processing — `process_billing_provider_event` + callback route
-  - _Apa yang dilakukan:_ Buat webhook handler + RPC function untuk terima notifikasi dari payment gateway
-  - _Kenapa penting:_ Server bisa terima notifikasi saat pembayaran berhasil/gagal (tanpa user harus refresh)
-  - Current route: `app/api/webhooks/duitku/route.ts`
-  - Current DB patch: `202607220001_duitku_provider_flow_fixes`
-  - _DoD: Webhook processing code-contract verified_ ✓
-  - _Belum:_ live callback dari Duitku sandbox/production belum bisa diuji sampai merchant account tersedia
-
-### 7.2 UI/Product — DONE ✓
-
-> **Apa ini:** Semua halaman dan komponen UI yang terkait billing — dari melihat paket hingga
-> melihat status pembayaran. Checkout flow complete: catalog → checkout → payment status.
-
-- [x] **U1** View models, fixtures, browser client — `ui-model.ts`, `fixtures.ts`, `client.ts`
-  - _Apa yang dilakukan:_ Ubah data DB → data UI, buat data dummy untuk development, dan browser client
-  - _Kenapa penting:_ UI punya data layer yang terpisah dari database, bisa di-test
-  - _DoD: Billing UI data layer ready_ ✓ (commit `caaf985`)
-- [x] **U2** Pricing catalog UI — `components/billing/pricing-catalog.tsx`
-  - _Apa yang dilakukan:_ Tampilkan 2 paket (Plus bulanan Rp 19rb + Plus sekali bayar Rp 149rb) + info transfer bank
-  - _Kenapa penting:_ User bisa melihat paket yang tersedia di halaman `/harga`
-  - _DoD: Catalog renders, "Coming Soon" badge visible_ ✓ (commit `1072c42`)
-- [x] **U3** Safe login return — `lib/auth/safe-next.ts` + auth callback update
-  - _Apa yang dilakukan:_ Simpan URL yang ingin dituju user sebelum login, kembalikan setelah login
-  - _Kenapa penting:_ Setelah login, user dikembalikan ke halaman yang tadinya dibuka (misal `/checkout`)
-  - _DoD: Login preserves return URL_ ✓ (commit `dd995a9`)
-- [x] **U4** Checkout panel UI — `components/billing/checkout-panel.tsx`
-  - _Apa yang dilakukan:_ Tampilkan info transfer bank, link WhatsApp untuk konfirmasi, dan status "Coming Soon"
-  - _Kenapa penting:_ User bisa melihat detail pembayaran sebelum transfer
-  - _DoD: Checkout renders with disabled state_ ✓ (commit `96a1a79`)
-- [x] **U5** Payment status & recovery — `components/billing/payment-status-panel.tsx`
-  - _Apa yang dilakukan:_ Auto-polling setiap 5 detik, max 120 kali, cleanup timer
-  - _Kenapa penting:_ User bisa melihat status pembayaran real-time (pending → paid)
-  - _DoD: Payment status UI berfungsi_ ✓ (commits `fec810f`+`df5983e`+`8d7086a`)
-- [x] **U6** Access, latest payment, paywall — `AccessSummaryCard`, `LatestPaymentCard`, `PaywallDialog`
-  - _Apa yang dilakukan:_ Buat komponen untuk melihat status langganan, pembayaran terakhir, dan dialog upgrade
-  - _Kenapa penting:_ User bisa tau status akses mereka dan kapan harus upgrade
-  - _DoD: Access surfaces wired_ ✓ (commit `3a48e39`)
-- [x] **U7** Server export authorization — `authorizeFeatureExport` wiring (di integration branch)
-  - _Apa yang dilakukan:_ Wire `authorizeFeatureExport` ke server — export PDF di-gate oleh server (bukan client)
-  - _Kenapa penting:_ Lebih aman karena authorization logic tidak bisa di-bypass dari client
-  - _DoD: Export gated via server-side authorization_ ✓ (commit `c2c1eca`)
-- [x] **U8** Route wiring — `/harga`, `/checkout`, `/pembayaran/[purchaseId]`, analytics
-  - _Apa yang dilakukan:_ Buat routes + analytics events (paywall_shown, checkout_started, dll)
-  - _Kenapa penting:_ Semua halaman billing bisa diakses user
-  - Routes: `app/harga/page.tsx`, `app/checkout/page.tsx`, `app/pembayaran/[purchaseId]/page.tsx`
-  - Analytics: `lib/billing/analytics-client.ts`
-  - _DoD: All routes functional_ ✓ (commit `8636b07`)
-  - _Test: billing UI test fixtures aligned_ ✓ (commits `c86051c`+`c703f09`+`6b07065`)
-
-### 7.3 Fallback Catalog & Gateway Gate — DONE ✓
-
-> **Apa ini:** Sementara payment gateway belum aktif, pricing tetap terlihat tapi checkout
-> disabled. Seperti "jalan tengang" — user bisa lihat paket, tapi belum bisa beli.
-
-- [x] **FG1** Fallback catalog — `lib/billing/fallback-catalog.ts`
-  - _Apa yang dilakukan:_ Product catalog hardcoded tanpa dependensi provider
-  - _Kenapa penting:_ Catalog bisa render meskipun tidak ada koneksi ke payment gateway
-  - _DoD: Catalog renders tanpa provider_ ✓ (commit `4ae1e7b`)
-- [x] **FG2** Payment gateway gate — `isPaymentProviderEnabled()`
-  - _Apa yang dilakukan:_ Cek env var `BILLING_PAYMENT_PROVIDER_ENABLED` — semua payment call di-gate oleh flag ini
-  - _Kenapa penting:_ Bisa diaktifkan kapan saja tanpa ubah code
-  - _DoD: Checkout disabled, pricing visible_ ✓
-- [x] **FG3** Checkout `paymentReady` flag — `CheckoutPanelProps.checkoutStatus`
-  - _Apa yang dilakukan:_ Tambah prop `checkoutStatus` ke CheckoutPanel — "coming_soon" atau "ready"
-  - _Kenapa penting:_ Checkout button disabled dengan badge "Coming Soon" saat gateway belum aktif
-  - _DoD: Checkout shows "Coming Soon" state_ ✓
-
-### 7.4 Duitku Provider Migration — CODE READY, SANDBOX BELUM
-
-> **Apa ini:** Ganti payment provider dari iPaymu (yang belum functional) ke Duitku. Duitku
-> sudah punya BI license, sandbox, dan API docs. QRIS fee 0.7%. Tidak ada cancel API —
-> rely on expiry. Callback format: `x-www-form-urlencoded` (bukan JSON).
+> Alur gateway lama tetap fail-closed dan tidak menjadi target implementasi. Source lama
+> baru dibersihkan setelah webhook Lynk terbukti di production dan tidak ada data historis
+> yang masih membutuhkannya.
 >
-> Dependency graph: D1 → D2 → D3 → D4 → D5 → D7. D6 tetap menunggu merchant account.
+> Design: `docs/superpowers/specs/2026-08-24-lynk-webhook-integration-design.md`
+> Plan: `docs/superpowers/plans/2026-08-24-lynk-webhook-integration.md`
 
-- [x] **D1** Duitku signature module — `lib/billing/providers/duitku-signature.ts`
-  - _Apa yang dilakukan:_ Buat module HMAC-SHA256 signing untuk Duitku API requests dan callback verification
-  - _Kenapa penting:_ Duitku butuh signature di setiap request API — tanpa ini tidak bisa authenticate
-  - _DoD: Signature contract test pass, cross-verified with openssl_ ✓
-- [x] **D2** Duitku provider adapter — `lib/billing/providers/duitku.ts`
-  - _Apa yang dilakukan:_ Implement `PaymentProvider` interface untuk Duitku — `createPayment()`, `getPaymentStatus()`, `cancelPayment()`, `verifyCallback()`
-  - _Kenapa penting:_ Provider bisa buat pembayaran, cek status, dan verifikasi callback dari Duitku
-  - _DoD: Adapter contract verified locally_ ✓
-  - _Belum:_ inquiry/status request belum dites ke Duitku sandbox
-- [x] **D3** Duitku webhook route — `app/api/webhooks/duitku/route.ts`
-  - _Apa yang dilakukan:_ Buat POST handler untuk terima callback `x-www-form-urlencoded` dari Duitku, validasi signature, process callback
-  - _Kenapa penting:_ Server bisa terima notifikasi pembayaran dari Duitku saat user bayar
-  - _DoD: Webhook route code-contract verified_ ✓
-  - _Belum:_ endpoint publik dan callback IP whitelist belum dites
-- [x] **D4** Update provider factory + contracts — `providers/index.ts`, `contracts.ts`
-  - _Apa yang dilakukan:_ Provider factory sekarang Duitku-only; contract masih bisa membaca historical `"ipaymu"` rows
-  - _Kenapa penting:_ Flow baru tidak fallback diam-diam ke provider lama
-  - _DoD: Provider selection contract verified_ ✓
-- [x] **D5** Server payment processing updates — `server/payments.ts`, `server/purchases.ts`, `202607220001_duitku_provider_flow_fixes`
-  - _Apa yang dilakukan:_ Tambah `processDuitkuCallback()`, status inquiry memproses hasil provider event, dan DB function menandai payment baru sebagai `duitku`
-  - _Kenapa penting:_ Payment processing support Duitku — callback bisa diproses dengan benar
-  - _DoD: Route and migration contract verified locally_ ✓
-  - _Belum:_ sandbox event dari Duitku belum bisa diuji
-- [ ] **D6** Environment config — `.env.local`
-  - _Apa yang dilakukan:_ Setup env vars: `DUITKU_MERCHANT_CODE`, `DUITKU_API_KEY`, `DUITKU_BASE_URL`, `DUITKU_CALLBACK_URL`, `DUITKU_RETURN_URL`
-  - _Kenapa penting:_ App bisa connect ke Duitku API
-  - _DoD: Env vars configured_
-- [ ] **D7** Duitku sandbox verification — `scripts/test-duitku-sandbox-flow.mjs`
-  - _Apa yang dilakukan:_ Buat script test end-to-end: inquiry → redirect → callback → verification di Duitku sandbox
-  - _Kenapa penting:_ Buktikan seluruh flow jalan di Duitku sandbox sebelum production
-  - _DoD: Sandbox flow passes_
-- [x] **D8** iPaymu source cleanup — delete `ipaymu.ts`, `ipaymu-signature.ts`, legacy webhook route
-  - _Apa yang dilakukan:_ Hapus file iPaymu yang sudah tidak dipakai
-  - _Kenapa penting:_ Tidak ada dead code, codebase bersih
-  - _DoD: iPaymu provider files, signature contract, and legacy webhook route removed_ ✓
+### 7.1 Fondasi billing yang dipakai ulang — DONE ✓
 
-### 7.5 Post-MVP — ⬜ DEFERRED
+- [x] **I1** Shared billing contract — product, purchase, payment, entitlement, access
+  - `lib/billing/contracts.ts`, `lib/billing/errors.ts`
+  - _DoD: package code dan access state menjadi kontrak bersama_ ✓
+- [x] **I2** Billing schema, catalog, RLS, dan launch price
+  - `billing_products`, `billing_prices`, `billing_purchases`, `billing_payments`,
+    `billing_entitlement_grants`, dan authorization RPC sudah tersedia di Supabase.
+  - _DoD: fondasi database live dan user hanya dapat membaca data miliknya_ ✓
+- [x] **I3** Atomic entitlement projection
+  - `apply_billing_paid_event`, `billing_access_status_for_user`, dan
+    `authorize_feature_export` tetap menjadi authority untuk masa aktif dan akses ekspor.
+  - _DoD: term renewal, lifetime, legacy grant, dan server authorization tersedia_ ✓
+- [x] **I4** Public catalog dan access surfaces
+  - `/harga`, pricing cards, Profile access summary, paywall, dan export gate sudah ada.
+  - _DoD: paket dan status akses dapat ditampilkan tanpa provider aktif_ ✓
 
-> **Apa ini:** Tasks penting tapi tidak mendesak. Dikerjakan setelah Duitku verified di
-> production. Butuh production data untuk validasi.
+### 7.2 Produk Lynk.id — PUBLISHED, INTEGRASI BELUM
 
-- [ ] **I7** Reconciliation & refund — reconcile stale pending payments
-  - _Apa yang dilakukan:_ Cek pembayaran yang stuck di "pending" terlalu lama, sync dengan data Duitku
-  - _Kenapa di-defer:_ Butuh production data untuk validasi
-  - _DoD: Stale payments reconciled_
-- [ ] **I8** Analytics + Resend confirmation email — funnel events + transactional email
-  - _Apa yang dilakukan:_ Buat analytics dashboard + kirim email konfirmasi via Resend
-  - _Kenapa di-defer:_ Butuh production data untuk tau funnel mana yang perlu diperbaiki
-  - _DoD: Analytics dashboard functional, emails sent_
-- [ ] **U9** Legal copy — terms, refund policy, contact info
-  - _Apa yang dilakukan:_ Tulis syarat & ketentuan, kebijakan refund, info kontak
-  - _Kenapa di-defer:_ Menunggu input dari user tentang kebijakan bisnis
-  - _DoD: Legal copy complete_
-- [ ] **U10** UI verification & handoff — final QA
-  - _Apa yang dilakukan:_ Verifikasi semua payment UI berfungsi
-  - _Kenapa di-defer:_ Dilakukan setelah semua task lain selesai
-  - _DoD: All payment UI verified_
+- [x] **L0** Publikasikan tiga produk di `https://lynk.id/tutorlog`
+  - `plus_30d` → `https://lynk.id/tutorlog/q51pn0rykvq9` → Rp19.000
+  - `plus_12m` → `https://lynk.id/tutorlog/gjvmgkznjqd6` → Rp149.000
+  - `plus_lifetime` → `https://lynk.id/tutorlog/65p8z7ewqj8r` → Rp249.000
+  - Deskripsi checkout meminta pembeli memakai email yang sama dengan akun TutorLog.
+  - _DoD: ketiga produk tampil publik dengan judul, harga, dan cover yang benar_ ✓
+- [ ] **L1** Bekukan kontrak payload webhook dari bukti nyata
+  - Deploy endpoint capture-only yang tidak dapat menerbitkan entitlement.
+  - Simpan URL webhook dari akun Lynk `@tutorlog`, ambil merchant key, lalu jalankan
+    `Test URL`.
+  - Catat bentuk nyata `message_id`, `refId`, `grandTotal`, customer email, timestamp,
+    dan identitas item. Redact nama, email, telepon, signature, dan merchant key dari fixture.
+  - _DoD: fixture payload nyata dan field mapping direview; tidak ada akses yang diberikan_
+- [ ] **L2** Signature verification — `lib/billing/providers/lynk-signature.ts`
+  - Validasi lower-hex SHA-256 dari `grandTotal + refId + message_id + merchantKey`.
+  - Gunakan constant-time comparison dan tolak header hilang, field ambigu, atau signature salah.
+  - _DoD: deterministic contract test lulus untuk valid, mismatch, malformed, dan missing secret_
+- [ ] **L3** Webhook payload parser — `lib/billing/providers/lynk-webhook.ts`
+  - Hanya terima `payment.received` dengan status sukses dari payload yang sudah dibuktikan.
+  - Map identitas item stabil ke package code. Jika payload tidak menyediakan item ID stabil,
+    gunakan allowlist judul kanonis + nominal dan tandai perubahan sebagai `needs_review`.
+  - _DoD: unknown event, unknown product, multi-item, dan amount mismatch tidak mengaktifkan Plus_
+- [ ] **L4** Atomic webhook inbox dan entitlement processing
+  - Tambahkan migration `202608240001_lynk_webhook_flow.sql`.
+  - Simpan event sebelum diproses; unique key memakai `message_id` dan/atau `refId` sesuai
+    bukti payload. Event duplikat harus menghasilkan satu purchase, satu payment, satu grant.
+  - Lookup `auth.users` memakai email ternormalisasi. Email yang tidak ditemukan atau ambigu
+    masuk `needs_review`; webhook tidak membuat akun baru.
+  - _DoD: processed, duplicate, unmatched user, unknown product, amount mismatch, dan DB retry teruji_
+- [ ] **L5** Public webhook route — `POST /api/webhooks/lynk`
+  - Verifikasi signature sebelum mutasi database.
+  - `200` untuk processed/duplicate/needs-review yang sudah tercatat, `400` untuk payload
+    malformed, `401` untuk signature invalid, dan `503` untuk kegagalan sementara.
+  - Response dan log tidak boleh membocorkan email, telepon, raw payload, atau secret.
+  - _DoD: route contract lulus pada Next.js dan runtime Cloudflare preview_
+- [ ] **L6** Arahkan CTA pricing ke checkout Lynk
+  - `/harga` dan paywall memakai URL produk Lynk berdasarkan package code.
+  - Tampilkan pengingat untuk menggunakan email akun TutorLog saat checkout.
+  - `/checkout` dan `/pembayaran/[purchaseId]` tidak dipakai untuk transaksi Lynk baru.
+  - _DoD: seluruh CTA mengarah ke produk yang benar dan tidak ada payment creation internal_
+- [ ] **L7** Environment dan dashboard configuration
+  - Cloudflare secret: `LYNK_MERCHANT_KEY`.
+  - Runtime flags: `LYNK_WEBHOOK_ENABLED=false` dan `LYNK_WEBHOOK_CAPTURE_ONLY=true`
+    saat contract capture; production processing hanya aktif setelah fixture direview.
+  - Webhook URL: `https://tutorlog.id/api/webhooks/lynk` pada akun `@tutorlog`.
+  - _DoD: secret tidak ada di repo/log dan Test URL tercatat di Webhook History_
+- [ ] **L8** End-to-end verification
+  - Jalankan transaksi riil paket 30 Hari dengan akun test yang sudah ada di Supabase.
+  - Verifikasi purchase/payment/grant, masa aktif 30 hari, Profile, dan export authorization.
+  - Replay event yang sama dan pastikan masa aktif tidak bertambah dua kali.
+  - Uji email tidak terdaftar serta nominal/produk tidak cocok dan pastikan masuk review.
+  - _DoD: satu pembayaran sukses menghasilkan tepat satu entitlement pada production_
+- [ ] **L9** Retire legacy gateway path
+  - Hapus provider adapter, callback route, env, polling, cancel, dan checkout internal yang
+    tidak lagi memiliki consumer setelah data historis diaudit.
+  - Pertahankan kemampuan membaca row historis sampai migration/retention diputuskan.
+  - _DoD: source runtime tidak memanggil gateway lama dan billing contract tests tetap lulus_
+
+### 7.3 Operasional dan post-MVP — ⬜ DEFERRED
+
+- [ ] **O1** Reconciliation
+  - Bandingkan Orders/export Lynk dengan webhook inbox dan billing payments secara berkala.
+  - Sediakan retry terkontrol untuk event `needs_review`; retry tetap idempotent.
+  - _DoD: missing/mismatched order dapat ditemukan tanpa inquiry API provider_
+- [ ] **O2** Refund handling
+  - Refund diproses lewat Lynk sesuai kebijakannya, lalu entitlement direview/revoke manual
+    sampai Lynk menyediakan event refund yang sudah diverifikasi.
+  - _DoD: setiap refund punya evidence reference dan audit trail_
+- [ ] **O3** Analytics dan confirmation email
+  - Catat checkout outbound, webhook processed, activation success, dan needs-review.
+  - Kirim email konfirmasi hanya setelah entitlement berhasil dibuat.
+  - _DoD: kegagalan email tidak membatalkan entitlement_
+- [ ] **O4** Legal dan support copy
+  - Sinkronkan terms, privacy, refund, dan contact dengan Lynk sebagai checkout/payment processor.
+  - _DoD: legal copy konsisten dengan produk Lynk dan Data Safety sebelum promosi payment_
+- [ ] **O5** Payment UI verification dan handoff
+  - Verifikasi CTA, external navigation, status akses, support fallback, dan mobile handoff.
+  - _DoD: flow nyata diverifikasi tanpa mengandalkan checkout/status UI lama_
 
 ---
 
@@ -498,7 +428,7 @@
 - [x] **8.3 A11y pass** — focus-visible, aria, alt text, prefers-reduced-motion
   - _DoD: Keyboard-only bisa navigasi semua halaman_ ✓ (13/13 axe-core + keyboard tests passed)
 
-- [ ] **8.4 Cloudflare Workers deployment (Free tier + OpenNext)**
+- [x] **8.4 Cloudflare Workers deployment (Free tier + OpenNext)**
 
   > **Keputusan deployment:** TutorLog Web dipindahkan dari target Vercel → SumoPod
   > menjadi Cloudflare Workers sebagai runtime production default. Supabase tetap menjadi
@@ -506,19 +436,20 @@
   > Kita tidak memindahkan schema ke D1 atau object storage ke R2 dalam task ini.
 
   > **Target arsitektur:** Browser/mobile client → Cloudflare DNS/TLS/CDN → Cloudflare
-  > Worker (Next.js melalui `@opennextjs/cloudflare`) → Supabase Auth/Postgres/Storage
-  > dan Duitku API. Halaman public yang statis dilayani sebagai asset; route protected,
-  > Server Actions, Route Handlers, dan webhook berjalan sebagai Worker request.
+  > Worker (Next.js melalui `@opennextjs/cloudflare`) → Supabase Auth/Postgres/Storage.
+  > Checkout dibuka di Lynk.id dan event transaksi sukses masuk kembali melalui webhook
+  > Worker. Halaman public yang statis dilayani sebagai asset; route protected, Server
+  > Actions, Route Handlers, dan webhook berjalan sebagai Worker request.
 
   > **Target biaya awal:** Cloudflare Workers Free, selama penggunaan tetap di bawah
   > 100.000 request/hari dan request dynamic tidak konsisten melewati batas 10 ms CPU.
-  > Static asset requests tidak menjadi batas utama. Domain, Supabase, dan fee transaksi
-  > Duitku tetap merupakan komponen terpisah dari biaya Workers.
+  > Static asset requests tidak menjadi batas utama. Domain, Supabase, serta fee platform
+  > dan transaksi Lynk tetap merupakan komponen terpisah dari biaya Workers.
 
   #### 8.4.1 Prasyarat dan keputusan scope
 
-  - [ ] Pastikan akun Cloudflare aktif dan zone `tutorlog.id` dapat dikelola dari Cloudflare.
-  - [ ] Pastikan repository GitHub dan branch deploy sudah ditentukan. Branch production
+  - [x] Pastikan akun Cloudflare aktif dan zone `tutorlog.id` dapat dikelola dari Cloudflare.
+  - [x] Pastikan repository GitHub dan branch deploy sudah ditentukan. Branch production
     menggunakan alur repo yang berlaku: feature/fix → `develop` → production setelah
     verifikasi, bukan direct edit pada `develop` untuk application code.
   - [x] ~~Pertahankan Vercel deployment terakhir sebagai rollback target~~ — **N/A,
@@ -531,10 +462,11 @@
     tercentang `[x]` di sesi lain padahal isinya sendiri bilang "belum diverifikasi" —
     kontradiksi itu sekarang diperbaiki. Rollback plan yang beneran ada: lihat 8.4.6
     dan 8.4.8.
-  - [ ] Tetapkan `tutorlog.id` sebagai custom domain Worker production dan gunakan
+  - [x] Tetapkan `tutorlog.id` sebagai custom domain Worker production dan gunakan
     `*.workers.dev` hanya untuk preview/canary.
-  - [ ] Jangan mengaktifkan `BILLING_PAYMENT_PROVIDER_ENABLED=true` hanya karena hosting
-    sudah berpindah. Aktivasi payment tetap menunggu merchant account dan sandbox Duitku.
+  - [x] Jangan mengaktifkan pemrosesan webhook hanya karena hosting sudah berpindah.
+    Aktivasi entitlement tetap menunggu capture payload, merchant key, signature test,
+    dan transaksi end-to-end Lynk yang terverifikasi.
 
   #### 8.4.2 Tambahkan adapter dan konfigurasi Worker — DONE ✓
 
@@ -579,7 +511,7 @@
   - Next.js di Workers: `https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/`
   - Automatic configuration: `https://developers.cloudflare.com/workers/framework-guides/automatic-configuration/`
 
-  #### 8.4.3 Siapkan environment variables dan secrets — SEBAGIAN, DUITKU SENGAJA SKIP
+  #### 8.4.3 Siapkan environment variables dan secrets — SEBAGIAN, LYNK BELUM DIINTEGRASIKAN
 
   - [x] Pisahkan konfigurasi public/build-time dari secret runtime. Token deploy
     (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) disimpan terpisah di
@@ -590,13 +522,11 @@
   - [x] `SUPABASE_SERVICE_ROLE_KEY` di-set via `wrangler secret put` ke
     `tutorlog-web-staging`. Diverifikasi: `/api/products` sempat 500 sebelum secret
     ini di-set (admin client gagal init), 200 setelahnya dengan data katalog asli.
-  - [ ] `DUITKU_API_KEY`, `DUITKU_MERCHANT_CODE` — **sengaja tidak di-set.** Merchant
-    account/sandbox Duitku belum ada. Lihat 8.4.1: jangan aktifkan payment cuma karena
-    hosting pindah.
-  - [ ] `BILLING_PAYMENT_PROVIDER_ENABLED`, `DUITKU_BASE_URL`, `DUITKU_CALLBACK_URL`,
-    `DUITKU_RETURN_URL` — **sengaja tidak di-set**, alasan sama. Diverifikasi fail-closed:
-    `POST /api/webhooks/duitku` di staging balikin `503 CALLBACK_UNAVAILABLE`, bukan crash.
-  - [ ] Duitku sandbox — ditunda sampai merchant account ada, lihat 8.4.5.
+  - [ ] `LYNK_MERCHANT_KEY` — belum tersedia; Lynk menampilkannya setelah URL webhook
+    disimpan. Masukkan sebagai Cloudflare secret, tidak boleh menjadi build variable.
+  - [ ] `LYNK_WEBHOOK_ENABLED=false` dan `LYNK_WEBHOOK_CAPTURE_ONLY=true` — gunakan saat
+    contract capture. Pemrosesan entitlement baru boleh aktif setelah Test URL, signature,
+    product mapping, dan idempotency lulus.
   - [x] Semua variable yang diperlukan Next.js tersedia di build phase — dikonfirmasi
     lewat `npm run build` sukses lokal sebelum deploy.
   - [x] Tidak ada secret di `wrangler.jsonc`, `vars`, source code — `SUPABASE_SERVICE_ROLE_KEY`
@@ -619,9 +549,9 @@
   - [x] Server Action `sendMagicLink` — dicoba lewat browser (submit form di `/login`),
     redirect ke `/login/sent` sukses. Server Action konfirmasi jalan di runtime Worker.
   - [x] Magic Link end-to-end — dikonfirmasi manual (Fatih), klik dari email, session kebentuk.
-  - [x] Route Handlers — `/api/products` (200, data katalog asli via admin client),
-    `/api/webhooks/duitku` (503 `CALLBACK_UNAVAILABLE`, fail-closed sesuai desain), dan
-    `/api/exports/authorize` (200, dipakai alur PDF export).
+  - [x] Route Handlers saat deployment awal — `/api/products` (200, data katalog asli via
+    admin client), callback gateway lama (503 fail-closed), dan `/api/exports/authorize`
+    (200, dipakai alur PDF export). Route `/api/webhooks/lynk` belum dibuat.
   - [x] PDF/CSV export — dikonfirmasi manual (Fatih), download PDF invoice sukses dari
     `/app/invoice`.
 
@@ -659,39 +589,32 @@
   sengaja dipersempit ke `www.tutorlog.id/*` biar subdomain lain di masa depan gak
   ikut ke-route ke Worker ini tanpa sengaja).
 
-  #### 8.4.5 Integrasi Supabase dan Duitku
+  #### 8.4.5 Integrasi Supabase dan Lynk.id
 
   - [x] Tambahkan redirect URL Supabase untuk staging:
     `https://tutorlog-web-staging.fatlhr.workers.dev/auth/callback`.
   - [x] Tambahkan production redirect URL Supabase setelah custom domain attach (8.4.6):
     `https://tutorlog.id/auth/callback`.
-  - [ ] **JANGAN mengubah Site URL Supabase.** Site URL saat ini `tutorlog://login-callback`,
-    yaitu deep link aplikasi mobile, dan project Supabase ini dipakai bersama aplikasi
-    Flutter. Site URL hanya ada satu per project. Kalau aplikasi mobile mengandalkan
-    fallback Site URL untuk magic link-nya, mengubah nilai ini akan mematikan login di
-    aplikasi yang sudah jalan. Verifikasi dulu apakah aplikasi Flutter mengirim
-    `emailRedirectTo` sendiri sebelum mempertimbangkan perubahan apa pun di sini.
-
-    Web tidak membutuhkannya: `app/login/actions.ts` sudah mengirim `emailRedirectTo`
-    secara eksplisit. Yang diperlukan hanya memasukkan URL tujuan ke daftar Redirect URLs.
+  - Site URL Supabase sekarang `https://tutorlog.id`. Deep link aplikasi mobile
+    `tutorlog://login-callback` tetap dipertahankan di Redirect URLs karena project
+    Supabase dipakai bersama aplikasi Flutter. Web mengirim `emailRedirectTo` secara
+    eksplisit dari `app/login/actions.ts`; perilaku mobile tetap perlu diverifikasi dari
+    repo Flutter sebelum konfigurasi redirect diubah lagi.
   - [ ] Uji query Rekap, RPC billing, RLS, upload logo ke bucket `user-assets`, dan
     operasi admin yang memakai `SUPABASE_SERVICE_ROLE_KEY` dari Worker.
-  - [ ] Set production `DUITKU_CALLBACK_URL` ke:
-    `https://tutorlog.id/api/webhooks/duitku`.
-  - [ ] Set production `DUITKU_RETURN_URL` ke route pembayaran yang benar setelah route
-    pembayaran final dikonfirmasi.
-  - [ ] Jalankan inquiry dan status check Duitku sandbox dari Worker preview.
-  - [ ] Kirim callback `application/x-www-form-urlencoded` ke webhook preview dan verifikasi
-    HMAC, mapping status, amount, provider reference, serta idempotency RPC.
-  - [ ] Terapkan callback IP whitelist Duitku pada jalur yang sesuai setelah endpoint
-    production diketahui. IP callback Duitku menuju TutorLog berbeda dari source IP
-    outbound Worker menuju API Duitku.
-  - [ ] Konfirmasi ke Duitku apakah request outbound merchant membutuhkan source IP tetap.
-    Workers Free tidak boleh diasumsikan memiliki dedicated egress IP. Jika Duitku
-    mensyaratkan allowlist source outbound, pilih solusi yang mendukung static egress
-    sebelum mengaktifkan payment production.
-  - [ ] Jangan menandai payment flow production sebagai selesai sebelum sandbox event,
-    callback publik, dan status inquiry benar-benar berhasil.
+  - [ ] Deploy `POST https://tutorlog.id/api/webhooks/lynk` dalam mode capture-only.
+  - [ ] Login ke akun Lynk `@tutorlog`, bukan akun personal, lalu simpan URL tersebut pada
+    Settings → Integrations → Webhook.
+  - [ ] Ambil merchant key setelah URL tersimpan dan masukkan sebagai Cloudflare secret
+    `LYNK_MERCHANT_KEY` untuk staging dan production yang relevan.
+  - [ ] Jalankan `Test URL`; verifikasi JSON payload nyata, header `X-Lynk-Signature`,
+    `message_id`, `refId`, `grandTotal`, customer email, timestamp, dan item identity.
+  - [ ] Verifikasi SHA-256, product allowlist, nominal, email lookup, event idempotency,
+    redacted logging, dan `needs_review` pada Worker preview.
+  - [ ] Jalankan pembelian riil paket 30 Hari dan buktikan satu event menghasilkan tepat
+    satu purchase, payment, dan entitlement 30 hari.
+  - [ ] Jangan menandai payment flow production selesai hanya dari Test URL. Transaksi riil,
+    duplicate replay, unmatched email, dan amount mismatch wajib diverifikasi.
 
   #### 8.4.6 Custom domain dan cutover production — DONE ✓
 
@@ -751,19 +674,19 @@
     domain unreachable, tapi `*.workers.dev` tetap hidup untuk debug tanpa terburu-buru.
     Supabase dan data billing tidak tersentuh sama sekali oleh langkah ini, tidak ada
     migrasi schema yang perlu dibalik.
-  - [ ] Pastikan rollback tidak mengubah `DUITKU_CALLBACK_URL` tanpa rencana, karena callback
-    yang tertunda harus tetap memiliki endpoint yang dapat diproses.
-  - [ ] Jalankan `git diff --check` dan review file config/generated yang ikut berubah.
-  - [ ] Jalankan lint, TypeScript check, production build, Cloudflare preview, dan smoke
+  - [ ] Sebelum rollback endpoint webhook, nonaktifkan atau ganti URL webhook pada akun Lynk
+    `@tutorlog` agar transaksi baru tidak dikirim ke endpoint yang sudah tidak tersedia.
+  - [x] Jalankan `git diff --check` dan review file config/generated yang ikut berubah.
+  - [x] Jalankan lint, TypeScript check, production build, Cloudflare preview, dan smoke
     test pada Worker runtime sesuai approval QA.
   - [ ] DoD deployment:
     - Semua public routes dapat dibuka melalui `tutorlog.id`.
     - Protected routes menolak anonymous request dan menerima Supabase session yang valid.
     - Magic Link callback berhasil membentuk session pada domain production.
     - Rekap, Invoice, CSV, dan client-side PDF tetap berfungsi.
-    - API billing fail closed saat provider disabled.
-    - Duitku sandbox inquiry, status, callback, signature verification, dan processing RPC
-      berhasil pada runtime Cloudflare.
+    - Webhook Lynk fail closed saat secret atau processing flag belum siap.
+    - Test URL dan transaksi riil Lynk berhasil melewati signature verification, product/email/
+      amount validation, idempotency, dan entitlement RPC pada runtime Cloudflare.
     - Tidak ada secret di repository atau response/log yang dapat diakses user.
     - ~~Vercel rollback target masih tersedia~~ — N/A, tidak ada project Vercel yang
       bisa dijadikan target (lihat 8.4.1). Rollback real: detach custom domain dari Worker.
@@ -772,7 +695,7 @@
   - Worker name, environment, deployment URL, dan custom domain.
   - Commit/branch yang dideploy.
   - Hasil build, typecheck, lint, preview, dan smoke test.
-  - Hasil verifikasi Supabase Auth redirect dan Duitku sandbox/callback.
+  - Hasil verifikasi Supabase Auth redirect serta webhook/transaksi riil Lynk.
   - Snapshot metrics Free plan pada periode observasi awal.
 
 - [x] **8.5 Update docs** — sinkronkan SPEC.md + TASKS.md + README
@@ -820,25 +743,26 @@
         `dmarc=pass` dengan `header.from=tutorlog.id`. From terbaca
         `TutorLog <halo@tutorlog.id>`, preheader tampil di baris pertama. ✓
   - [ ] Verifikasi dark mode di Gmail mobile.
-  - [ ] Verifikasi tombol benar-benar membentuk session (lihat 8.6.7, sekarang masih rusak).
+  - [x] Verifikasi tombol benar-benar membentuk session di production. Localhost tetap
+        perlu diverifikasi terpisah pada 8.6.7. ✓
 
-  #### 8.6.4 Ganti alamat kontak di halaman publik — BELUM
+  #### 8.6.4 Ganti alamat kontak di halaman publik — DONE ✓
 
-  - [ ] Ganti `tutorlog.admin@gmail.com` → `halo@tutorlog.id` di:
+  - [x] Ganti `tutorlog.admin@gmail.com` → `halo@tutorlog.id` di:
         `components/content/kontak-content.tsx`, `components/content/privacy-content.tsx`,
         `components/content/terms-content.tsx`, `app/account/page.tsx`, dan `UI_SPECS.md`.
-  - [ ] Semua halaman publik memakai `halo@`. Alamat `admin@` tidak boleh muncul di
+  - [x] Semua halaman publik memakai `halo@`. Alamat `admin@` tidak boleh muncul di
         file manapun yang terbit ke web, karena itu jalur recovery akun vendor.
-  - [ ] Catatan: menyentuh halaman privacy dan terms. `AGENTS.md` menandai legal copy
-        sebagai butuh persetujuan. Isi kalimat tidak berubah, hanya alamat email.
+  - Catatan: perubahan menyentuh halaman privacy dan terms dengan persetujuan yang sudah
+    diberikan. Isi kalimat tidak berubah, hanya alamat email.
 
   #### 8.6.5 Pengetatan DMARC — TERTUNDA SENGAJA
 
-  - [ ] DMARC sekarang di `p=none` dengan `rua=mailto:admin@tutorlog.id`. Ini disengaja
-        selama masa setup supaya misalignment terlihat dulu, bukan langsung membuang email.
+  - DMARC sekarang di `p=none` dengan `rua=mailto:admin@tutorlog.id`. Ini disengaja selama
+    masa setup supaya misalignment terlihat dulu, bukan langsung membuang email.
   - [ ] Naikkan ke `p=quarantine` setelah Resend dan Mailspace terbukti lolos alignment
         beberapa minggu tanpa insiden, lalu ke `p=reject`.
-  - [ ] **Abaikan warning DNS di panel DomaiNesia** yang menyuruh kembali ke `p=reject`
+  - **Abaikan warning DNS di panel DomaiNesia** yang menyuruh kembali ke `p=reject`
         dengan `rua=mailto:dmarc@tutorlog.id`. DomaiNesia tidak lagi mengelola DNS ini
         (NS sudah di Cloudflare), rekomendasinya template statis yang tidak tahu ada
         Resend, dan mailbox `dmarc@tutorlog.id` tidak ada karena kuota sudah 2/2.
@@ -863,16 +787,14 @@
     Autentikasi tidak terpengaruh: Resend memverifikasi domain, bukan alamat individual.
     DKIM `resend._domainkey` menandatangani `d=tutorlog.id`, jadi alignment DMARC tetap lolos.
 
-  - [ ] Verifikasi header email: Gmail → Show original → pastikan `SPF`, `DKIM`, dan
-        `DMARC` ketiganya `PASS`. Wajib dicek selagi DMARC masih `p=none`, karena di
-        posisi itu email tetap sampai walau autentikasi gagal. Kalau tidak dicek
-        sekarang, kegagalannya baru ketahuan saat DMARC dinaikkan ke `reject` dan
-        email mendadak hilang semua.
+  - [x] Verifikasi header email melalui Gmail → Show original: `SPF`, `DKIM`, dan
+        `DMARC` ketiganya `PASS`. ✓
   - [ ] Akun Cloudflare, Resend, dan DomaiNesia masih terdaftar dengan Gmail pribadi.
         Pindahkan ke `admin@tutorlog.id` setelah zone stabil, satu per satu sambil
         memastikan akses tetap jalan. Jangan lakukan di tengah setup DNS.
-  - [ ] Akun baru (Duitku merchant dan seterusnya) langsung pakai `admin@tutorlog.id`.
-  - [ ] Foto profil pengirim di Gmail (BIMI) tidak dikejar. Butuh sertifikat VMC/CMC
+  - [ ] Pastikan akun vendor yang menyimpan konfigurasi pembayaran menggunakan jalur recovery
+        `admin@tutorlog.id`; email publik/support tetap `halo@tutorlog.id`.
+  - Foto profil pengirim di Gmail (BIMI) tidak dikejar. Butuh sertifikat VMC/CMC
         USD 650–1.100 per tahun plus DMARC di enforcement. Tidak sepadan untuk tahap ini.
 
   #### 8.6.7 URL Configuration dan verifikasi redirect
@@ -880,7 +802,9 @@
   Kondisi sekarang di Supabase → Authentication → URL Configuration:
 
   - Site URL: `https://tutorlog.id`
-  - Redirect URLs: `tutorlog://login-callback`, `https://tutorlog.id/auth/callback`
+  - Redirect URLs mencakup `tutorlog://login-callback`,
+    `https://tutorlog.id/auth/callback`, `http://localhost:3000/auth/callback`, staging,
+    serta wildcard localhost/127.0.0.1 untuk development.
 
   Satu email tes menunjukkan `redirect_to=tutorlog://login-callback`. Karena Site URL
   sudah mengarah ke web, kemungkinan besar email itu diminta dari aplikasi Flutter yang
@@ -892,9 +816,7 @@
   bukan mengandalkan fallback Site URL. Kalau benar, Site URL boleh diarahkan ke web
   tanpa mematikan login mobile. Konfirmasi di repo Flutter sebelum mengandalkan asumsi ini.
 
-  - [ ] Tambahkan `http://localhost:3000/auth/callback` ke Redirect URLs. Wajib untuk
-        menguji flow web sebelum deployment, karena `tutorlog.id` belum ke-deploy dan
-        tanpa entry ini magic link dari dev server jatuh ke Site URL yang masih kosong.
+  - [x] Tambahkan `http://localhost:3000/auth/callback` ke Redirect URLs. ✓
   - [ ] Jalankan `npm run dev`, minta magic link dari `/login` di browser, lalu periksa
         `redirect_to` di URL email. Harus terbaca `http://localhost:3000/auth/callback`.
   - [ ] Klik tombol, pastikan session terbentuk dan redirect ke `/app` berhasil.
@@ -960,7 +882,7 @@
   - [ ] **Konsistensi privacy policy dengan Data Safety form.** `/privacy` punya 4
         bagian (data yang dipakai, penggunaan lokasi, penyimpanan dan keamanan, retensi
         dan penghapusan) tapi belum menyebut eksplisit berbagi data ke pihak ketiga:
-        Supabase sebagai penyimpanan, dan Duitku nanti untuk pembayaran. Data Safety
+        Supabase sebagai penyimpanan, dan Lynk sebagai checkout/pemroses pembayaran. Data Safety
         form di Play Console menanyakan itu, dan idealnya isinya konsisten dengan
         privacy policy. Belum mendesak karena payment belum aktif (lihat 8.4.3), tapi
         wajib disamakan sebelum `BILLING_PAYMENT_PROVIDER_ENABLED=true`.
