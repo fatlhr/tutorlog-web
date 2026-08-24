@@ -246,8 +246,8 @@ User enters email
 Ide untuk iterasi mendatang (v1.1+):
 
 ### Priority 1 — Revenue
-- [ ] Payment gateway (Midtrans/Xendit) untuk Plus subscription
-- [ ] Webhook handler untuk payment confirmation
+- [ ] Arahkan paket Plus ke produk publik Lynk.id
+- [ ] Verifikasi webhook `payment.received` Lynk dan aktifkan entitlement secara idempotent
 - [ ] Invoice numbering auto-increment
 
 ### Priority 2 — Engagement
