@@ -358,13 +358,16 @@
   - Map identitas item stabil ke package code. Jika payload tidak menyediakan item ID stabil,
     gunakan allowlist judul kanonis + nominal dan tandai perubahan sebagai `needs_review`.
   - _DoD: unknown event, unknown product, multi-item, dan amount mismatch tidak mengaktifkan Plus_
-- [ ] **L4** Atomic webhook inbox dan entitlement processing
+- [x] **L4** Atomic webhook inbox dan entitlement processing
   - Tambahkan migration `202608240001_lynk_webhook_flow.sql`.
   - Simpan event sebelum diproses; unique key memakai `message_id` dan/atau `refId` sesuai
     bukti payload. Event duplikat harus menghasilkan satu purchase, satu payment, satu grant.
   - Lookup `auth.users` memakai email ternormalisasi. Email yang tidak ditemukan atau ambigu
     masuk `needs_review`; webhook tidak membuat akun baru.
   - _DoD: processed, duplicate, unmatched user, unknown product, amount mismatch, dan DB retry teruji_
+  - _Verified 2026-08-26: migration remote applied; synthetic QA processed, replay by event/ref,
+    review outcomes, 30-day entitlement, private inbox access, dan account-deletion cascade lulus.
+    Seluruh user dan row QA telah dibersihkan._
 - [ ] **L5** Public webhook route — `POST /api/webhooks/lynk`
   - Verifikasi signature sebelum mutasi database.
   - `200` untuk processed/duplicate/needs-review yang sudah tercatat, `400` untuk payload
