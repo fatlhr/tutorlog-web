@@ -13,6 +13,7 @@ const [helperSource, routeSource] = await Promise.all([
 assert.match(helperSource, /export const MAX_LYNK_WEBHOOK_BODY_BYTES = 64 \* 1024/);
 assert.match(helperSource, /export const MAX_LYNK_WEBHOOK_DEPTH = 12/);
 assert.match(helperSource, /export function getLynkWebhookMode/);
+assert.match(helperSource, /export function resolveLynkWebhookEnv/);
 assert.match(helperSource, /export async function readLynkWebhookBody/);
 assert.match(helperSource, /export function parseLynkWebhookJson/);
 assert.match(helperSource, /export function describeRedactedLynkPayload/);
@@ -32,6 +33,33 @@ function toDataUrl(source) {
 }
 
 const helper = await import(toDataUrl(transpile(helperSource, "lynk-webhook.ts")));
+
+assert.deepEqual(
+  helper.resolveLynkWebhookEnv(
+    {
+      LYNK_WEBHOOK_ENABLED: "true",
+      LYNK_WEBHOOK_CAPTURE_ONLY: "true",
+    },
+    {
+      LYNK_WEBHOOK_ENABLED: "false",
+      LYNK_WEBHOOK_CAPTURE_ONLY: "false",
+    },
+  ),
+  {
+    LYNK_WEBHOOK_ENABLED: "true",
+    LYNK_WEBHOOK_CAPTURE_ONLY: "true",
+  },
+);
+assert.deepEqual(
+  helper.resolveLynkWebhookEnv(undefined, {
+    LYNK_WEBHOOK_ENABLED: "true",
+    LYNK_WEBHOOK_CAPTURE_ONLY: "false",
+  }),
+  {
+    LYNK_WEBHOOK_ENABLED: "true",
+    LYNK_WEBHOOK_CAPTURE_ONLY: "false",
+  },
+);
 
 assert.equal(helper.getLynkWebhookMode({}), "disabled");
 assert.equal(
@@ -142,7 +170,9 @@ for (const sensitiveValue of [
 }
 
 assert.match(routeSource, /export async function POST\(request: Request\)/);
-assert.match(routeSource, /getLynkWebhookMode\(process\.env\)/);
+assert.match(routeSource, /getCloudflareContext/);
+assert.match(routeSource, /resolveLynkWebhookEnv/);
+assert.match(routeSource, /getLynkWebhookMode\(runtimeEnv\)/);
 assert.match(routeSource, /readLynkWebhookBody\(request\)/);
 assert.match(routeSource, /describeRedactedLynkPayload\(payload\)/);
 assert.match(routeSource, /status: "captured"/);

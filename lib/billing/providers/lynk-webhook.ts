@@ -2,6 +2,10 @@ export const MAX_LYNK_WEBHOOK_BODY_BYTES = 64 * 1024;
 export const MAX_LYNK_WEBHOOK_DEPTH = 12;
 
 export type LynkWebhookMode = "disabled" | "capture" | "process";
+export type LynkWebhookEnv = {
+  LYNK_WEBHOOK_ENABLED?: string;
+  LYNK_WEBHOOK_CAPTURE_ONLY?: string;
+};
 
 export class LynkWebhookInputError extends Error {
   constructor(message: string) {
@@ -10,7 +14,19 @@ export class LynkWebhookInputError extends Error {
   }
 }
 
-export function getLynkWebhookMode(env: NodeJS.ProcessEnv): LynkWebhookMode {
+export function resolveLynkWebhookEnv(
+  cloudflareEnv: LynkWebhookEnv | undefined,
+  fallbackEnv: LynkWebhookEnv,
+): LynkWebhookEnv {
+  return {
+    LYNK_WEBHOOK_ENABLED:
+      cloudflareEnv?.LYNK_WEBHOOK_ENABLED ?? fallbackEnv.LYNK_WEBHOOK_ENABLED,
+    LYNK_WEBHOOK_CAPTURE_ONLY:
+      cloudflareEnv?.LYNK_WEBHOOK_CAPTURE_ONLY ?? fallbackEnv.LYNK_WEBHOOK_CAPTURE_ONLY,
+  };
+}
+
+export function getLynkWebhookMode(env: LynkWebhookEnv): LynkWebhookMode {
   if (env.LYNK_WEBHOOK_ENABLED !== "true") return "disabled";
   return env.LYNK_WEBHOOK_CAPTURE_ONLY === "true" ? "capture" : "process";
 }

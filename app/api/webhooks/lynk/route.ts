@@ -1,15 +1,30 @@
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
 
 import {
   describeRedactedLynkPayload,
   getLynkWebhookMode,
   LynkWebhookInputError,
+  type LynkWebhookEnv,
   parseLynkWebhookJson,
   readLynkWebhookBody,
+  resolveLynkWebhookEnv,
 } from "@/lib/billing/providers/lynk-webhook";
 
+function getCloudflareLynkEnv(): LynkWebhookEnv | undefined {
+  try {
+    return getCloudflareContext().env as LynkWebhookEnv;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function POST(request: Request) {
-  const mode = getLynkWebhookMode(process.env);
+  const runtimeEnv = resolveLynkWebhookEnv(getCloudflareLynkEnv(), {
+    LYNK_WEBHOOK_ENABLED: process.env.LYNK_WEBHOOK_ENABLED,
+    LYNK_WEBHOOK_CAPTURE_ONLY: process.env.LYNK_WEBHOOK_CAPTURE_ONLY,
+  });
+  const mode = getLynkWebhookMode(runtimeEnv);
   if (mode === "disabled") {
     return NextResponse.json(
       { error: { code: "WEBHOOK_DISABLED", message: "Webhook belum aktif" } },
