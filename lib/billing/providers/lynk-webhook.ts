@@ -180,13 +180,13 @@ function isSensitiveKey(key: string): boolean {
 }
 
 function isSafeProductIdentifier(path: readonly string[], key: string): boolean {
-  if (key === "productid" || key === "productuuid" || key === "itemid" || key === "itemuuid") {
-    return true;
-  }
-
-  const parentPath = path.slice(0, -1).map(normalizedKey);
-  return (key === "id" || key === "uuid")
-    && parentPath.some((part) => part === "item" || part === "items" || part === "product");
+  const normalizedPath = path.map(normalizedKey);
+  return key === "uuid"
+    && normalizedPath.length === 5
+    && normalizedPath[0] === "data"
+    && normalizedPath[1] === "messagedata"
+    && normalizedPath[2] === "items"
+    && /^\d+$/.test(normalizedPath[3]);
 }
 
 function describeValue(value: unknown, path: readonly string[]): unknown {

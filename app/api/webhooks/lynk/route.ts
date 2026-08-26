@@ -12,6 +12,7 @@ import {
   getLynkWebhookMode,
   LynkWebhookInputError,
   type LynkWebhookEnv,
+  parseLynkPaymentReceived,
   parseLynkWebhookJson,
   readLynkWebhookBody,
   resolveLynkWebhookEnv,
@@ -44,9 +45,13 @@ export async function POST(request: Request) {
     );
   }
 
-  if (mode === "process") {
+  if (!runtimeEnv.LYNK_MERCHANT_KEY) {
+    console.info(
+      "lynk_webhook_config",
+      describeLynkWebhookConfig(cloudflareEnv !== undefined, runtimeEnv),
+    );
     return NextResponse.json(
-      { error: { code: "WEBHOOK_NOT_READY", message: "Webhook belum siap diproses" } },
+      { error: { code: "WEBHOOK_UNAVAILABLE", message: "Webhook tidak dapat diproses" } },
       { status: 503 },
     );
   }
@@ -55,32 +60,53 @@ export async function POST(request: Request) {
     const rawBody = await readLynkWebhookBody(request);
     const payload = parseLynkWebhookJson(rawBody);
 
-    if (runtimeEnv.LYNK_MERCHANT_KEY) {
-      const receivedSignature = request.headers.get("x-lynk-signature");
-      if (!receivedSignature) {
-        return NextResponse.json(
-          { error: { code: "INVALID_SIGNATURE", message: "Signature tidak valid" } },
-          { status: 401 },
-        );
-      }
-
-      const signedFields = extractLynkSignedFields(payload);
-      if (!verifyLynkSignature(
-        signedFields,
-        receivedSignature,
-        runtimeEnv.LYNK_MERCHANT_KEY,
-      )) {
-        return NextResponse.json(
-          { error: { code: "INVALID_SIGNATURE", message: "Signature tidak valid" } },
-          { status: 401 },
-        );
-      }
+    const receivedSignature = request.headers.get("x-lynk-signature");
+    if (!receivedSignature) {
+      return NextResponse.json(
+        { error: { code: "INVALID_SIGNATURE", message: "Signature tidak valid" } },
+        { status: 401 },
+      );
     }
 
-    const summary = describeRedactedLynkPayload(payload);
+    const signedFields = extractLynkSignedFields(payload);
+    if (!verifyLynkSignature(
+      signedFields,
+      receivedSignature,
+      runtimeEnv.LYNK_MERCHANT_KEY,
+    )) {
+      return NextResponse.json(
+        { error: { code: "INVALID_SIGNATURE", message: "Signature tidak valid" } },
+        { status: 401 },
+      );
+    }
 
-    console.info("lynk_webhook_capture", summary);
-    return NextResponse.json({ status: "captured" }, { status: 200 });
+    if (mode === "capture") {
+      const summary = describeRedactedLynkPayload(payload);
+      console.info("lynk_webhook_capture", summary);
+      return NextResponse.json({ status: "captured" }, { status: 200 });
+    }
+
+    const payment = parseLynkPaymentReceived(payload);
+    try {
+      const { processLynkPaymentReceived } = await import(
+        "@/lib/billing/server/lynk-webhook"
+      );
+      const result = await processLynkPaymentReceived(payment, payload);
+
+      console.info("lynk_webhook_result", {
+        status: result.status,
+        reviewReason: result.reviewReason,
+      });
+      return NextResponse.json(
+        { status: result.status === "needs_review" ? "review" : "ok" },
+        { status: 200 },
+      );
+    } catch {
+      return NextResponse.json(
+        { error: { code: "WEBHOOK_UNAVAILABLE", message: "Webhook tidak dapat diproses" } },
+        { status: 503 },
+      );
+    }
   } catch (error) {
     if (
       error instanceof LynkWebhookInputError
