@@ -26,6 +26,22 @@ export function resolveLynkWebhookEnv(
   };
 }
 
+function describeFlag(value: string | undefined): "true" | "missing" | "other" {
+  if (value === undefined) return "missing";
+  return value === "true" ? "true" : "other";
+}
+
+export function describeLynkWebhookConfig(
+  cloudflareContextAvailable: boolean,
+  env: LynkWebhookEnv,
+) {
+  return {
+    cloudflareContext: cloudflareContextAvailable ? "available" : "unavailable",
+    enabled: describeFlag(env.LYNK_WEBHOOK_ENABLED),
+    captureOnly: describeFlag(env.LYNK_WEBHOOK_CAPTURE_ONLY),
+  };
+}
+
 export function getLynkWebhookMode(env: LynkWebhookEnv): LynkWebhookMode {
   if (env.LYNK_WEBHOOK_ENABLED !== "true") return "disabled";
   return env.LYNK_WEBHOOK_CAPTURE_ONLY === "true" ? "capture" : "process";

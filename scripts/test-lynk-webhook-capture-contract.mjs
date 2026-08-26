@@ -14,6 +14,7 @@ assert.match(helperSource, /export const MAX_LYNK_WEBHOOK_BODY_BYTES = 64 \* 102
 assert.match(helperSource, /export const MAX_LYNK_WEBHOOK_DEPTH = 12/);
 assert.match(helperSource, /export function getLynkWebhookMode/);
 assert.match(helperSource, /export function resolveLynkWebhookEnv/);
+assert.match(helperSource, /export function describeLynkWebhookConfig/);
 assert.match(helperSource, /export async function readLynkWebhookBody/);
 assert.match(helperSource, /export function parseLynkWebhookJson/);
 assert.match(helperSource, /export function describeRedactedLynkPayload/);
@@ -59,6 +60,24 @@ assert.deepEqual(
     LYNK_WEBHOOK_ENABLED: "true",
     LYNK_WEBHOOK_CAPTURE_ONLY: "false",
   },
+);
+assert.deepEqual(
+  helper.describeLynkWebhookConfig(false, {
+    LYNK_WEBHOOK_ENABLED: "unexpected-value",
+    LYNK_WEBHOOK_CAPTURE_ONLY: undefined,
+  }),
+  {
+    cloudflareContext: "unavailable",
+    enabled: "other",
+    captureOnly: "missing",
+  },
+);
+assert.doesNotMatch(
+  JSON.stringify(helper.describeLynkWebhookConfig(true, {
+    LYNK_WEBHOOK_ENABLED: "unexpected-value",
+    LYNK_WEBHOOK_CAPTURE_ONLY: "true",
+  })),
+  /unexpected-value/,
 );
 
 assert.equal(helper.getLynkWebhookMode({}), "disabled");
@@ -172,6 +191,8 @@ for (const sensitiveValue of [
 assert.match(routeSource, /export async function POST\(request: Request\)/);
 assert.match(routeSource, /getCloudflareContext/);
 assert.match(routeSource, /resolveLynkWebhookEnv/);
+assert.match(routeSource, /describeLynkWebhookConfig/);
+assert.match(routeSource, /console\.info\(\s*"lynk_webhook_config"/);
 assert.match(routeSource, /getLynkWebhookMode\(runtimeEnv\)/);
 assert.match(routeSource, /readLynkWebhookBody\(request\)/);
 assert.match(routeSource, /describeRedactedLynkPayload\(payload\)/);
