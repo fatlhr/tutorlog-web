@@ -3,6 +3,7 @@ export const MAX_LYNK_WEBHOOK_DEPTH = 12;
 
 export type LynkWebhookMode = "disabled" | "capture" | "process";
 export type LynkWebhookEnv = {
+  LYNK_MERCHANT_KEY?: string;
   LYNK_WEBHOOK_ENABLED?: string;
   LYNK_WEBHOOK_CAPTURE_ONLY?: string;
 };
@@ -19,6 +20,8 @@ export function resolveLynkWebhookEnv(
   fallbackEnv: LynkWebhookEnv,
 ): LynkWebhookEnv {
   return {
+    LYNK_MERCHANT_KEY:
+      cloudflareEnv?.LYNK_MERCHANT_KEY ?? fallbackEnv.LYNK_MERCHANT_KEY,
     LYNK_WEBHOOK_ENABLED:
       cloudflareEnv?.LYNK_WEBHOOK_ENABLED ?? fallbackEnv.LYNK_WEBHOOK_ENABLED,
     LYNK_WEBHOOK_CAPTURE_ONLY:
@@ -37,6 +40,7 @@ export function describeLynkWebhookConfig(
 ) {
   return {
     cloudflareContext: cloudflareContextAvailable ? "available" : "unavailable",
+    merchantKey: env.LYNK_MERCHANT_KEY ? "available" : "missing",
     enabled: describeFlag(env.LYNK_WEBHOOK_ENABLED),
     captureOnly: describeFlag(env.LYNK_WEBHOOK_CAPTURE_ONLY),
   };
@@ -137,12 +141,17 @@ const PUBLIC_PRODUCT_TITLES = new Set([
 
 const SAFE_NUMBER_KEYS = new Set([
   "amount",
+  "affiliate",
+  "conveniencefee",
   "discount",
   "grandtotal",
   "price",
   "qty",
   "quantity",
+  "totaladdon",
   "totalitem",
+  "totalprice",
+  "totalshipping",
   "unitprice",
 ]);
 

@@ -2,6 +2,11 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
 
 import {
+  extractLynkSignedFields,
+  LynkSignatureInputError,
+  verifyLynkSignature,
+} from "@/lib/billing/providers/lynk-signature";
+import {
   describeLynkWebhookConfig,
   describeRedactedLynkPayload,
   getLynkWebhookMode,
@@ -23,6 +28,7 @@ function getCloudflareLynkEnv(): LynkWebhookEnv | undefined {
 export async function POST(request: Request) {
   const cloudflareEnv = getCloudflareLynkEnv();
   const runtimeEnv = resolveLynkWebhookEnv(cloudflareEnv, {
+    LYNK_MERCHANT_KEY: process.env.LYNK_MERCHANT_KEY,
     LYNK_WEBHOOK_ENABLED: process.env.LYNK_WEBHOOK_ENABLED,
     LYNK_WEBHOOK_CAPTURE_ONLY: process.env.LYNK_WEBHOOK_CAPTURE_ONLY,
   });
@@ -48,12 +54,38 @@ export async function POST(request: Request) {
   try {
     const rawBody = await readLynkWebhookBody(request);
     const payload = parseLynkWebhookJson(rawBody);
+
+    if (runtimeEnv.LYNK_MERCHANT_KEY) {
+      const receivedSignature = request.headers.get("x-lynk-signature");
+      if (!receivedSignature) {
+        return NextResponse.json(
+          { error: { code: "INVALID_SIGNATURE", message: "Signature tidak valid" } },
+          { status: 401 },
+        );
+      }
+
+      const signedFields = extractLynkSignedFields(payload);
+      if (!verifyLynkSignature(
+        signedFields,
+        receivedSignature,
+        runtimeEnv.LYNK_MERCHANT_KEY,
+      )) {
+        return NextResponse.json(
+          { error: { code: "INVALID_SIGNATURE", message: "Signature tidak valid" } },
+          { status: 401 },
+        );
+      }
+    }
+
     const summary = describeRedactedLynkPayload(payload);
 
     console.info("lynk_webhook_capture", summary);
     return NextResponse.json({ status: "captured" }, { status: 200 });
   } catch (error) {
-    if (error instanceof LynkWebhookInputError) {
+    if (
+      error instanceof LynkWebhookInputError
+      || error instanceof LynkSignatureInputError
+    ) {
       return NextResponse.json(
         { error: { code: "INVALID_WEBHOOK", message: "Webhook tidak valid" } },
         { status: 400 },

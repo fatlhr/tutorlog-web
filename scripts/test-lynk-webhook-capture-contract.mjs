@@ -38,46 +38,60 @@ const helper = await import(toDataUrl(transpile(helperSource, "lynk-webhook.ts")
 assert.deepEqual(
   helper.resolveLynkWebhookEnv(
     {
+      LYNK_MERCHANT_KEY: "cloudflare-secret",
       LYNK_WEBHOOK_ENABLED: "true",
       LYNK_WEBHOOK_CAPTURE_ONLY: "true",
     },
     {
+      LYNK_MERCHANT_KEY: "fallback-secret",
       LYNK_WEBHOOK_ENABLED: "false",
       LYNK_WEBHOOK_CAPTURE_ONLY: "false",
     },
   ),
   {
+    LYNK_MERCHANT_KEY: "cloudflare-secret",
     LYNK_WEBHOOK_ENABLED: "true",
     LYNK_WEBHOOK_CAPTURE_ONLY: "true",
   },
 );
 assert.deepEqual(
   helper.resolveLynkWebhookEnv(undefined, {
+    LYNK_MERCHANT_KEY: "fallback-secret",
     LYNK_WEBHOOK_ENABLED: "true",
     LYNK_WEBHOOK_CAPTURE_ONLY: "false",
   }),
   {
+    LYNK_MERCHANT_KEY: "fallback-secret",
     LYNK_WEBHOOK_ENABLED: "true",
     LYNK_WEBHOOK_CAPTURE_ONLY: "false",
   },
 );
 assert.deepEqual(
   helper.describeLynkWebhookConfig(false, {
+    LYNK_MERCHANT_KEY: undefined,
     LYNK_WEBHOOK_ENABLED: "unexpected-value",
     LYNK_WEBHOOK_CAPTURE_ONLY: undefined,
   }),
   {
     cloudflareContext: "unavailable",
+    merchantKey: "missing",
     enabled: "other",
     captureOnly: "missing",
   },
 );
 assert.doesNotMatch(
   JSON.stringify(helper.describeLynkWebhookConfig(true, {
+    LYNK_MERCHANT_KEY: "merchant-secret-that-must-not-appear",
     LYNK_WEBHOOK_ENABLED: "unexpected-value",
     LYNK_WEBHOOK_CAPTURE_ONLY: "true",
   })),
   /unexpected-value/,
+);
+assert.doesNotMatch(
+  JSON.stringify(helper.describeLynkWebhookConfig(true, {
+    LYNK_MERCHANT_KEY: "merchant-secret-that-must-not-appear",
+  })),
+  /merchant-secret-that-must-not-appear/,
 );
 
 assert.equal(helper.getLynkWebhookMode({}), "disabled");
@@ -127,21 +141,30 @@ await assert.rejects(
 
 const payload = {
   event: "payment.received",
-  message_id: "message-real-001",
   data: {
-    refId: "ref-real-001",
-    grandTotal: 19000,
-    customer: {
-      name: "Fatih Example",
-      email: "fatih@example.com",
-      phone: "+628123456789",
+    message_action: "SUCCESS",
+    message_code: "0",
+    message_data: {
+      createdAt: "2026-08-26T10:00:00",
+      customer: {
+        name: "Fatih Example",
+        email: "fatih@example.com",
+        phone: "+628123456789",
+      },
+      items: [{
+        uuid: "product-public-001",
+        title: "TutorLog Plus — 30 Hari",
+        price: 19000,
+        qty: 1,
+      }],
+      refId: "ref-real-001",
+      totals: {
+        grandTotal: 19000,
+        totalItem: 1,
+        totalPrice: 19000,
+      },
     },
-    items: [{
-      productId: "product-public-001",
-      title: "TutorLog Plus — 30 Hari",
-      price: 19000,
-      quantity: 1,
-    }],
+    message_id: "message-real-001",
     secretNote: "do-not-expose",
   },
 };
