@@ -3,10 +3,12 @@ import { readFile } from "node:fs/promises";
 import ts from "typescript";
 
 const helperUrl = new URL("../lib/billing/providers/lynk-webhook.ts", import.meta.url);
+const productsUrl = new URL("../lib/billing/providers/lynk-products.ts", import.meta.url);
 const routeUrl = new URL("../app/api/webhooks/lynk/route.ts", import.meta.url);
 
-const [helperSource, routeSource] = await Promise.all([
+const [helperSource, productsSource, routeSource] = await Promise.all([
   readFile(helperUrl, "utf8"),
+  readFile(productsUrl, "utf8"),
   readFile(routeUrl, "utf8"),
 ]);
 
@@ -33,7 +35,14 @@ function toDataUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 }
 
-const helper = await import(toDataUrl(transpile(helperSource, "lynk-webhook.ts")));
+const productsDataUrl = toDataUrl(transpile(productsSource, "lynk-products.ts"));
+const testableHelperSource = helperSource.replace(
+  'from "./lynk-products";',
+  `from "${productsDataUrl}";`,
+);
+const helper = await import(
+  toDataUrl(transpile(testableHelperSource, "lynk-webhook.ts")),
+);
 
 assert.deepEqual(
   helper.resolveLynkWebhookEnv(

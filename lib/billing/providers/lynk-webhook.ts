@@ -1,3 +1,9 @@
+import {
+  findLynkProductByTitle,
+  findLynkProductByUuid,
+  type LynkPackageCode,
+} from "./lynk-products";
+
 export const MAX_LYNK_WEBHOOK_BODY_BYTES = 64 * 1024;
 export const MAX_LYNK_WEBHOOK_DEPTH = 12;
 
@@ -231,4 +237,183 @@ function describeValue(value: unknown, path: readonly string[]): unknown {
 
 export function describeRedactedLynkPayload(payload: unknown): unknown {
   return describeValue(payload, []);
+}
+
+export type LynkParserReviewReason =
+  | "customer_email_missing"
+  | "unknown_product"
+  | "amount_mismatch"
+  | "unsupported_order";
+
+export type ParsedLynkPaymentReceived = {
+  eventKey: string;
+  providerReference: string;
+  customerEmail: string | null;
+  productCode: LynkPackageCode | null;
+  productAmount: number | null;
+  grandTotal: number;
+  occurredAt: string;
+  reviewReason: LynkParserReviewReason | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function webhookRecord(value: unknown, field: string): Record<string, unknown> {
+  if (!isRecord(value)) {
+    throw new LynkWebhookInputError(`Lynk webhook ${field} is invalid`);
+  }
+  return value;
+}
+
+function webhookText(value: unknown, field: string): string {
+  if (typeof value !== "string" || value.length === 0 || value !== value.trim()) {
+    throw new LynkWebhookInputError(`Lynk webhook ${field} is invalid`);
+  }
+  return value;
+}
+
+function webhookInteger(value: unknown, field: string): number {
+  if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) {
+    return value;
+  }
+
+  if (typeof value === "string" && /^(?:0|[1-9]\d*)$/.test(value)) {
+    const parsed = Number(value);
+    if (Number.isSafeInteger(parsed)) return parsed;
+  }
+
+  throw new LynkWebhookInputError(`Lynk webhook ${field} is invalid`);
+}
+
+function webhookTimestamp(value: unknown): string {
+  if (
+    typeof value !== "string"
+    || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})?$/.test(value)
+  ) {
+    throw new LynkWebhookInputError("Lynk webhook timestamp is invalid");
+  }
+
+  const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/.test(value);
+  const parsed = new Date(hasTimezone ? value : `${value}Z`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new LynkWebhookInputError("Lynk webhook timestamp is invalid");
+  }
+  return parsed.toISOString();
+}
+
+function customerEmail(messageData: Record<string, unknown>): string | null {
+  if (!isRecord(messageData.customer)) return null;
+  const email = messageData.customer.email;
+  if (typeof email !== "string" || email.trim().length === 0) return null;
+  return email.trim().toLowerCase();
+}
+
+function reviewResult(
+  base: Omit<ParsedLynkPaymentReceived, "productCode" | "productAmount" | "reviewReason">,
+  reviewReason: LynkParserReviewReason,
+  productCode: LynkPackageCode | null = null,
+  productAmount: number | null = null,
+): ParsedLynkPaymentReceived {
+  return {
+    ...base,
+    productCode,
+    productAmount,
+    reviewReason,
+  };
+}
+
+export function parseLynkPaymentReceived(
+  payload: Record<string, unknown>,
+): ParsedLynkPaymentReceived {
+  if (payload.event !== "payment.received") {
+    throw new LynkWebhookInputError("Lynk webhook must be payment.received");
+  }
+
+  const data = webhookRecord(payload.data, "data");
+  if (data.message_action !== "SUCCESS" || data.message_code !== "0") {
+    throw new LynkWebhookInputError("Lynk webhook payment is not successful");
+  }
+
+  const messageData = webhookRecord(data.message_data, "message_data");
+  const totals = webhookRecord(messageData.totals, "totals");
+  const email = customerEmail(messageData);
+  const base = {
+    eventKey: webhookText(data.message_id, "message_id"),
+    providerReference: webhookText(messageData.refId, "refId"),
+    customerEmail: email,
+    grandTotal: webhookInteger(totals.grandTotal, "grandTotal"),
+    occurredAt: webhookTimestamp(messageData.createdAt),
+  };
+
+  if (!Array.isArray(messageData.items) || messageData.items.length !== 1) {
+    return reviewResult(base, "unsupported_order");
+  }
+
+  const item = messageData.items[0];
+  if (!isRecord(item)) return reviewResult(base, "unsupported_order");
+
+  let quantity: number;
+  let totalItem: number;
+  let totalAddon: number;
+  let discount: number;
+  let totalShipping: number;
+  try {
+    quantity = webhookInteger(item.qty, "item qty");
+    totalItem = webhookInteger(totals.totalItem, "totalItem");
+    totalAddon = webhookInteger(totals.totalAddon, "totalAddon");
+    discount = webhookInteger(totals.discount, "discount");
+    totalShipping = webhookInteger(totals.totalShipping, "totalShipping");
+  } catch {
+    return reviewResult(base, "unsupported_order");
+  }
+
+  if (
+    quantity !== 1
+    || totalItem !== 1
+    || !Array.isArray(item.addons)
+    || item.addons.length !== 0
+    || totalAddon !== 0
+    || discount !== 0
+    || totalShipping !== 0
+  ) {
+    return reviewResult(base, "unsupported_order");
+  }
+
+  let itemAmount: number;
+  let totalPrice: number;
+  try {
+    itemAmount = webhookInteger(item.price, "item price");
+    totalPrice = webhookInteger(totals.totalPrice, "totalPrice");
+  } catch {
+    return reviewResult(base, "amount_mismatch");
+  }
+
+  const itemUuid = typeof item.uuid === "string" ? item.uuid : "";
+  const title = typeof item.title === "string" ? item.title : "";
+  const product = findLynkProductByUuid(itemUuid) ?? findLynkProductByTitle(title);
+  if (!product) {
+    return reviewResult(base, "unknown_product", null, itemAmount);
+  }
+
+  if (itemAmount !== product.amount || totalPrice !== product.amount) {
+    return reviewResult(base, "amount_mismatch", product.code, itemAmount);
+  }
+
+  if (!email) {
+    return reviewResult(
+      base,
+      "customer_email_missing",
+      product.code,
+      itemAmount,
+    );
+  }
+
+  return {
+    ...base,
+    productCode: product.code,
+    productAmount: itemAmount,
+    reviewReason: null,
+  };
 }
