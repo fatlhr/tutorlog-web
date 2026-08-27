@@ -295,8 +295,12 @@ function webhookTimestamp(value: unknown): string {
     throw new LynkWebhookInputError("Lynk webhook timestamp is invalid");
   }
 
+  // A real Lynk payload's createdAt has no timezone suffix and is Jakarta
+  // wall-clock time (confirmed 2026-08-27 from a live production transaction:
+  // the un-suffixed value matched received_at minus the WIB/UTC 7-hour offset,
+  // not UTC as originally assumed).
   const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/.test(value);
-  const parsed = new Date(hasTimezone ? value : `${value}Z`);
+  const parsed = new Date(hasTimezone ? value : `${value}+07:00`);
   if (Number.isNaN(parsed.getTime())) {
     throw new LynkWebhookInputError("Lynk webhook timestamp is invalid");
   }
