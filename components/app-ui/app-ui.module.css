@@ -290,7 +290,12 @@
   line-height: 21px;
 }
 
-.fieldControl { padding-inline: var(--space-4); }
+.fieldControl {
+  padding-inline: var(--space-4);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 .fieldControlSizeCompact { min-height: 40px; }
 .fieldControlSizeDefault { min-height: 48px; }
 
