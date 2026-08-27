@@ -58,6 +58,9 @@ assert.match(providerSource, /export function createPaymentProvider/);
 // Contracts check
 const contractsUrl = new URL("../lib/billing/contracts.ts", import.meta.url);
 const contractsSource = await readFile(contractsUrl, "utf8");
-assert.match(contractsSource, /provider: "ipaymu" \| "duitku"/);
+assert.match(
+  contractsSource,
+  /PaymentProviderName = "ipaymu" \| "duitku" \| "lynk"/,
+);
 
 console.log("duitku provider contract valid");

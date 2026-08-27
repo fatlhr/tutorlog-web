@@ -358,24 +358,47 @@
   - Map identitas item stabil ke package code. Jika payload tidak menyediakan item ID stabil,
     gunakan allowlist judul kanonis + nominal dan tandai perubahan sebagai `needs_review`.
   - _DoD: unknown event, unknown product, multi-item, dan amount mismatch tidak mengaktifkan Plus_
-- [ ] **L4** Atomic webhook inbox dan entitlement processing
+- [x] **L4** Atomic webhook inbox dan entitlement processing
   - Tambahkan migration `202608240001_lynk_webhook_flow.sql`.
   - Simpan event sebelum diproses; unique key memakai `message_id` dan/atau `refId` sesuai
     bukti payload. Event duplikat harus menghasilkan satu purchase, satu payment, satu grant.
   - Lookup `auth.users` memakai email ternormalisasi. Email yang tidak ditemukan atau ambigu
     masuk `needs_review`; webhook tidak membuat akun baru.
   - _DoD: processed, duplicate, unmatched user, unknown product, amount mismatch, dan DB retry teruji_
-- [ ] **L5** Public webhook route — `POST /api/webhooks/lynk`
+  - _Verified 2026-08-26: migration remote applied; synthetic QA processed, replay by event/ref,
+    review outcomes, 30-day entitlement, private inbox access, dan account-deletion cascade lulus.
+    Seluruh user dan row QA telah dibersihkan._
+- [x] **L5** Public webhook route — `POST /api/webhooks/lynk`
   - Verifikasi signature sebelum mutasi database.
   - `200` untuk processed/duplicate/needs-review yang sudah tercatat, `400` untuk payload
     malformed, `401` untuk signature invalid, dan `503` untuk kegagalan sementara.
   - Response dan log tidak boleh membocorkan email, telepon, raw payload, atau secret.
-  - _DoD: route contract lulus pada Next.js dan runtime Cloudflare preview_
-- [ ] **L6** Arahkan CTA pricing ke checkout Lynk
+  - _DoD: route contract lulus pada Next.js dan runtime Cloudflare preview_ ✓
+  - _Verified 2026-08-27: deployed ke `tutorlog-web-staging` dalam process mode
+    (`LYNK_WEBHOOK_ENABLED=true`, `LYNK_WEBHOOK_CAPTURE_ONLY=false`) setelah migration
+    `202608260001_lynk_processing_retry.sql` dikonfirmasi applied di remote. Tiga signed QA
+    fixture (`scripts/test-lynk-staging-qa.mjs`, email `.invalid` + event key `qa-`) lulus
+    `200 {"status":"review"}`; cross-check read-only Supabase konfirmasi
+    `review_reason` tepat (`user_not_found`, `unknown_product`, `amount_mismatch`) dan
+    `user_id`/`purchase_id`/`payment_id`/`entitlement_grant_id` seluruhnya null — nol
+    entitlement. Row QA sudah dibersihkan. Lynk dashboard "Test URL" dikonfirmasi via
+    `wrangler tail` mengirim ping tanpa header `x-lynk-signature` sama sekali (bukan simulasi
+    payload signed) — 401 dari fitur itu expected, bukan bug; signature formula
+    (`grandTotal+refId+message_id+merchantKey`, header `X-Lynk-Signature`) dikonfirmasi cocok
+    dokumentasi resmi Lynk. Process mode staging hanya membuktikan routing dengan fixture QA;
+    kontrak transaksi nyata L1–L3 dan happy path tetap belum diverifikasi sampai L8._
+- [x] **L6** Arahkan CTA pricing ke checkout Lynk
   - `/harga` dan paywall memakai URL produk Lynk berdasarkan package code.
   - Tampilkan pengingat untuk menggunakan email akun TutorLog saat checkout.
   - `/checkout` dan `/pembayaran/[purchaseId]` tidak dipakai untuk transaksi Lynk baru.
-  - _DoD: seluruh CTA mengarah ke produk yang benar dan tidak ada payment creation internal_
+  - _DoD: seluruh CTA mengarah ke produk yang benar dan tidak ada payment creation internal_ ✓
+  - _Verified 2026-08-27: lint, build, test-billing-ui-contract, dan test-lynk-parser-contract
+    lulus. Browser QA `/harga` di 390px dan 1440px: ketiga CTA berbayar buka
+    `lynk.id/tutorlog/{q51pn0rykvq9,gjvmgkznjqd6,65p8z7ewqj8r}` di tab baru dengan
+    `target=_blank rel=noopener noreferrer`, Free tetap ke `/login`, tidak ada overflow
+    horizontal, keyboard focus (real Tab key) menunjukkan outline solid terlihat jelas, dan
+    klik CTA memicu POST `/api/analytics` (`package_selected`). Ketiga halaman produk publik
+    Lynk menampilkan judul dan harga fixed yang benar (Rp19.000/Rp149.000/Rp249.000)._
 - [ ] **L7** Environment dan dashboard configuration
   - Cloudflare secret: `LYNK_MERCHANT_KEY`.
   - Runtime flags: `LYNK_WEBHOOK_ENABLED=false` dan `LYNK_WEBHOOK_CAPTURE_ONLY=true`

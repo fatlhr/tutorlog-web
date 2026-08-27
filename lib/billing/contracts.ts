@@ -12,6 +12,8 @@ export const PAYMENT_STATES = [
 ] as const;
 export type PaymentState = (typeof PAYMENT_STATES)[number];
 export type PaymentMethod = "qris" | "va";
+export type StoredPaymentMethod = PaymentMethod | "external";
+export type PaymentProviderName = "ipaymu" | "duitku" | "lynk";
 
 export interface ProductSummary {
   code: PackageCode;
@@ -47,7 +49,7 @@ export interface AccessSummary {
 export interface LatestPaymentSummary {
   id: string;
   packageName: string;
-  method: PaymentMethod;
+  method: StoredPaymentMethod;
   state: PaymentState;
   baseAmount: number;
   channelFee: number;
@@ -68,7 +70,7 @@ export interface PurchaseSummary {
 
 export interface PaymentStatusView extends LatestPaymentSummary {
   purchaseId: string;
-  provider: "ipaymu" | "duitku";
+  provider: PaymentProviderName;
   expiresAt: string | null;
   redirectUrl: string | null;
   instructions: string[];
