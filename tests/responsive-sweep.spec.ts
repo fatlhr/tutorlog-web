@@ -150,23 +150,6 @@ test.describe('Homepage hero guardrails', () => {
     }
   });
 
-  test('opens and closes the temporary demo video dialog', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-
-    const demoTrigger = page.getByRole('button', { name: 'Lihat contoh alur' });
-    await expect(demoTrigger).toBeVisible();
-    await demoTrigger.click();
-
-    const dialog = page.getByRole('dialog', { name: 'Contoh sementara TutorLog' });
-    await expect(dialog).toBeVisible();
-    await expect(dialog.locator('iframe[title="Video contoh sementara"]')).toHaveAttribute('src', /youtube-nocookie/);
-    await expect(dialog.getByRole('button', { name: 'Tutup demo', exact: true })).toBeFocused();
-
-    await page.keyboard.press('Escape');
-    await expect(dialog).toHaveCount(0);
-  });
 });
 
 test.describe('Homepage story structure', () => {

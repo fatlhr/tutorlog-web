@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
-import LandingDemoDialog from "@/components/LandingDemoDialog";
 import LandingTimetableCanvas from "@/components/LandingTimetableCanvas";
 import PublicMotion from "@/components/PublicMotion";
 import PublicNav from "@/components/PublicNav";
@@ -33,7 +32,6 @@ export default function Home() {
             >
               Mulai gratis
             </MarketingButton>
-            <LandingDemoDialog />
           </div>
         </div>
         <div className="tl-landing-hero-proof tl-landing-mobile-proof">
