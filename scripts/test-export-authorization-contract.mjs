@@ -50,7 +50,7 @@ assert.equal(
 );
 assert.match(
   invoice,
-  /if \(!validateInvoiceForm\(\)\) return;[\s\S]*setExporting\(true\);[\s\S]*await authorizeExport\("invoice_pdf"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "invoice-locked"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*html2canvas\([\s\S]*pdf\.save\([\s\S]*\} catch \{[\s\S]*setExportError\("PDF invoice belum berhasil diunduh\. Coba lagi\."\);[\s\S]*\} finally \{[\s\S]*setExporting\(false\);/,
+  /if \(!validateInvoiceForm\(\)\) return;[\s\S]*setExporting\(true\);[\s\S]*await authorizeExport\("invoice_pdf"\)[\s\S]*if \(!decision\.allowed\) \{[\s\S]*setPaywallReason\(decision\.reason \?\? "invoice-locked"\);[\s\S]*setPaywallOpen\(true\);[\s\S]*return;[\s\S]*\}[\s\S]*await exportInvoicePdf\([\s\S]*pdf\.save\([\s\S]*\} catch \{[\s\S]*setExportError\("PDF invoice belum berhasil diunduh\. Coba lagi\."\);[\s\S]*\} finally \{[\s\S]*setExporting\(false\);/,
   "Invoice export must preserve validation, authorize while loading, normalize failures, block into its contextual paywall, and always clear loading",
 );
 assert.match(invoice, /\{exportError \? <p className="app-export-error" role="alert">\{exportError\}<\/p> : null\}/);

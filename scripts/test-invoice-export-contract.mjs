@@ -5,6 +5,8 @@ import { join } from "node:path";
 const root = process.cwd();
 const page = readFileSync(join(root, "app/app/invoice/page.tsx"), "utf8");
 const a4Page = readFileSync(join(root, "components/invoice/A4Page.tsx"), "utf8");
+const invoicePages = readFileSync(join(root, "components/invoice/InvoicePages.tsx"), "utf8");
+const invoicePdf = readFileSync(join(root, "lib/invoice-pdf.ts"), "utf8");
 const invoiceCss = readFileSync(join(root, "css/tutorlog-web-invoices.css"), "utf8");
 const siteCss = readFileSync(join(root, "css/site.css"), "utf8");
 const baseCss = readFileSync(join(root, "css/tutorlog-web.css"), "utf8");
@@ -42,7 +44,7 @@ assert.match(
 );
 assert.match(
   modernTemplate,
-  /<div className="m-total-summary">[\s\S]*<div className="m-total-hours">[\s\S]*<div className="m-total-amount">/,
+  /<div className="m-total-summary"[^>]*>[\s\S]*<div className="m-total-hours">[\s\S]*<div className="m-total-amount">/,
   "Modern totals must use the approved hours-left and amount-right structure",
 );
 assert.doesNotMatch(
@@ -91,14 +93,19 @@ assert.match(
   "Invoice templates must provide export-safe accent variables",
 );
 assert.match(
-  page,
-  /canvas\.toDataURL\("image\/jpeg", 0\.88\)/,
+  invoicePdf,
+  /const JPEG_QUALITY = 0\.88;[\s\S]*canvas\.toDataURL\("image\/jpeg", JPEG_QUALITY\)/,
   "Invoice export must use a compressed JPEG image",
 );
 assert.match(
-  page,
-  /pdf\.addImage\(imgData, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST"\)/,
-  "Invoice image must fit exactly one A4 page",
+  invoicePdf,
+  /querySelectorAll<HTMLElement>\("\[data-invoice-page\]"\)/,
+  "Invoice export must capture every rendered A4 page",
+);
+assert.match(
+  invoicePdf,
+  /if \(index > 0\) pdf\.addPage\(\)/,
+  "Invoice export must add one PDF page for each continuation page",
 );
 assert.match(
   page,
@@ -117,8 +124,8 @@ assert.doesNotMatch(
 );
 assert.match(
   page,
-  /<A4Page pageRef=\{exportRef\}>/,
-  "Invoice export must capture the shared A4Page wrapper",
+  /<InvoicePages[\s\S]*rootRef=\{exportRef\}[\s\S]*variant="export"/,
+  "Invoice export must capture the shared paginated page stack",
 );
 assert.doesNotMatch(
   page,
@@ -132,8 +139,18 @@ assert.match(
 );
 assert.match(
   a4Page,
-  /<div ref=\{pageRef\} className="a4">/,
-  "A4Page must attach the export ref to the same wrapper used by preview",
+  /data-invoice-page=\{isMeasure \? undefined : ""\}/,
+  "A4Page must mark every preview and export page for shared pagination",
+);
+assert.match(
+  invoiceData,
+  /interface InvoicePageLayout[\s\S]*showHeader: boolean[\s\S]*showTable: boolean[\s\S]*showTail: boolean/,
+  "Invoice pagination must describe which document sections belong to each A4 page",
+);
+assert.match(
+  invoicePages,
+  /className="invoice-page-stack"/,
+  "Preview and export must render the same vertical A4 page stack",
 );
 assert.match(
   baseCss,
@@ -207,7 +224,7 @@ assert.match(
 );
 assert.match(
   modernTemplate,
-  /<tr className="m-table-gap" aria-hidden="true">\s*<td colSpan=\{showDescription \? 5 : 4\}><\/td>\s*<\/tr>/s,
+  /<tr className="m-table-gap" aria-hidden="true">\s*<td colSpan=\{columnCount\}><\/td>\s*<\/tr>/s,
   "Modern table must render a real spacer row between the header rule and session rows",
 );
 assert.match(
@@ -232,18 +249,13 @@ assert.match(
 );
 assert.match(
   klasikTemplate,
-  /<span className="cell-content">\{it\.date\}<\/span>/,
-  "Klasik table values must expose a stable element for optical centering",
+  /<td className="col-date">\{it\.date\}<\/td>/,
+  "Klasik table date cells must render directly without a centering wrapper span",
 );
 assert.match(
   invoiceCss,
-  /\.tpl-klasik table\.k-table td \{[^}]*padding-block: 8px 10px;[^}]*line-height: 1\.45;/s,
-  "Klasik table cells must keep readable vertical padding without loose wrapped text",
-);
-assert.match(
-  invoiceCss,
-  /\.tpl-klasik table\.k-table td \.cell-content \{[^}]*position: relative;[^}]*top: 0;[^}]*line-height: 1\.45;/s,
-  "Klasik table text must keep wrapped descriptions close while respecting cell padding",
+  /\.tpl-klasik table\.k-table td \{[^}]*min-height: 34px;[^}]*padding-block: 8px 10px;[^}]*line-height: 1\.45;/s,
+  "Klasik table cells must grow with content (min-height) so pagination measures real row heights",
 );
 assert.doesNotMatch(
   invoiceCss,
@@ -412,8 +424,8 @@ assert.match(
 );
 assert.match(
   page,
-  /placeholder="Jalan Sudirman"/,
-  "Student address must use the requested simple address example",
+  /<Field controlId="invoice-student-address" label="Alamat">[\s\S]*placeholder="Contoh: Bekasi"/,
+  "Student address must share the same 'Alamat' label and city-only example as the tutor address field",
 );
 assert.match(
   page,

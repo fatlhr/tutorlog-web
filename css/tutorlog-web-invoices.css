@@ -6,8 +6,17 @@
 
 /* Shared inside .a4 */
 .tpl { height: 100%; display: flex; flex-direction: column; }
+.tpl > * { flex-shrink: 0; }
 .tpl .fine {
   font-family: var(--f-body); font-size: 9px; color: var(--tw-text-3); line-height: 1.4;
+}
+/* Deskripsi is the only column without a fixed width (table-layout: fixed
+   gives it all remaining space) — let long/unbroken words wrap instead of
+   busting the column width. */
+.tpl td.col-desc,
+.tpl th.col-desc {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .invoice-note-placeholder {
   display: grid;
@@ -69,12 +78,13 @@
   padding-block: 0;
   line-height: 1;
   text-align: left;
+  vertical-align: middle;
   font-family: var(--f-body); font-weight: 700; font-size: 10px;
   letter-spacing: 1px; text-transform: uppercase;
   border: 1px solid var(--tw-divider);
 }
 .tpl-klasik table.k-table td {
-  height: 34px;
+  min-height: 34px;
   padding-inline: 10px;
   padding-block: 8px 10px;
   line-height: 1.45;
@@ -84,11 +94,12 @@
 }
 .tpl-klasik table.k-table td.right, .tpl-klasik table.k-table th.right { text-align: right; white-space: nowrap; }
 .tpl-klasik table.k-table td.mono, .tpl-klasik table.k-table th.mono { font-family: var(--f-title); font-weight: 700; }
-.tpl-klasik table.k-table td .cell-content {
-  display: inline-block;
-  position: relative;
-  top: 0;
-  line-height: 1.45;
+.tpl-klasik table.k-table td.col-date, .tpl-klasik table.k-table th.col-date { white-space: nowrap; }
+.tpl-klasik table.k-table th.stacked {
+  height: auto;
+  line-height: 1.15;
+  padding-block: 6px 5px;
+  white-space: normal;
   vertical-align: middle;
 }
 .tpl-klasik .k-total-block {
@@ -197,6 +208,7 @@
 .tpl-modern table.m-table th {
   background: transparent; color: var(--tw-text-3);
   height: 34px; padding-inline: 12px; padding-block: 0; line-height: 1; text-align: left;
+  vertical-align: middle;
   font-family: var(--f-body); font-weight: 700; font-size: 10px;
   letter-spacing: 1.5px; text-transform: uppercase;
   border-bottom: 1.5px solid var(--acc, #006C53);
@@ -209,6 +221,14 @@
   vertical-align: middle;
 }
 .tpl-modern table.m-table td.mono, .tpl-modern table.m-table th.mono { font-family: var(--f-title); font-weight: 700; }
+.tpl-modern table.m-table td.col-date, .tpl-modern table.m-table th.col-date { white-space: nowrap; }
+.tpl-modern table.m-table th.stacked {
+  height: auto;
+  line-height: 1.15;
+  padding-block: 6px 5px;
+  white-space: normal;
+  vertical-align: middle;
+}
 .tpl-modern table.m-table td.right, .tpl-modern table.m-table th.right { text-align: right; white-space: nowrap; }
 .tpl-modern table.m-table tbody tr.m-table-gap td {
   height: 6px;
@@ -315,22 +335,31 @@
   padding-block: 0;
   line-height: 1;
   text-align: left;
+  vertical-align: middle;
   font-family: var(--f-body); font-weight: 700; font-size: 10px;
   letter-spacing: 1.5px; text-transform: uppercase;
   color: var(--tw-text-3);
   border-bottom: 1px solid var(--tw-divider);
 }
 .tpl-minimal table.mn-table td {
-  height: 34px;
+  min-height: 34px;
   padding-inline: 4px;
-  padding-block: 0;
-  line-height: 34px;
+  padding-block: 9px;
+  line-height: 1.45;
   border-bottom: 1px solid #E3EAE7;
   font-family: var(--f-body); font-size: 11px; color: var(--tw-text);
   vertical-align: middle;
 }
 .tpl-minimal table.mn-table td.mono, .tpl-minimal table.mn-table th.mono {
   font-family: var(--f-title); font-weight: 700;
+}
+.tpl-minimal table.mn-table td.col-date, .tpl-minimal table.mn-table th.col-date { white-space: nowrap; }
+.tpl-minimal table.mn-table th.stacked {
+  height: auto;
+  line-height: 1.15;
+  padding-block: 6px 5px;
+  white-space: normal;
+  vertical-align: middle;
 }
 .tpl-minimal table.mn-table td.right, .tpl-minimal table.mn-table th.right { text-align: right; white-space: nowrap; }
 

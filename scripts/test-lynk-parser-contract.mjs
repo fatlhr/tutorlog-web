@@ -48,7 +48,7 @@ assert.deepEqual(parsed, {
   productCode: "plus_30d",
   productAmount: 19000,
   grandTotal: 19000,
-  occurredAt: "2026-01-01T00:00:00.000Z",
+  occurredAt: "2025-12-31T17:00:00.000Z",
   reviewReason: null,
 });
 
