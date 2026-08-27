@@ -94,7 +94,12 @@ function buildPageLayouts(data: InvoiceData, measurement: Measurement): InvoiceP
     });
   }
 
-  return pages.map(({ fixedHeight: _fixedHeight, rowsHeight: _rowsHeight, ...layout }) => layout);
+  return pages.map((page) => ({
+    items: page.items,
+    showHeader: page.showHeader,
+    showTable: page.showTable,
+    showTail: page.showTail,
+  }));
 }
 
 function readMeasurement(page: HTMLDivElement): Measurement | null {
@@ -136,7 +141,16 @@ function InvoiceTemplate({
   return <TplKlasik acc={accent} data={data} layout={layout} />;
 }
 
-export default function InvoicePages({
+export default function InvoicePages(props: InvoicePagesProps) {
+  // Pagination must fully reset (ready=false, layouts=[singlePage]) whenever the
+  // invoice content or template changes. Remounting via `key` gets that reset for
+  // free from the state initializers below, instead of reaching into a ref during
+  // render and imperatively resetting state inside the effect.
+  const paginationKey = `${props.template}:${JSON.stringify(props.data)}`;
+  return <InvoicePagesInner key={paginationKey} {...props} />;
+}
+
+function InvoicePagesInner({
   accent,
   data,
   rootRef,
@@ -144,23 +158,17 @@ export default function InvoicePages({
   variant = "preview",
 }: InvoicePagesProps) {
   const measurementRef = useRef<HTMLDivElement>(null);
-  const dataRef = useRef(data);
   const [layouts, setLayouts] = useState<InvoicePageLayout[]>(() => [singlePageLayout(data)]);
   const [ready, setReady] = useState(false);
-  const paginationKey = JSON.stringify(data);
-  dataRef.current = data;
 
   useLayoutEffect(() => {
     let cancelled = false;
     let fontFrame = 0;
-    const currentData = dataRef.current;
-    setReady(false);
-    setLayouts([singlePageLayout(currentData)]);
 
     const measure = (isFinal: boolean) => {
       if (cancelled || !measurementRef.current) return;
       const measurement = readMeasurement(measurementRef.current);
-      if (measurement) setLayouts(buildPageLayouts(currentData, measurement));
+      if (measurement) setLayouts(buildPageLayouts(data, measurement));
       if (isFinal) setReady(true);
     };
 
@@ -180,7 +188,10 @@ export default function InvoicePages({
       cancelAnimationFrame(initialFrame);
       if (fontFrame) cancelAnimationFrame(fontFrame);
     };
-  }, [paginationKey, template]);
+    // `InvoicePagesInner` remounts (see `key` above) whenever `data`/`template`
+    // change, so this effect only ever needs to run once per mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>

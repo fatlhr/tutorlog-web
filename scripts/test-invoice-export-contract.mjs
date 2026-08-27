@@ -44,7 +44,7 @@ assert.match(
 );
 assert.match(
   modernTemplate,
-  /<div className="m-total-summary">[\s\S]*<div className="m-total-hours">[\s\S]*<div className="m-total-amount">/,
+  /<div className="m-total-summary"[^>]*>[\s\S]*<div className="m-total-hours">[\s\S]*<div className="m-total-amount">/,
   "Modern totals must use the approved hours-left and amount-right structure",
 );
 assert.doesNotMatch(
@@ -94,7 +94,7 @@ assert.match(
 );
 assert.match(
   invoicePdf,
-  /canvas\.toDataURL\("image\/jpeg", 0\.88\)/,
+  /const JPEG_QUALITY = 0\.88;[\s\S]*canvas\.toDataURL\("image\/jpeg", JPEG_QUALITY\)/,
   "Invoice export must use a compressed JPEG image",
 );
 assert.match(
@@ -224,7 +224,7 @@ assert.match(
 );
 assert.match(
   modernTemplate,
-  /<tr className="m-table-gap" aria-hidden="true">\s*<td colSpan=\{showDescription \? 5 : 4\}><\/td>\s*<\/tr>/s,
+  /<tr className="m-table-gap" aria-hidden="true">\s*<td colSpan=\{columnCount\}><\/td>\s*<\/tr>/s,
   "Modern table must render a real spacer row between the header rule and session rows",
 );
 assert.match(
@@ -249,18 +249,13 @@ assert.match(
 );
 assert.match(
   klasikTemplate,
-  /<span className="cell-content">\{it\.date\}<\/span>/,
-  "Klasik table values must expose a stable element for optical centering",
+  /<td className="col-date">\{it\.date\}<\/td>/,
+  "Klasik table date cells must render directly without a centering wrapper span",
 );
 assert.match(
   invoiceCss,
-  /\.tpl-klasik table\.k-table td \{[^}]*padding-block: 8px 10px;[^}]*line-height: 1\.45;/s,
-  "Klasik table cells must keep readable vertical padding without loose wrapped text",
-);
-assert.match(
-  invoiceCss,
-  /\.tpl-klasik table\.k-table td \.cell-content \{[^}]*position: relative;[^}]*top: 0;[^}]*line-height: 1\.45;/s,
-  "Klasik table text must keep wrapped descriptions close while respecting cell padding",
+  /\.tpl-klasik table\.k-table td \{[^}]*min-height: 34px;[^}]*padding-block: 8px 10px;[^}]*line-height: 1\.45;/s,
+  "Klasik table cells must grow with content (min-height) so pagination measures real row heights",
 );
 assert.doesNotMatch(
   invoiceCss,
@@ -429,8 +424,8 @@ assert.match(
 );
 assert.match(
   page,
-  /placeholder="Jalan Sudirman"/,
-  "Student address must use the requested simple address example",
+  /<Field controlId="invoice-student-address" label="Alamat">[\s\S]*placeholder="Contoh: Bekasi"/,
+  "Student address must share the same 'Alamat' label and city-only example as the tutor address field",
 );
 assert.match(
   page,
