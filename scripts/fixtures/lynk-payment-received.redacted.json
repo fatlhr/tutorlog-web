@@ -1,0 +1,47 @@
+{
+  "event": "payment.received",
+  "data": {
+    "message_action": "SUCCESS",
+    "message_code": "0",
+    "message_data": {
+      "createdAt": "2026-01-01T00:00:00",
+      "customer": {
+        "email": "buyer@example.invalid",
+        "name": "Customer Redacted",
+        "phone": "0000000000"
+      },
+      "items": [
+        {
+          "addons": [],
+          "appointment_data": {},
+          "pafId": "",
+          "price": 19000,
+          "public_affiliate_content": {},
+          "qty": 1,
+          "questions": "{}",
+          "stock": 1,
+          "title": "TutorLog Plus — 30 Hari",
+          "uuid": "product-redacted-plus-30d"
+        }
+      ],
+      "refId": "ref-redacted-001",
+      "shippingAddress": "",
+      "shippingInfo": "",
+      "totals": {
+        "affiliate": 0,
+        "convenienceFee": 0,
+        "discount": 0,
+        "grandTotal": 19000,
+        "totalAddon": 0,
+        "totalItem": 1,
+        "totalPrice": 19000,
+        "totalShipping": 0
+      },
+      "voucherCode": "",
+      "voucherQuantity": ""
+    },
+    "message_desc": "",
+    "message_id": "message-redacted-001",
+    "message_title": ""
+  }
+}

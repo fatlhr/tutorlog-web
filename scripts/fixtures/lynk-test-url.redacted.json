@@ -1,0 +1,7 @@
+{
+  "event": "test.event",
+  "data": {
+    "message": "webhook-test-redacted",
+    "timestamp": 1700000000000
+  }
+}

@@ -2,6 +2,15 @@
   border-top: 2px solid var(--tl-line);
 }
 
+.checkoutHint {
+  margin: 0;
+  padding: var(--tl-space-5) 0;
+  border-bottom: 1px solid var(--tl-line);
+  color: var(--tl-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .row {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(126px, .55fr) minmax(220px, 1.28fr) auto;

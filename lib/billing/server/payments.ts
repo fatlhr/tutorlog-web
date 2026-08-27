@@ -1,10 +1,11 @@
 import "server-only";
 
 import type {
-  PaymentMethod,
+  PaymentProviderName,
   PaymentState,
   PaymentStatusView,
   PurchaseSummary,
+  StoredPaymentMethod,
 } from "@/lib/billing/contracts";
 import { BillingError } from "@/lib/billing/errors";
 import { createPaymentProvider, type VerifiedProviderEvent } from "@/lib/billing/providers";
@@ -12,7 +13,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { assertPaymentProviderEnabled } from "./catalog";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-type ProviderName = "ipaymu" | "duitku";
+type ProviderName = Exclude<PaymentProviderName, "lynk">;
 
 export function isUuid(value: unknown): value is string {
   return typeof value === "string" && UUID_PATTERN.test(value);
@@ -34,7 +35,7 @@ interface PaymentRow {
   purchase_id: string;
   provider: string;
   provider_reference: string | null;
-  method: PaymentMethod;
+  method: StoredPaymentMethod;
   state: PaymentState;
   base_amount: number;
   channel_fee: number;
@@ -52,7 +53,9 @@ interface PaymentRow {
 
 function toPaymentStatus(row: PaymentRow): PaymentStatusView {
   if (
-    row.provider !== "ipaymu" && row.provider !== "duitku"
+    row.provider !== "ipaymu"
+    && row.provider !== "duitku"
+    && row.provider !== "lynk"
     || row.currency !== "IDR"
     || !Array.isArray(row.instructions)
     || !row.instructions.every((item) => typeof item === "string")
@@ -63,7 +66,7 @@ function toPaymentStatus(row: PaymentRow): PaymentStatusView {
   return {
     id: row.id,
     purchaseId: row.purchase_id,
-    provider: row.provider as "ipaymu" | "duitku",
+    provider: row.provider as PaymentProviderName,
     packageName: "",
     method: row.method,
     state: row.state,
@@ -168,7 +171,10 @@ export async function getPurchaseStatus(
   const purchase = await readPurchase(userId, purchaseId);
   if (process.env.BILLING_PAYMENT_PROVIDER_ENABLED !== "true") return purchase;
 
-  if (purchase.payment?.state !== "pending") return purchase;
+  if (
+    purchase.payment?.state !== "pending"
+    || purchase.payment.provider !== "duitku"
+  ) return purchase;
   const admin = createAdminClient();
   const { data, error } = await admin.rpc("claim_billing_payment_inquiry", {
     p_user_id: userId,
