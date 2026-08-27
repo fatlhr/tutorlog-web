@@ -3,10 +3,12 @@ import { formatDurationMinutes } from "@/lib/data/session-metrics.mjs";
 import InvoiceNotes from "./InvoiceNotes";
 import {
   formatIDR,
+  getInvoiceRateCellLabel,
   getInvoiceRateColumnLabel,
   getInvoiceTotals,
   hasInvoiceDescriptions,
-  hasInvoiceRateColumn,
+  hasMixedInvoiceBillingTypes,
+  hasInvoiceSubtotalColumn,
   sampleInvoiceData,
   type InvoiceData,
   type InvoicePageLayout,
@@ -23,7 +25,9 @@ interface TplKlasikProps {
 export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData, layout }: TplKlasikProps) {
   const { amount: sub, durationMinutes } = getInvoiceTotals(data.items);
   const showDescription = hasInvoiceDescriptions(data.items);
-  const showRate = hasInvoiceRateColumn(data.items);
+  const showSubtotal = hasInvoiceSubtotalColumn(data.items);
+  const showRateDetails = hasMixedInvoiceBillingTypes(data.items);
+  const rateLabel = getInvoiceRateColumnLabel(data.items);
   const pageItems = layout?.items ?? data.items;
   const showHeader = layout?.showHeader ?? true;
   const showTable = layout?.showTable ?? true;
@@ -67,22 +71,30 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData, l
             <th className="col-date" style={{ width: "64px" }}>Tgl</th>
             {showDescription ? <th className="col-desc">Deskripsi</th> : null}
             <th className="right mono" style={{ width: "92px" }}>Durasi</th>
-            {showRate ? (
-              <th className="right mono stacked" style={{ width: "112px" }}>Tarif<br />per {getInvoiceRateColumnLabel(data.items)}</th>
-            ) : null}
-            <th className="right mono" style={{ width: "106px" }}>Subtotal</th>
+            <th className="right mono stacked" style={{ width: "112px" }}>
+              Tarif{rateLabel ? <><br />({rateLabel})</> : null}
+            </th>
+            {showSubtotal ? <th className="right mono" style={{ width: "106px" }}>Subtotal</th> : null}
           </tr>
         </thead>
         <tbody>
-            {pageItems.map((it, i) => (
+          {pageItems.map((it, i) => {
+            const rateDetail = showRateDetails ? getInvoiceRateCellLabel(it.billingType) : "";
+            return (
               <tr key={i} data-invoice-row>
-              <td className="col-date">{it.date}</td>
-              {showDescription ? <td className="col-desc">{it.desc.trim() || "-"}</td> : null}
-              <td className="right mono">{formatDurationMinutes(it.durationMinutes)}</td>
-              {showRate ? <td className="right mono">{formatIDR(it.rate)}</td> : null}
-              <td className="right mono">{formatIDR(it.amount)}</td>
-            </tr>
-          ))}
+                <td className="col-date">{it.date}</td>
+                {showDescription ? <td className="col-desc">{it.desc.trim() || "-"}</td> : null}
+                <td className="right mono">{formatDurationMinutes(it.durationMinutes)}</td>
+                <td className="right mono col-rate">
+                  <span className="invoice-rate-cell">
+                    <span>{formatIDR(it.rate)}</span>
+                    {rateDetail ? <span className="invoice-rate-meta">{rateDetail}</span> : null}
+                  </span>
+                </td>
+                {showSubtotal ? <td className="right mono">{formatIDR(it.amount)}</td> : null}
+              </tr>
+            );
+          })}
         </tbody>
       </table> : null}
 
