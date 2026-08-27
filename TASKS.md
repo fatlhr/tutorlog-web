@@ -374,11 +374,18 @@
     malformed, `401` untuk signature invalid, dan `503` untuk kegagalan sementara.
   - Response dan log tidak boleh membocorkan email, telepon, raw payload, atau secret.
   - _DoD: route contract lulus pada Next.js dan runtime Cloudflare preview_
-- [ ] **L6** Arahkan CTA pricing ke checkout Lynk
+- [x] **L6** Arahkan CTA pricing ke checkout Lynk
   - `/harga` dan paywall memakai URL produk Lynk berdasarkan package code.
   - Tampilkan pengingat untuk menggunakan email akun TutorLog saat checkout.
   - `/checkout` dan `/pembayaran/[purchaseId]` tidak dipakai untuk transaksi Lynk baru.
-  - _DoD: seluruh CTA mengarah ke produk yang benar dan tidak ada payment creation internal_
+  - _DoD: seluruh CTA mengarah ke produk yang benar dan tidak ada payment creation internal_ ✓
+  - _Verified 2026-08-27: lint, build, test-billing-ui-contract, dan test-lynk-parser-contract
+    lulus. Browser QA `/harga` di 390px dan 1440px: ketiga CTA berbayar buka
+    `lynk.id/tutorlog/{q51pn0rykvq9,gjvmgkznjqd6,65p8z7ewqj8r}` di tab baru dengan
+    `target=_blank rel=noopener noreferrer`, Free tetap ke `/login`, tidak ada overflow
+    horizontal, keyboard focus (real Tab key) menunjukkan outline solid terlihat jelas, dan
+    klik CTA memicu POST `/api/analytics` (`package_selected`). Ketiga halaman produk publik
+    Lynk menampilkan judul dan harga fixed yang benar (Rp19.000/Rp149.000/Rp249.000)._
 - [ ] **L7** Environment dan dashboard configuration
   - Cloudflare secret: `LYNK_MERCHANT_KEY`.
   - Runtime flags: `LYNK_WEBHOOK_ENABLED=false` dan `LYNK_WEBHOOK_CAPTURE_ONLY=true`

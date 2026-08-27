@@ -163,5 +163,10 @@ assert.deepEqual(
     },
   ],
 );
+assert.equal(
+  products.findLynkProductByCode("plus_12m")?.checkoutUrl,
+  "https://lynk.id/tutorlog/gjvmgkznjqd6",
+);
+assert.equal(products.findLynkProductByCode("free"), undefined);
 
 console.log("Lynk parser contract passed");

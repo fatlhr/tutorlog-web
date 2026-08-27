@@ -36,6 +36,10 @@ export function findLynkProductByUuid(uuid: string): LynkProduct | undefined {
   return LYNK_PRODUCTS.find((product) => product.itemUuids.includes(uuid));
 }
 
+export function findLynkProductByCode(code: string): LynkProduct | undefined {
+  return LYNK_PRODUCTS.find((product) => product.code === code);
+}
+
 export function findLynkProductByTitle(title: string): LynkProduct | undefined {
   return LYNK_PRODUCTS.find((product) => product.canonicalTitle === title);
 }

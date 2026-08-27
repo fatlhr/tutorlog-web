@@ -8,6 +8,7 @@ import {
   formatIdr,
   productPeriodLabel,
 } from "@/lib/billing/ui-model";
+import { findLynkProductByCode } from "@/lib/billing/providers/lynk-products";
 import { MarketingButton } from "@/components/public-ui/marketing-button";
 import styles from "./pricing.module.css";
 
@@ -25,22 +26,23 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
 
   return (
     <section className={styles.catalog} aria-label="Pilihan paket TutorLog">
+      <p className={styles.checkoutHint}>
+        Gunakan email yang sama dengan akun TutorLog saat checkout.
+      </p>
       {products.map((product) => {
         const isFree = product.code === "free";
         const isSavings = product.code === "plus_12m";
         const isLifetime = product.code === "plus_lifetime";
+        const lynkProduct = isFree ? undefined : findLynkProductByCode(product.code);
         const badgeLabel = isSavings
           ? "Paling hemat"
           : isLifetime
             ? "Sekali bayar"
             : null;
-        const isUnavailable = !isFree && !product.available;
-        const checkoutPath = `/checkout?package=${encodeURIComponent(product.code)}`;
+        const isUnavailable = !isFree && (!product.available || !lynkProduct);
         const href = isFree
           ? authenticated ? "/app" : "/login"
-          : authenticated
-            ? checkoutPath
-            : `/login?next=${encodeURIComponent(checkoutPath)}`;
+          : lynkProduct?.checkoutUrl ?? "";
 
         return (
           <article
@@ -82,6 +84,8 @@ export function PricingCatalog({ products, authenticated }: PricingCatalogProps)
                 <MarketingButton
                   href={href}
                   size="compact"
+                  target={isFree ? undefined : "_blank"}
+                  rel={isFree ? undefined : "noopener noreferrer"}
                   onClick={() => trackBillingEvent("package_selected", {
                     packageCode: product.code,
                     surface: "pricing",
