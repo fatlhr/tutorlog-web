@@ -368,12 +368,25 @@
   - _Verified 2026-08-26: migration remote applied; synthetic QA processed, replay by event/ref,
     review outcomes, 30-day entitlement, private inbox access, dan account-deletion cascade lulus.
     Seluruh user dan row QA telah dibersihkan._
-- [ ] **L5** Public webhook route — `POST /api/webhooks/lynk`
+- [x] **L5** Public webhook route — `POST /api/webhooks/lynk`
   - Verifikasi signature sebelum mutasi database.
   - `200` untuk processed/duplicate/needs-review yang sudah tercatat, `400` untuk payload
     malformed, `401` untuk signature invalid, dan `503` untuk kegagalan sementara.
   - Response dan log tidak boleh membocorkan email, telepon, raw payload, atau secret.
-  - _DoD: route contract lulus pada Next.js dan runtime Cloudflare preview_
+  - _DoD: route contract lulus pada Next.js dan runtime Cloudflare preview_ ✓
+  - _Verified 2026-08-27: deployed ke `tutorlog-web-staging` dalam process mode
+    (`LYNK_WEBHOOK_ENABLED=true`, `LYNK_WEBHOOK_CAPTURE_ONLY=false`) setelah migration
+    `202608260001_lynk_processing_retry.sql` dikonfirmasi applied di remote. Tiga signed QA
+    fixture (`scripts/test-lynk-staging-qa.mjs`, email `.invalid` + event key `qa-`) lulus
+    `200 {"status":"review"}`; cross-check read-only Supabase konfirmasi
+    `review_reason` tepat (`user_not_found`, `unknown_product`, `amount_mismatch`) dan
+    `user_id`/`purchase_id`/`payment_id`/`entitlement_grant_id` seluruhnya null — nol
+    entitlement. Row QA sudah dibersihkan. Lynk dashboard "Test URL" dikonfirmasi via
+    `wrangler tail` mengirim ping tanpa header `x-lynk-signature` sama sekali (bukan simulasi
+    payload signed) — 401 dari fitur itu expected, bukan bug; signature formula
+    (`grandTotal+refId+message_id+merchantKey`, header `X-Lynk-Signature`) dikonfirmasi cocok
+    dokumentasi resmi Lynk. Process mode staging hanya membuktikan routing dengan fixture QA;
+    kontrak transaksi nyata L1–L3 dan happy path tetap belum diverifikasi sampai L8._
 - [x] **L6** Arahkan CTA pricing ke checkout Lynk
   - `/harga` dan paywall memakai URL produk Lynk berdasarkan package code.
   - Tampilkan pengingat untuk menggunakan email akun TutorLog saat checkout.
