@@ -73,16 +73,30 @@ export function hasInvoiceDescriptions(items: InvoiceData["items"]): boolean {
   });
 }
 
-export function hasInvoiceRateColumn(items: InvoiceData["items"]): boolean {
-  return items.some(({ billingType }) => billingType !== "flat");
+export function isFlatInvoice(items: InvoiceData["items"]): boolean {
+  return items.length > 0 && items.every(({ billingType }) => billingType === "flat");
+}
+
+export function hasInvoiceSubtotalColumn(items: InvoiceData["items"]): boolean {
+  return items.length > 0 && !isFlatInvoice(items);
+}
+
+export function hasMixedInvoiceBillingTypes(items: InvoiceData["items"]): boolean {
+  return new Set(items.map(({ billingType }) => billingType)).size > 1;
+}
+
+export function getInvoiceBillingTypeLabel(billingType: InvoiceBillingType): string {
+  if (billingType === "sixty_minutes") return "60 menit";
+  if (billingType === "ninety_minutes") return "90 menit";
+  return "";
 }
 
 export function getInvoiceRateColumnLabel(items: InvoiceData["items"]): string {
-  const labels = [...new Set(items.flatMap(({ billingType }) => {
-    if (billingType === "sixty_minutes") return ["60 menit"];
-    if (billingType === "ninety_minutes") return ["90 menit"];
-    return [];
-  }))];
+  if (hasMixedInvoiceBillingTypes(items)) return "";
+  return items[0] ? getInvoiceBillingTypeLabel(items[0].billingType) : "";
+}
 
-  return labels.length > 0 ? labels.join(" / ") : "sesi";
+export function getInvoiceRateCellLabel(billingType: InvoiceBillingType): string {
+  const label = getInvoiceBillingTypeLabel(billingType);
+  return label ? `Per ${label}` : "";
 }
