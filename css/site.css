@@ -5868,21 +5868,83 @@ html, body { overflow-x: hidden; }
 .tl-landing-next {
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 40px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 36px;
+  padding: 72px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 40px 64px;
   border-bottom: 1px solid var(--tl-line);
 }
 
-.tl-landing-next > p {
+.tl-landing-next h2 {
+  max-width: 420px;
+  margin: 0;
+  color: #12211f;
+  font-family: var(--f-title), monospace;
+  font-weight: 700;
+  font-size: 38px;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.tl-landing-next-copy > p:not(.tl-kicker) {
+  max-width: 460px;
+  margin: 20px 0 0;
+  color: var(--tl-muted);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+/* Tautan jadi baris penuh di bawah kedua kolom. Ditumpuk di dalam kolom kiri,
+   tingginya bikin kolom kiri jauh lebih panjang dari daftar paket di kanan dan
+   menyisakan ruang mati di kanan bawah. */
+.tl-landing-next nav {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+}
+
+/* Daftar paket. Garis rambut yang sama dengan pemisah antar seksi, dipakai
+   sebagai alat komposisi, bukan sekadar pembatas. */
+.tl-landing-next-plans {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* flex: 1 supaya kedua baris membagi tinggi kolom rata, jadi garis penutupnya
+   sejajar dengan dasar kolom kiri dan tidak menyisakan ruang mati di kanan. */
+.tl-landing-next-plans > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 18px 0;
+  border-top: 1px solid var(--tl-line);
+}
+
+.tl-landing-next-plans > div:last-child { border-bottom: 1px solid var(--tl-line); }
+
+.tl-landing-next-plans dt {
+  margin: 0 0 6px;
+  color: var(--tl-ink);
+  font-family: var(--f-title), monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.tl-landing-next-plans [data-plan="plus"] dt { color: var(--tl-green); }
+
+.tl-landing-next-plans dd {
   margin: 0;
   color: var(--tl-muted);
   font-size: 16px;
+  line-height: 1.6;
 }
-
-.tl-landing-next nav { display: flex; flex-wrap: wrap; gap: 12px 24px; }
 
 .tl-landing-next a {
   display: inline-flex;
@@ -5901,32 +5963,46 @@ html, body { overflow-x: hidden; }
 .tl-landing-partner {
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 28px 0;
+  padding: 40px 0;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 24px;
   border-bottom: 1px solid var(--tl-line);
 }
 
+/* Naik lewat ukuran dan kontras, bukan chrome kartu baru — halaman ini sudah
+   datar sepanjang jalan (border tipis, tanpa bayangan), jadi baris ini tetap
+   ikut bahasa itu sambil bicara lebih berani dari sebelumnya. */
 .tl-landing-partner > p {
   margin: 0;
-  color: var(--tl-muted);
-  font-size: 15px;
+  color: var(--tl-ink);
+  font-family: var(--f-title), monospace;
+  font-size: 22px;
+  font-weight: 700;
 }
 
-.tl-landing-partner a {
+.tl-landing-partner-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tl-landing-partner-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--tl-green);
   font-family: var(--f-title), monospace;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   text-decoration: none;
 }
 
-.tl-landing-partner a span {
+.tl-landing-partner-link span {
   color: var(--tl-muted);
-  font-family: var(--f-body);
-  font-weight: 400;
+  font-size: 13px;
 }
 
 .tl-demo-backdrop {
@@ -6154,15 +6230,17 @@ html, body { overflow-x: hidden; }
   .tl-landing-hero-proof { min-height: 600px; padding: 22px 24px 0; }
   .tl-landing-hero-side-shot { top: 152px; left: -4px; width: 132px; border-radius: 14px; }
   .tl-landing-feature-rows { width: calc(100% - 64px); padding: 64px 0; }
-  .tl-landing-next { width: calc(100% - 64px); }
+  .tl-landing-next { width: calc(100% - 64px); padding: 56px 0; gap: 40px; }
+  .tl-landing-next h2 { font-size: 32px; }
+  .tl-landing-next-copy > p:not(.tl-kicker) { font-size: 17px; }
   .tl-landing-partner { width: calc(100% - 64px); }
 }
 
 @media (min-width: 768px) and (max-width: 899px) {
   .tl-landing-next { display: block; }
-  .tl-landing-next nav { margin-top: 18px; }
+  .tl-landing-next-plans { margin-top: 28px; }
   .tl-landing-partner { display: block; }
-  .tl-landing-partner a { display: inline-block; margin-top: 10px; }
+  .tl-landing-partner-link { align-items: flex-start; margin-top: 12px; }
 }
 
 @media (max-width: 767px) {
@@ -6191,10 +6269,15 @@ html, body { overflow-x: hidden; }
   .tl-landing-hero-actions .tl-button { width: auto; min-height: 48px; }
   .tl-button-demo { min-height: 46px; padding-inline: 18px; }
   .tl-landing-feature-rows { width: calc(100% - 48px); padding: 16px 0; }
-  .tl-landing-next { width: calc(100% - 48px); padding: 36px 0; display: block; }
-  .tl-landing-next nav { margin-top: 18px; display: grid; gap: 12px; }
-  .tl-landing-partner { width: calc(100% - 48px); padding: 24px 0; display: block; }
-  .tl-landing-partner a { display: inline-block; margin-top: 10px; }
+  .tl-landing-next { width: calc(100% - 48px); padding: 48px 0; display: block; gap: 0; }
+  .tl-landing-next h2 { font-size: 28px; }
+  .tl-landing-next-copy > p:not(.tl-kicker) { margin-top: 16px; font-size: 16px; }
+  .tl-landing-next nav { margin-top: 24px; gap: 12px; }
+  .tl-landing-next-plans { margin-top: 28px; }
+  .tl-landing-next-plans dd { font-size: 15px; }
+  .tl-landing-partner { width: calc(100% - 48px); padding: 32px 0; display: block; }
+  .tl-landing-partner > p { font-size: 19px; }
+  .tl-landing-partner-link { align-items: flex-start; margin-top: 14px; }
   .tl-demo-backdrop { padding: 16px; }
   .tl-demo-dialog { padding: 18px; }
   .tl-demo-dialog h2 { font-size: 23px; }
