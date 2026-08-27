@@ -130,20 +130,27 @@ assert.match(pricingStylesSource, /\.lifetime\s*\{/);
 assert.match(pricingStylesSource, /var\(--tl-lavender\)/);
 assert.match(
   pricingCatalogSource,
-  /const checkoutPath = `\/checkout\?package=\$\{encodeURIComponent\(product\.code\)\}`/,
+  /findLynkProductByCode/,
 );
-assert.match(pricingCatalogSource, /authenticated\s*\? checkoutPath/);
 assert.match(
   pricingCatalogSource,
-  /`\/login\?next=\$\{encodeURIComponent\(checkoutPath\)\}`/,
+  /const lynkProduct = isFree \? undefined : findLynkProductByCode\(product\.code\)/,
 );
 assert.match(pricingCatalogSource, /authenticated\s*\? "\/app"\s*:\s*"\/login"/);
+assert.match(pricingCatalogSource, /lynkProduct\?\.checkoutUrl/);
+assert.match(pricingCatalogSource, /target=\{isFree \? undefined : "_blank"\}/);
+assert.match(pricingCatalogSource, /rel=\{isFree \? undefined : "noopener noreferrer"\}/);
 assert.match(
   pricingCatalogSource,
-  /const isUnavailable = !isFree && !product\.available;[\s\S]*\{isUnavailable\s*\?\s*\(\s*<MarketingButton disabled[^>]*>\s*Belum tersedia\s*<\/MarketingButton>/,
+  /Gunakan email yang sama dengan akun TutorLog saat checkout\./,
+);
+assert.match(
+  pricingCatalogSource,
+  /const isUnavailable = !isFree && \(!product\.available \|\| !lynkProduct\);[\s\S]*\{isUnavailable\s*\?\s*\(\s*<MarketingButton disabled[^>]*>\s*Belum tersedia\s*<\/MarketingButton>/,
   "unavailable paid products must render a clear disabled action without an href",
 );
-assert.doesNotMatch(normalizedPricingSource, /lynk\.id/);
+assert.doesNotMatch(pricingCatalogSource, /\/checkout\?package=/);
+assert.doesNotMatch(pricingCatalogSource, /\/login\?next=/);
 assert.doesNotMatch(
   normalizedPricingSource,
   /tersisa|stok|kuota|buruan|segera beli|promo terbatas/,
@@ -467,7 +474,7 @@ for (const loadingPath of [
 }
 
 const proxySource = readFileSync(
-  fileURLToPath(new URL("../proxy.ts", import.meta.url)),
+  fileURLToPath(new URL("../middleware.ts", import.meta.url)),
   "utf8",
 );
 assert.match(

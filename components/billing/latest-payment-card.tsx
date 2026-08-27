@@ -1,8 +1,8 @@
 import { Surface } from "@/components/app-ui/structure";
 import type {
   LatestPaymentSummary,
-  PaymentMethod,
   PaymentState,
+  StoredPaymentMethod,
 } from "@/lib/billing/contracts";
 import { formatIdr } from "@/lib/billing/ui-model";
 import styles from "./billing-surfaces.module.css";
@@ -11,9 +11,10 @@ interface LatestPaymentCardProps {
   payment: LatestPaymentSummary | null;
 }
 
-const methodLabels: Record<PaymentMethod, string> = {
+const methodLabels: Record<StoredPaymentMethod, string> = {
   qris: "QRIS",
   va: "Virtual account",
+  external: "Lynk.id",
 };
 
 const stateLabels: Record<PaymentState, string> = {
