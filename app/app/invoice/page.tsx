@@ -820,7 +820,12 @@ export default function InvoicePage() {
         </Field>
 
         <Field controlId="invoice-service-name" label="Nama layanan atau merek (opsional)">
-          <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les privat nama_tutor" />
+          <TextField
+            id="invoice-service-name"
+            value={lembaga}
+            onChange={setLembaga}
+            placeholder={accountTutorName ? `Contoh: Les privat ${accountTutorName}` : "Contoh: Les privat nama_tutor"}
+          />
         </Field>
 
         <Field controlId="invoice-tutor-location" label="Alamat">
