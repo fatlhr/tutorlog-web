@@ -275,17 +275,15 @@ body.menu-open { overflow: hidden; }
   line-height: 18px;
 }
 
-/* Zoom manual > fit: kertas lebih lebar dari container — "safe" supaya
-   tepi kiri tetap terjangkau saat scroll horizontal. flex-shrink 0 supaya
-   kertas tidak dipampatkan balik ke lebar container (zoom jadi tak terlihat). */
-.a4-stage { justify-content: safe center; }
-.a4-stage .a4 { flex-shrink: 0; }
+/* Zoom manual > fit: kertas tidak boleh dipampatkan oleh preview container. */
+.invoice-page-stack .a4 { flex-shrink: 0; }
 
 /* Preview dialog: satu card (tanpa nested chrome), kertas dimaksimalkan */
 .inv-preview-dialog {
   width: 100%;
   height: 100%;
   min-height: 0;
+  max-height: none;
   padding: 12px 12px 16px;
   border-radius: 0;
   box-shadow: none;

@@ -4,13 +4,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { CheckCircle, Desktop, DownloadSimple, Eye, FilePdf, LockKey, Minus, Plus } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { authorizeExport } from "@/lib/billing/client";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
-import TplKlasik from "@/components/invoice/TplKlasik";
+import { exportInvoicePdf } from "@/lib/invoice-pdf";
 import type { InvoiceBillingType, InvoiceData } from "@/components/invoice/invoice-data";
-import TplModern from "@/components/invoice/TplModern";
-import TplMinimal from "@/components/invoice/TplMinimal";
-import A4Page from "@/components/invoice/A4Page";
+import InvoicePages from "@/components/invoice/InvoicePages";
 import PaywallDialog from "@/components/PaywallDialog";
 import type { AccessState, PaywallReason } from "@/lib/data/quota-access";
 import {
@@ -460,19 +456,7 @@ export default function InvoicePage() {
       const container = exportRef.current;
       if (!container) throw new Error("EXPORT_TARGET_UNAVAILABLE");
 
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-      });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.88);
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-      const pageWidth = 210;
-      const pageHeight = 297;
-      pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
+      const pdf = await exportInvoicePdf(container);
 
       pdf.save(buildInvoicePdfFilename({
         studentName: invoiceSessions[0]?.studentName.trim() || studentName,
@@ -663,7 +647,6 @@ export default function InvoicePage() {
     return (
       <div
         className={"inv-preview-wrap" + (dialog ? " inv-preview-dialog" : "")}
-        style={{ overflow: "auto" }}
       >
         <div className="inv-preview-toolbar">
           <div className="tw-title-md">{dialog ? "Pratinjau" : "Periksa invoice"} · {template.charAt(0).toUpperCase() + template.slice(1)}</div>
@@ -685,13 +668,9 @@ export default function InvoicePage() {
             />
           </div>
         </div>
-        <div style={{ overflow: "auto", flex: 1 }} className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
+        <div className="a4-preview" ref={dialog ? dialogStageRef : undefined}>
           <div className="a4-stage" style={{ zoom: z / 100 }}>
-            <A4Page>
-              {template === "klasik" && <TplKlasik acc={accent} data={invoiceData} />}
-              {template === "modern" && <TplModern acc={accent} data={invoiceData} />}
-              {template === "minimal" && <TplMinimal acc={accent} data={invoiceData} />}
-            </A4Page>
+            <InvoicePages accent={accent} data={invoiceData} template={template} />
           </div>
         </div>
       </div>
@@ -841,11 +820,11 @@ export default function InvoicePage() {
         </Field>
 
         <Field controlId="invoice-service-name" label="Nama layanan atau merek (opsional)">
-          <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les Privat Rina" />
+          <TextField id="invoice-service-name" value={lembaga} onChange={setLembaga} placeholder="Contoh: Les privat nama_tutor" />
         </Field>
 
-        <Field controlId="invoice-tutor-location" label="Lokasi">
-          <TextField id="invoice-tutor-location" value={tutorLocation} onChange={setTutorLocation} placeholder="Contoh: Jakarta Selatan" />
+        <Field controlId="invoice-tutor-location" label="Alamat">
+          <TextField id="invoice-tutor-location" value={tutorLocation} onChange={setTutorLocation} placeholder="Contoh: Bekasi" />
         </Field>
 
         <Field controlId="invoice-tutor-contact" label="Kontak">
@@ -861,7 +840,7 @@ export default function InvoicePage() {
         </Field>
 
         <Field controlId="invoice-student-address" label="Alamat">
-          <TextField id="invoice-student-address" value={studentAddress} onChange={setStudentAddress} placeholder="Jalan Sudirman" />
+          <TextField id="invoice-student-address" value={studentAddress} onChange={setStudentAddress} placeholder="Contoh: Bekasi" />
         </Field>
 
         <Field controlId="invoice-parent-contact" label="Kontak wali">
@@ -1028,20 +1007,14 @@ export default function InvoicePage() {
         </div>
       ) : null}
 
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: "-9999px",
-          width: "794px",
-          zIndex: -1,
-        }}
-      >
-        <A4Page pageRef={exportRef}>
-          {template === "klasik" && <TplKlasik acc={accent} data={buildInvoiceData()} />}
-          {template === "modern" && <TplModern acc={accent} data={buildInvoiceData()} />}
-          {template === "minimal" && <TplMinimal acc={accent} data={buildInvoiceData()} />}
-        </A4Page>
+      <div className="invoice-export-host" aria-hidden="true">
+        <InvoicePages
+          accent={accent}
+          data={buildInvoiceData()}
+          rootRef={exportRef}
+          template={template}
+          variant="export"
+        />
       </div>
     </>
   );

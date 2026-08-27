@@ -5,6 +5,8 @@ import { join } from "node:path";
 const root = process.cwd();
 const page = readFileSync(join(root, "app/app/invoice/page.tsx"), "utf8");
 const a4Page = readFileSync(join(root, "components/invoice/A4Page.tsx"), "utf8");
+const invoicePages = readFileSync(join(root, "components/invoice/InvoicePages.tsx"), "utf8");
+const invoicePdf = readFileSync(join(root, "lib/invoice-pdf.ts"), "utf8");
 const invoiceCss = readFileSync(join(root, "css/tutorlog-web-invoices.css"), "utf8");
 const siteCss = readFileSync(join(root, "css/site.css"), "utf8");
 const baseCss = readFileSync(join(root, "css/tutorlog-web.css"), "utf8");
@@ -91,14 +93,19 @@ assert.match(
   "Invoice templates must provide export-safe accent variables",
 );
 assert.match(
-  page,
+  invoicePdf,
   /canvas\.toDataURL\("image\/jpeg", 0\.88\)/,
   "Invoice export must use a compressed JPEG image",
 );
 assert.match(
-  page,
-  /pdf\.addImage\(imgData, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST"\)/,
-  "Invoice image must fit exactly one A4 page",
+  invoicePdf,
+  /querySelectorAll<HTMLElement>\("\[data-invoice-page\]"\)/,
+  "Invoice export must capture every rendered A4 page",
+);
+assert.match(
+  invoicePdf,
+  /if \(index > 0\) pdf\.addPage\(\)/,
+  "Invoice export must add one PDF page for each continuation page",
 );
 assert.match(
   page,
@@ -117,8 +124,8 @@ assert.doesNotMatch(
 );
 assert.match(
   page,
-  /<A4Page pageRef=\{exportRef\}>/,
-  "Invoice export must capture the shared A4Page wrapper",
+  /<InvoicePages[\s\S]*rootRef=\{exportRef\}[\s\S]*variant="export"/,
+  "Invoice export must capture the shared paginated page stack",
 );
 assert.doesNotMatch(
   page,
@@ -132,8 +139,18 @@ assert.match(
 );
 assert.match(
   a4Page,
-  /<div ref=\{pageRef\} className="a4">/,
-  "A4Page must attach the export ref to the same wrapper used by preview",
+  /data-invoice-page=\{isMeasure \? undefined : ""\}/,
+  "A4Page must mark every preview and export page for shared pagination",
+);
+assert.match(
+  invoiceData,
+  /interface InvoicePageLayout[\s\S]*showHeader: boolean[\s\S]*showTable: boolean[\s\S]*showTail: boolean/,
+  "Invoice pagination must describe which document sections belong to each A4 page",
+);
+assert.match(
+  invoicePages,
+  /className="invoice-page-stack"/,
+  "Preview and export must render the same vertical A4 page stack",
 );
 assert.match(
   baseCss,

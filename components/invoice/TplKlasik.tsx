@@ -6,8 +6,10 @@ import {
   getInvoiceRateColumnLabel,
   getInvoiceTotals,
   hasInvoiceDescriptions,
+  hasInvoiceRateColumn,
   sampleInvoiceData,
   type InvoiceData,
+  type InvoicePageLayout,
 } from "./invoice-data";
 
 export type { InvoiceData } from "./invoice-data";
@@ -15,15 +17,21 @@ export type { InvoiceData } from "./invoice-data";
 interface TplKlasikProps {
   acc?: string;
   data?: InvoiceData;
+  layout?: InvoicePageLayout;
 }
 
-export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }: TplKlasikProps) {
+export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData, layout }: TplKlasikProps) {
   const { amount: sub, durationMinutes } = getInvoiceTotals(data.items);
   const showDescription = hasInvoiceDescriptions(data.items);
+  const showRate = hasInvoiceRateColumn(data.items);
+  const pageItems = layout?.items ?? data.items;
+  const showHeader = layout?.showHeader ?? true;
+  const showTable = layout?.showTable ?? true;
+  const showTail = layout?.showTail ?? true;
 
   return (
     <div className="tpl tpl-klasik" style={createInvoiceAccentStyle(acc)}>
-      <div className="k-header">
+      {showHeader ? <div className="k-header">
         <div>
           {data.lembaga && (
             <div className="brand-line">
@@ -38,9 +46,9 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
           <div className="lbl">TANGGAL</div>
           <div className="val">{data.date}</div>
         </div>
-      </div>
+      </div> : null}
 
-      <div className="k-parties">
+      {showHeader ? <div className="k-parties">
         <div className="col">
           <div className="lbl">DARI</div>
           <div className="n">{data.from.name}</div>
@@ -51,34 +59,35 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
           <div className="n">{data.to.name}</div>
           <div className="d">{data.to.lines.map((l, i) => <div key={i}>{l}</div>)}</div>
         </div>
-      </div>
+      </div> : null}
 
-      <table className="k-table">
+      {showTable ? <table className="k-table">
         <thead>
           <tr>
-            <th style={{ width: "56px" }}>Tgl</th>
-            {showDescription ? <th>Deskripsi</th> : null}
+            <th className="col-date" style={{ width: "64px" }}>Tgl</th>
+            {showDescription ? <th className="col-desc">Deskripsi</th> : null}
             <th className="right mono" style={{ width: "92px" }}>Durasi</th>
-            <th className="right mono" style={{ width: "112px" }}>Tarif ({getInvoiceRateColumnLabel(data.items)})</th>
+            {showRate ? (
+              <th className="right mono stacked" style={{ width: "112px" }}>Tarif<br />per {getInvoiceRateColumnLabel(data.items)}</th>
+            ) : null}
             <th className="right mono" style={{ width: "106px" }}>Subtotal</th>
           </tr>
         </thead>
         <tbody>
-          {data.items.map((it, i) => (
-            <tr key={i}>
-              <td><span className="cell-content">{it.date}</span></td>
-              {showDescription ? <td><span className="cell-content">{it.desc.trim() || "-"}</span></td> : null}
-              <td className="right mono">
-                <span className="cell-content">{formatDurationMinutes(it.durationMinutes)}</span>
-              </td>
-              <td className="right mono"><span className="cell-content">{formatIDR(it.rate)}</span></td>
-              <td className="right mono"><span className="cell-content">{formatIDR(it.amount)}</span></td>
+            {pageItems.map((it, i) => (
+              <tr key={i} data-invoice-row>
+              <td className="col-date">{it.date}</td>
+              {showDescription ? <td className="col-desc">{it.desc.trim() || "-"}</td> : null}
+              <td className="right mono">{formatDurationMinutes(it.durationMinutes)}</td>
+              {showRate ? <td className="right mono">{formatIDR(it.rate)}</td> : null}
+              <td className="right mono">{formatIDR(it.amount)}</td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table> : null}
 
-      <div className="k-total-block">
+      {showTail ? <>
+      <div className="k-total-block" data-invoice-tail-start>
         <div className="row">
           <span>Total durasi</span>
           <span className="val">{formatDurationMinutes(durationMinutes)}</span>
@@ -98,6 +107,7 @@ export default function TplKlasik({ acc = "#006C53", data = sampleInvoiceData }:
         <div className="lbl">Pembayaran ke</div>
         <div className="val">{data.bank.bank} · {data.bank.no} · a/n {data.bank.name}</div>
       </div>
+      </> : null}
     </div>
   );
 }

@@ -20,6 +20,13 @@ export interface InvoiceData {
   notes: string;
 }
 
+export interface InvoicePageLayout {
+  items: InvoiceItem[];
+  showHeader: boolean;
+  showTable: boolean;
+  showTail: boolean;
+}
+
 export const sampleInvoiceData: InvoiceData = {
   date: "30 Juni 2026",
   period: "1 - 30 Juni 2026",
@@ -66,13 +73,16 @@ export function hasInvoiceDescriptions(items: InvoiceData["items"]): boolean {
   });
 }
 
+export function hasInvoiceRateColumn(items: InvoiceData["items"]): boolean {
+  return items.some(({ billingType }) => billingType !== "flat");
+}
+
 export function getInvoiceRateColumnLabel(items: InvoiceData["items"]): string {
-  const labels = [...new Set(items.map(({ billingType }) => {
-    if (billingType === "sixty_minutes") return "60 menit";
-    if (billingType === "ninety_minutes") return "90 menit";
-    if (billingType === "flat") return "Flat";
-    return "Tidak valid";
+  const labels = [...new Set(items.flatMap(({ billingType }) => {
+    if (billingType === "sixty_minutes") return ["60 menit"];
+    if (billingType === "ninety_minutes") return ["90 menit"];
+    return [];
   }))];
 
-  return labels.join(" / ");
+  return labels.length > 0 ? labels.join(" / ") : "sesi";
 }
