@@ -2,9 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useHasSupabaseSession } from "@/lib/supabase/has-session-cookie";
 import MenuToggle from "@/components/MenuToggle";
 import { NavigationLinkPrimitive } from "@/components/ui/navigation-link-primitive";
 
@@ -16,13 +15,7 @@ const links = [
 
 export default function PublicNav() {
   const pathname = usePathname();
-  const [authed, setAuthed] = useState(false);
-
-  useEffect(() => {
-    createClient().auth.getSession().then(({ data }) => {
-      if (data.session) setAuthed(true);
-    });
-  }, []);
+  const authed = useHasSupabaseSession();
 
   return (
     <nav className="tl-public-nav" aria-label="Navigasi utama">

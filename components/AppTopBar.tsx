@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ChartBar, FileText, House, Lifebuoy, TelegramLogo, SignOut, User } from "@phosphor-icons/react";
-import { createClient } from "@/lib/supabase/client";
+import { signOut } from "@/app/app/actions";
 import { NavigationItem } from "@/components/app-ui/navigation";
 import { APP_ROUTE_ITEMS, getActiveAppRoute } from "@/components/app-ui/routes";
 import { clearInvoiceFormCache } from "@/lib/invoice-form-cache";
@@ -28,17 +28,13 @@ const routeIcons: Record<string, typeof House> = {
 export default function AppTopBar({ name, initials, access, communityLink }: AppTopBarProps) {
   const pathname = usePathname();
   const activeRoute = getActiveAppRoute(pathname);
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = useCallback(async () => {
     clearInvoiceFormCache({ localStorage, sessionStorage });
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  }, [router]);
+    await signOut();
+  }, []);
 
   useEffect(() => {
     if (!open) return;
