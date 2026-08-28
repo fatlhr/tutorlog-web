@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
-import PublicMotion from "@/components/PublicMotion";
+import PublicMotionMount from "@/components/PublicMotionMount";
 import PublicNav from "@/components/PublicNav";
 import { AppFooter } from "@/components/ui/footer";
 import { PublicProductRail } from "@/components/PublicProductRail";
@@ -33,7 +33,7 @@ export function PublicStoryLayout({
 }: PublicStoryLayoutProps) {
   return (
     <main className={`tl-public tls-story-page ${className}`}>
-      <PublicMotion />
+      <PublicMotionMount />
       <PublicNav />
       <header className="tls-story-hero">
         {showBackLink ? (

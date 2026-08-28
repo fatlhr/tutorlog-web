@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
 import LandingTimetableCanvas from "@/components/LandingTimetableCanvas";
-import PublicMotion from "@/components/PublicMotion";
+import PublicMotionMount from "@/components/PublicMotionMount";
 import PublicNav from "@/components/PublicNav";
 import { AppFooter } from "@/components/ui/footer";
 import { PublicProductProof } from "@/components/PublicProductRail";
@@ -14,7 +14,7 @@ const playStoreUrl = "https://play.google.com/store/apps/details?id=com.tutorlog
 export default function Home() {
   return (
     <main className="tl-public tl-landing-standard">
-      <PublicMotion />
+      <PublicMotionMount />
       <PublicNav />
 
       <section className="tl-landing-hero" aria-labelledby="landing-title">
