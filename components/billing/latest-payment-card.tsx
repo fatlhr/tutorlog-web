@@ -28,15 +28,17 @@ const stateLabels: Record<PaymentState, string> = {
   refunded: "Dikembalikan",
 };
 
+const PAYMENT_DATE_FORMATTER = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "Asia/Jakarta",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 function formatPaymentDate(value: string): string {
-  return new Intl.DateTimeFormat("id-ID", {
-    timeZone: "Asia/Jakarta",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return PAYMENT_DATE_FORMATTER.format(new Date(value));
 }
 
 export function LatestPaymentCard({ payment }: LatestPaymentCardProps) {

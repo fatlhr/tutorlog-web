@@ -48,16 +48,18 @@ function paymentStateEvent(
   return "payment_failed";
 }
 
+const DEADLINE_FORMATTER = new Intl.DateTimeFormat("id-ID", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
 function formatDeadline(value: string | null): string | null {
   if (!value) return null;
 
   const deadline = new Date(value);
   if (Number.isNaN(deadline.getTime())) return null;
 
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(deadline);
+  return DEADLINE_FORMATTER.format(deadline);
 }
 
 function errorMessage(error: unknown): string {

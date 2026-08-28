@@ -52,8 +52,10 @@ export const sampleInvoiceData: InvoiceData = {
   notes: "Terima kasih atas kepercayaannya. Pembayaran dapat ditransfer ke rekening di bawah paling lambat 7 Juli 2026.",
 };
 
+const IDR = new Intl.NumberFormat("id-ID");
+
 export function formatIDR(value: number): string {
-  return "Rp " + value.toLocaleString("id-ID");
+  return "Rp " + IDR.format(value);
 }
 
 export function getInvoiceTotals(items: InvoiceData["items"]) {
