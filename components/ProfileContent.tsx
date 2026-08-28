@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Check, DeviceMobile, PencilSimple } from "@phosphor-icons/react";
 import { Button, IconButton } from "@/components/app-ui/controls";
 import { PageMain, RouteCanvas } from "@/components/app-ui/route-canvas";
@@ -30,7 +29,6 @@ export default function ProfileContent({
   access,
   latestPayment,
 }: ProfileContentProps) {
-  const router = useRouter();
   const [name, setName] = useState(initialName);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(name);
@@ -55,10 +53,9 @@ export default function ProfileContent({
       } else {
         setName(trimmed);
         setEditing(false);
-        router.refresh();
       }
     });
-  }, [editValue, router]);
+  }, [editValue]);
 
   return (
     <RouteCanvas route="settings">

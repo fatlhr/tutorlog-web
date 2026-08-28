@@ -36,6 +36,12 @@ export const metadata: Metadata = {
   description: "Ringkasan sesi dan pekerjaan tutor bulan ini.",
 };
 
+const monthFormatter = new Intl.DateTimeFormat("id-ID", {
+  month: "long",
+  year: "numeric",
+  timeZone: "Asia/Jakarta",
+});
+
 export default async function HomePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -44,11 +50,6 @@ export default async function HomePage() {
   const hasName = Boolean(rawName);
   const name = hasName ? rawName : (email.split("@")[0] || "Tutor");
   const now = new Date();
-  const monthFormatter = new Intl.DateTimeFormat("id-ID", {
-    month: "long",
-    year: "numeric",
-    timeZone: "Asia/Jakarta",
-  });
   const period = getWibMonthToDateRange(now);
   const previousPeriod = getWibMonthRange(now, -1);
   const previousMonthDate = new Date(Date.UTC(

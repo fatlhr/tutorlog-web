@@ -7,13 +7,15 @@ interface AccessSummaryCardProps {
   access: AccessSummary;
 }
 
+const ACCESS_DATE_FORMATTER = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "Asia/Jakarta",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
 function formatAccessDate(value: string): string {
-  return new Intl.DateTimeFormat("id-ID", {
-    timeZone: "Asia/Jakarta",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(value));
+  return ACCESS_DATE_FORMATTER.format(new Date(value));
 }
 
 export function AccessSummaryCard({ access }: AccessSummaryCardProps) {
