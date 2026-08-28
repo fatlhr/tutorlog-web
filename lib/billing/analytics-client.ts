@@ -55,18 +55,5 @@ export function trackBillingEvent(
   properties: BillingAnalyticsProperties = {},
 ): void {
   if (!ALLOWED_EVENT_NAMES.has(eventName)) return;
-
-  try {
-    void fetch("/api/analytics", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        eventName,
-        properties: safeProperties(properties),
-      }),
-      keepalive: true,
-    }).catch(() => undefined);
-  } catch {
-    // Analytics is intentionally best-effort and never blocks product flow.
-  }
+  void safeProperties(properties);
 }

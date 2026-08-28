@@ -4,8 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, X } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useRef } from "react";
+import { useHasSupabaseSession } from "@/lib/supabase/has-session-cookie";
 import { PublicIconButton } from "@/components/public-ui/public-icon-button";
 import { NavigationLinkPrimitive } from "@/components/ui/navigation-link-primitive";
 
@@ -25,13 +25,7 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const [authed, setAuthed] = useState(false);
-
-  useEffect(() => {
-    createClient().auth.getSession().then(({ data }) => {
-      if (data.session) setAuthed(true);
-    });
-  }, []);
+  const authed = useHasSupabaseSession();
 
   useEffect(() => {
     if (!open) return;

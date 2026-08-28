@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Button, Field, TextField } from "@/components/app-ui/controls";
 import { Dialog } from "@/components/app-ui/overlays";
 import { updateName } from "@/app/app/actions";
@@ -11,7 +10,6 @@ interface NamePromptDialogProps {
 }
 
 export default function NamePromptDialog({ hasName }: NamePromptDialogProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(!hasName);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +31,9 @@ export default function NamePromptDialog({ hasName }: NamePromptDialogProps) {
         setError(result.error);
       } else {
         setOpen(false);
-        router.refresh();
       }
     });
-  }, [name, router]);
+  }, [name]);
 
   return (
     <Dialog

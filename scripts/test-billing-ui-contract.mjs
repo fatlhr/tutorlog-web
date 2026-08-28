@@ -506,8 +506,11 @@ for (const eventName of [
   assert.match(analyticsClientSource, new RegExp(`"${eventName}"`));
 }
 assert.match(analyticsClientSource, /ALLOWED_EVENT_NAMES\.has\(eventName\)/);
-assert.match(analyticsClientSource, /void fetch\("\/api\/analytics"/);
-assert.match(analyticsClientSource, /\.catch\(\(\) => undefined\)/);
+assert.doesNotMatch(
+  analyticsClientSource,
+  /fetch\(/,
+  "Billing analytics must not spend a Worker invocation per event; delivery is disabled until it batches",
+);
 assert.doesNotMatch(
   analyticsClientSource.toLowerCase(),
   /ipaymu|provider|signature|qrpayload|vanumber|secret|token/,

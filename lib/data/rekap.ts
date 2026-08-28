@@ -165,15 +165,16 @@ function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
   });
 }
 
+const TIME_FORMATTER = new Intl.DateTimeFormat("id-ID", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
 function formatTimeRange(clockIn: string, clockOut: string | null): string {
-  const formatter = new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  const start = formatter.format(new Date(clockIn)).replace(".", ":");
+  const start = TIME_FORMATTER.format(new Date(clockIn)).replace(".", ":");
   if (!clockOut) return `${start} - selesai`;
-  return `${start} - ${formatter.format(new Date(clockOut)).replace(".", ":")}`;
+  return `${start} - ${TIME_FORMATTER.format(new Date(clockOut)).replace(".", ":")}`;
 }
 
 function buildResult(sessions: SessionItem[], from: string, to: string): RekapData {

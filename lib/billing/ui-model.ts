@@ -12,12 +12,14 @@ export interface PaymentStatusCopy {
   tone: PaymentStatusTone;
 }
 
+const IDR_CURRENCY = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
+
 export function formatIdr(amount: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(amount).replace(/^Rp\s*/u, "Rp");
+  return IDR_CURRENCY.format(amount).replace(/^Rp\s*/u, "Rp");
 }
 
 export function productPeriodLabel(product: ProductSummary): string {

@@ -99,6 +99,41 @@ assert.match(
 );
 assert.match(
   invoicePdf,
+  /function estimateHtml2CanvasBaseline[\s\S]*img\.offsetTop - span\.offsetTop \+ 2/,
+  "PDF capture must reproduce the html2canvas FontMetrics baseline estimate it is correcting",
+);
+assert.match(
+  invoicePdf,
+  /estimateHtml2CanvasBaseline\(\s*document,/,
+  "Baseline estimate must probe the top-level document, matching new FontMetrics(document)",
+);
+assert.match(
+  invoicePdf,
+  /function measureRenderedBaseline[\s\S]*vertical-align:baseline[\s\S]*baselineTop - lineTop/,
+  "PDF capture must measure the baseline the browser actually used, not the line-box bottom",
+);
+assert.match(
+  invoicePdf,
+  /delta: estimated - measureRenderedBaseline\(element\)/,
+  "PDF capture must shift text by the html2canvas baseline error",
+);
+assert.match(
+  invoicePdf,
+  /element\.style\.position = "relative";[\s\S]*element\.style\.top = `\$\{-delta\}px`/,
+  "Baseline correction must be visual only so capture never reflows the paginated layout",
+);
+assert.doesNotMatch(
+  invoicePdf,
+  /centerInvoiceTableCellsForCapture|alignInvoiceTextRowsForCapture/,
+  "The reflowing cell-padding and text-bottom workarounds must stay removed",
+);
+assert.match(
+  invoicePdf,
+  /onclone: \(_document, clonedPage\) => neutralizeBaselineDriftForCapture\(clonedPage\)/,
+  "html2canvas must apply the baseline correction to its cloned export DOM",
+);
+assert.match(
+  invoicePdf,
   /querySelectorAll<HTMLElement>\("\[data-invoice-page\]"\)/,
   "Invoice export must capture every rendered A4 page",
 );
@@ -209,8 +244,68 @@ for (const selector of [
     `${selector} must vertically center its cell content`,
   );
 }
-assert.match(invoiceData, /export function getInvoiceRateColumnLabel/);
-assert.match(templates, /getInvoiceRateColumnLabel\(data\.items\)/);
+for (const selector of [
+  ".tpl-klasik table.k-table th",
+  ".tpl-modern table.m-table th",
+  ".tpl-minimal table.mn-table th",
+]) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(
+    invoiceCss,
+    new RegExp(`${escapedSelector} \\{[^}]*text-align: center;[^}]*vertical-align: middle;`, "s"),
+    `${selector} must center its heading horizontally and vertically`,
+  );
+}
+assert.match(
+  invoiceData,
+  /export function isFlatInvoice[\s\S]*return items\.length > 0 && items\.every\(\(\{ billingType \}\) => billingType === "flat"\);/,
+  "Only invoices whose every item is flat may use the flat-only column layout",
+);
+assert.match(
+  invoiceData,
+  /export function hasInvoiceSubtotalColumn[\s\S]*return items\.length > 0 && !isFlatInvoice\(items\);/,
+  "Subtotal must stay visible whenever an invoice contains a non-flat item",
+);
+assert.match(
+  invoiceData,
+  /export function hasMixedInvoiceBillingTypes[\s\S]*new Set\(items\.map\(\(\{ billingType \}\) => billingType\)\)\.size > 1/,
+  "Mixed invoice detection must compare the billing type of every item",
+);
+assert.match(invoiceData, /billingType === "sixty_minutes"\) return "60 menit"/);
+assert.match(invoiceData, /billingType === "ninety_minutes"\) return "90 menit"/);
+assert.match(
+  invoiceData,
+  /export function getInvoiceRateColumnLabel[\s\S]*if \(hasMixedInvoiceBillingTypes\(items\)\) return "";/,
+  "Mixed invoices must keep the rate header generic",
+);
+assert.match(
+  invoiceData,
+  /export function getInvoiceRateCellLabel[\s\S]*return label \? `Per \$\{label\}` : "";/,
+  "Only interval billing types may add a per-cell rate detail",
+);
+for (const templateSource of templateSources) {
+  assert.match(templateSource, /const showRateDetails = hasMixedInvoiceBillingTypes\(data\.items\)/);
+  assert.match(templateSource, /Tarif\{rateLabel \? <>\s*<br \/>\(\{rateLabel\}\)<\/> : null\}/);
+  assert.match(templateSource, /showSubtotal \? <th[^>]*>Subtotal<\/th> : null/);
+  assert.match(templateSource, /className="invoice-rate-cell"/);
+  assert.match(templateSource, /rateDetail \? <span className="invoice-rate-meta">\{rateDetail\}<\/span> : null/);
+  assert.match(templateSource, /showSubtotal \? <td[^>]*>\{formatIDR\(it\.amount\)\}<\/td> : null/);
+  assert.match(
+    templateSource,
+    /<tr key=\{i\} data-invoice-row>[\s\S]*className="invoice-rate-cell"[\s\S]*<\/tr>/,
+    "Mixed rate details must remain inside the DOM row measured by pagination",
+  );
+}
+assert.match(
+  invoicePages,
+  /rowHeights: rows\.map\(\(row\) => row\.getBoundingClientRect\(\)\.height \/ scale\)/,
+  "Pagination must continue measuring the rendered height of every invoice row",
+);
+assert.match(
+  invoiceCss,
+  /\.invoice-rate-cell \{[^}]*flex-direction: column;[^}]*justify-content: center;[^}]*align-items: flex-end;[^}]*vertical-align: middle;/s,
+  "Mixed billing details must stay vertically centered inside right-aligned rate cells",
+);
 assert.doesNotMatch(templates, /invoice-billing-meta/);
 assert.match(
   invoiceCss,
@@ -239,8 +334,13 @@ assert.match(
 );
 assert.match(
   invoiceCss,
-  /\.tpl-klasik \.k-bank \{[^}]*margin-top: 24px;[^}]*grid-template-columns: max-content minmax\(0, 1fr\);[^}]*align-items: center;[^}]*align-content: center;/s,
-  "Klasik payment label and account details must share one centered row with clear note spacing",
+  /\.tpl-klasik \.k-bank \{[^}]*margin-top: 24px;[^}]*grid-template-columns: max-content minmax\(0, 1fr\);[^}]*align-items: baseline;[^}]*align-content: center;/s,
+  "Klasik payment label and account details must share one baseline",
+);
+assert.match(
+  invoiceCss,
+  /\.tpl-klasik \.k-total-block \.row \{[^}]*align-items: baseline;/s,
+  "Klasik total duration label and value must share one baseline",
 );
 assert.match(
   invoiceCss,
@@ -254,7 +354,7 @@ assert.match(
 );
 assert.match(
   invoiceCss,
-  /\.tpl-klasik table\.k-table td \{[^}]*min-height: 34px;[^}]*padding-block: 8px 10px;[^}]*line-height: 1\.45;/s,
+  /\.tpl-klasik table\.k-table td \{[^}]*min-height: 34px;[^}]*padding-block: 9px;[^}]*line-height: 1\.45;/s,
   "Klasik table cells must grow with content (min-height) so pagination measures real row heights",
 );
 assert.doesNotMatch(

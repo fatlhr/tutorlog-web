@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
-import PublicMotion from "@/components/PublicMotion";
+import PublicMotionMount from "@/components/PublicMotionMount";
 import PublicNav from "@/components/PublicNav";
 import { AppFooter } from "@/components/ui/footer";
 
@@ -30,7 +30,7 @@ export function PublicShell({
 }: PublicShellProps) {
   return (
     <main className={`tl-public ${compact ? "tl-public-compact" : ""} ${className}`}>
-      <PublicMotion />
+      <PublicMotionMount />
       <PublicNav />
 
       <header className={`tl-public-hero ${aside ? "" : "tl-public-hero-solo"}`}>

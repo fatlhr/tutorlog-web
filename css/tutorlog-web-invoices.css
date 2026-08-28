@@ -18,6 +18,25 @@
   overflow-wrap: break-word;
   word-break: break-word;
 }
+.invoice-rate-cell {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 2px;
+  line-height: 1.15;
+  vertical-align: middle;
+}
+.invoice-rate-meta {
+  color: var(--tw-text-3);
+  font-family: var(--f-body);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  line-height: 1.2;
+  text-transform: none;
+  white-space: nowrap;
+}
 .invoice-note-placeholder {
   display: grid;
   gap: 6px;
@@ -77,7 +96,7 @@
   padding-inline: 10px;
   padding-block: 0;
   line-height: 1;
-  text-align: left;
+  text-align: center;
   vertical-align: middle;
   font-family: var(--f-body); font-weight: 700; font-size: 10px;
   letter-spacing: 1px; text-transform: uppercase;
@@ -86,19 +105,19 @@
 .tpl-klasik table.k-table td {
   min-height: 34px;
   padding-inline: 10px;
-  padding-block: 8px 10px;
+  padding-block: 9px;
   line-height: 1.45;
   border: 1px solid var(--tw-divider);
   font-family: var(--f-body); font-size: 11px;
   vertical-align: middle;
 }
-.tpl-klasik table.k-table td.right, .tpl-klasik table.k-table th.right { text-align: right; white-space: nowrap; }
+.tpl-klasik table.k-table td.right { text-align: right; white-space: nowrap; }
 .tpl-klasik table.k-table td.mono, .tpl-klasik table.k-table th.mono { font-family: var(--f-title); font-weight: 700; }
 .tpl-klasik table.k-table td.col-date, .tpl-klasik table.k-table th.col-date { white-space: nowrap; }
 .tpl-klasik table.k-table th.stacked {
   height: auto;
   line-height: 1.15;
-  padding-block: 6px 5px;
+  padding-block: 6px;
   white-space: normal;
   vertical-align: middle;
 }
@@ -107,7 +126,7 @@
   display: flex; flex-direction: column; gap: 6px;
 }
 .tpl-klasik .k-total-block .row {
-  display: flex; justify-content: space-between;
+  display: flex; justify-content: space-between; align-items: baseline;
   font-family: var(--f-body); font-size: 13px; color: var(--tw-text-2);
 }
 .tpl-klasik .k-total-block .row .val { font-family: var(--f-title); font-weight: 700; font-size: 15px; color: var(--tw-text); }
@@ -145,7 +164,7 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
-  align-items: center;
+  align-items: baseline;
   align-content: center;
   column-gap: 20px;
   font-family: var(--f-body); font-size: 11px;
@@ -207,7 +226,7 @@
 }
 .tpl-modern table.m-table th {
   background: transparent; color: var(--tw-text-3);
-  height: 34px; padding-inline: 12px; padding-block: 0; line-height: 1; text-align: left;
+  height: 34px; padding-inline: 12px; padding-block: 0; line-height: 1; text-align: center;
   vertical-align: middle;
   font-family: var(--f-body); font-weight: 700; font-size: 10px;
   letter-spacing: 1.5px; text-transform: uppercase;
@@ -225,11 +244,11 @@
 .tpl-modern table.m-table th.stacked {
   height: auto;
   line-height: 1.15;
-  padding-block: 6px 5px;
+  padding-block: 6px;
   white-space: normal;
   vertical-align: middle;
 }
-.tpl-modern table.m-table td.right, .tpl-modern table.m-table th.right { text-align: right; white-space: nowrap; }
+.tpl-modern table.m-table td.right { text-align: right; white-space: nowrap; }
 .tpl-modern table.m-table tbody tr.m-table-gap td {
   height: 6px;
   padding: 0;
@@ -334,7 +353,7 @@
   padding-inline: 4px;
   padding-block: 0;
   line-height: 1;
-  text-align: left;
+  text-align: center;
   vertical-align: middle;
   font-family: var(--f-body); font-weight: 700; font-size: 10px;
   letter-spacing: 1.5px; text-transform: uppercase;
@@ -357,11 +376,11 @@
 .tpl-minimal table.mn-table th.stacked {
   height: auto;
   line-height: 1.15;
-  padding-block: 6px 5px;
+  padding-block: 6px;
   white-space: normal;
   vertical-align: middle;
 }
-.tpl-minimal table.mn-table td.right, .tpl-minimal table.mn-table th.right { text-align: right; white-space: nowrap; }
+.tpl-minimal table.mn-table td.right { text-align: right; white-space: nowrap; }
 
 .tpl-minimal .mn-total-row {
   display: grid;
