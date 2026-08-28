@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { createClient } from "@/lib/supabase/server";
 
 export async function updateName(formData: FormData) {
@@ -17,6 +19,8 @@ export async function updateName(formData: FormData) {
   if (error) {
     return { error: "Nama belum berhasil disimpan. Coba lagi." };
   }
+
+  revalidatePath("/app", "layout");
 
   return { success: true };
 }
