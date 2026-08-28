@@ -25,19 +25,19 @@ export function AppFooter({ context }: AppFooterProps) {
       </div>
       <div className={styles.footerCol}>
         <span className={styles.footerColHeading}>Jelajahi</span>
-        <Link className={styles.footerLink} href="/fitur">Fitur</Link>
-        <Link className={styles.footerLink} href="/harga">Harga</Link>
-        <Link className={styles.footerLink} href="/panduan">Panduan</Link>
+        <Link prefetch={false} className={styles.footerLink} href="/fitur">Fitur</Link>
+        <Link prefetch={false} className={styles.footerLink} href="/harga">Harga</Link>
+        <Link prefetch={false} className={styles.footerLink} href="/panduan">Panduan</Link>
       </div>
       <div className={styles.footerCol}>
         <span className={styles.footerColHeading}>Bantuan</span>
         {context === "public" ? (
-          <Link className={styles.footerLink} href="/account">Hapus akun</Link>
+          <Link prefetch={false} className={styles.footerLink} href="/account">Hapus akun</Link>
         ) : (
-          <Link className={styles.footerLink} href="/kontak">Kontak</Link>
+          <Link prefetch={false} className={styles.footerLink} href="/kontak">Kontak</Link>
         )}
-        <Link className={styles.footerLink} href="/privacy">Privasi</Link>
-        <Link className={styles.footerLink} href="/terms">Syarat &amp; ketentuan</Link>
+        <Link prefetch={false} className={styles.footerLink} href="/privacy">Privasi</Link>
+        <Link prefetch={false} className={styles.footerLink} href="/terms">Syarat &amp; ketentuan</Link>
       </div>
       {context === "public" || context === "protected" ? (
         <div className={styles.footerCol}>
