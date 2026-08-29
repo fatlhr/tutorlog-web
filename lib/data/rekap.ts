@@ -5,6 +5,10 @@ import {
   getSessionMetrics,
   toWibDateRange,
 } from "@/lib/data/session-metrics.mjs";
+import {
+  formatWibSessionDate,
+  formatWibSessionTimeRange,
+} from "@/lib/data/session-datetime.mjs";
 
 export interface SessionItem {
   id: string;
@@ -38,15 +42,6 @@ export interface RekapData {
   summary: RekapSummary;
   month: string;
   monthLabel: string;
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-    "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
-  ];
-  return `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 export async function fetchRekapDataByRange(
@@ -147,7 +142,7 @@ function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
 
     return {
       id: row.id as string,
-      d: formatDate(clockIn),
+      d: formatWibSessionDate(clockIn),
       rawDate: clockIn,
       m: studentName,
       s: subject || "Belum diisi",
@@ -156,25 +151,13 @@ function buildSessions(rows: Record<string, unknown>[]): SessionItem[] {
       t: formatCurrency(metrics.amount),
       rawAmount: metrics.amount,
       isBillingValid: metrics.isValid,
-      time: formatTimeRange(clockIn, clockOut),
+      time: formatWibSessionTimeRange(clockIn, clockOut),
       mode: teachingMode === "online" ? "Online" : "Tatap muka",
       location: hasLocation ? "Lokasi tersimpan di aplikasi" : "Lokasi tidak tercatat",
       rate: formatCurrency(rate ?? 0),
       note: typeof note === "string" && note.trim() ? note.trim() : "Belum ada catatan sesi",
     };
   });
-}
-
-const TIME_FORMATTER = new Intl.DateTimeFormat("id-ID", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
-
-function formatTimeRange(clockIn: string, clockOut: string | null): string {
-  const start = TIME_FORMATTER.format(new Date(clockIn)).replace(".", ":");
-  if (!clockOut) return `${start} - selesai`;
-  return `${start} - ${TIME_FORMATTER.format(new Date(clockOut)).replace(".", ":")}`;
 }
 
 function buildResult(sessions: SessionItem[], from: string, to: string): RekapData {
