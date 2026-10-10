@@ -9,7 +9,7 @@ const buttonPrimitive = readFileSync("components/ui/button-primitive.tsx", "utf8
 assert.match(component, /^"use client";/m, "submit button must be a Client Component");
 assert.match(component, /useFormStatus/, "submit button must read its parent form status");
 assert.match(component, /loading=\{pending\}/, "pending state must drive MarketingButton loading");
-assert.match(component, /loadingLabel="Mengirim link\.\.\."/, "loading label must explain the request");
+assert.match(component, /loadingLabel="Mengirim tautan\.\.\."/, "loading label must explain the request");
 assert.match(page, /<LoginSubmitButton\s*\/>/, "login form must render LoginSubmitButton");
 assert.doesNotMatch(page, /<MarketingButton/, "login page must not bypass pending-aware submit button");
 assert.match(
