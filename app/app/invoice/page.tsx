@@ -464,12 +464,15 @@ export default function InvoicePage() {
         periodEnd,
       }));
       setExportSuccess(true);
+      void supabase
+        .rpc("record_activation_milestone", { p_milestone: "invoice_pdf_downloaded" })
+        .then(() => undefined);
     } catch {
       setExportError("PDF invoice belum berhasil diunduh. Coba lagi.");
     } finally {
       setExporting(false);
     }
-  }, [invoiceSessions, periodEnd, periodStart, studentName, validateInvoiceForm]);
+  }, [invoiceSessions, periodEnd, periodStart, studentName, supabase, validateInvoiceForm]);
 
   useEffect(() => {
     if (!exportSuccess) return;
