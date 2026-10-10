@@ -4,7 +4,7 @@ import { ArrowRight, EnvelopeOpen } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/PublicShell";
 import { MarketingButton } from "@/components/public-ui/marketing-button";
 import { safeNextPath } from "@/lib/auth/safe-next";
-import { sendMagicLink } from "../actions";
+import { OtpForm } from "./otp-form";
 
 export const metadata: Metadata = {
   title: "TutorLog - Cek email",
@@ -14,11 +14,17 @@ export const metadata: Metadata = {
 export default async function LoginSentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string; next?: string }>;
+  searchParams: Promise<{ email?: string; next?: string; error?: string }>;
 }) {
-  const { email, next: requestedNext } = await searchParams;
+  const { email, next: requestedNext, error } = await searchParams;
   const next = safeNextPath(requestedNext);
   const emailLabel = email || "alamat email kamu";
+  const errorMessage =
+    error === "rate-limited"
+      ? "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi."
+      : error === "invalid-code"
+        ? "Kode salah atau sudah kedaluwarsa. Periksa lagi atau kirim kode baru."
+        : null;
 
   return (
     <PublicShell
@@ -35,7 +41,7 @@ export default async function LoginSentPage({
           <span className="tl-auth-icon" aria-hidden="true"><EnvelopeOpen size={28} weight="duotone" /></span>
           <h2>Tautan dikirim ke:</h2>
           <p className="tl-auth-email">{emailLabel}</p>
-          <p className="tl-auth-note">Tautan berlaku selama 1 jam.</p>
+          <p className="tl-auth-note">Tautan dan kode berlaku selama 1 jam.</p>
         </div>
         <div className="tl-auth-divider" aria-hidden="true" />
         <div className="tl-auth-form tl-auth-sent-actions">
@@ -53,13 +59,8 @@ export default async function LoginSentPage({
           >
             Buka Gmail
           </MarketingButton>
-          {email ? (
-            <form action={sendMagicLink}>
-              <input type="hidden" name="email" value={email} />
-              <input type="hidden" name="next" value={next} />
-              <button className="tl-auth-text-button" type="submit">Kirim tautan baru</button>
-            </form>
-          ) : null}
+          {errorMessage ? <p className="tl-auth-error" role="alert">{errorMessage}</p> : null}
+          {email ? <OtpForm email={email} next={next} /> : null}
           <p className="tl-auth-legal">Salah alamat? <Link href={`/login?next=${encodeURIComponent(next)}`}>Ganti email</Link>.</p>
         </div>
       </section>

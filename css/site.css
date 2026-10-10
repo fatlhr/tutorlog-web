@@ -6133,6 +6133,35 @@ html, body { overflow-x: hidden; }
   box-shadow: 0 0 0 3px rgba(0, 108, 83, .12);
 }
 
+.tl-auth-otp-form { margin: 24px 0 8px; }
+
+.tl-auth-otp-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--tl-ink);
+  font-family: var(--f-title), monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tl-auth-otp-input {
+  width: 100%;
+  height: 56px;
+  border: 1px solid var(--tl-line);
+  border-radius: 6px;
+  color: var(--tl-ink);
+  background: rgba(255, 255, 255, .78);
+  font: 700 24px var(--f-title), monospace;
+  letter-spacing: 12px;
+  text-align: center;
+  outline: 0;
+}
+
+.tl-auth-otp-input:focus {
+  border-color: var(--tl-green);
+  box-shadow: 0 0 0 3px rgba(0, 108, 83, .12);
+}
+
 .tl-auth-form-help {
   margin: 10px 0 0;
   color: var(--tl-muted);
