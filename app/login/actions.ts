@@ -33,3 +33,24 @@ export async function sendMagicLink(formData: FormData) {
 
   redirect(`/login/sent?email=${encodeURIComponent(email)}&next=${encodedNext}`);
 }
+
+export async function verifyEmailOtp(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  const token = String(formData.get("token") ?? "").trim();
+  const next = safeNextPath(formData.get("next"));
+  const sentPage = `/login/sent?email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}`;
+
+  if (!email || !/^\d{6}$/.test(token)) {
+    redirect(`${sentPage}&error=invalid-code`);
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+
+  if (error) {
+    const reason = error.status === 429 ? "rate-limited" : "invalid-code";
+    redirect(`${sentPage}&error=${reason}`);
+  }
+
+  redirect(next);
+}
